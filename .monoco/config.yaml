@@ -1,0 +1,7 @@
+paths:
+  issues: ISSUES
+  specs: SPECS
+  spikes: SPIKES
+project:
+  key: TOO
+  name: Toolkit
