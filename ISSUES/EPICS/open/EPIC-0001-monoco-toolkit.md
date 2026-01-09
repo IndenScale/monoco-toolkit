@@ -71,8 +71,8 @@ Toolkit/
 
 ## Child Stories (子故事)
 
-- [x] [[STORY-0002]]: Toolkit Core Infrastructure (Done)
-- [x] [[STORY-0003]]: Feature: Issue Management (Done)
-- [ ] [[STORY-0004]]: Feature: Spike Management
-- [ ] [[STORY-0005]]: Feature: Quality Control (Check)
-- [ ] [[STORY-0006]]: Feature: Runtime (Remote Interaction)
+- [x] [[FEAT-0002]]: Toolkit Core Infrastructure (Done)
+- [x] [[FEAT-0003]]: Feature: Issue Management (Done)
+- [ ] [[FEAT-0004]]: Feature: Spike Management
+- [ ] [[FEAT-0005]]: Feature: Quality Control (Check)
+- [ ] [[FEAT-0006]]: Feature: Runtime (Remote Interaction)

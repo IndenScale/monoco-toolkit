@@ -1,7 +1,7 @@
 ---
 parent: EPIC-0001
-id: STORY-0003
-type: story
+id: FEAT-0003
+type: feature
 status: closed
 title: "Feature: Issue Management (Local)"
 created_at: 2026-01-08
@@ -11,7 +11,7 @@ tags: [toolkit, feature, issue, architecture]
 
 parent: EPIC-0001
 
-## STORY-0003: Issue Management (Local)
+## FEAT-0003: Issue Management (Local)
 
 ## Objective
 
@@ -20,7 +20,7 @@ parent: EPIC-0001
 ## Acceptance Criteria
 
 1. **Create**: `monoco issue create <epic|story|task|bug> --title "..."` 自动创建文件并分配 ID。
-2. **Archive**: `monoco issue archive {ID}` 将工单移动至对应类型的 `archive/` 目录，并更新状态为 `done`。
+2. **Close**: `monoco issue close {ID} --solution {type}` 将工单移动至对应类型的 `closed/` 目录，并更新状态为 `closed`。
 3. **Cancel**: `monoco issue cancel {ID}` 将工单标记为 `cancelled`。
 4. **Scope**: `monoco issue scope` 展示树状进度统计。
    - 支持 `--sprint {sprint-id}` 仅显示特定迭代。

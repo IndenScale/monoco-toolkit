@@ -16,32 +16,39 @@ console = Console()
 
 @app.command("create")
 def create(
-    type: IssueType = typer.Argument(..., help="Issue type (epic, story, task, bug)"),
+    type: IssueType = typer.Argument(..., help="Issue type (epic, feature, chore, fix)"),
     title: str = typer.Option(..., "--title", "-t", help="Issue title"),
     parent: Optional[str] = typer.Option(None, "--parent", "-p", help="Parent Issue ID"),
     is_backlog: bool = typer.Option(False, "--backlog", help="Create as backlog item"),
+    dependencies: List[str] = typer.Option([], "--dependency", "-d", help="Issue dependency ID(s)"),
+    related: List[str] = typer.Option([], "--related", "-r", help="Related Issue ID(s)"),
+    subdir: Optional[str] = typer.Option(None, "--subdir", "-s", help="Subdirectory for organization (e.g. 'Backend/Auth')"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
     """Create a new issue."""
     config = get_config()
-    root_dir = Path(config.paths.root)
+    issues_root = _resolve_issues_root(config, root)
     status = IssueStatus.BACKLOG if is_backlog else IssueStatus.OPEN
     
     if parent:
-        parent_path = core.find_issue_path(root_dir, parent)
+        parent_path = core.find_issue_path(issues_root, parent)
         if not parent_path:
             console.print(f"[red]✘ Error:[/red] Parent issue {parent} not found.")
             raise typer.Exit(code=1)
 
-    issue_id = core.create_issue_file(root_dir, type, title, parent, status=status)
+    issue_id = core.create_issue_file(issues_root, type, title, parent, status=status, dependencies=dependencies, related=related, subdir=subdir)
     console.print(f"[green]✔[/green] Created [bold]{issue_id}[/bold] in status [cyan]{status.value}[/cyan].")
 
 @app.command("open")
-def move_open(issue_id: str = typer.Argument(..., help="Issue ID to open")):
+def move_open(
+    issue_id: str = typer.Argument(..., help="Issue ID to open"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+):
     """Move issue to open status."""
     config = get_config()
-    root_dir = Path(config.paths.root)
+    issues_root = _resolve_issues_root(config, root)
     try:
-        core.update_issue_status(root_dir, issue_id, IssueStatus.OPEN)
+        core.update_issue_status(issues_root, issue_id, IssueStatus.OPEN)
         console.print(f"[green]▶[/green] Issue [bold]{issue_id}[/bold] moved to open.")
     except Exception as e:
         console.print(f"[red]✘ Error:[/red] {str(e)}")
@@ -50,37 +57,44 @@ def move_open(issue_id: str = typer.Argument(..., help="Issue ID to open")):
 @app.command("close")
 def move_close(
     issue_id: str = typer.Argument(..., help="Issue ID to close"),
-    solution: Optional[IssueSolution] = typer.Option(None, "--solution", "-s", help="Solution type")
+    solution: Optional[IssueSolution] = typer.Option(None, "--solution", "-s", help="Solution type"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
     """Close issue."""
     config = get_config()
-    root_dir = Path(config.paths.root)
+    issues_root = _resolve_issues_root(config, root)
     try:
-        core.update_issue_status(root_dir, issue_id, IssueStatus.CLOSED, solution=solution)
+        core.update_issue_status(issues_root, issue_id, IssueStatus.CLOSED, solution=solution)
         console.print(f"[dim]✔[/dim] Issue [bold]{issue_id}[/bold] closed.")
     except Exception as e:
         console.print(f"[red]✘ Error:[/red] {str(e)}")
         raise typer.Exit(code=1)
 
 @app.command("backlog")
-def move_backlog(issue_id: str = typer.Argument(..., help="Issue ID to backlog")):
+def move_backlog(
+    issue_id: str = typer.Argument(..., help="Issue ID to backlog"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+):
     """Move issue to backlog status."""
     config = get_config()
-    root_dir = Path(config.paths.root)
+    issues_root = _resolve_issues_root(config, root)
     try:
-        core.update_issue_status(root_dir, issue_id, IssueStatus.BACKLOG)
+        core.update_issue_status(issues_root, issue_id, IssueStatus.BACKLOG)
         console.print(f"[blue]💤[/blue] Issue [bold]{issue_id}[/bold] moved to backlog.")
     except Exception as e:
         console.print(f"[red]✘ Error:[/red] {str(e)}")
         raise typer.Exit(code=1)
 
 @app.command("cancel")
-def cancel(issue_id: str = typer.Argument(..., help="Issue ID to cancel")):
+def cancel(
+    issue_id: str = typer.Argument(..., help="Issue ID to cancel"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+):
     """Cancel issue."""
     config = get_config()
-    root_dir = Path(config.paths.root)
+    issues_root = _resolve_issues_root(config, root)
     try:
-        core.update_issue_status(root_dir, issue_id, IssueStatus.CLOSED, solution=IssueSolution.CANCELLED)
+        core.update_issue_status(issues_root, issue_id, IssueStatus.CLOSED, solution=IssueSolution.CANCELLED)
         console.print(f"[red]✘[/red] Issue [bold]{issue_id}[/bold] cancelled.")
     except Exception as e:
         console.print(f"[red]✘ Error:[/red] {str(e)}")
@@ -89,18 +103,29 @@ def cancel(issue_id: str = typer.Argument(..., help="Issue ID to cancel")):
 @app.command("scope")
 def scope(
     sprint: Optional[str] = typer.Option(None, "--sprint", help="Filter by Sprint ID"),
-    all: bool = typer.Option(False, "--all", "-a", help="Show all, otherwise show only open items")
+    all: bool = typer.Option(False, "--all", "-a", help="Show all, otherwise show only open items"),
+    recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursively scan subdirectories"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
     """Show progress tree."""
     config = get_config()
-    root_dir = Path(config.paths.root)
+    issues_root = _resolve_issues_root(config, root)
     
     issues = []
-    base_issue_dir = root_dir / "ISSUES"
-    for subdir in ["EPICS", "STORIES", "TASKS", "BUGS"]:
-        d = base_issue_dir / subdir
+    
+    for subdir in ["Epics", "Features", "Chores", "Fixes"]:
+        d = issues_root / subdir
         if d.exists():
-            for f in d.rglob("*.md"):
+            if recursive:
+                files = d.rglob("*.md")
+            else:
+                files = []
+                for status in ["open", "closed", "backlog"]:
+                    status_dir = d / status
+                    if status_dir.exists():
+                        files.extend(status_dir.glob("*.md"))
+            
+            for f in files:
                 meta = core.parse_issue(f)
                 if meta:
                     if sprint and meta.sprint != sprint:
@@ -111,8 +136,8 @@ def scope(
 
     tree = Tree(f"[bold blue]Monoco Issue Scope[/bold blue]")
     epics = sorted([i for i in issues if i.type == IssueType.EPIC], key=lambda x: x.id)
-    stories = [i for i in issues if i.type == IssueType.STORY]
-    tasks = [i for i in issues if i.type in [IssueType.TASK, IssueType.BUG]]
+    stories = [i for i in issues if i.type == IssueType.FEATURE]
+    tasks = [i for i in issues if i.type in [IssueType.CHORE, IssueType.FIX]]
 
     status_map = {IssueStatus.OPEN: "[blue]●[/blue]", IssueStatus.CLOSED: "[green]✔[/green]", IssueStatus.BACKLOG: "[dim]💤[/dim]"}
 
@@ -128,21 +153,32 @@ def scope(
     console.print(Panel(tree, expand=False))
 
 @app.command("lint")
-def lint():
+def lint(
+    recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursively scan subdirectories"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+):
     """Verify the integrity of the ISSUES directory (declarative check)."""
     config = get_config()
-    root_dir = Path(config.paths.root)
-    base_issue_dir = root_dir / "ISSUES"
+    issues_root = _resolve_issues_root(config, root)
     
     errors = []
     all_issue_ids = set()
     all_issues = []
 
     # 1. Collection
-    for subdir in ["EPICS", "STORIES", "TASKS", "BUGS"]:
-        d = base_issue_dir / subdir
+    for subdir in ["Epics", "Features", "Chores", "Fixes"]:
+        d = issues_root / subdir
         if d.exists():
-            for f in d.rglob("*.md"):
+            if recursive:
+                files = d.rglob("*.md")
+            else:
+                files = []
+                for status in ["open", "closed", "backlog"]:
+                    status_dir = d / status
+                    if status_dir.exists():
+                        files.extend(status_dir.glob("*.md"))
+
+            for f in files:
                 meta = core.parse_issue(f)
                 if meta:
                     all_issues.append((f, meta))
@@ -153,9 +189,16 @@ def lint():
     # 2. Validation
     for path, meta in all_issues:
         # A. Directory/Status Consistency
-        expected_subdir = meta.status.value
-        if path.parent.name != expected_subdir:
-            errors.append(f"[yellow]Placement Error:[/yellow] {meta.id} has status [cyan]{meta.status.value}[/cyan] but is in [dim]{path.parent.name}/[/dim]")
+        expected_status = meta.status.value
+        # Check if the file is anywhere under a directory named {status}
+        # We need to check relative path components from the Type directory.
+        # But we don't have the Type directory handy easily. 
+        # However, checking if expected_status is IN the path variants is a good enough heuristic
+        # provided it's under Issues/{Type}/...
+        
+        path_parts = path.parts
+        if expected_status not in path_parts:
+             errors.append(f"[yellow]Placement Error:[/yellow] {meta.id} has status [cyan]{expected_status}[/cyan] but is not under a [dim]{expected_status}/[/dim] directory.")
         
         # B. Solution Compliance
         if meta.status == IssueStatus.CLOSED and not meta.solution:
@@ -175,3 +218,21 @@ def lint():
             table.add_row(err)
         console.print(table)
         raise typer.Exit(code=1)
+
+def _resolve_issues_root(config, cli_root: Optional[str]) -> Path:
+    """
+    Resolve the absolute path to the issues directory.
+    Priority:
+    1. CLI Argument (--root)
+    2. Config (paths.issues) - can be absolute or relative to project root
+    3. Default (ISSUES) - handled by config default
+    """
+    if cli_root:
+        return Path(cli_root).resolve()
+    
+    # Config path handling
+    config_issues_path = Path(config.paths.issues)
+    if config_issues_path.is_absolute():
+        return config_issues_path
+    else:
+        return (Path(config.paths.root) / config_issues_path).resolve()

@@ -171,8 +171,8 @@ def init_cli(
             "key": project_key
         },
         "paths": {
-            "issues": "ISSUES",
-            "spikes": "SPIKES",
+            "issues": "Issues",
+            "spikes": ".references",
             "specs": "SPECS"
         }
     }
@@ -180,6 +180,37 @@ def init_cli(
     with open(project_config_path, "w") as f:
         yaml.dump(project_config, f, default_flow_style=False)
 
+
+    # 3. Scaffold Directories & Modules
+    
+    # Import Feature Cores locally to avoid circular deps if any (though setup is core)
+    from monoco.features.issue import core as issue_core
+    from monoco.features.spike import core as spike_core
+    from monoco.features.i18n import core as i18n_core
+    from monoco.features import skills
+
+    # Initialize Issues
+    issues_path = cwd / project_config["paths"]["issues"]
+    issue_core.init(issues_path)
+
+    # Initialize Spikes
+    spikes_name = project_config["paths"]["spikes"]
+    spike_core.init(cwd, spikes_name)
+
+    # Initialize I18n
+    i18n_core.init(cwd)
+
+    # Initialize Skills & Agent Docs
+    resources = [
+        issue_core.get_resources(),
+        spike_core.get_resources(),
+        i18n_core.get_resources()
+    ]
+    skills.init(cwd, resources)
+
     console.print(f"[green]✓ Project config initialized at {project_config_path}[/green]")
+
+
+
     console.print(f"[green]Access configured! issues will be created as {project_key}-XXX[/green]")
 

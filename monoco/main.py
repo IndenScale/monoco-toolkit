@@ -27,7 +27,9 @@ def info():
     Show toolkit information and current mode.
     """
     from pydantic import BaseModel
-    from monoco.core.config import settings
+    from monoco.core.config import get_config
+    
+    settings = get_config()
 
     class Status(BaseModel):
         version: str
@@ -53,9 +55,11 @@ def info():
 # Register Feature Modules
 from monoco.features.issue import commands as issue_cmd
 from monoco.features.spike import commands as spike_cmd
+from monoco.features.i18n import commands as i18n_cmd
 
 app.add_typer(issue_cmd.app, name="issue", help="Manage development issues")
 app.add_typer(spike_cmd.app, name="spike", help="Manage research spikes")
+app.add_typer(i18n_cmd.app, name="i18n", help="Manage documentation i18n")
 
 if __name__ == "__main__":
     app()
