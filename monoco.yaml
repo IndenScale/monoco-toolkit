@@ -1,0 +1,7 @@
+project:
+  name: "Monoco Toolkit"
+  key: "TOO"
+
+i18n:
+  source_lang: "en"
+  target_langs: ["zh"]

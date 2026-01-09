@@ -1,16 +1,17 @@
 ---
 parent: EPIC-0001
-id: STORY-0002
-type: story
+id: FEAT-0002
+type: feature
 status: closed
 title: "Implement Toolkit Core Infrastructure"
 created_at: 2026-01-08
+solution: implemented
 tags: [toolkit, infra, architecture]
 ---
 
 parent: EPIC-0001
 
-## STORY-0002: Toolkit Core Infrastructure
+## FEAT-0002: Toolkit Core Infrastructure
 
 ## Objective
 

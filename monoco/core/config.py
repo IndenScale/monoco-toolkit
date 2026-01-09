@@ -8,7 +8,7 @@ class PathsConfig(BaseModel):
     """Configuration for directory paths."""
     root: str = Field(default=".", description="Project root directory")
     issues: str = Field(default="ISSUES", description="Directory for issues")
-    spikes: str = Field(default="SPIKES", description="Directory for spikes/research")
+    spikes: str = Field(default=".references", description="Directory for spikes/research")
     specs: str = Field(default="SPECS", description="Directory for specifications")
 
 class CoreConfig(BaseModel):
@@ -21,6 +21,12 @@ class ProjectConfig(BaseModel):
     """Project identity configuration."""
     name: str = Field(default="Monoco Project", description="Project name")
     key: str = Field(default="MON", description="Project key/prefix for IDs")
+    spike_repos: Dict[str, str] = Field(default_factory=dict, description="Managed external research repositories (name -> url)")
+
+class I18nConfig(BaseModel):
+    """Configuration for internationalization."""
+    source_lang: str = Field(default="en", description="Source language code")
+    target_langs: list[str] = Field(default_factory=lambda: ["zh"], description="Target language codes")
 
 class MonocoConfig(BaseModel):
     """
@@ -30,6 +36,7 @@ class MonocoConfig(BaseModel):
     core: CoreConfig = Field(default_factory=CoreConfig)
     paths: PathsConfig = Field(default_factory=PathsConfig)
     project: ProjectConfig = Field(default_factory=ProjectConfig)
+    i18n: I18nConfig = Field(default_factory=I18nConfig)
 
     @staticmethod
     def _deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
