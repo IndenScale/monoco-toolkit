@@ -13,6 +13,7 @@ console = Console()
 @app.command("scan")
 def scan(
     root: str = typer.Option(None, "--root", help="Target root directory to scan. Defaults to the project root."),
+    limit: int = typer.Option(10, "--limit", help="Maximum number of missing files to display. Use 0 for unlimited."),
 ):
     """
     Scan the project for internationalization (i18n) status.
@@ -51,12 +52,28 @@ def scan(
     # Reporting
     coverage = (found_count / total_checks * 100) if total_checks > 0 else 100
     
-    table = Table(title="i18n Availability Report", box=None)
-    table.add_column("Source File", style="cyan")
-    table.add_column("Missing Languages", style="red")
-    table.add_column("Expected Paths", style="dim")
+    # Sort missing_map by file path for stable output
+    sorted_missing = sorted(missing_map.items(), key=lambda x: str(x[0]))
     
-    for f, langs in missing_map.items():
+    # Apply limit
+    total_missing_files = len(sorted_missing)
+    display_limit = limit if limit > 0 else total_missing_files
+    displayed_missing = sorted_missing[:display_limit]
+    
+    # Build table title with count info
+    table_title = "i18n Availability Report"
+    if total_missing_files > 0:
+        if display_limit < total_missing_files:
+            table_title = f"i18n Availability Report (Showing {display_limit} / {total_missing_files} missing files)"
+        else:
+            table_title = f"i18n Availability Report ({total_missing_files} missing files)"
+    
+    table = Table(title=table_title, box=None)
+    table.add_column("Source File", style="cyan", no_wrap=True, overflow="fold")
+    table.add_column("Missing Languages", style="red")
+    table.add_column("Expected Paths", style="dim", no_wrap=True, overflow="fold")
+    
+    for f, langs in displayed_missing:
         rel_path = f.relative_to(target_root)
         expected_paths = []
         for lang in langs:
@@ -71,11 +88,33 @@ def scan(
         
     console.print(table)
     
+    # Show hint if output was truncated
+    if display_limit < total_missing_files:
+        console.print(f"\n[dim]💡 Tip: Use [bold]--limit 0[/bold] to show all {total_missing_files} missing files.[/dim]\n")
+    
+    # Calculate partial vs complete missing
+    partial_missing = sum(1 for _, langs in sorted_missing if len(langs) < len(target_langs))
+    complete_missing = total_missing_files - partial_missing
+    
     status_color = "green" if coverage == 100 else "yellow"
     if coverage < 50:
         status_color = "red"
-        
-    summary = f"Total Source Files: {len(source_files)}\nTarget Languages: {len(target_langs)}\nTotal Checks: {total_checks}\nFound Translations: {found_count}\nCoverage: [{status_color}]{coverage:.1f}%[/{status_color}]"
+    
+    summary_lines = [
+        f"Total Source Files: {len(source_files)}",
+        f"Target Languages: {len(target_langs)}",
+        f"Total Checks: {total_checks}",
+        f"Found Translations: {found_count}",
+        f"Missing Files: {total_missing_files}",
+    ]
+    
+    if total_missing_files > 0:
+        summary_lines.append(f"  - Partial Missing: {partial_missing}")
+        summary_lines.append(f"  - Complete Missing: {complete_missing}")
+    
+    summary_lines.append(f"Coverage: [{status_color}]{coverage:.1f}%[/{status_color}]")
+    
+    summary = "\n".join(summary_lines)
     console.print(Panel(summary, title="I18N STATUS", expand=False))
 
     if missing_map:

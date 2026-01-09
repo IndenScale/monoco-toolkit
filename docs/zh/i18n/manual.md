@@ -47,32 +47,59 @@ monoco i18n scan
 **参数说明**:
 
 - `--root {path}`: 指定扫描的根目录。默认为项目根目录。
+- `--limit {number}`: 限制显示的缺失文档数量。默认为 10。设置为 0 表示显示全部。
 
 **输出解读**:
 
 扫描结束后，控制台将输出一份详细报告：
 
 - **Source File**: 未找到对应翻译的源文件路径。
-- **Missing Languages**: 缺失的具体语言版本 (如 `ZH`)。
+- **Missing Languages**: 缺失的具体语言版本 (如 `zh`)。
 - **Expected Paths**: 按照规范，系统期望找到翻译文件的路径。
+
+当缺失文档数量超过显示限制时，表格标题会显示"Showing X / Y missing files"，并在表格后提示使用 `--limit 0` 查看全部。
 
 **示例输出**:
 
 ```text
 Scanning i18n coverage in /path/to/project...
-Target Languages: ZH (Source: EN)
+Target Languages: zh (Source: en)
 
-i18n Availability Report
+i18n Availability Report (Showing 10 / 432 missing files)
 ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Source File      ┃ Missing Languages ┃ Expected Paths               ┃
 ┡━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ README.md        │ ZH                │ README_ZH.md                 │
-│ docs/foo.md      │ ZH                │ docs/zh/foo.md               │
+│ README.md        │ zh                │ README_ZH.md                 │
+│ docs/foo.md      │ zh                │ docs/zh/foo.md               │
 └──────────────────┴───────────────────┴──────────────────────────────┘
 
+💡 Tip: Use --limit 0 to show all 432 missing files.
+
 I18N STATUS
-Total Source Files: 10
-Coverage: 80.0%
+Total Source Files: 514
+Target Languages: 1
+Total Checks: 514
+Found Translations: 82
+Missing Files: 432
+  - Partial Missing: 0
+  - Complete Missing: 432
+Coverage: 16.0%
+```
+
+**使用技巧**:
+
+```bash
+# 默认显示最多 10 条缺失记录
+monoco i18n scan
+
+# 显示最多 5 条缺失记录
+monoco i18n scan --limit 5
+
+# 显示所有缺失记录
+monoco i18n scan --limit 0
+
+# 扫描特定目录
+monoco i18n scan --root ./docs
 ```
 
 ## 配置
