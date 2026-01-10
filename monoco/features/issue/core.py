@@ -188,39 +188,26 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
     target_status = status if status else current_status
     
     # Validation: For closing
-    current_solution = data.get("solution")
+    effective_solution = solution.value if solution else data.get("solution")
+    
     if target_status == IssueStatus.CLOSED:
-        if not solution and not current_solution:
+        if not effective_solution:
             raise ValueError(f"Closing an issue requires a solution. Please provide --solution or edit the file metadata.")
+            
+        current_data_stage = data.get('stage')
+        
+        # Policy: IMPLEMENTED requires REVIEW stage
+        if effective_solution == IssueSolution.IMPLEMENTED.value:
+            if current_data_stage != IssueStage.REVIEW.value:
+                raise ValueError(f"Lifecycle Policy: 'Implemented' issues must be submitted for review first.\nCurrent stage: {current_data_stage}\nAction: Run `monoco issue submit {issue_id}`.")
+
+        # Policy: No closing from DOING (General Safety)
+        if current_data_stage == IssueStage.DOING.value:
+             raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
             
     # Update Data
     if status:
         data['status'] = status.value
-    
-    # Validation: Close Guard (Anti-Shortcut)
-    if target_status == IssueStatus.CLOSED:
-        # Check current stage (from file content)
-        # Note: 'data' is already potentially modified with new status, 
-        # but we need to check the OLD stage unless stage is also being updated.
-        # If the user is passing "status=CLOSED", we must check what the stage WAS.
-        # Actually 'data' here is:
-        # 1. Loaded from file
-        # 2. 'status' is overwritten if passed.
-        # But 'stage' in data is still the old one UNLESS 'stage' arg was passed.
-        
-        current_data_stage = data.get('stage')
-        # If user explicitly sets stage (e.g. to done) while closing, we should allow it?
-        # Requirement: "CANNOT transition to closed IF stage: doing"
-        # The intent is to force them to 'review' or 'todo' first.
-        # So even if they say "close + done", if the previous state was "doing", should we block?
-        # Usage: monoco issue close <id> --solution implemented
-        # The command does NOT update stage. So data['stage'] is the old stage.
-        
-        if current_data_stage == IssueStage.DOING.value:
-             # Exception: Unless they are explicitly resetting stage to something else?
-             # command doesn't allow stage setting.
-             # So checking data['stage'] is sufficient.
-             raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
 
     if stage:
         data['stage'] = stage.value
