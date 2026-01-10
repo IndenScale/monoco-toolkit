@@ -135,7 +135,7 @@ async def get_issues():
     issues = list_issues(issues_root)
     return issues
 
-from monoco.features.issue.core import list_issues, create_issue_file, update_issue, find_issue_path, parse_issue
+from monoco.features.issue.core import list_issues, create_issue_file, update_issue, delete_issue_file, find_issue_path, parse_issue
 from monoco.features.issue.models import IssueType, IssueStatus, IssueSolution, IssueStage, IssueMetadata
 from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
@@ -224,6 +224,23 @@ async def update_issue_endpoint(issue_id: str, payload: UpdateIssueRequest):
         raise HTTPException(status_code=404, detail=f"Issue {issue_id} not found")
     except ValueError as e:
          raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/v1/issues/{issue_id}")
+async def delete_issue_endpoint(issue_id: str):
+    """
+    Delete an issue (physical removal).
+    """
+    settings = get_config()
+    root_path = Path(settings.paths.root).resolve()
+    issues_root = root_path / settings.paths.issues
+    
+    try:
+        delete_issue_file(issues_root, issue_id)
+        return {"status": "deleted", "id": issue_id}
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Issue {issue_id} not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

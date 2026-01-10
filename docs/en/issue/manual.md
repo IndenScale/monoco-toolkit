@@ -132,7 +132,35 @@ monoco issue scope [options]
 - **--sprint**: Filter by Sprint ID.
 - **--recursive, -r**: Recursively scan subdirectories.
 
-### 2.4 Lint
+### 2.4 Lifecycle
+
+#### Start
+
+Start working on an Issue.
+
+```bash
+monoco issue start <issue_id>
+```
+
+#### Submit
+
+Submit an Issue for review.
+
+```bash
+monoco issue submit <issue_id>
+```
+
+### 2.5 Maintenance
+
+#### Delete
+
+Physically remove an Issue file. **Warning**: This action is irreversible.
+
+```bash
+monoco issue delete <issue_id>
+```
+
+#### Lint
 
 Verify the integrity of the `Issues/` directory. Checks for ID collisions, file location errors, broken links, etc.
 

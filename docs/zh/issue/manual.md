@@ -132,7 +132,35 @@ monoco issue scope [options]
 - **--sprint**: 按 Sprint ID 过滤。
 - **--recursive, -r**: 递归扫描子目录。
 
-### 2.4 质量检查 (Lint)
+### 2.4 生命周期 (Lifecycle)
+
+#### 开始 (Start)
+
+开始处理一个 Issue (Stage -> Doing)。
+
+```bash
+monoco issue start <issue_id>
+```
+
+#### 提交 (Submit)
+
+提交 Issue 以供评审 (Stage -> Review)。
+
+```bash
+monoco issue submit <issue_id>
+```
+
+### 2.5 维护 (Maintenance)
+
+#### 删除 (Delete)
+
+物理删除 Issue 文件。**警告**: 此操作不可逆。
+
+```bash
+monoco issue delete <issue_id>
+```
+
+#### 质量检查 (Lint)
 
 验证 `Issues/` 目录的完整性。检查 ID 冲突、文件位置错误、死链等问题。
 

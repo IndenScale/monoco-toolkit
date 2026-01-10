@@ -40,3 +40,4 @@ description: Monoco Issue System 的官方技能定义。将 Issue 视为通用�
 2. **Transition**: `monoco issue open/close/backlog <id>`
 3. **View**: `monoco issue scope`
 4. **Validation**: `monoco issue lint`
+5. **Modification**: `monoco issue start/submit/delete <id>`

@@ -148,3 +148,7 @@ tags: [tag1, tag2]
    - `monoco issue scope [--sprint <id>] [--all]`: 以树状结构展示 Issue 进度。
 4. **校验 (Check)**:
    - `monoco issue lint`: 检查 ID 重复、物理位置不匹配、断链等完整性问题。
+5. **生命周期与维护 (Lifecycle & Maintenance)**:
+   - `monoco issue start <id>`: 开始开发。
+   - `monoco issue submit <id>`: 提交评审。
+   - `monoco issue delete <id>`: 物理删除任务。
