@@ -61,5 +61,8 @@ app.add_typer(issue_cmd.app, name="issue", help="Manage development issues")
 app.add_typer(spike_cmd.app, name="spike", help="Manage research spikes")
 app.add_typer(i18n_cmd.app, name="i18n", help="Manage documentation i18n")
 
+from monoco.daemon.commands import serve
+app.command(name="serve")(serve)
+
 if __name__ == "__main__":
     app()
