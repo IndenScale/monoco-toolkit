@@ -37,7 +37,17 @@ description: Monoco Issue System 的官方技能定义。将 Issue 视为通用�
 使用 `monoco issue`：
 
 1. **Create**: `monoco issue create <type> --title "..."`
+
+   - Params: `--parent <id>`, `--dependency <id>`, `--related <id>`, `--sprint <id>`, `--tags <tag>`
+
 2. **Transition**: `monoco issue open/close/backlog <id>`
+
 3. **View**: `monoco issue scope`
+
 4. **Validation**: `monoco issue lint`
+
 5. **Modification**: `monoco issue start/submit/delete <id>`
+
+6. **Commit**: `monoco issue commit` (Atomic commit for issue files)
+
+
