@@ -114,6 +114,8 @@ monoco issue commit [-m "message"]
 
 完成或关闭 Issue。
 
+**注意**: 若 Solution 为 `implemented`（默认），Issue 必须处于 `Review` 阶段（需先运行 `submit`）。
+
 ```bash
 monoco issue close <issue_id> [--solution <type>]
 ```
