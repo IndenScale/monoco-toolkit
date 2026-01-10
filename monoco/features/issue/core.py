@@ -2,8 +2,9 @@ import os
 import re
 import yaml
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
-from .models import IssueMetadata, IssueType, IssueStatus
+from typing import List, Dict, Optional, Tuple, Any
+from datetime import datetime
+from .models import IssueMetadata, IssueType, IssueStatus, IssueSolution, IssueStage
 
 PREFIX_MAP = {
     IssueType.EPIC: "EPIC",
@@ -57,7 +58,7 @@ def find_next_id(issue_type: IssueType, issues_root: Path) -> str:
     
     return f"{prefix}-{max_id + 1:04d}"
 
-def create_issue_file(issues_root: Path, issue_type: IssueType, title: str, parent: Optional[str] = None, status: IssueStatus = IssueStatus.OPEN, dependencies: List[str] = [], related: List[str] = [], subdir: Optional[str] = None) -> str:
+def create_issue_file(issues_root: Path, issue_type: IssueType, title: str, parent: Optional[str] = None, status: IssueStatus = IssueStatus.OPEN, dependencies: List[str] = [], related: List[str] = [], subdir: Optional[str] = None) -> IssueMetadata:
     issue_id = find_next_id(issue_type, issues_root)
     base_type_dir = get_issue_dir(issue_type, issues_root)
     target_dir = base_type_dir / status.value
@@ -74,7 +75,8 @@ def create_issue_file(issues_root: Path, issue_type: IssueType, title: str, pare
         title=title,
         parent=parent,
         dependencies=dependencies,
-        related=related
+        related=related,
+        opened_at=datetime.now() if status == IssueStatus.OPEN else None
     )
     
     yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
@@ -94,9 +96,7 @@ def create_issue_file(issues_root: Path, issue_type: IssueType, title: str, pare
     # We can post-process the line.
     
     yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
-    
-    # Hack: Force quotes around created_at date if it looks like YYYY-MM-DD
-    yaml_header = re.sub(r"created_at: ['\"]?(\d{4}-\d{2}-\d{2})['\"]?", r'created_at: "\1"', yaml_header)
+
 
     file_content = f"""---
 {yaml_header}---
@@ -112,7 +112,7 @@ def create_issue_file(issues_root: Path, issue_type: IssueType, title: str, pare
 - [ ] 
 """
     (target_dir / filename).write_text(file_content)
-    return issue_id
+    return metadata
 
 def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
     prefix = issue_id.split("-")[0].upper()
@@ -126,59 +126,136 @@ def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
         return f
     return None
 
-def update_issue_status(issues_root: Path, issue_id: str, new_status: IssueStatus, solution: Optional[IssueSolution] = None):
+def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus] = None, stage: Optional[IssueStage] = None, solution: Optional[IssueSolution] = None) -> IssueMetadata:
     path = find_issue_path(issues_root, issue_id)
     if not path:
         raise FileNotFoundError(f"Issue {issue_id} not found.")
         
-    current_meta = parse_issue(path)
-    if not current_meta:
-        raise ValueError(f"Could not parse metadata for {issue_id}")
-
-    # Validation: For closing, we MUST have a solution either in args or in file
-    if new_status == IssueStatus.CLOSED:
-        final_solution = solution or current_meta.solution
-        if not final_solution:
-            raise ValueError(f"Closing an issue requires a solution. Please provide --solution or edit the file metadata.")
-        solution = final_solution
-
+    # Read full content
     content = path.read_text()
     
-    # 1. Update status
-    new_content = re.sub(r"status: \w+", f"status: {new_status.value}", content)
-    
-    # 2. Update solution if provided or validated
-    if solution:
-        sol_val = solution.value
-        if "solution:" in new_content:
-            new_content = re.sub(r"solution:.*", f"solution: {sol_val}", new_content)
+    # Split Frontmatter and Body
+    match = re.search(r"^---(.*?)---\n(.*)$", content, re.DOTALL | re.MULTILINE)
+    if not match:
+        # Fallback
+        match_simple = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+        if match_simple:
+            yaml_str = match_simple.group(1)
+            body = content[match_simple.end():]
         else:
-            if "tags:" in new_content:
-                new_content = new_content.replace("tags:", f"solution: {sol_val}\ntags:")
-            else:
-                new_content = new_content.replace("---", f"solution: {sol_val}\n---", 1)
+            raise ValueError(f"Could not parse frontmatter for {issue_id}")
+    else:
+        yaml_str = match.group(1)
+        body = match.group(2)
 
+    try:
+        data = yaml.safe_load(yaml_str) or {}
+    except yaml.YAMLError:
+        raise ValueError(f"Invalid YAML metadata in {issue_id}")
+
+    current_status_str = data.get("status", "open") # default to open if missing?
+    # Normalize current status to Enum for comparison
+    try:
+        current_status = IssueStatus(current_status_str.lower())
+    except ValueError:
+        current_status = IssueStatus.OPEN
+
+    # Logic: Status Update
+    target_status = status if status else current_status
+    
+    # Validation: For closing
+    current_solution = data.get("solution")
+    if target_status == IssueStatus.CLOSED:
+        if not solution and not current_solution:
+            raise ValueError(f"Closing an issue requires a solution. Please provide --solution or edit the file metadata.")
+            
+    # Update Data
+    if status:
+        data['status'] = status.value
+    
+    # Validation: Close Guard (Anti-Shortcut)
+    if target_status == IssueStatus.CLOSED:
+        # Check current stage (from file content)
+        # Note: 'data' is already potentially modified with new status, 
+        # but we need to check the OLD stage unless stage is also being updated.
+        # If the user is passing "status=CLOSED", we must check what the stage WAS.
+        # Actually 'data' here is:
+        # 1. Loaded from file
+        # 2. 'status' is overwritten if passed.
+        # But 'stage' in data is still the old one UNLESS 'stage' arg was passed.
+        
+        current_data_stage = data.get('stage')
+        # If user explicitly sets stage (e.g. to done) while closing, we should allow it?
+        # Requirement: "CANNOT transition to closed IF stage: doing"
+        # The intent is to force them to 'review' or 'todo' first.
+        # So even if they say "close + done", if the previous state was "doing", should we block?
+        # Usage: monoco issue close <id> --solution implemented
+        # The command does NOT update stage. So data['stage'] is the old stage.
+        
+        if current_data_stage == IssueStage.DOING.value:
+             # Exception: Unless they are explicitly resetting stage to something else?
+             # command doesn't allow stage setting.
+             # So checking data['stage'] is sufficient.
+             raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
+
+    if stage:
+        data['stage'] = stage.value
+    if solution:
+        data['solution'] = solution.value
+    
+    # Lifecycle Hooks
+    # 1. Opened At: If transitioning to OPEN
+    if target_status == IssueStatus.OPEN and current_status != IssueStatus.OPEN:
+        # Only set if not already set? Or always reset?
+        # Let's set it if not present, or update it to reflect "Latest activation"
+        # FEAT-0012 says: "update opened_at to now"
+        data['opened_at'] = datetime.now()
+    
+    # 2. Backlog Push: Handled by IssueMetadata.validate_lifecycle (Status=Backlog -> Stage=None)
+    # 3. Closed: Handled by IssueMetadata.validate_lifecycle (Status=Closed -> Stage=Done, ClosedAt=Now)
+
+    # Touch updated_at
+    data['updated_at'] = datetime.now()
+    
+    # Re-hydrate through Model to trigger Logic (Stage, ClosedAt defaults)
+    try:
+        updated_meta = IssueMetadata(**data)
+    except Exception as e:
+        raise ValueError(f"Failed to validate updated metadata: {e}")
+        
+    # Serialize back
+    new_yaml = yaml.dump(updated_meta.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
+    
+    # Reconstruct File
+    match_header = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+    body_content = content[match_header.end():]
+    if body_content.startswith('\n'):
+        body_content = body_content[1:] 
+        
+    new_content = f"---\n{new_yaml}---\n{body_content}"
+    
     path.write_text(new_content)
     
-    # 3. Handle physical move
-    prefix = issue_id.split("-")[0].upper()
-    base_type_dir = get_issue_dir(REVERSE_PREFIX_MAP[prefix], issues_root)
-    
-    # Calculate target path while preserving subdirectory structure
-    try:
-        # Determine relative path from the Type root (e.g. "open/Component/Sub/STORY-123.md")
-        rel_path = path.relative_to(base_type_dir)
-        # Remove the first component (current status directory) to get the structural path
-        structure_path = Path(*rel_path.parts[1:]) if len(rel_path.parts) > 1 else Path(path.name)
-    except ValueError:
-        # Fallback if path logic fails
-        structure_path = Path(path.name)
-
-    target_path = base_type_dir / new_status.value / structure_path
+    # 3. Handle physical move if status changed
+    if status and status != current_status:
+        # Move file
+        prefix = issue_id.split("-")[0].upper()
+        base_type_dir = get_issue_dir(REVERSE_PREFIX_MAP[prefix], issues_root)
         
-    if path != target_path:
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        path.rename(target_path)
+        try:
+            rel_path = path.relative_to(base_type_dir)
+            # Remove the first component (current status directory)
+            structure_path = Path(*rel_path.parts[1:]) if len(rel_path.parts) > 1 else Path(path.name)
+        except ValueError:
+            structure_path = Path(path.name)
+
+        target_path = base_type_dir / target_status.value / structure_path
+            
+        if path != target_path:
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            path.rename(target_path)
+    
+    return updated_meta
         
 # Resources
 SKILL_CONTENT = """---
@@ -249,3 +326,19 @@ def get_resources() -> Dict[str, Any]:
         }
     }
 
+
+def list_issues(issues_root: Path) -> List[IssueMetadata]:
+    """
+    List all issues in the project.
+    """
+    issues = []
+    for issue_type in IssueType:
+        base_dir = get_issue_dir(issue_type, issues_root)
+        for status_dir in ["open", "backlog", "closed"]:
+            d = base_dir / status_dir
+            if d.exists():
+                for f in d.rglob("*.md"):
+                    meta = parse_issue(f)
+                    if meta:
+                        issues.append(meta)
+    return issues
