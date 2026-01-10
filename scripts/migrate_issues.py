@@ -37,13 +37,14 @@ ROOTS = [
 ]
 
 def migrate_root(root_path: Path):
-    issues_dir = root_path / "ISSUES"
+    issues_dir = root_path / "Issues"
+    # Fallback to check if ISSUES exists and migrate logic if needed, but for now we assume Issues
     if not issues_dir.exists():
-        issues_dir = root_path / "Issues"
-    
-    if not issues_dir.exists():
-        print(f"No ISSUES dir found in {root_path}")
-        return
+        if (root_path / "ISSUES").exists():
+             issues_dir = root_path / "ISSUES"
+        else:
+             print(f"No Issues dir found in {root_path}")
+             return
 
     print(f"Migrating {issues_dir}...")
 

@@ -134,7 +134,7 @@ monoco issue scope [options]
 
 ### 2.4 Lint
 
-Verify the integrity of the `ISSUES/` directory. Checks for ID collisions, file location errors, broken links, etc.
+Verify the integrity of the `Issues/` directory. Checks for ID collisions, file location errors, broken links, etc.
 
 ```bash
 monoco issue lint [--recursive]
@@ -149,7 +149,7 @@ monoco issue lint [--recursive]
 The Issue System adopts a **"Type-first, Status-second"** hierarchical storage strategy:
 
 ```text
-ISSUES/
+Issues/
 ├── Epics/
 │   ├── open/
 │   └── closed/

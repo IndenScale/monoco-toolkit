@@ -11,7 +11,7 @@ console = Console()
 
 def check_integrity(issues_root: Path, recursive: bool = False) -> List[str]:
     """
-    Verify the integrity of the ISSUES directory.
+    Verify the integrity of the Issues directory.
     Returns a list of error messages.
     """
     errors = []
@@ -66,7 +66,7 @@ def run_lint(issues_root: Path, recursive: bool = False):
     errors = check_integrity(issues_root, recursive)
     
     if not errors:
-        console.print("[green]✔[/green] Issue integrity check passed. No issues found.")
+        console.print("[green]✔[/green] Issue integrity check passed. No integrity errors found.")
     else:
         table = Table(title="Issue Integrity Issues", show_header=False, border_style="red")
         for err in errors:

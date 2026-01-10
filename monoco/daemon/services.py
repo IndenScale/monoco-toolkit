@@ -96,7 +96,7 @@ class GitMonitor:
 
 class IssueMonitor:
     """
-    Monitor the ISSUES directory for changes and broadcast update events.
+    Monitor the Issues directory for changes and broadcast update events.
     """
     def __init__(self, issues_root: Path, broadcaster: Broadcaster, poll_interval: float = 2.0):
         self.issues_root = issues_root
@@ -107,7 +107,7 @@ class IssueMonitor:
 
     async def scan(self):
         """
-        Scan for changes in the ISSUES directory.
+        Scan for changes in the Issues directory.
         """
         current_state: Dict[Path, float] = {}
         

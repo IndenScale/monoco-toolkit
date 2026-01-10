@@ -81,21 +81,21 @@ _(取代了 Bug 概念)_
 
 #### 作用域与分层 (Scoping)
 
-1. **全局层 (Global)**: 存放在项目根目录的 `ISSUES/`。仅关注跨产品的战略目标、系统级架构变动或 meta 问题。
-2. **产品层 (Product)**: 存放在具体产品目录内（如 `Chassis/ISSUES/`, `Toolkit/ISSUES/`）。关注该产品内部的功能迭代、Fix 和 Chore。
+1. **全局层 (Global)**: 存放在项目根目录的 `Issues/`。仅关注跨产品的战略目标、系统级架构变动或 meta 问题。
+2. **产品层 (Product)**: 存放在具体产品目录内（如 `Chassis/Issues/`, `Toolkit/Issues/`）。关注该产品内部的功能迭代、Fix 和 Chore。
 
 #### 目录结构
 
-Issue 按类型和状态分层存储于各自作用域的 `ISSUES/` 目录下：
+Issue 按类型和状态分层存储于各自作用域的 `Issues/` 目录下：
 
-- `ISSUES/{TYPE}/{STATUS}/`
+- `Issues/{CapitalizedPluralType}/{lowercase_status}/`
   - `{TYPE}`: `Epics`, `Features`, `Chores`, `Fixes`
   - `{STATUS}`: `open`, `backlog`, `closed`
 
 例如：
 
-- `Toolkit/ISSUES/Epics/open/EPIC-0001-monoco-toolkit.md` (产品级)
-- `ISSUES/Features/open/FEAT-0010-enhanced-init.md` (特性)
+- `Toolkit/Issues/Epics/open/EPIC-0001-monoco-toolkit.md` (产品级)
+- `Issues/Features/open/FEAT-0010-enhanced-init.md` (特性)
 
 #### 路径流转规则
 

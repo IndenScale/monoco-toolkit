@@ -208,7 +208,7 @@ def lint(
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursively scan subdirectories"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
-    """Verify the integrity of the ISSUES directory (declarative check)."""
+    """Verify the integrity of the Issues directory (declarative check)."""
     from . import linter
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
@@ -220,7 +220,7 @@ def _resolve_issues_root(config, cli_root: Optional[str]) -> Path:
     Priority:
     1. CLI Argument (--root)
     2. Config (paths.issues) - can be absolute or relative to project root
-    3. Default (ISSUES) - handled by config default
+    3. Default (Issues) - handled by config default
     """
     if cli_root:
         return Path(cli_root).resolve()
@@ -237,7 +237,7 @@ def commit(
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
     """
-    Atomic Commit: Validate (Lint) and Commit changes in the ISSUES directory only.
+    Atomic Commit: Validate (Lint) and Commit changes in the Issues directory only.
     Use this to persist your work.
     """
     config = get_config()
@@ -271,7 +271,7 @@ def commit(
         # Check status ONLY for issues_root
         # Path.relative_to might fail if issues_root is not subpath of repo root
         # Assuming repo root is parent of issues_root for now or we run from cwd
-        repo_root = issues_root.parent.parent # Standard guess: ISSUES/../.. -> ROOT
+        repo_root = issues_root.parent.parent # Standard guess: Issues/../.. -> ROOT
         # Better: use git root detection
         
         # Simple fallback: Use current working directory if it is a git repo

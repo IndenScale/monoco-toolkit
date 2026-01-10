@@ -134,7 +134,7 @@ monoco issue scope [options]
 
 ### 2.4 质量检查 (Lint)
 
-验证 `ISSUES/` 目录的完整性。检查 ID 冲突、文件位置错误、死链等问题。
+验证 `Issues/` 目录的完整性。检查 ID 冲突、文件位置错误、死链等问题。
 
 ```bash
 monoco issue lint [--recursive]
@@ -149,7 +149,7 @@ monoco issue lint [--recursive]
 Issue 系统采用 **"Type-first, Status-second"** (类型优先，状态次之) 的分层存储策略：
 
 ```text
-ISSUES/
+Issues/
 ├── Epics/
 │   ├── open/
 │   └── closed/

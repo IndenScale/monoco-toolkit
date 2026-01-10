@@ -66,7 +66,7 @@ Toolkit/
 ## Key Results (关键结果)
 
 - [x] 确保 Monoco CLI 工具箱的基础架构搭建。发布 v0.1.0，支持 Local Domain (Issue/Spike).
-- [ ] 所有开发任务通过 `ISSUES/` 目录管理，不再依赖散乱的 Markdown。
+- [ ] 所有开发任务通过 `Issues/` 目录管理，不再依赖散乱的 Markdown。
 - [ ] Agent 能够通过 CLI 自主读取上下文、创建 Issue 并提交代码。
 
 ## Child Stories (子故事)
