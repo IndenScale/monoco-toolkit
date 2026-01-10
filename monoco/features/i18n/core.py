@@ -3,7 +3,7 @@ import fnmatch
 from pathlib import Path
 from typing import List, Set, Dict, Any
 
-DEFAULT_EXCLUDES = [".git", ".reference", "dist", "build", "node_modules", "__pycache__", ".agent", ".mono", ".venv", "venv", "ENV", "ISSUES"]
+DEFAULT_EXCLUDES = [".git", ".reference", "dist", "build", "node_modules", "__pycache__", ".agent", ".mono", ".venv", "venv", "ENV", "Issues"]
 
 def load_gitignore_patterns(root: Path) -> List[str]:
     """Load patterns from .gitignore file."""

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 class PathsConfig(BaseModel):
     """Configuration for directory paths."""
     root: str = Field(default=".", description="Project root directory")
-    issues: str = Field(default="ISSUES", description="Directory for issues")
+    issues: str = Field(default="Issues", description="Directory for issues")
     spikes: str = Field(default=".references", description="Directory for spikes/research")
     specs: str = Field(default="SPECS", description="Directory for specifications")
 

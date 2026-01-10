@@ -16,7 +16,7 @@ client = TestClient(app)
 @pytest.fixture
 def mock_settings(tmp_path):
     # Setup temporary issues directory
-    issues_root = tmp_path / "ISSUES"
+    issues_root = tmp_path / "Issues"
     issues_root.mkdir()
     
     # Initialize standard structure
@@ -29,7 +29,7 @@ def mock_settings(tmp_path):
     mock_conf = MagicMock()
     # Mocking the nested structure: settings.paths.root
     mock_conf.paths.root = str(tmp_path)
-    mock_conf.paths.issues = "ISSUES"
+    mock_conf.paths.issues = "Issues"
     return mock_conf
 
 def test_create_issue(mock_settings):

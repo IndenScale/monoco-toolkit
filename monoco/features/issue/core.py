@@ -282,10 +282,11 @@ description: Monoco Issue System 的官方技能定义。将 Issue 视为通用�
 
 ## 准则 (Guidelines)
 
-### 目录结构
-`ISSUES/{TYPE}/{STATUS}/`
-- `{TYPE}`: `Epics`, `Features`, `Chores`, `Fixes`
-- `{STATUS}`: `open`, `backlog`, `closed`
+### 目录结构 (Strict Enforced)
+`Issues/{Type}/{status}/`
+
+- **Type Level (Capitalized Plural)**: `Epics`, `Features`, `Chores`, `Fixes`
+- **Status Level (Lowercase)**: `open`, `backlog`, `closed`
 
 ### 路径流转
 使用 `monoco issue`：
@@ -300,7 +301,7 @@ System for managing tasks using `monoco issue`.
 - **Create**: `monoco issue create <type> -t "Title"` (types: epic, feature, chore, fix)
 - **Status**: `monoco issue open|close|backlog <id>`
 - **Check**: `monoco issue lint` (Must run after manual edits)
-- **Structure**: Issues are stored in `ISSUES/`. Do not move them manually unless you update metadata."""
+- **Structure**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (e.g. `Issues/Features/open/`). Do not deviate."""
 
 def init(issues_root: Path):
     """Initialize the Issues directory structure."""
