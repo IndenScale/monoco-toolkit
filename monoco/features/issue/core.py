@@ -58,7 +58,28 @@ def find_next_id(issue_type: IssueType, issues_root: Path) -> str:
     
     return f"{prefix}-{max_id + 1:04d}"
 
-def create_issue_file(issues_root: Path, issue_type: IssueType, title: str, parent: Optional[str] = None, status: IssueStatus = IssueStatus.OPEN, dependencies: List[str] = [], related: List[str] = [], subdir: Optional[str] = None) -> IssueMetadata:
+def create_issue_file(
+    issues_root: Path, 
+    issue_type: IssueType, 
+    title: str, 
+    parent: Optional[str] = None, 
+    status: IssueStatus = IssueStatus.OPEN, 
+    dependencies: List[str] = [], 
+    related: List[str] = [], 
+    subdir: Optional[str] = None,
+    sprint: Optional[str] = None,
+    tags: List[str] = []
+) -> Tuple[IssueMetadata, Path]:
+    
+    # Validation
+    for dep_id in dependencies:
+        if not find_issue_path(issues_root, dep_id):
+            raise ValueError(f"Dependency issue {dep_id} not found.")
+            
+    for rel_id in related:
+        if not find_issue_path(issues_root, rel_id):
+            raise ValueError(f"Related issue {rel_id} not found.")
+
     issue_id = find_next_id(issue_type, issues_root)
     base_type_dir = get_issue_dir(issue_type, issues_root)
     target_dir = base_type_dir / status.value
@@ -76,6 +97,8 @@ def create_issue_file(issues_root: Path, issue_type: IssueType, title: str, pare
         parent=parent,
         dependencies=dependencies,
         related=related,
+        sprint=sprint,
+        tags=tags,
         opened_at=datetime.now() if status == IssueStatus.OPEN else None
     )
     
@@ -111,8 +134,9 @@ def create_issue_file(issues_root: Path, issue_type: IssueType, title: str, pare
 
 - [ ] 
 """
-    (target_dir / filename).write_text(file_content)
-    return metadata
+    file_path = target_dir / filename
+    file_path.write_text(file_content)
+    return metadata, file_path
 
 def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
     prefix = issue_id.split("-")[0].upper()
