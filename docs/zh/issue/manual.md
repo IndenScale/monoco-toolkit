@@ -71,6 +71,10 @@ monoco issue create <type> --title "标题" [options]
   - `<type>`: `epic`, `feature`, `chore`, `fix`
   - `--title, -t`: Issue 的标题。
   - `--parent, -p`: 父级 Issue ID (例如关联 Feature 到 Epic)。
+  - `--dependency, -d`: 依赖的 Issue ID。
+  - `--related, -r`: 关联的 Issue ID。
+  - `--sprint`: 指定 Sprint ID。
+  - `--tag`: 添加标签。
   - `--backlog`: 直接创建在 Backlog 状态（默认为 Open）。
   - `--subdir, -s`: 指定子目录（用于组织结构，例如 `Backend/Auth`）。
 
@@ -96,6 +100,14 @@ monoco issue open <issue_id>
 
 ```bash
 monoco issue backlog <issue_id>
+```
+
+#### 提交 (Commit)
+
+原子化提交 Issue 变更。此命令会自动进行 Lint 检查，并仅提交 Issues 目录下的变更。
+
+```bash
+monoco issue commit [-m "message"]
 ```
 
 #### 关闭 (Close)
