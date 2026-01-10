@@ -256,6 +256,16 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
             path.rename(target_path)
     
     return updated_meta
+
+def delete_issue_file(issues_root: Path, issue_id: str):
+    """
+    Physical removal of an issue file.
+    """
+    path = find_issue_path(issues_root, issue_id)
+    if not path:
+        raise FileNotFoundError(f"Issue {issue_id} not found.")
+    
+    path.unlink()
         
 # Resources
 SKILL_CONTENT = """---
@@ -294,6 +304,7 @@ description: Monoco Issue System 的官方技能定义。将 Issue 视为通用�
 2. **Transition**: `monoco issue open/close/backlog <id>`
 3. **View**: `monoco issue scope`
 4. **Validation**: `monoco issue lint`
+5. **Modification**: `monoco issue start/submit/delete <id>`
 """
 
 PROMPT_CONTENT = """### Issue Management
@@ -301,7 +312,9 @@ System for managing tasks using `monoco issue`.
 - **Create**: `monoco issue create <type> -t "Title"` (types: epic, feature, chore, fix)
 - **Status**: `monoco issue open|close|backlog <id>`
 - **Check**: `monoco issue lint` (Must run after manual edits)
-- **Structure**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (e.g. `Issues/Features/open/`). Do not deviate."""
+- **Lifecycle**: `monoco issue start|submit|delete <id>`
+- **Structure**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (e.g. `Issues/Features/open/`). Do not deviate.
+"""
 
 def init(issues_root: Path):
     """Initialize the Issues directory structure."""

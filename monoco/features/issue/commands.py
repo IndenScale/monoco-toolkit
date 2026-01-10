@@ -151,6 +151,21 @@ def cancel(
         console.print(f"[red]✘ Error:[/red] {str(e)}")
         raise typer.Exit(code=1)
 
+@app.command("delete")
+def delete(
+    issue_id: str = typer.Argument(..., help="Issue ID to delete"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+):
+    """Physically remove an issue file."""
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+    try:
+        core.delete_issue_file(issues_root, issue_id)
+        console.print(f"[red]✔[/red] Issue [bold]{issue_id}[/bold] physically deleted.")
+    except Exception as e:
+        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        raise typer.Exit(code=1)
+
 @app.command("scope")
 def scope(
     sprint: Optional[str] = typer.Option(None, "--sprint", help="Filter by Sprint ID"),

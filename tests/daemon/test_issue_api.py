@@ -111,3 +111,23 @@ def test_guard_condition_via_api(mock_settings):
         )
         assert patch_res.status_code == 400
         assert "Cannot close issue in progress" in patch_res.json()["detail"]
+
+def test_delete_issue(mock_settings):
+    """Test deleting an issue via API"""
+    with patch("monoco.daemon.app.get_config", return_value=mock_settings):
+        # 1. Create
+        payload = {
+            "type": "feature",
+            "title": "To Delete"
+        }
+        create_res = client.post("/api/v1/issues", json=payload)
+        issue_id = create_res.json()["id"]
+        
+        # 2. Delete
+        del_res = client.delete(f"/api/v1/issues/{issue_id}")
+        assert del_res.status_code == 200
+        assert del_res.json()["status"] == "deleted"
+        
+        # 3. Verify it's gone
+        get_res = client.get(f"/api/v1/issues/{issue_id}")
+        assert get_res.status_code == 404
