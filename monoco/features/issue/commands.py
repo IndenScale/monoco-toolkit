@@ -26,6 +26,8 @@ def create(
     dependencies: List[str] = typer.Option([], "--dependency", "-d", help="Issue dependency ID(s)"),
     related: List[str] = typer.Option([], "--related", "-r", help="Related Issue ID(s)"),
     subdir: Optional[str] = typer.Option(None, "--subdir", "-s", help="Subdirectory for organization (e.g. 'Backend/Auth')"),
+    sprint: Optional[str] = typer.Option(None, "--sprint", help="Sprint ID"),
+    tags: List[str] = typer.Option([], "--tag", help="Tags"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
     """Create a new issue."""
@@ -39,8 +41,30 @@ def create(
             console.print(f"[red]✘ Error:[/red] Parent issue {parent} not found.")
             raise typer.Exit(code=1)
 
-    issue = core.create_issue_file(issues_root, type, title, parent, status=status, dependencies=dependencies, related=related, subdir=subdir)
-    console.print(f"[green]✔[/green] Created [bold]{issue.id}[/bold] in status [cyan]{issue.status.value}[/cyan].")
+    try:
+        issue, path = core.create_issue_file(
+            issues_root, 
+            type, 
+            title, 
+            parent, 
+            status=status, 
+            dependencies=dependencies, 
+            related=related, 
+            subdir=subdir,
+            sprint=sprint,
+            tags=tags
+        )
+        
+        try:
+            rel_path = path.relative_to(Path.cwd())
+        except ValueError:
+            rel_path = path
+
+        console.print(f"[green]✔[/green] Created [bold]{issue.id}[/bold] in status [cyan]{issue.status.value}[/cyan].")
+        console.print(f"[dim]Path: {rel_path}[/dim]")
+    except ValueError as e:
+        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        raise typer.Exit(code=1)
 
 @app.command("open")
 def move_open(
