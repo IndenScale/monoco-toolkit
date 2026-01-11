@@ -27,6 +27,16 @@ class IssueSolution(str, Enum):
     WONTFIX = "wontfix"
     DUPLICATE = "duplicate"
 
+class IsolationType(str, Enum):
+    BRANCH = "branch"
+    WORKTREE = "worktree"
+
+class IssueIsolation(BaseModel):
+    type: IsolationType
+    ref: str  # Git branch name
+    path: Optional[str] = None  # Worktree path (relative to repo root or absolute)
+    created_at: datetime = Field(default_factory=datetime.now)
+
 class IssueMetadata(BaseModel):
     model_config = {"extra": "allow"}
     
@@ -45,6 +55,7 @@ class IssueMetadata(BaseModel):
     parent: Optional[str] = None
     sprint: Optional[str] = None
     solution: Optional[IssueSolution] = None
+    isolation: Optional[IssueIsolation] = None
     dependencies: List[str] = []
     related: List[str] = []
     tags: List[str] = []
