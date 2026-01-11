@@ -1,12 +1,22 @@
 ---
-parent: EPIC-0001
 id: FEAT-0004
 type: feature
 status: closed
-title: "Feature: Repo Management (Spike)"
-created_at: 2026-01-08
-tags: [toolkit, feature, repo, workspace]
+stage: done
+title: 'Feature: Repo Management (Spike)'
+created_at: '2026-01-08T00:00:00'
+opened_at: '2026-01-11T23:48:45.930778'
+updated_at: '2026-01-11T23:48:49.554833'
+closed_at: '2026-01-11T23:48:49.554866'
+parent: EPIC-0001
 solution: implemented
+dependencies: []
+related: []
+tags:
+- toolkit
+- feature
+- repo
+- workspace
 ---
 
 parent: EPIC-0001
@@ -35,3 +45,15 @@ parent: EPIC-0001
 - [x] Implement `remove` command: Update config and optionally delete dir.
 - [x] Implement `sync` command: Iterate repos, `clone` if missing, `git pull` if exists.
 - [x] Remove legacy CRUD commands from `monoco/features/spike/commands.py`.
+
+## Delivery
+<!-- Monoco Auto Generated -->
+**Commits (1)**:
+- `fb0c09b` feat(cli): implement optional branch/worktree isolation (FEAT-0004)
+
+**Touched Files (5)**:
+- `Issues/Features/open/FEAT-0004-optional-branch-isolation.md`
+- `Toolkit/monoco/core/git.py`
+- `Toolkit/monoco/features/issue/commands.py`
+- `Toolkit/monoco/features/issue/core.py`
+- `Toolkit/monoco/features/issue/models.py`

@@ -2,9 +2,16 @@
 id: EPIC-0001
 type: epic
 status: open
-title: "Monoco Toolkit: Agent Management Best Practices & Dogfooding"
+title: 'Monoco Toolkit: Agent Management Best Practices & Dogfooding'
 created_at: 2026-01-08
-tags: [toolkit, agent-native, dogfood, architecture]
+tags:
+- toolkit
+- agent-native
+- dogfood
+- architecture
+progress: 6/8
+files_count: 5
+stage: doing
 ---
 
 ## EPIC-0001: Monoco Toolkit & Dogfooding
