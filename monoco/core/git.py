@@ -40,30 +40,16 @@ def get_git_status(path: Path, subpath: Optional[str] = None) -> List[str]:
         if not line:
             continue
         # Porcelain format: XY PATH
-        # XY are two chars, then space.
-        # But if we used just split(), it handles spaces.
-        # Standard porcelain v1: "XY Path"
-        # Untracked: "?? Path"
-        # We can slice from 3.
         if len(line) > 3:
             path_str = line[3:]
-            # If renamed, "R  New -> Old" (Wait, "R" is recursive?)
-            # No, renames in --porcelain are "R  ORIG_PATH -> NEW_PATH"
-            # But let's assume simple add/mod for issues.
-            # Usually we don't do renames in this logic yet.
-            # Handle quotes? "?? \"path with spaces\""
             if path_str.startswith('"') and path_str.endswith('"'):
                 path_str = path_str[1:-1]
-                # TODO: unescape
             lines.append(path_str)
     return lines
 
 def git_add(path: Path, files: List[str]) -> None:
     if not files:
         return
-    # git add accepts multiple files, but if list is too long, it might fail on command line limit.
-    # For now, simplistic.
-    # If "." in files, careful.
     code, _, stderr = _run_git(["add"] + files, path)
     if code != 0:
         raise RuntimeError(f"Git add failed: {stderr}")
@@ -73,17 +59,10 @@ def git_commit(path: Path, message: str) -> str:
     if code != 0:
         raise RuntimeError(f"Git commit failed: {stderr}")
     
-    # Return commit hash
     code, hash_out, _ = _run_git(["rev-parse", "HEAD"], path)
     return hash_out.strip()
 
 def search_commits_by_message(path: Path, grep_pattern: str) -> List[Dict[str, str]]:
-    """
-    Search commits where message matches grep_pattern.
-    Returns list of {hash, subject, files: []}
-    """
-    # Format: %H|%s (Hash|Subject)
-    # --name-only lists files after metadata
     cmd = ["log", f"--grep={grep_pattern}", "--name-only", "--format=COMMIT:%H|%s"]
     code, stdout, stderr = _run_git(cmd, path)
     if code != 0:
@@ -113,11 +92,8 @@ def search_commits_by_message(path: Path, grep_pattern: str) -> List[Dict[str, s
     return commits
 
 def get_commit_stats(path: Path, commit_hash: str) -> Dict[str, int]:
-    """Get simple stats for a commit"""
     cmd = ["show", "--shortstat", "--format=", commit_hash]
     code, stdout, _ = _run_git(cmd, path)
-    # Output: " 1 file changed, 2 insertions(+), 1 deletion(-)"
-    # Parse simplisticly
     stats = {"files": 0, "insertions": 0, "deletions": 0}
     if code == 0 and stdout.strip():
         parts = stdout.strip().split(",")
@@ -130,3 +106,79 @@ def get_commit_stats(path: Path, commit_hash: str) -> Dict[str, int]:
             elif "deletion" in p:
                 stats["deletions"] = int(p.split()[0])
     return stats
+
+# --- Branch & Worktree Extensions ---
+
+def get_current_branch(path: Path) -> str:
+    code, stdout, _ = _run_git(["rev-parse", "--abbrev-ref", "HEAD"], path)
+    if code != 0:
+        return ""
+    return stdout.strip()
+
+def branch_exists(path: Path, branch_name: str) -> bool:
+    code, _, _ = _run_git(["rev-parse", "--verify", branch_name], path)
+    return code == 0
+
+def create_branch(path: Path, branch_name: str, checkout: bool = False):
+    cmd = ["checkout", "-b", branch_name] if checkout else ["branch", branch_name]
+    code, _, stderr = _run_git(cmd, path)
+    if code != 0:
+        raise RuntimeError(f"Failed to create branch {branch_name}: {stderr}")
+
+def checkout_branch(path: Path, branch_name: str):
+    code, _, stderr = _run_git(["checkout", branch_name], path)
+    if code != 0:
+        raise RuntimeError(f"Failed to checkout {branch_name}: {stderr}")
+
+def delete_branch(path: Path, branch_name: str, force: bool = False):
+    flag = "-D" if force else "-d"
+    code, _, stderr = _run_git(["branch", flag, branch_name], path)
+    if code != 0:
+        raise RuntimeError(f"Failed to delete branch {branch_name}: {stderr}")
+
+def get_worktrees(path: Path) -> List[Tuple[str, str, str]]:
+    """Returns list of (path, head, branch)"""
+    code, stdout, stderr = _run_git(["worktree", "list", "--porcelain"], path)
+    if code != 0:
+        raise RuntimeError(f"Failed to list worktrees: {stderr}")
+    
+    trees = []
+    current = {}
+    for line in stdout.splitlines():
+        if line.startswith("worktree "):
+            if current:
+                trees.append((current.get("worktree"), current.get("HEAD"), current.get("branch")))
+            current = {"worktree": line[9:].strip()}
+        elif line.startswith("HEAD "):
+            current["HEAD"] = line[5:].strip()
+        elif line.startswith("branch "):
+            current["branch"] = line[7:].strip()
+            
+    if current:
+        trees.append((current.get("worktree"), current.get("HEAD"), current.get("branch")))
+    return trees
+
+def worktree_add(path: Path, branch_name: str, worktree_path: Path):
+    # If branch doesn't exist, -b will create it. 
+    # Logic: git worktree add [-b <new_branch>] <path> <commit-ish>
+    
+    # We assume if branch_exists, use it. If not, create it.
+    cmd = ["worktree", "add"]
+    if not branch_exists(path, branch_name):
+        cmd.extend(["-b", branch_name])
+    
+    cmd.extend([str(worktree_path), branch_name])
+    
+    code, _, stderr = _run_git(cmd, path)
+    if code != 0:
+        raise RuntimeError(f"Failed to create worktree: {stderr}")
+
+def worktree_remove(path: Path, worktree_path: Path, force: bool = False):
+    cmd = ["worktree", "remove"]
+    if force:
+        cmd.append("--force")
+    cmd.append(str(worktree_path))
+    
+    code, _, stderr = _run_git(cmd, path)
+    if code != 0:
+        raise RuntimeError(f"Failed to remove worktree: {stderr}")

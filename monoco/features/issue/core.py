@@ -4,7 +4,8 @@ import yaml
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any, Set, Set
 from datetime import datetime
-from .models import IssueMetadata, IssueType, IssueStatus, IssueSolution, IssueStage, IssueDetail
+from .models import IssueMetadata, IssueType, IssueStatus, IssueSolution, IssueStage, IssueDetail, IsolationType, IssueIsolation
+from monoco.core import git
 
 PREFIX_MAP = {
     IssueType.EPIC: "EPIC",
@@ -14,6 +15,12 @@ PREFIX_MAP = {
 }
 
 REVERSE_PREFIX_MAP = {v: k for k, v in PREFIX_MAP.items()}
+
+def _get_slug(title: str) -> str:
+    slug = title.lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", slug)
+    slug = slug.strip("-")[:50]
+    return slug
 
 def get_issue_dir(issue_type: IssueType, issues_root: Path) -> Path:
     mapping = {
@@ -126,24 +133,9 @@ def create_issue_file(
     )
     
     yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
-    slug = title.lower()
-    slug = re.sub(r"[^a-z0-9]+", "-", slug)
-    slug = slug.strip("-")[:50]
+    slug = _get_slug(title)
     filename = f"{issue_id}-{slug}.md"
     
-    # Force created_at to be treated as string with quotes if needed, 
-    # but standard YAML is fine. To ensure consistency, we can rely on Pydantic's JSON serialization
-    # then load to dict for yaml dump. 
-    # To fix "date quoting issues", we can force the dumper to quote the date string.
-    
-    # Custom representer to ensure dates are strings (if they aren't already) and maybe quoted?
-    # Actually, the simplest way is to let YAML handle it, but if users see issues, 
-    # it might be that they want explicit quotes '2026-01-09'.
-    # We can post-process the line. 
-    
-    yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
-
-
     file_content = f"""
 ---
 {yaml_header}---
@@ -161,6 +153,285 @@ def create_issue_file(
     file_path = target_dir / filename
     file_path.write_text(file_content)
     return metadata, file_path
+
+def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
+    prefix = issue_id.split("-")[0].upper()
+    issue_type = REVERSE_PREFIX_MAP.get(prefix)
+    if not issue_type:
+        return None
+        
+    base_dir = get_issue_dir(issue_type, issues_root)
+    # Search in all status subdirs recursively
+    for f in base_dir.rglob(f"{issue_id}-*.md"):
+        return f
+    return None
+
+def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus] = None, stage: Optional[IssueStage] = None, solution: Optional[IssueSolution] = None) -> IssueMetadata:
+    path = find_issue_path(issues_root, issue_id)
+    if not path:
+        raise FileNotFoundError(f"Issue {issue_id} not found.")
+        
+    # Read full content
+    content = path.read_text()
+    
+    # Split Frontmatter and Body
+    match = re.search(r"^---(.*?)---\n(.*)$\n", content, re.DOTALL | re.MULTILINE)
+    if not match:
+        # Fallback
+        match_simple = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+        if match_simple:
+            yaml_str = match_simple.group(1)
+            body = content[match_simple.end():]
+        else:
+            raise ValueError(f"Could not parse frontmatter for {issue_id}")
+    else:
+        yaml_str = match.group(1)
+        body = match.group(2)
+
+    try:
+        data = yaml.safe_load(yaml_str) or {}
+    except yaml.YAMLError:
+        raise ValueError(f"Invalid YAML metadata in {issue_id}")
+
+    current_status_str = data.get("status", "open") # default to open if missing?
+    # Normalize current status to Enum for comparison
+    try:
+        current_status = IssueStatus(current_status_str.lower())
+    except ValueError:
+        current_status = IssueStatus.OPEN
+
+    # Logic: Status Update
+    target_status = status if status else current_status
+    
+    # Validation: For closing
+    effective_solution = solution.value if solution else data.get("solution")
+    
+    # Policy: Prevent Backlog -> Review
+    if stage == IssueStage.REVIEW and current_status == IssueStatus.BACKLOG:
+         raise ValueError(f"Lifecycle Policy: Cannot submit Backlog issue directly. Run `monoco issue pull {issue_id}` first.")
+
+    if target_status == IssueStatus.CLOSED:
+        if not effective_solution:
+            raise ValueError(f"Closing an issue requires a solution. Please provide --solution or edit the file metadata.")
+            
+        current_data_stage = data.get('stage')
+        
+        # Policy: IMPLEMENTED requires REVIEW stage
+        if effective_solution == IssueSolution.IMPLEMENTED.value:
+            if current_data_stage != IssueStage.REVIEW.value:
+                raise ValueError(f"Lifecycle Policy: 'Implemented' issues must be submitted for review first.\nCurrent stage: {current_data_stage}\nAction: Run `monoco issue submit {issue_id}`.")
+
+        # Policy: No closing from DOING (General Safety)
+        if current_data_stage == IssueStage.DOING.value:
+             raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
+            
+    # Update Data
+    if status:
+        data['status'] = status.value
+
+    if stage:
+        data['stage'] = stage.value
+    if solution:
+        data['solution'] = solution.value
+    
+    # Lifecycle Hooks
+    # 1. Opened At: If transitioning to OPEN
+    if target_status == IssueStatus.OPEN and current_status != IssueStatus.OPEN:
+        # Only set if not already set? Or always reset?
+        # Let's set it if not present, or update it to reflect "Latest activation"
+        # FEAT-0012 says: "update opened_at to now"
+        data['opened_at'] = datetime.now()
+    
+    # 2. Backlog Push: Handled by IssueMetadata.validate_lifecycle (Status=Backlog -> Stage=None)
+    # 3. Closed: Handled by IssueMetadata.validate_lifecycle (Status=Closed -> Stage=Done, ClosedAt=Now)
+
+    # Touch updated_at
+    data['updated_at'] = datetime.now()
+    
+    # Re-hydrate through Model to trigger Logic (Stage, ClosedAt defaults)
+    try:
+        updated_meta = IssueMetadata(**data)
+    except Exception as e:
+        raise ValueError(f"Failed to validate updated metadata: {e}")
+        
+    # Serialize back
+    new_yaml = yaml.dump(updated_meta.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
+    
+    # Reconstruct File
+    match_header = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+    if not match_header:
+        body_content = body
+    else:
+        body_content = content[match_header.end():]
+    
+    if body_content.startswith('\n'):
+        body_content = body_content[1:] 
+        
+    new_content = f"---\n{new_yaml}---\n{body_content}"
+    
+    path.write_text(new_content)
+    
+    # 3. Handle physical move if status changed
+    if status and status != current_status:
+        # Move file
+        prefix = issue_id.split("-")[0].upper()
+        base_type_dir = get_issue_dir(REVERSE_PREFIX_MAP[prefix], issues_root)
+        
+        try:
+            rel_path = path.relative_to(base_type_dir)
+            structure_path = Path(*rel_path.parts[1:]) if len(rel_path.parts) > 1 else Path(path.name)
+        except ValueError:
+            structure_path = Path(path.name)
+
+        target_path = base_type_dir / target_status.value / structure_path
+            
+        if path != target_path:
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            path.rename(target_path)
+
+    # Hook: Recursive Aggregation (FEAT-0003)
+    if updated_meta.parent:
+        recalculate_parent(issues_root, updated_meta.parent)
+        
+    return updated_meta
+
+def start_issue_isolation(issues_root: Path, issue_id: str, mode: IsolationType, project_root: Path) -> IssueMetadata:
+    """
+    Start physical isolation for an issue (Branch or Worktree).
+    """
+    path = find_issue_path(issues_root, issue_id)
+    if not path:
+        raise FileNotFoundError(f"Issue {issue_id} not found.")
+
+    issue = parse_issue(path)
+    
+    # Idempotency / Conflict Check
+    if issue.isolation:
+        if issue.isolation.type == mode:
+             # Already isolated in same mode, maybe just switch context?
+             # For now, we just warn or return.
+             # If branch exists, we make sure it's checked out in CLI layer maybe?
+             # But here we assume we want to setup metadata.
+             pass
+        else:
+             raise ValueError(f"Issue {issue_id} is already isolated as '{issue.isolation.type}'. Please cleanup first.")
+
+    slug = _get_slug(issue.title)
+    branch_name = f"feat/{issue_id.lower()}-{slug}" 
+    
+    isolation_meta = None
+
+    if mode == IsolationType.BRANCH:
+        if not git.branch_exists(project_root, branch_name):
+            git.create_branch(project_root, branch_name, checkout=True)
+        else:
+            # Check if we are already on it? 
+            # If not, checkout.
+            current = git.get_current_branch(project_root)
+            if current != branch_name:
+                git.checkout_branch(project_root, branch_name)
+        
+        isolation_meta = IssueIsolation(type=IsolationType.BRANCH, ref=branch_name)
+
+    elif mode == IsolationType.WORKTREE:
+        wt_path = project_root / ".monoco" / "worktrees" / f"{issue_id.lower()}-{slug}"
+        
+        # Check if worktree exists physically
+        if wt_path.exists():
+             # Check if valid git worktree?
+             pass
+        else:
+             wt_path.parent.mkdir(parents=True, exist_ok=True)
+             git.worktree_add(project_root, branch_name, wt_path)
+             
+        isolation_meta = IssueIsolation(type=IsolationType.WORKTREE, ref=branch_name, path=str(wt_path))
+    
+    # Persist Metadata
+    # We load raw, update isolation field, save.
+    content = path.read_text()
+    match = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+    if match:
+        yaml_str = match.group(1)
+        data = yaml.safe_load(yaml_str) or {}
+        
+        data['isolation'] = isolation_meta.model_dump(mode='json')
+        # Also ensure stage is DOING (logic link)
+        data['stage'] = IssueStage.DOING.value
+        data['updated_at'] = datetime.now()
+
+        new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
+        new_content = content.replace(match.group(1), "\n" + new_yaml)
+        path.write_text(new_content)
+        
+        return IssueMetadata(**data)
+        
+    return issue
+
+def prune_issue_resources(issues_root: Path, issue_id: str, force: bool, project_root: Path) -> List[str]:
+    """
+    Cleanup physical resources. Returns list of actions taken.
+    """
+    path = find_issue_path(issues_root, issue_id)
+    if not path:
+        # Issue might be deleted?
+        # If we can't find issue, we can't read metadata to know what to prune.
+        # We rely on CLI to pass context or we fail.
+        raise FileNotFoundError(f"Issue {issue_id} not found.")
+        
+    issue = parse_issue(path)
+    deleted_items = []
+
+    if not issue.isolation:
+        return []
+
+    if issue.isolation.type == IsolationType.BRANCH:
+        branch = issue.isolation.ref
+        current = git.get_current_branch(project_root)
+        if current == branch:
+             raise RuntimeError(f"Cannot delete active branch '{branch}'. Please checkout 'main' first.")
+        
+        if git.branch_exists(project_root, branch):
+            git.delete_branch(project_root, branch, force=force)
+            deleted_items.append(f"branch:{branch}")
+            
+    elif issue.isolation.type == IsolationType.WORKTREE:
+        wt_path_str = issue.isolation.path
+        if wt_path_str:
+            wt_path = Path(wt_path_str)
+            # Normalize path if relative
+            if not wt_path.is_absolute():
+                wt_path = project_root / wt_path
+            
+            if wt_path.exists():
+                git.worktree_remove(project_root, wt_path, force=force)
+                deleted_items.append(f"worktree:{wt_path.name}")
+            
+            # Also delete the branch associated? 
+            # Worktree create makes a branch. When removing worktree, branch remains.
+            # Usually we want to remove the branch too if it was created for this issue.
+            branch = issue.isolation.ref
+            if branch and git.branch_exists(project_root, branch):
+                 # We can't delete branch if it is checked out in the worktree we just removed?
+                 # git worktree remove unlocks the branch.
+                 git.delete_branch(project_root, branch, force=force)
+                 deleted_items.append(f"branch:{branch}")
+
+    # Clear Metadata
+    content = path.read_text()
+    match = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+    if match:
+        yaml_str = match.group(1)
+        data = yaml.safe_load(yaml_str) or {}
+        
+        if 'isolation' in data:
+            del data['isolation']
+            data['updated_at'] = datetime.now()
+            
+            new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
+            new_content = content.replace(match.group(1), "\n" + new_yaml)
+            path.write_text(new_content)
+            
+    return deleted_items
 
 def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
     prefix = issue_id.split("-")[0].upper()

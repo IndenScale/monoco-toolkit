@@ -9,7 +9,7 @@ import typer
 
 from monoco.core.config import get_config
 from monoco.core.output import print_output
-from .models import IssueType, IssueStatus, IssueSolution, IssueStage
+from .models import IssueType, IssueStatus, IssueSolution, IssueStage, IsolationType
 from . import core
 
 app = typer.Typer(help="Agent-Native Issue Management.")
@@ -87,14 +87,39 @@ def move_open(
 @app.command("start")
 def start(
     issue_id: str = typer.Argument(..., help="Issue ID to start"),
+    branch: bool = typer.Option(False, "--branch", "-b", help="Start in a new git branch"),
+    worktree: bool = typer.Option(False, "--worktree", "-w", help="Start in a new git worktree"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
     """Start working on an issue (Stage -> Doing)."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
+    project_root = _resolve_project_root(config)
+
+    if branch and worktree:
+         console.print("[red]Error:[/red] Cannot specify both --branch and --worktree.")
+         raise typer.Exit(code=1)
+
     try:
         # Implicitly ensure status is Open
         core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DOING)
+        
+        if branch:
+            try:
+                meta = core.start_issue_isolation(issues_root, issue_id, IsolationType.BRANCH, project_root)
+                console.print(f"[green]✔[/green] Switched to branch [bold]{meta.isolation.ref}[/bold]")
+            except Exception as e:
+                console.print(f"[red]Error:[/red] Failed to create branch: {e}")
+                raise typer.Exit(code=1)
+                
+        if worktree:
+            try:
+                meta = core.start_issue_isolation(issues_root, issue_id, IsolationType.WORKTREE, project_root)
+                console.print(f"[green]✔[/green] Created worktree at [bold]{meta.isolation.path}[/bold]")
+            except Exception as e:
+                console.print(f"[red]Error:[/red] Failed to create worktree: {e}")
+                raise typer.Exit(code=1)
+
         console.print(f"[green]🚀[/green] Issue [bold]{issue_id}[/bold] started.")
     except Exception as e:
         console.print(f"[red]✘ Error:[/red] {str(e)}")
@@ -103,23 +128,34 @@ def start(
 @app.command("submit")
 def submit(
     issue_id: str = typer.Argument(..., help="Issue ID to submit"),
+    prune: bool = typer.Option(False, "--prune", help="Delete branch/worktree after submit"),
+    force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
     """Submit issue for review (Stage -> Review) and generate delivery report."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
+    project_root = _resolve_project_root(config)
     try:
         # Implicitly ensure status is Open
         core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.REVIEW)
         console.print(f"[green]🚀[/green] Issue [bold]{issue_id}[/bold] submitted for review.")
         
         # Delivery Report Generation
-        project_root = _resolve_project_root(config)
         try:
              core.generate_delivery_report(issues_root, issue_id, project_root)
              console.print(f"[dim]✔ Delivery report appended to issue file.[/dim]")
         except Exception as e:
              console.print(f"[yellow]⚠ Failed to generate delivery report: {e}[/yellow]")
+        
+        if prune:
+            try:
+                deleted = core.prune_issue_resources(issues_root, issue_id, force, project_root)
+                if deleted:
+                    console.print(f"[dim]✔ Pruned resources: {', '.join(deleted)}[/dim]")
+            except Exception as e:
+                console.print(f"[red]Prune Error:[/red] {e}")
+                raise typer.Exit(code=1)
              
     except Exception as e:
         console.print(f"[red]✘ Error:[/red] {str(e)}")
@@ -129,14 +165,27 @@ def submit(
 def move_close(
     issue_id: str = typer.Argument(..., help="Issue ID to close"),
     solution: Optional[IssueSolution] = typer.Option(None, "--solution", "-s", help="Solution type"),
+    prune: bool = typer.Option(False, "--prune", help="Delete branch/worktree after close"),
+    force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
     """Close issue."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
+    project_root = _resolve_project_root(config)
     try:
         core.update_issue(issues_root, issue_id, status=IssueStatus.CLOSED, solution=solution)
         console.print(f"[dim]✔[/dim] Issue [bold]{issue_id}[/bold] closed.")
+        
+        if prune:
+            try:
+                deleted = core.prune_issue_resources(issues_root, issue_id, force, project_root)
+                if deleted:
+                    console.print(f"[dim]✔ Pruned resources: {', '.join(deleted)}[/dim]")
+            except Exception as e:
+                console.print(f"[red]Prune Error:[/red] {e}")
+                raise typer.Exit(code=1)
+
     except Exception as e:
         console.print(f"[red]✘ Error:[/red] {str(e)}")
         raise typer.Exit(code=1)
