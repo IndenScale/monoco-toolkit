@@ -213,6 +213,10 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
     # Validation: For closing
     effective_solution = solution.value if solution else data.get("solution")
     
+    # Policy: Prevent Backlog -> Review
+    if stage == IssueStage.REVIEW and current_status == IssueStatus.BACKLOG:
+         raise ValueError(f"Lifecycle Policy: Cannot submit Backlog issue directly. Run `monoco issue pull {issue_id}` first.")
+
     if target_status == IssueStatus.CLOSED:
         if not effective_solution:
             raise ValueError(f"Closing an issue requires a solution. Please provide --solution or edit the file metadata.")
