@@ -146,7 +146,20 @@ monoco issue scope [options]
 - **--sprint**: 按 Sprint ID 过滤。
 - **--recursive, -r**: 递归扫描子目录。
 
-### 2.4 生命周期 (Lifecycle)
+### 2.4 列表视图 (List)
+
+以表格形式列出平铺的 Issue，适合状态跟踪和筛选。
+
+```bash
+monoco issue list [options]
+```
+
+- **--status, -s**: 筛选状态 (open, backlog, closed, all)。默认为 open。
+- **--type, -t**: 筛选类型 (feature, fix, chore, epic)。
+- **--stage**: 筛选阶段 (todo, doing, review, done)。
+- **--root**: 指定工作区根目录。
+
+### 2.5 生命周期 (Lifecycle)
 
 #### 开始 (Start)
 
@@ -180,6 +193,25 @@ monoco issue delete <issue_id>
 
 ```bash
 monoco issue lint [--recursive]
+```
+
+### 2.6 多工作区支持 (Workspace Support)
+
+自 `FEAT-0012` 起，CLI 支持多项目工作区（Monorepo 或多根目录结构）的智能感知。
+
+- **智能定位**:
+  - `monoco issue list --root ./MyProject` 会自动探测并定位到 `./MyProject/Issues`，无需手动指定 `Issues/` 后缀。
+- **工作区感知**:
+  - 若在包含多个 Monoco 项目的根目录下运行命令，CLI 会自动扫描并提示所有可用项目，防止误操作。
+- **`--root` 参数**:
+  - 用途增强：不仅是指定路径，更是指定"上下文"。支持绝对路径或相对路径。
+
+```bash
+# 在 Workspace 根目录操作 Toolkit 项目
+monoco issue list --root Toolkit
+
+# 在项目内部任意位置操作
+monoco issue list --root .
 ```
 
 ---

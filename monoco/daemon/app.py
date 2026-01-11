@@ -1,10 +1,13 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 import asyncio
 import logging
-from monoco.daemon.services import Broadcaster, GitMonitor, IssueMonitor
+import os
+from typing import Optional, List, Dict
+from monoco.daemon.services import Broadcaster, GitMonitor, ProjectManager
+from fastapi import FastAPI, Request, HTTPException, Query
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,34 +26,30 @@ Monoco Daemon Process
 # Service Instances
 broadcaster = Broadcaster()
 git_monitor = GitMonitor(broadcaster)
-# IssueMonitor needs config, will be initialized in lifespan or lazily?
-# Better to initialize lazily or inside lifespan to access config.
-issue_monitor: IssueMonitor | None = None
+project_manager: ProjectManager | None = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Monoco Daemon services...")
     
-    # Init Issue Monitor
-    settings = get_config()
-    root_path = Path(settings.paths.root).resolve()
-    issues_root = root_path / settings.paths.issues
+    global project_manager
+    # Use MONOCO_SERVER_ROOT if set, otherwise CWD
+    env_root = os.getenv("MONOCO_SERVER_ROOT")
+    workspace_root = Path(env_root) if env_root else Path.cwd()
+    logger.info(f"Workspace Root: {workspace_root}")
+    project_manager = ProjectManager(workspace_root, broadcaster)
     
-    global issue_monitor
-    issue_monitor = IssueMonitor(issues_root, broadcaster)
-    
+    await project_manager.start_all()
     monitor_task = asyncio.create_task(git_monitor.start())
-    issue_monitor_task = asyncio.create_task(issue_monitor.start())
     
     yield
     # Shutdown
     logger.info("Shutting down Monoco Daemon services...")
     git_monitor.stop()
-    if issue_monitor:
-        issue_monitor.stop()
+    if project_manager:
+        project_manager.stop_all()
     await monitor_task
-    await issue_monitor_task
     
 app = FastAPI(
     title="Monoco Daemon",
@@ -60,6 +59,24 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan,
 )
+
+def get_project_or_404(project_id: Optional[str] = None):
+    if not project_manager:
+        raise HTTPException(status_code=503, detail="Daemon not fully initialized")
+    
+    # If project_id is not provided, try to use the first available project (default behavior)
+    if not project_id:
+        projects = list(project_manager.projects.values())
+        if not projects:
+             # Fallback to legacy single-project mode if no sub-projects found? 
+             # Or maybe ProjectManager scan logic already covers CWD as a project.
+             raise HTTPException(status_code=404, detail="No projects found")
+        return projects[0]
+
+    project = project_manager.get_project(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail=f"Project {project_id} not found")
+    return project
 
 # CORS Configuration
 # Kanban may run on different ports (e.g. localhost:3000, tauri://localhost)
@@ -78,15 +95,25 @@ async def health_check():
     """
     return {"status": "ok", "component": "monoco-daemon"}
 
+@app.get("/api/v1/projects")
+async def list_projects():
+    """
+    List all discovered projects.
+    """
+    if not project_manager:
+        return []
+    return project_manager.list_projects()
+
 @app.get("/api/v1/info")
-async def get_project_info():
+async def get_project_info(project_id: Optional[str] = None):
     """
     Metadata about the current Monoco project.
     """
-    # TODO: Connect to actual Monoco Config
+    project = get_project_or_404(project_id)
     current_hash = await git_monitor.get_head_hash()
     return {
-        "name": "Monoco",
+        "name": project.name,
+        "id": project.id,
         "version": "0.1.0",
         "mode": "daemon",
         "head": current_hash
@@ -123,58 +150,56 @@ async def sse_endpoint(request: Request):
     return EventSourceResponse(event_generator())
 
 @app.get("/api/v1/issues")
-async def get_issues():
+async def get_issues(project_id: Optional[str] = None):
     """
     List all issues in the project.
     """
-    settings = get_config()
-    # Resolve absolute path for robustness, defaulting to CWD if root is "."
-    root_path = Path(settings.paths.root).resolve()
-    issues_root = root_path / settings.paths.issues
-    
-    issues = list_issues(issues_root)
+    project = get_project_or_404(project_id)
+    issues = list_issues(project.issues_root)
     return issues
 
-from monoco.features.issue.core import list_issues, create_issue_file, update_issue, delete_issue_file, find_issue_path, parse_issue
-from monoco.features.issue.models import IssueType, IssueStatus, IssueSolution, IssueStage, IssueMetadata
+from monoco.features.issue.core import list_issues, create_issue_file, update_issue, delete_issue_file, find_issue_path, parse_issue, get_board_data, parse_issue_detail, update_issue_content
+from monoco.features.issue.models import IssueType, IssueStatus, IssueSolution, IssueStage, IssueMetadata, IssueDetail
+from monoco.daemon.models import CreateIssueRequest, UpdateIssueRequest, UpdateIssueContentRequest
+from monoco.daemon.stats import calculate_dashboard_stats, DashboardStats
 from fastapi import FastAPI, Request, HTTPException
-from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 # ... existing code ...
 
-class CreateIssueRequest(BaseModel):
-    type: IssueType
-    title: str
-    parent: Optional[str] = None
-    status: IssueStatus = IssueStatus.OPEN
-    dependencies: List[str] = []
-    related: List[str] = []
-    subdir: Optional[str] = None
-    
-class UpdateIssueRequest(BaseModel):
-    status: Optional[IssueStatus] = None
-    stage: Optional[IssueStage] = None
-    solution: Optional[IssueSolution] = None
+@app.get("/api/v1/board")
+async def get_board_endpoint(project_id: Optional[str] = None):
+    """
+    Get open issues grouped by stage for Kanban visualization.
+    """
+    project = get_project_or_404(project_id)
+    board = get_board_data(project.issues_root)
+    return board
 
-# ... existing code ...
+@app.get("/api/v1/stats/dashboard", response_model=DashboardStats)
+async def get_dashboard_stats_endpoint(project_id: Optional[str] = None):
+    """
+    Get aggregated dashboard statistics.
+    """
+    project = get_project_or_404(project_id)
+    return calculate_dashboard_stats(project.issues_root)
+
 
 @app.post("/api/v1/issues", response_model=IssueMetadata)
 async def create_issue_endpoint(payload: CreateIssueRequest):
     """
     Create a new issue.
     """
-    settings = get_config()
-    root_path = Path(settings.paths.root).resolve()
-    issues_root = root_path / settings.paths.issues
+    project = get_project_or_404(payload.project_id)
     
     try:
-        issue = create_issue_file(
-            issues_root, 
+        issue, _ = create_issue_file(
+            project.issues_root, 
             payload.type, 
             payload.title, 
             parent=payload.parent, 
             status=payload.status, 
+            stage=payload.stage,
             dependencies=payload.dependencies, 
             related=payload.related, 
             subdir=payload.subdir
@@ -183,20 +208,18 @@ async def create_issue_endpoint(payload: CreateIssueRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/api/v1/issues/{issue_id}", response_model=IssueMetadata)
-async def get_issue_endpoint(issue_id: str):
+@app.get("/api/v1/issues/{issue_id}", response_model=IssueDetail)
+async def get_issue_endpoint(issue_id: str, project_id: Optional[str] = None):
     """
     Get issue details by ID.
     """
-    settings = get_config()
-    root_path = Path(settings.paths.root).resolve()
-    issues_root = root_path / settings.paths.issues
+    project = get_project_or_404(project_id)
     
-    path = find_issue_path(issues_root, issue_id)
+    path = find_issue_path(project.issues_root, issue_id)
     if not path:
         raise HTTPException(status_code=404, detail=f"Issue {issue_id} not found")
         
-    issue = parse_issue(path)
+    issue = parse_issue_detail(path)
     if not issue:
         raise HTTPException(status_code=500, detail=f"Failed to parse issue {issue_id}")
         
@@ -207,13 +230,11 @@ async def update_issue_endpoint(issue_id: str, payload: UpdateIssueRequest):
     """
     Update an issue logic state (Status, Stage, Solution).
     """
-    settings = get_config()
-    root_path = Path(settings.paths.root).resolve()
-    issues_root = root_path / settings.paths.issues
+    project = get_project_or_404(payload.project_id)
     
     try:
         issue = update_issue(
-            issues_root, 
+            project.issues_root, 
             issue_id, 
             status=payload.status, 
             stage=payload.stage, 
@@ -227,17 +248,37 @@ async def update_issue_endpoint(issue_id: str, payload: UpdateIssueRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.put("/api/v1/issues/{issue_id}/content", response_model=IssueMetadata)
+async def update_issue_content_endpoint(issue_id: str, payload: UpdateIssueContentRequest):
+    """
+    Update raw content of an issue. Validates integrity before saving.
+    """
+    project = get_project_or_404(payload.project_id)
+    
+    try:
+        # Note: We use PUT because we are replacing the content representation
+        issue = update_issue_content(
+            project.issues_root,
+            issue_id,
+            payload.content
+        )
+        return issue
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Issue {issue_id} not found")
+    except ValueError as e:
+         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.delete("/api/v1/issues/{issue_id}")
-async def delete_issue_endpoint(issue_id: str):
+async def delete_issue_endpoint(issue_id: str, project_id: Optional[str] = None):
     """
     Delete an issue (physical removal).
     """
-    settings = get_config()
-    root_path = Path(settings.paths.root).resolve()
-    issues_root = root_path / settings.paths.issues
+    project = get_project_or_404(project_id)
     
     try:
-        delete_issue_file(issues_root, issue_id)
+        delete_issue_file(project.issues_root, issue_id)
         return {"status": "deleted", "id": issue_id}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"Issue {issue_id} not found")

@@ -3,7 +3,7 @@ import logging
 import subprocess
 import os
 import re
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from asyncio import Queue
 from pathlib import Path
 
@@ -94,79 +94,171 @@ class GitMonitor:
         self.is_running = False
         logger.info("Git Monitor stopping...")
 
-class IssueMonitor:
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+from monoco.core.config import MonocoConfig, get_config
+
+class ProjectContext:
     """
-    Monitor the Issues directory for changes and broadcast update events.
+    Holds the runtime state for a single project.
     """
-    def __init__(self, issues_root: Path, broadcaster: Broadcaster, poll_interval: float = 2.0):
-        self.issues_root = issues_root
+    def __init__(self, path: Path, config: MonocoConfig, broadcaster: Broadcaster):
+        self.path = path
+        self.config = config
+        self.id = path.name  # Use directory name as ID for now
+        self.name = config.project.name
+        self.issues_root = path / config.paths.issues
+        self.monitor = IssueMonitor(self.issues_root, broadcaster, project_id=self.id)
+
+    async def start(self):
+        await self.monitor.start()
+
+    def stop(self):
+        self.monitor.stop()
+
+class ProjectManager:
+    """
+    Discovers and manages multiple Monoco projects within a workspace.
+    """
+    def __init__(self, workspace_root: Path, broadcaster: Broadcaster):
+        self.workspace_root = workspace_root
         self.broadcaster = broadcaster
-        self.poll_interval = poll_interval
-        self.is_running = False
-        self.file_state: Dict[Path, float] = {}
+        self.projects: Dict[str, ProjectContext] = {}
 
-    async def scan(self):
+    def scan(self):
         """
-        Scan for changes in the Issues directory.
+        Scans workspace for potential Monoco projects.
+        A directory is a project if it has monoco.yaml or .monoco/config.yaml or an Issues directory.
         """
-        current_state: Dict[Path, float] = {}
+        logger.info(f"Scanning workspace: {self.workspace_root}")
+        from monoco.core.workspace import find_projects
         
-        # Traverse recursively
-        for root, dirs, files in os.walk(self.issues_root):
-            for file in files:
-                if file.endswith(".md"):
-                    path = Path(root) / file
-                    try:
-                        mtime = path.stat().st_mtime
-                        current_state[path] = mtime
-                    except FileNotFoundError:
-                        continue 
+        projects = find_projects(self.workspace_root)
+        for p in projects:
+            self._register_project(p)
 
-        # Detect changes
-        added = set(current_state.keys()) - set(self.file_state.keys())
-        removed = set(self.file_state.keys()) - set(current_state.keys())
-        modified = {
-            p for p, m in current_state.items() 
-            if p in self.file_state and m != self.file_state[p]
-        }
+    def _register_project(self, path: Path):
+        try:
+            config = get_config(str(path))
+            # If name is default, try to use directory name
+            if config.project.name == "Monoco Project":
+                config.project.name = path.name
+            
+            ctx = ProjectContext(path, config, self.broadcaster)
+            self.projects[ctx.id] = ctx
+            logger.info(f"Registered project: {ctx.id} ({ctx.path})")
+        except Exception as e:
+            logger.error(f"Failed to register project at {path}: {e}")
 
-        # Handle events
-        for path in added | modified:
-            issue: Optional[IssueMetadata] = parse_issue(path)
+    async def start_all(self):
+        self.scan()
+        for project in self.projects.values():
+            await project.start()
+
+    def stop_all(self):
+        for project in self.projects.values():
+            project.stop()
+
+    def get_project(self, project_id: str) -> Optional[ProjectContext]:
+        return self.projects.get(project_id)
+
+    def list_projects(self) -> List[Dict[str, Any]]:
+        return [
+            {
+                "id": p.id,
+                "name": p.name,
+                "path": str(p.path),
+                "issues_path": str(p.issues_root)
+            }
+            for p in self.projects.values()
+        ]
+
+class IssueEventHandler(FileSystemEventHandler):
+    def __init__(self, loop, broadcaster: Broadcaster, project_id: str):
+        self.loop = loop
+        self.broadcaster = broadcaster
+        self.project_id = project_id
+
+    def _process_upsert(self, path_str: str):
+        if not path_str.endswith(".md"):
+            return
+        asyncio.run_coroutine_threadsafe(self._handle_upsert(path_str), self.loop)
+    
+    async def _handle_upsert(self, path_str: str):
+        try:
+            path = Path(path_str)
+            if not path.exists():
+                return
+            issue = parse_issue(path)
             if issue:
-                payload = issue.model_dump(mode='json')
-                await self.broadcaster.broadcast("issue_upserted", payload)
-        
-        for path in removed:
-            filename = path.name
-            # Infer ID from filename (e.g., FEAT-0001-title.md)
+                await self.broadcaster.broadcast("issue_upserted", {
+                    "issue": issue.model_dump(mode='json'),
+                    "project_id": self.project_id
+                })
+        except Exception as e:
+            logger.error(f"Error handling upsert for {path_str}: {e}")
+
+    def _process_delete(self, path_str: str):
+        if not path_str.endswith(".md"):
+            return
+        asyncio.run_coroutine_threadsafe(self._handle_delete(path_str), self.loop)
+
+    async def _handle_delete(self, path_str: str):
+        try:
+            filename = Path(path_str).name
             match = re.match(r"([A-Z]+-\d{4})", filename)
             if match:
                 issue_id = match.group(1)
-                await self.broadcaster.broadcast("issue_deleted", {"id": issue_id})
-                
-        self.file_state = current_state
+                await self.broadcaster.broadcast("issue_deleted", {
+                    "id": issue_id,
+                    "project_id": self.project_id
+                })
+        except Exception as e:
+            logger.error(f"Error handling delete for {path_str}: {e}")
+
+    def on_created(self, event):
+        if not event.is_directory:
+            self._process_upsert(event.src_path)
+
+    def on_modified(self, event):
+        if not event.is_directory:
+            self._process_upsert(event.src_path)
+            
+    def on_deleted(self, event):
+        if not event.is_directory:
+            self._process_delete(event.src_path)
+
+    def on_moved(self, event):
+        if not event.is_directory:
+            self._process_delete(event.src_path)
+            self._process_upsert(event.dest_path)
+
+class IssueMonitor:
+    """
+    Monitor the Issues directory for changes using Watchdog and broadcast update events.
+    """
+    def __init__(self, issues_root: Path, broadcaster: Broadcaster, project_id: str):
+        self.issues_root = issues_root
+        self.broadcaster = broadcaster
+        self.project_id = project_id
+        self.observer = Observer()
+        self.loop = None
 
     async def start(self):
-        self.is_running = True
-        logger.info(f"Issue Monitor started. Watching {self.issues_root}")
+        self.loop = asyncio.get_running_loop()
+        event_handler = IssueEventHandler(self.loop, self.broadcaster, self.project_id)
         
-        # Initial scan to populate state
-        current_state = {}
-        for root, dirs, files in os.walk(self.issues_root):
-            for file in files:
-                if file.endswith(".md"):
-                    path = Path(root) / file
-                    try:
-                        current_state[path] = path.stat().st_mtime
-                    except FileNotFoundError:
-                        pass
-        self.file_state = current_state
+        # Ensure directory exists
+        if not self.issues_root.exists():
+            logger.warning(f"Issues root {self.issues_root} does not exist. creating...")
+            self.issues_root.mkdir(parents=True, exist_ok=True)
 
-        while self.is_running:
-            await asyncio.sleep(self.poll_interval)
-            await self.scan()
+        self.observer.schedule(event_handler, str(self.issues_root), recursive=True)
+        self.observer.start()
+        logger.info(f"Issue Monitor started (Watchdog). Watching {self.issues_root}")
 
     def stop(self):
-        self.is_running = False
-        logger.info("Issue Monitor stopping...")
+        if self.observer.is_alive():
+            self.observer.stop()
+            self.observer.join()
+        logger.info("Issue Monitor stopped.")

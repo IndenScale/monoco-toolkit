@@ -86,6 +86,10 @@ class IssueMetadata(BaseModel):
         elif self.status == IssueStatus.OPEN:
             # Ensure valid stage for open status
             if self.stage is None or self.stage == IssueStage.DONE:
-                self.stage = IssueStage.TODO
+                self.stage = IssueStage.DOING
         
         return self
+
+class IssueDetail(IssueMetadata):
+    body: str = ""
+    raw_content: Optional[str] = None # Full file content including frontmatter for editing
