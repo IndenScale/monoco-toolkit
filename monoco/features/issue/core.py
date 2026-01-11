@@ -512,3 +512,76 @@ def update_issue_content(issues_root: Path, issue_id: str, new_content: str) -> 
     finally:
         if os.path.exists(tmp_path):
             os.unlink(tmp_path)
+
+def generate_delivery_report(issues_root: Path, issue_id: str, project_root: Path) -> IssueMetadata:
+    """
+    Scan git history for commits related to this issue (Ref: ID),
+    aggregate touched files, and append/update '## Delivery' section in the issue body.
+    """
+    from monoco.core import git
+    
+    path = find_issue_path(issues_root, issue_id)
+    if not path:
+        raise FileNotFoundError(f"Issue {issue_id} not found.")
+
+    # 1. Scan Git
+    commits = git.search_commits_by_message(project_root, f"Ref: {issue_id}")
+    
+    if not commits:
+        return parse_issue(path)
+        
+    # 2. Aggregate Data
+    all_files = set()
+    commit_list_md = []
+    
+    for c in commits:
+        short_hash = c['hash'][:7]
+        commit_list_md.append(f"- `{short_hash}` {c['subject']}")
+        for f in c['files']:
+            all_files.add(f)
+            
+    sorted_files = sorted(list(all_files))
+    
+    # 3. Format Report
+    delivery_section = f"""
+## Delivery
+<!-- Monoco Auto Generated -->
+**Commits ({len(commits)})**:
+{chr(10).join(commit_list_md)}
+
+**Touched Files ({len(sorted_files)})**:
+""" + "\n".join([f"- `{f}`" for f in sorted_files])
+
+    # 4. Update File Content
+    content = path.read_text()
+    
+    # Check if Delivery section exists
+    if "## Delivery" in content:
+        # Replace existing section
+        # We assume Delivery is the last section or we replace until end or next H2?
+        # For simplicity, if ## Delivery exists, we regex replace it and everything after it 
+        # OR we just replace the section block if we can identify it.
+        # Let's assume it's at the end or we replace the specific block `## Delivery...`
+        # But regex matching across newlines is tricky if we don't know where it ends.
+        # Safe bet: If "## Delivery" exists, find it and replace everything after it?
+        # Or look for "<!-- Monoco Auto Generated -->"
+        
+        pattern = r"## Delivery.*"
+        # If we use DOTALL, it replaces everything until end of string?
+        # Yes, usually Delivery report is appended at the end.
+        content = re.sub(pattern, delivery_section.strip(), content, flags=re.DOTALL)
+    else:
+        # Append
+        if not content.endswith("\n"):
+            content += "\n"
+        content += "\n" + delivery_section.strip() + "\n"
+        
+    path.write_text(content)
+    
+    # 5. Update Metadata (delivery stats)
+    # We might want to store 'files_count' in metadata for the recursive aggregation (FEAT-0003)
+    # But IssueMetadata doesn't have a 'delivery' dict field yet.
+    # We can add it to 'extra' or extend the model later.
+    # For now, just persisting the text is enough for FEAT-0002.
+    
+    return parse_issue(path)
