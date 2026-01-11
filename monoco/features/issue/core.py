@@ -139,12 +139,13 @@ def create_issue_file(
     # Custom representer to ensure dates are strings (if they aren't already) and maybe quoted?
     # Actually, the simplest way is to let YAML handle it, but if users see issues, 
     # it might be that they want explicit quotes '2026-01-09'.
-    # We can post-process the line.
+    # We can post-process the line. 
     
     yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
 
 
-    file_content = f"""---
+    file_content = f"""
+---
 {yaml_header}---
 
 ## {issue_id}: {title}
@@ -182,7 +183,7 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
     content = path.read_text()
     
     # Split Frontmatter and Body
-    match = re.search(r"^---(.*?)---\n(.*)$", content, re.DOTALL | re.MULTILINE)
+    match = re.search(r"^---(.*?)---\n(.*)$\n", content, re.DOTALL | re.MULTILINE)
     if not match:
         # Fallback
         match_simple = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
@@ -304,7 +305,11 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
         if path != target_path:
             target_path.parent.mkdir(parents=True, exist_ok=True)
             path.rename(target_path)
-    
+
+    # Hook: Recursive Aggregation (FEAT-0003)
+    if updated_meta.parent:
+        recalculate_parent(issues_root, updated_meta.parent)
+        
     return updated_meta
 
 def delete_issue_file(issues_root: Path, issue_id: str):
@@ -318,7 +323,8 @@ def delete_issue_file(issues_root: Path, issue_id: str):
     path.unlink()
         
 # Resources
-SKILL_CONTENT = """---
+SKILL_CONTENT = """
+---
 name: issues-management
 description: Monoco Issue System 的官方技能定义。将 Issue 视为通用原子 (Universal Atom)，管理 Epic/Feature/Chore/Fix 的生命周期。
 ---
@@ -357,7 +363,8 @@ description: Monoco Issue System 的官方技能定义。将 Issue 视为通用�
 5. **Modification**: `monoco issue start/submit/delete <id>`
 """
 
-PROMPT_CONTENT = """### Issue Management
+PROMPT_CONTENT = """
+### Issue Management
 System for managing tasks using `monoco issue`.
 - **Create**: `monoco issue create <type> -t "Title"` (types: epic, feature, chore, fix)
 - **Status**: `monoco issue open|close|backlog <id>`
@@ -585,3 +592,91 @@ def generate_delivery_report(issues_root: Path, issue_id: str, project_root: Pat
     # For now, just persisting the text is enough for FEAT-0002.
     
     return parse_issue(path)
+
+def get_children(issues_root: Path, parent_id: str) -> List[IssueMetadata]:
+    """Find all direct children of an issue."""
+    all_issues = list_issues(issues_root)
+    return [i for i in all_issues if i.parent == parent_id]
+
+def count_files_in_delivery(issue_path: Path) -> int:
+    """Parse the ## Delivery section to count files."""
+    try:
+        content = issue_path.read_text()
+        match = re.search(r"\*\*Touched Files \((\d+)\)\*\*", content)
+        if match:
+            return int(match.group(1))
+    except Exception:
+        pass
+    return 0
+
+def recalculate_parent(issues_root: Path, parent_id: str):
+    """
+    Update parent Epic/Feature stats based on children.
+    - Progress (Closed/Total)
+    - Total Files Touched (Sum of children's delivery)
+    """
+    parent_path = find_issue_path(issues_root, parent_id)
+    if not parent_path:
+        return # Should we warn?
+        
+    children = get_children(issues_root, parent_id)
+    if not children:
+        return
+
+    total = len(children)
+    closed = len([c for c in children if c.status == IssueStatus.CLOSED])
+    # Progress string: "3/5"
+    progress_str = f"{closed}/{total}"
+    
+    # Files count
+    total_files = 0
+    for child in children:
+        child_path = find_issue_path(issues_root, child.id)
+        if child_path:
+            total_files += count_files_in_delivery(child_path)
+
+    # Update Parent    # We need to reuse update logic but without validation/status change
+    # Just generic metadata update.
+    # update_issue is too heavy/strict. 
+    # Let's implement a lighter `patch_metadata` helper or reuse logic. 
+    
+    content = parent_path.read_text()
+    match = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+    if match:
+        yaml_str = match.group(1)
+        data = yaml.safe_load(yaml_str) or {}
+        
+        # Check if changed to avoid churn
+        old_progress = data.get("progress")
+        old_files = data.get("files_count")
+        
+        if old_progress == progress_str and old_files == total_files:
+            return
+            
+        data["progress"] = progress_str
+        data["files_count"] = total_files
+        
+        # Also maybe update status?
+        # FEAT-0003 Req: "If first child starts doing, auto-start Parent?"
+        # If parent is OPEN/TODO and child is DOING/REVIEW/DONE, set parent to DOING?
+        current_status = data.get("status", "open").lower()
+        current_stage = data.get("stage", "todo").lower()
+        
+        if current_status == "open" and current_stage == "todo":
+            # Check if any child is active
+            active_children = [c for c in children if c.status == IssueStatus.OPEN and c.stage != IssueStage.TODO]
+            closed_children = [c for c in children if c.status == IssueStatus.CLOSED]
+            
+            if active_children or closed_children:
+                data["stage"] = "doing"
+        
+        # Serialize
+        new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
+        # Replace header
+        new_content = content.replace(match.group(1), "\n" + new_yaml)
+        parent_path.write_text(new_content)
+        
+        # Recurse up?
+        parent_parent = data.get("parent")
+        if parent_parent:
+            recalculate_parent(issues_root, parent_parent)
