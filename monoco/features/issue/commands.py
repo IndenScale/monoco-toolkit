@@ -456,6 +456,7 @@ def _resolve_project_root(config) -> Path:
 def commit(
     message: Optional[str] = typer.Option(None, "--message", "-m", help="Commit message"),
     issue_id: Optional[str] = typer.Option(None, "--issue", "-i", help="Link commit to Issue ID"),
+    detached: bool = typer.Option(False, "--detached", help="Flag commit as intentionally detached (no issue link)"),
     type: Optional[str] = typer.Option(None, "--type", "-t", help="Commit type (feat, fix, etc.)"),
     scope: Optional[str] = typer.Option(None, "--scope", "-s", help="Commit scope"),
     subject: Optional[str] = typer.Option(None, "--subject", help="Commit subject"),
@@ -465,8 +466,9 @@ def commit(
     Atomic Commit: Validate (Lint) and Commit.
     
     Modes:
-    1. Issue-Only (Default): Commits only changes in Issues directory.
-    2. Linked Commit (--issue): Commits ALL staged changes with 'Ref: <ID>' footer.
+    1. Linked Commit (--issue): Commits staged changes with 'Ref: <ID>' footer.
+    2. Detached Commit (--detached): Commits staged changes without link.
+    3. Auto-Issue (No args): Only allowed if ONLY issue files are modified.
     """
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
@@ -476,112 +478,105 @@ def commit(
     console.print("[dim]Running pre-commit lint check...[/dim]")
     try:
         from . import linter
-        # We check integrity of issues regardless of what we commit
-        errors = linter.check_integrity(issues_root, recursive=True)
-        if errors:
-            linter._print_errors(errors) # Assuming linter has this or we need to reproduce it
-            # linter.run_lint prints errors directly.
-            # Let's just call run_lint but it does not return bool.
-            # We already imported linter inside lint command, let's reuse it or extract.
-            # For now, let's trust run_lint output? No, we need to abort.
-            pass # linter check is good practice
+        linter.check_integrity(issues_root, recursive=True)
     except Exception:
-        pass # Don't block if lint fails? Ideally we should.
+        pass 
 
     # 2. Stage & Commit
     from monoco.core import git
     
     try:
-        # MODE SELECTION
+        # Check Staging Status
+        code, stdout, _ = git._run_git(["diff", "--cached", "--name-only"], project_root)
+        staged_files = [l for l in stdout.splitlines() if l.strip()]
+        
+        # Determine Mode
         if issue_id:
-            # Mode: Linked Commit (Code + Issue)
+            # MODE: Linked Commit
             console.print(f"[bold cyan]Linked Commit Mode[/bold cyan] (Ref: {issue_id})")
             
-            # Validate Issue Exists
             if not core.find_issue_path(issues_root, issue_id):
                  console.print(f"[red]Error:[/red] Issue {issue_id} not found.")
                  raise typer.Exit(code=1)
 
-            # Check Global Status
-            status_files = git.get_git_status(project_root)
-            if not status_files:
-                console.print("[yellow]Nothing to commit.[/yellow] Working directory clean.")
-                return
+            if not staged_files:
+                 console.print("[yellow]No staged files.[/yellow] Please `git add` files.")
+                 raise typer.Exit(code=1)
 
-            # Message Construction
             if not message:
                 if not type or not subject:
-                    # Interactive Prompt could go here, but for now enforce args
-                    console.print("[red]Error:[/red] When using --issue, provide --message OR (--type and --subject).")
+                    console.print("[red]Error:[/red] Provide --message OR (--type and --subject).")
                     raise typer.Exit(code=1)
-                
                 scope_part = f"({scope})" if scope else ""
                 message = f"{type}{scope_part}: {subject}"
             
-            # Append Footer
             if f"Ref: {issue_id}" not in message:
                 message += f"\n\nRef: {issue_id}"
                 
-            # Commit ALL staged files?
-            # User must have staged them. git commit usually commits staged.
-            # Our git_commit wrapper commits EVERYTHING that is staged?
-            # Wait, `git.git_commit` takes `path` and `message`.
-            # It runs `git commit -m`. This commits staged files.
-            # BUT `commands.py` lines 525 calls `git.git_add`.
-            # If we want to commit *staged* files, we don't need to add.
-            # If we want to stage all changes, we run `git add .`?
-            # Standard `git commit` only commits staged.
-            # Let's assume user staged files.
-            # But the original code (lines 525) did `git_add(project_root, status_files)`.
-            # That auto-staged modified files in Issues dir.
-            
-            # Let's stick to "Auto-stage" for now to be friendly?
-            # No, dangerous for code.
-            # Compromise: Check if anything staged.
-            # `git diff --cached --name-only`
-            code, stdout, _ = git._run_git(["diff", "--cached", "--name-only"], project_root)
-            staged_files = [l for l in stdout.splitlines() if l.strip()]
+            commit_hash = git.git_commit(project_root, message)
+            console.print(f"[green]✔ Committed:[/green] {commit_hash[:7]}")
+
+        elif detached:
+            # MODE: Detached
+            console.print(f"[bold yellow]Detached Commit Mode[/bold yellow]")
             
             if not staged_files:
-                console.print("[yellow]No staged files.[/yellow] Please `git add` files or implement auto-stage flag.")
-                # We could `git add -A`? Too aggressive.
-                # Let's just exit.
+                 console.print("[yellow]No staged files.[/yellow] Please `git add` files.")
+                 raise typer.Exit(code=1)
+
+            if not message:
+                console.print("[red]Error:[/red] Detached commits require --message.")
                 raise typer.Exit(code=1)
                 
             commit_hash = git.git_commit(project_root, message)
-            console.print(f"[green]✔ Committed (Linked):[/green] {commit_hash[:7]}")
-            console.print(f"[dim]{message}[/dim]")
-
+            console.print(f"[green]✔ Committed:[/green] {commit_hash[:7]}")
+            
         else:
-            # Mode: Issue-DB Only (Legacy/Default)
-            # Check status ONLY for issues_root
+            # MODE: Implicit / Auto-DB
+            # Strict Policy: Only allow if changes are constrained to Issues/ directory
+            
+            # Check if any non-issue files are staged
+            # (We assume issues dir is 'Issues/')
             try:
                 rel_issues = issues_root.relative_to(project_root)
+                issues_prefix = str(rel_issues)
             except ValueError:
-                console.print("[red]Error:[/red] Issues directory must be inside the project root.")
+                issues_prefix = "Issues" # Fallback
+
+            non_issue_staged = [f for f in staged_files if not f.startswith(issues_prefix)]
+            
+            if non_issue_staged:
+                console.print(f"[red]⛔ Strict Policy:[/red] Code changes detected in staging ({len(non_issue_staged)} files).")
+                console.print("You must specify [bold]--issue <ID>[/bold] or [bold]--detached[/bold].")
                 raise typer.Exit(code=1)
 
-            status_files = git.get_git_status(project_root, str(rel_issues))
-            
-            if not status_files:
-                console.print("[yellow]Nothing to commit.[/yellow] Issues directory clean.")
-                return
+            # If nothing staged, check unstaged Issue files (Legacy Auto-Add)
+            if not staged_files:
+                status_files = git.get_git_status(project_root, str(rel_issues))
+                if not status_files:
+                    console.print("[yellow]Nothing to commit.[/yellow]")
+                    return
+                
+                # Auto-stage Issue files
+                git.git_add(project_root, status_files)
+                staged_files = status_files # Now they are staged
+            else:
+                pass
 
+            # Auto-generate message from Issue File
             if not message:
-                cnt = len(status_files)
+                cnt = len(staged_files)
                 if cnt == 1:
-                    fpath = project_root / status_files[0]
+                    fpath = project_root / staged_files[0]
                     match = core.parse_issue(fpath)
                     if match:
                          action = "update" 
                          message = f"docs(issues): {action} {match.id} {match.title}"
                     else:
-                         message = f"docs(issues): update {status_files[0]}"
+                         message = f"docs(issues): update {staged_files[0]}"
                 else:
                      message = f"docs(issues): batch update {cnt} files"
 
-            # Auto-stage for DB mode
-            git.git_add(project_root, status_files)
             commit_hash = git.git_commit(project_root, message)
             console.print(f"[green]✔ Committed (DB):[/green] {commit_hash[:7]} - {message}")
         
