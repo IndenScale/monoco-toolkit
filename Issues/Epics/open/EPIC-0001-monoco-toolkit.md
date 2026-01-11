@@ -69,10 +69,10 @@ Toolkit/
 - [ ] 所有开发任务通过 `Issues/` 目录管理，不再依赖散乱的 Markdown。
 - [ ] Agent 能够通过 CLI 自主读取上下文、创建 Issue 并提交代码。
 
-## Child Stories (子故事)
+## Child Features (子故事)
 
 - [x] [[FEAT-0002]]: Toolkit Core Infrastructure (Done)
 - [x] [[FEAT-0003]]: Feature: Issue Management (Done)
-- [ ] [[FEAT-0004]]: Feature: Spike Management
-- [ ] [[FEAT-0005]]: Feature: Quality Control (Check)
-- [ ] [[FEAT-0006]]: Feature: Runtime (Remote Interaction)
+- [x] [[FEAT-0004]]: Feature: Spike Management
+- [ ] [[FEAT-0017]]: Feature: Quality Control (Check)
+- [ ] [[FEAT-0018]]: Feature: Runtime (Remote Interaction)

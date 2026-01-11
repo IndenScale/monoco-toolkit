@@ -23,6 +23,7 @@ def create(
     title: str = typer.Option(..., "--title", "-t", help="Issue title"),
     parent: Optional[str] = typer.Option(None, "--parent", "-p", help="Parent Issue ID"),
     is_backlog: bool = typer.Option(False, "--backlog", help="Create as backlog item"),
+    stage: Optional[IssueStage] = typer.Option(None, "--stage", help="Issue stage (todo, doing, review)"),
     dependencies: List[str] = typer.Option([], "--dependency", "-d", help="Issue dependency ID(s)"),
     related: List[str] = typer.Option([], "--related", "-r", help="Related Issue ID(s)"),
     subdir: Optional[str] = typer.Option(None, "--subdir", "-s", help="Subdirectory for organization (e.g. 'Backend/Auth')"),
@@ -48,6 +49,7 @@ def create(
             title, 
             parent, 
             status=status, 
+            stage=stage,
             dependencies=dependencies, 
             related=related, 
             subdir=subdir,
@@ -190,6 +192,140 @@ def delete(
         console.print(f"[red]✘ Error:[/red] {str(e)}")
         raise typer.Exit(code=1)
 
+@app.command("board")
+def board(
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+):
+    """Visualize issues in a Kanban board."""
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+    
+    board_data = core.get_board_data(issues_root)
+    
+    from rich.columns import Columns
+    from rich.console import RenderableType
+    
+    columns: List[RenderableType] = []
+    
+    stage_titles = {
+        "todo": "[bold white]TODO[/bold white]",
+        "doing": "[bold yellow]DOING[/bold yellow]",
+        "review": "[bold cyan]REVIEW[/bold cyan]",
+        "done": "[bold green]DONE[/bold green]"
+    }
+    
+    for stage, issues in board_data.items():
+        issue_list = []
+        for issue in sorted(issues, key=lambda x: x.updated_at, reverse=True):
+            type_color = {
+                IssueType.FEATURE: "green",
+                IssueType.CHORE: "blue",
+                IssueType.FIX: "red",
+                IssueType.EPIC: "magenta"
+            }.get(issue.type, "white")
+            
+            issue_list.append(
+                Panel(
+                    f"[{type_color}]{issue.id}[/{type_color}]\n{issue.title}",
+                    expand=True,
+                    padding=(0, 1)
+                )
+            )
+        
+        from rich.console import Group
+        content = Group(*issue_list) if issue_list else "[dim]Empty[/dim]"
+        
+        columns.append(
+            Panel(
+                content,
+                title=stage_titles.get(stage, stage.upper()),
+                width=35,
+                padding=(1, 1)
+            )
+        )
+
+    console.print(Columns(columns, equal=True, expand=True))
+
+@app.command("list")
+def list_cmd(
+    status: Optional[str] = typer.Option(None, "--status", "-s", help="Filter by status (open, closed, backlog, all)"),
+    type: Optional[IssueType] = typer.Option(None, "--type", "-t", help="Filter by type"),
+    stage: Optional[IssueStage] = typer.Option(None, "--stage", help="Filter by stage"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+):
+    """List issues in a table format with filtering."""
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+    
+    # Validation
+    if status and status.lower() not in ["open", "closed", "backlog", "all"]:
+         console.print(f"[red]Invalid status:[/red] {status}. Use open, closed, backlog or all.")
+         raise typer.Exit(code=1)
+         
+    target_status = status.lower() if status else "open"
+    
+    issues = core.list_issues(issues_root)
+    filtered = []
+    
+    for i in issues:
+        # Status Filter
+        if target_status != "all":
+            if i.status.value != target_status:
+                continue
+                
+        # Type Filter
+        if type and i.type != type:
+            continue
+            
+        # Stage Filter
+        if stage and i.stage != stage:
+            continue
+            
+        filtered.append(i)
+        
+    # Sort: Updated Descending
+    filtered.sort(key=lambda x: x.updated_at, reverse=True)
+    
+    # Render
+    table = Table(title=f"Issues ({len(filtered)})", show_header=True, header_style="bold magenta")
+    table.add_column("ID", style="cyan", width=12)
+    table.add_column("Type", width=10)
+    table.add_column("Status", width=10)
+    table.add_column("Stage", width=10)
+    table.add_column("Title", style="white")
+    table.add_column("Updated", style="dim", width=20)
+    
+    type_colors = {
+        IssueType.EPIC: "magenta",
+        IssueType.FEATURE: "green",
+        IssueType.CHORE: "blue",
+        IssueType.FIX: "red"
+    }
+    
+    status_colors = {
+        IssueStatus.OPEN: "green",
+        IssueStatus.BACKLOG: "blue",
+        IssueStatus.CLOSED: "dim"
+    }
+
+    for i in filtered:
+        t_color = type_colors.get(i.type, "white")
+        s_color = status_colors.get(i.status, "white")
+        
+        stage_str = i.stage.value if i.stage else "-"
+        updated_str = i.updated_at.strftime("%Y-%m-%d %H:%M")
+        
+        table.add_row(
+            i.id,
+            f"[{t_color}]{i.type.value}[/{t_color}]",
+            f"[{s_color}]{i.status.value}[/{s_color}]",
+            stage_str,
+            i.title,
+            updated_str
+        )
+        
+    console.print(table)
+
 @app.command("scope")
 def scope(
     sprint: Optional[str] = typer.Option(None, "--sprint", help="Filter by Sprint ID"),
@@ -256,15 +392,47 @@ def lint(
 def _resolve_issues_root(config, cli_root: Optional[str]) -> Path:
     """
     Resolve the absolute path to the issues directory.
-    Priority:
-    1. CLI Argument (--root)
-    2. Config (paths.issues) - can be absolute or relative to project root
-    3. Default (Issues) - handled by config default
+    Implements Smart Path Resolution & Workspace Awareness.
     """
-    if cli_root:
-        return Path(cli_root).resolve()
+    from monoco.core.workspace import is_project_root, find_projects
     
-    # Config path handling
+    # 1. Handle Explicit CLI Root
+    if cli_root:
+        path = Path(cli_root).resolve()
+        
+        # Scenario A: User pointed to a Project Root (e.g. ./Toolkit)
+        # We auto-resolve to ./Toolkit/Issues if it exists
+        if is_project_root(path) and (path / "Issues").exists():
+             return path / "Issues"
+        
+        # Scenario B: User pointed to Issues dir directly (e.g. ./Toolkit/Issues)
+        # Or user pointed to a path that will be created
+        return path
+    
+    # 2. Handle Default / Contextual Execution (No --root)
+    # We need to detect if we are in a Workspace Root with multiple projects
+    cwd = Path.cwd()
+    
+    # If CWD is NOT a project root (no monoco.yaml/Issues), scan for subprojects
+    if not is_project_root(cwd):
+        subprojects = find_projects(cwd)
+        if len(subprojects) > 1:
+            console.print(f"[yellow]Workspace detected with {len(subprojects)} projects:[/yellow]")
+            for p in subprojects:
+                console.print(f" - [bold]{p.name}[/bold]")
+            console.print("\n[yellow]Please specify a project using --root <PATH>.[/yellow]")
+            # We don't exit here strictly, but usually this means we can't find 'Issues' in CWD anyway
+            # so the config fallbacks below will likely fail or point to non-existent CWD/Issues.
+            # But let's fail fast to be helpful.
+            raise typer.Exit(code=1)
+        elif len(subprojects) == 1:
+            # Auto-select the only child project?
+            # It's safer to require explicit intent, but let's try to be helpful if it's obvious.
+            # However, standard behavior is usually "operate on current dir". 
+            # Let's stick to standard config resolution, but maybe warn.
+            pass
+
+    # 3. Config Fallback
     config_issues_path = Path(config.paths.issues)
     if config_issues_path.is_absolute():
         return config_issues_path

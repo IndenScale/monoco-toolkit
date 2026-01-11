@@ -2,9 +2,9 @@ import os
 import re
 import yaml
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple, Any
+from typing import List, Dict, Optional, Tuple, Any, Set, Set
 from datetime import datetime
-from .models import IssueMetadata, IssueType, IssueStatus, IssueSolution, IssueStage
+from .models import IssueMetadata, IssueType, IssueStatus, IssueSolution, IssueStage, IssueDetail
 
 PREFIX_MAP = {
     IssueType.EPIC: "EPIC",
@@ -41,6 +41,27 @@ def parse_issue(file_path: Path) -> Optional[IssueMetadata]:
     except Exception:
         return None
 
+def parse_issue_detail(file_path: Path) -> Optional[IssueDetail]:
+    if not file_path.suffix == ".md":
+        return None
+    
+    content = file_path.read_text()
+    # Robust splitting
+    match = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+    if not match:
+        return None
+        
+    yaml_str = match.group(1)
+    body = content[match.end():].lstrip()
+    
+    try:
+        data = yaml.safe_load(yaml_str)
+        if not isinstance(data, dict):
+             return None
+        return IssueDetail(**data, body=body, raw_content=content)
+    except Exception:
+        return None
+
 def find_next_id(issue_type: IssueType, issues_root: Path) -> str:
     prefix = PREFIX_MAP[issue_type]
     pattern = re.compile(rf"{prefix}-(\d+)")
@@ -64,6 +85,7 @@ def create_issue_file(
     title: str, 
     parent: Optional[str] = None, 
     status: IssueStatus = IssueStatus.OPEN, 
+    stage: Optional[IssueStage] = None,
     dependencies: List[str] = [], 
     related: List[str] = [], 
     subdir: Optional[str] = None,
@@ -93,6 +115,7 @@ def create_issue_file(
         id=issue_id,
         type=issue_type,
         status=status,
+        stage=stage,
         title=title,
         parent=parent,
         dependencies=dependencies,
@@ -239,7 +262,19 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
     
     # Reconstruct File
     match_header = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
-    body_content = content[match_header.end():]
+    if not match_header:
+        # Should not happen as we just dumped it?
+        # But content is the OLD content. 
+        # Wait, lines 179 read the content.
+        # Lines 262 is finding header in 'content' (old content).
+        # But we want to preserve body.
+        # Lines 183-194 already parsed body.
+        # body = match.group(2)
+        # We should use 'body' variable we extracted earlier!
+        body_content = body
+    else:
+        body_content = content[match_header.end():]
+    
     if body_content.startswith('\n'):
         body_content = body_content[1:] 
         
@@ -367,3 +402,109 @@ def list_issues(issues_root: Path) -> List[IssueMetadata]:
                     if meta:
                         issues.append(meta)
     return issues
+
+def get_board_data(issues_root: Path) -> Dict[str, List[IssueMetadata]]:
+    """
+    Get open issues grouped by their stage for Kanban view.
+    """
+    board = {
+        IssueStage.TODO.value: [],
+        IssueStage.DOING.value: [],
+        IssueStage.REVIEW.value: [],
+        IssueStage.DONE.value: []
+    }
+    
+    issues = list_issues(issues_root)
+    for issue in issues:
+        if issue.status == IssueStatus.OPEN and issue.stage:
+            stage_val = issue.stage.value
+            if stage_val in board:
+                board[stage_val].append(issue)
+        elif issue.status == IssueStatus.CLOSED:
+            # Optionally show recently closed items in DONE column
+            board[IssueStage.DONE.value].append(issue)
+            
+    return board
+
+def validate_issue_integrity(meta: IssueMetadata, all_issue_ids: Set[str] = set()) -> List[str]:
+    """
+    Validate metadata integrity (Solution, Lifecycle, etc.)
+    UI-agnostic.
+    """
+    errors = []
+    if meta.status == IssueStatus.CLOSED and not meta.solution:
+        errors.append(f"Solution Missing: {meta.id} is closed but has no solution field.")
+            
+    if meta.parent:
+        if all_issue_ids and meta.parent not in all_issue_ids:
+             errors.append(f"Broken Link: {meta.id} refers to non-existent parent {meta.parent}.")
+
+    if meta.status == IssueStatus.BACKLOG and meta.stage != IssueStage.FREEZED:
+        errors.append(f"Lifecycle Error: {meta.id} is backlog but stage is not freezed (found: {meta.stage}).")
+        
+    return errors
+
+def update_issue_content(issues_root: Path, issue_id: str, new_content: str) -> IssueMetadata:
+    """
+    Update the raw content of an issue file.
+    Validates integrity before saving.
+    Handles file moves if status changes.
+    """
+    path = find_issue_path(issues_root, issue_id)
+    if not path:
+        raise FileNotFoundError(f"Issue {issue_id} not found.")
+
+    # 1. Parse New Content (using temp file to reuse parse_issue logic)
+    import tempfile
+    import os
+    
+    with tempfile.NamedTemporaryFile(mode='w+', suffix='.md', delete=False) as tmp:
+        tmp.write(new_content)
+        tmp_path = Path(tmp.name)
+        
+    try:
+        meta = parse_issue(tmp_path)
+        if not meta:
+             raise ValueError("Invalid Issue Content: Frontmatter missing or invalid.")
+        
+        if meta.id != issue_id:
+             raise ValueError(f"Cannot change Issue ID (Original: {issue_id}, New: {meta.id})")
+
+        # 2. Integrity Check
+        errors = validate_issue_integrity(meta)
+        if errors:
+            raise ValueError(f"Validation Failed: {'; '.join(errors)}")
+            
+        # 3. Write and Move
+        # We overwrite the *current* path first
+        path.write_text(new_content)
+        
+        # Check if we need to move (Status Change)
+        # We need to re-derive the expected path based on new status
+        # Reuse logic from update_issue (simplified)
+        
+        prefix = issue_id.split("-")[0].upper()
+        base_type_dir = get_issue_dir(REVERSE_PREFIX_MAP[prefix], issues_root)
+        
+        # Calculate structure path (preserve subdir)
+        try:
+            rel_path = path.relative_to(base_type_dir)
+            # Remove the first component (current status directory) which might be 'open', 'closed' etc.
+            # But wait, find_issue_path found it. 'rel_path' includes status dir.
+            # e.g. open/Backend/Auth/FEAT-123.md -> parts=('open', 'Backend', 'Auth', 'FEAT-123.md')
+            structure_path = Path(*rel_path.parts[1:]) if len(rel_path.parts) > 1 else Path(path.name)
+        except ValueError:
+            # Fallback if path is weird
+            structure_path = Path(path.name)
+
+        target_path = base_type_dir / meta.status.value / structure_path
+            
+        if path != target_path:
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            path.rename(target_path)
+            
+        return meta
+
+    finally:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
