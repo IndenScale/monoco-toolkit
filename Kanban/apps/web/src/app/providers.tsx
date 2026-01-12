@@ -8,6 +8,7 @@ import {
 } from "@monoco/kanban-core";
 import { loader } from "@monaco-editor/react";
 import { useEffect } from "react";
+import { TermProvider } from "./contexts/TermContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -47,5 +48,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // Initialize Kanban Data Sync (Store Updates)
   useKanbanSync();
 
-  return <>{children}</>;
+  return (
+    <TermProvider>
+      {children}
+    </TermProvider>
+  );
 }

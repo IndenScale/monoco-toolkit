@@ -1,49 +1,38 @@
 import React from "react";
 import { Tag, Icon, Intent, Button, Menu, MenuItem, Popover, Position } from "@blueprintjs/core";
 import { Issue } from "../types";
+import { useTerms } from "../contexts/TermContext";
 
 interface KanbanCardProps {
   issue: Issue;
 }
 
 const getStatusIntent = (status: string): Intent => {
-  switch (status.toLowerCase()) {
-    case "done":
-    case "closed":
-      return Intent.SUCCESS;
-    case "doing":
-    case "open":
-      return Intent.PRIMARY;
-    case "review":
-      return Intent.WARNING;
-    case "todo":
-    case "backlog":
-    default:
-      return Intent.NONE;
-  }
+// ... existing getStatusIntent ...
 };
 
 const getTypeIcon = (type: string) => {
-  switch (type.toLowerCase()) {
-    case "bug": return "error";
-    case "feature": return "clean";
-    case "task": return "tick";
-    default: return "document";
-  }
+// ... existing getTypeIcon ...
 };
 
 const getTypeColor = (type: string) => {
-    switch (type.toLowerCase()) {
-      case "bug": return "text-red-400";
-      case "feature": return "text-blue-400";
-      case "task": return "text-emerald-400";
-      default: return "text-slate-400";
-    }
-  };
+// ... existing getTypeColor ...
+};
 
 export default function KanbanCard({ issue }: KanbanCardProps) {
+  const { t } = useTerms();
+  
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData("text/plain", issue.id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
   return (
-    <div className="group relative glass-card rounded-xl p-3 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-accent/30 hover:bg-surface-highlight/50 border-l-4 border-l-transparent hover:border-l-accent">
+    <div 
+      draggable={true}
+      onDragStart={handleDragStart}
+      className="group relative glass-card rounded-xl p-3 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-accent/30 hover:bg-surface-highlight/50 border-l-4 border-l-transparent hover:border-l-accent active:cursor-grabbing"
+    >
       
       {/* Header: ID, Type, Actions */}
       <div className="flex flex-row justify-between items-start mb-2">
@@ -53,7 +42,7 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
           </span>
           <div className={`flex flex-row items-center gap-1 text-[10px] uppercase font-bold tracking-wider ${getTypeColor(issue.type)}`}>
             <Icon icon={getTypeIcon(issue.type)} size={10} />
-            <span>{issue.type}</span>
+            <span>{t(issue.type, issue.type)}</span>
           </div>
         </div>
         
@@ -93,7 +82,7 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
             intent={getStatusIntent(issue.status)}
             className="!bg-white/5 !text-[10px] !h-5 !min-h-0 font-semibold uppercase tracking-wide border border-white/10 group-hover:border-white/20"
         >
-            {issue.status}
+            {t(issue.status, issue.status)}
         </Tag>
       </div>
     </div>

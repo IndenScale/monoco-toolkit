@@ -119,6 +119,16 @@ async def get_project_info(project_id: Optional[str] = None):
         "head": current_hash
     }
 
+@app.get("/api/v1/config/dictionary")
+async def get_ui_dictionary(project_id: Optional[str] = None) -> Dict[str, str]:
+    """
+    Get UI Terminology Dictionary.
+    """
+    project = get_project_or_404(project_id)
+    # Reload config to get latest
+    config = get_config(str(project.path))
+    return config.ui.dictionary
+
 @app.get("/api/v1/events")
 async def sse_endpoint(request: Request):
     """
@@ -300,3 +310,69 @@ async def refresh_monitor():
     # To be "instant", we can manually broadcast if we know it changed?
     # Or just returning the hash confirms the daemon sees it.
     return {"status": "refreshed", "head": current_hash}
+
+# --- Workspace State Management ---
+import json
+from pydantic import BaseModel
+
+class WorkspaceState(BaseModel):
+    last_active_project_id: Optional[str] = None
+
+@app.get("/api/v1/workspace/state", response_model=WorkspaceState)
+async def get_workspace_state():
+    """
+    Get the persisted workspace state (e.g. last active project).
+    """
+    if not project_manager:
+         raise HTTPException(status_code=503, detail="Daemon not initialized")
+    
+    state_file = project_manager.workspace_root / ".monoco" / "state.json"
+    if not state_file.exists():
+        # Default empty state
+        return WorkspaceState()
+        
+    try:
+        content = state_file.read_text(encoding='utf-8')
+        if not content.strip():
+            return WorkspaceState()
+        data = json.loads(content)
+        return WorkspaceState(**data)
+    except Exception as e:
+        logger.error(f"Failed to read state file: {e}")
+        # Return empty state instead of crashing, so frontend can fallback
+        return WorkspaceState()
+
+@app.post("/api/v1/workspace/state", response_model=WorkspaceState)
+async def update_workspace_state(state: WorkspaceState):
+    """
+    Update the workspace state.
+    """
+    if not project_manager:
+         raise HTTPException(status_code=503, detail="Daemon not initialized")
+
+    state_file = project_manager.workspace_root / ".monoco" / "state.json"
+    
+    # Ensure directory exists
+    if not state_file.parent.exists():
+        state_file.parent.mkdir(parents=True, exist_ok=True)
+    
+    try:
+        # We merge with existing state to avoid data loss if we extend model later
+        current_data = {}
+        if state_file.exists():
+            try:
+                content = state_file.read_text(encoding='utf-8')
+                if content.strip():
+                    current_data = json.loads(content)
+            except:
+                pass # ignore read errors on write
+        
+        # Update with new values
+        new_data = state.model_dump(exclude_unset=True)
+        current_data.update(new_data)
+        
+        state_file.write_text(json.dumps(current_data, indent=2), encoding='utf-8')
+        return WorkspaceState(**current_data)
+    except Exception as e:
+        logger.error(f"Failed to write state file: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to persist state: {str(e)}")
