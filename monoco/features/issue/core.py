@@ -267,9 +267,19 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
             if current_data_stage != IssueStage.REVIEW.value:
                 raise ValueError(f"Lifecycle Policy: 'Implemented' issues must be submitted for review first.\nCurrent stage: {current_data_stage}\nAction: Run `monoco issue submit {issue_id}`.")
 
-        # Policy: No closing from DOING (General Safety)
+     # Policy: No closing from DOING (General Safety)
         if current_data_stage == IssueStage.DOING.value:
              raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
+             
+        # Policy: Dependencies must be closed
+        dependencies = data.get('dependencies', [])
+        if dependencies:
+            for dep_id in dependencies:
+                dep_path = find_issue_path(issues_root, dep_id)
+                if dep_path:
+                    dep_meta = parse_issue(dep_path)
+                    if dep_meta and dep_meta.status != IssueStatus.CLOSED:
+                        raise ValueError(f"Dependency Block: Cannot close {issue_id} because dependency {dep_id} is [Status: {dep_meta.status.value}].")
             
     # Update Data
     if status:

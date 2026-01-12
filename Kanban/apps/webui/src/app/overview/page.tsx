@@ -28,6 +28,9 @@ export default function OverviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [focusedIssueId, setFocusedIssueId] = useState<string | null>(null);
+  const [collapsedEpics, setCollapsedEpics] = useState<Record<string, boolean>>(
+    {}
+  );
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [filterText, setFilterText] = useState("");
   const { t } = useTerms();
@@ -112,21 +115,21 @@ export default function OverviewPage() {
     return { epics, groupedIssues: grouped, unassigned };
   }, [issues, filterText]);
 
-      // ... inside component ...
+  // ... inside component ...
   const handleIssueDrop = async (issueId: string, stageId: string) => {
     if (status !== "connected") return;
-    
+
     // Find issue to verify change is needed
-    const issue = issues.find(i => i.id === issueId);
+    const issue = issues.find((i) => i.id === issueId);
     if (!issue || issue.stage === stageId) return;
 
     try {
       const res = await fetch(`${daemonUrl}/api/v1/issues/${issueId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-            stage: stageId,
-            project_id: currentProjectId 
+        body: JSON.stringify({
+          stage: stageId,
+          project_id: currentProjectId,
         }),
       });
 
@@ -134,23 +137,27 @@ export default function OverviewPage() {
         const errData = await res.json();
         throw new Error(errData.detail || "Failed to update issue stage");
       }
-      
+
       // SSE will handle the UI update
     } catch (err: any) {
       console.error(err);
       // Dynamic import to avoid SSR issues with Blueprint Toaster if any
-      const { OverlayToaster, Position: ToasterPosition } = await import("@blueprintjs/core");
-      const toaster = await OverlayToaster.createAsync({ position: ToasterPosition.TOP });
-      toaster.show({ 
-          message: `Failed to move ${issueId}: ${err.message}`, 
-          intent: "danger",
-          icon: "error"
+      const { OverlayToaster, Position: ToasterPosition } = await import(
+        "@blueprintjs/core"
+      );
+      const toaster = await OverlayToaster.createAsync({
+        position: ToasterPosition.TOP,
+      });
+      toaster.show({
+        message: `Failed to move ${issueId}: ${err.message}`,
+        intent: "danger",
+        icon: "error",
       });
     }
   };
 
   const getColumns = (groupIssues: Issue[]) => {
-      // ... existing getColumns logic ...
+    // ... existing getColumns logic ...
     const byStage: Record<string, Issue[]> = {
       todo: [],
       doing: [],
@@ -269,9 +276,20 @@ export default function OverviewPage() {
           <div key={epic.id} className="flex flex-col gap-4">
             <div
               className="flex items-center gap-4 p-3 rounded-lg border border-border-subtle bg-surface hover:bg-surface-hover hover:border-border-hover transition-all cursor-pointer shadow-sm group"
-              onClick={() => setFocusedIssueId(epic.id)}>
+              onClick={() =>
+                setCollapsedEpics((prev) => ({
+                  ...prev,
+                  [epic.id]: !prev[epic.id],
+                }))
+              }>
               <div className="flex items-center justify-center bg-primary/10 text-primary font-mono text-sm font-bold px-2 py-1 rounded">
-                {epic.id}
+                <div
+                  className={`transition-transform duration-200 ${
+                    collapsedEpics[epic.id] ? "-rotate-90" : ""
+                  }`}>
+                  ▼
+                </div>
+                <div className="ml-2">{epic.id}</div>
               </div>
               <h2 className="text-lg font-bold text-text-primary m-0 group-hover:text-primary transition-colors">
                 {epic.title}
@@ -282,6 +300,16 @@ export default function OverviewPage() {
                 <span className="text-xs uppercase font-semibold text-text-muted bg-surface-raised px-2 py-1 rounded border border-border-subtle">
                   {epic.status}
                 </span>
+                <Button
+                  icon="maximize"
+                  minimal
+                  small
+                  className="!text-text-muted hover:!text-primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFocusedIssueId(epic.id);
+                  }}
+                />
                 {epic.tags && epic.tags.length > 0 && (
                   <div className="flex gap-1">
                     {epic.tags.map((tag) => (
@@ -295,21 +323,25 @@ export default function OverviewPage() {
                 )}
               </div>
             </div>
-            <div className="h-px bg-border-subtle w-full" />
 
-            <div className="flex flex-row gap-6 overflow-x-auto pb-2">
-              {getColumns(groupedIssues[epic.id] || []).map((col) => (
-                <KanbanColumn
-                  key={col.id}
-                  id={col.id}
-                  title={col.title}
-                  issues={col.items}
-                  activeIssueId={focusedIssueId}
-                  onIssueClick={(issue) => setFocusedIssueId(issue.id)}
-                  onDrop={handleIssueDrop}
-                />
-              ))}
-            </div>
+            {!collapsedEpics[epic.id] && (
+              <>
+                <div className="h-px bg-border-subtle w-full" />
+                <div className="flex flex-row gap-6 overflow-x-auto pb-2">
+                  {getColumns(groupedIssues[epic.id] || []).map((col) => (
+                    <KanbanColumn
+                      key={col.id}
+                      id={col.id}
+                      title={col.title}
+                      issues={col.items}
+                      activeIssueId={focusedIssueId}
+                      onIssueClick={(issue) => setFocusedIssueId(issue.id)}
+                      onDrop={handleIssueDrop}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         ))}
 
