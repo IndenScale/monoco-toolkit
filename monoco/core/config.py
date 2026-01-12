@@ -28,6 +28,10 @@ class I18nConfig(BaseModel):
     source_lang: str = Field(default="en", description="Source language code")
     target_langs: list[str] = Field(default_factory=lambda: ["zh"], description="Target language codes")
 
+class UIConfig(BaseModel):
+    """Configuration for UI customizations."""
+    dictionary: Dict[str, str] = Field(default_factory=dict, description="Custom domain terminology mapping")
+
 class MonocoConfig(BaseModel):
     """
     Main Configuration Schema.
@@ -37,6 +41,7 @@ class MonocoConfig(BaseModel):
     paths: PathsConfig = Field(default_factory=PathsConfig)
     project: ProjectConfig = Field(default_factory=ProjectConfig)
     i18n: I18nConfig = Field(default_factory=I18nConfig)
+    ui: UIConfig = Field(default_factory=UIConfig)
 
     @staticmethod
     def _deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:

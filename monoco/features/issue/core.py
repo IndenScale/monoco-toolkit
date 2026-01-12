@@ -18,8 +18,14 @@ REVERSE_PREFIX_MAP = {v: k for k, v in PREFIX_MAP.items()}
 
 def _get_slug(title: str) -> str:
     slug = title.lower()
-    slug = re.sub(r"[^a-z0-9]+", "-", slug)
+    # Replace non-word characters (including punctuation, spaces) with hyphens
+    # \w matches Unicode word characters (letters, numbers, underscores)
+    slug = re.sub(r"[^\w]+", "-", slug)
     slug = slug.strip("-")[:50]
+    
+    if not slug:
+        slug = "issue"
+        
     return slug
 
 def get_issue_dir(issue_type: IssueType, issues_root: Path) -> Path:
@@ -152,7 +158,47 @@ def create_issue_file(
 """
     file_path = target_dir / filename
     file_path.write_text(file_content)
-    return metadata, file_path
+def validate_transition(
+    current_status: IssueStatus,
+    current_stage: Optional[IssueStage],
+    target_status: IssueStatus,
+    target_stage: Optional[IssueStage],
+    target_solution: Optional[str],
+    issue_dependencies: List[str],
+    issues_root: Path,
+    issue_id: str
+):
+    """
+    Centralized validation logic for state transitions.
+    """
+    # Policy: Prevent Backlog -> Review
+    if target_stage == IssueStage.REVIEW and current_status == IssueStatus.BACKLOG:
+         raise ValueError(f"Lifecycle Policy: Cannot submit Backlog issue directly. Run `monoco issue pull {issue_id}` first.")
+
+    if target_status == IssueStatus.CLOSED:
+        if not target_solution:
+            raise ValueError(f"Closing an issue requires a solution. Please provide --solution or edit the file metadata.")
+            
+        # Policy: IMPLEMENTED requires REVIEW stage (unless we are already in REVIEW)
+        # Check current stage.
+        if target_solution == IssueSolution.IMPLEMENTED.value:
+            # If we are transitioning FROM Review, it's fine.
+            # If we are transitioning TO Closed, current stage must be Review.
+            if current_stage != IssueStage.REVIEW:
+                raise ValueError(f"Lifecycle Policy: 'Implemented' issues must be submitted for review first.\nCurrent stage: {current_stage}\nAction: Run `monoco issue submit {issue_id}`.")
+
+        # Policy: No closing from DOING (General Safety)
+        if current_stage == IssueStage.DOING:
+             raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
+             
+        # Policy: Dependencies must be closed
+        if issue_dependencies:
+            for dep_id in issue_dependencies:
+                dep_path = find_issue_path(issues_root, dep_id)
+                if dep_path:
+                    dep_meta = parse_issue(dep_path)
+                    if dep_meta and dep_meta.status != IssueStatus.CLOSED:
+                        raise ValueError(f"Dependency Block: Cannot close {issue_id} because dependency {dep_id} is not closed.")
 
 def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
     prefix = issue_id.split("-")[0].upper()
@@ -433,155 +479,7 @@ def prune_issue_resources(issues_root: Path, issue_id: str, force: bool, project
             
     return deleted_items
 
-def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
-    prefix = issue_id.split("-")[0].upper()
-    issue_type = REVERSE_PREFIX_MAP.get(prefix)
-    if not issue_type:
-        return None
-        
-    base_dir = get_issue_dir(issue_type, issues_root)
-    # Search in all status subdirs recursively
-    for f in base_dir.rglob(f"{issue_id}-*.md"):
-        return f
-    return None
 
-def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus] = None, stage: Optional[IssueStage] = None, solution: Optional[IssueSolution] = None) -> IssueMetadata:
-    path = find_issue_path(issues_root, issue_id)
-    if not path:
-        raise FileNotFoundError(f"Issue {issue_id} not found.")
-        
-    # Read full content
-    content = path.read_text()
-    
-    # Split Frontmatter and Body
-    match = re.search(r"^---(.*?)---\n(.*)$\n", content, re.DOTALL | re.MULTILINE)
-    if not match:
-        # Fallback
-        match_simple = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
-        if match_simple:
-            yaml_str = match_simple.group(1)
-            body = content[match_simple.end():]
-        else:
-            raise ValueError(f"Could not parse frontmatter for {issue_id}")
-    else:
-        yaml_str = match.group(1)
-        body = match.group(2)
-
-    try:
-        data = yaml.safe_load(yaml_str) or {}
-    except yaml.YAMLError:
-        raise ValueError(f"Invalid YAML metadata in {issue_id}")
-
-    current_status_str = data.get("status", "open") # default to open if missing?
-    # Normalize current status to Enum for comparison
-    try:
-        current_status = IssueStatus(current_status_str.lower())
-    except ValueError:
-        current_status = IssueStatus.OPEN
-
-    # Logic: Status Update
-    target_status = status if status else current_status
-    
-    # Validation: For closing
-    effective_solution = solution.value if solution else data.get("solution")
-    
-    # Policy: Prevent Backlog -> Review
-    if stage == IssueStage.REVIEW and current_status == IssueStatus.BACKLOG:
-         raise ValueError(f"Lifecycle Policy: Cannot submit Backlog issue directly. Run `monoco issue pull {issue_id}` first.")
-
-    if target_status == IssueStatus.CLOSED:
-        if not effective_solution:
-            raise ValueError(f"Closing an issue requires a solution. Please provide --solution or edit the file metadata.")
-            
-        current_data_stage = data.get('stage')
-        
-        # Policy: IMPLEMENTED requires REVIEW stage
-        if effective_solution == IssueSolution.IMPLEMENTED.value:
-            if current_data_stage != IssueStage.REVIEW.value:
-                raise ValueError(f"Lifecycle Policy: 'Implemented' issues must be submitted for review first.\nCurrent stage: {current_data_stage}\nAction: Run `monoco issue submit {issue_id}`.")
-
-        # Policy: No closing from DOING (General Safety)
-        if current_data_stage == IssueStage.DOING.value:
-             raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
-            
-    # Update Data
-    if status:
-        data['status'] = status.value
-
-    if stage:
-        data['stage'] = stage.value
-    if solution:
-        data['solution'] = solution.value
-    
-    # Lifecycle Hooks
-    # 1. Opened At: If transitioning to OPEN
-    if target_status == IssueStatus.OPEN and current_status != IssueStatus.OPEN:
-        # Only set if not already set? Or always reset?
-        # Let's set it if not present, or update it to reflect "Latest activation"
-        # FEAT-0012 says: "update opened_at to now"
-        data['opened_at'] = datetime.now()
-    
-    # 2. Backlog Push: Handled by IssueMetadata.validate_lifecycle (Status=Backlog -> Stage=None)
-    # 3. Closed: Handled by IssueMetadata.validate_lifecycle (Status=Closed -> Stage=Done, ClosedAt=Now)
-
-    # Touch updated_at
-    data['updated_at'] = datetime.now()
-    
-    # Re-hydrate through Model to trigger Logic (Stage, ClosedAt defaults)
-    try:
-        updated_meta = IssueMetadata(**data)
-    except Exception as e:
-        raise ValueError(f"Failed to validate updated metadata: {e}")
-        
-    # Serialize back
-    new_yaml = yaml.dump(updated_meta.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
-    
-    # Reconstruct File
-    match_header = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
-    if not match_header:
-        # Should not happen as we just dumped it?
-        # But content is the OLD content. 
-        # Wait, lines 179 read the content.
-        # Lines 262 is finding header in 'content' (old content).
-        # But we want to preserve body.
-        # Lines 183-194 already parsed body.
-        # body = match.group(2)
-        # We should use 'body' variable we extracted earlier!
-        body_content = body
-    else:
-        body_content = content[match_header.end():]
-    
-    if body_content.startswith('\n'):
-        body_content = body_content[1:] 
-        
-    new_content = f"---\n{new_yaml}---\n{body_content}"
-    
-    path.write_text(new_content)
-    
-    # 3. Handle physical move if status changed
-    if status and status != current_status:
-        # Move file
-        prefix = issue_id.split("-")[0].upper()
-        base_type_dir = get_issue_dir(REVERSE_PREFIX_MAP[prefix], issues_root)
-        
-        try:
-            rel_path = path.relative_to(base_type_dir)
-            # Remove the first component (current status directory)
-            structure_path = Path(*rel_path.parts[1:]) if len(rel_path.parts) > 1 else Path(path.name)
-        except ValueError:
-            structure_path = Path(path.name)
-
-        target_path = base_type_dir / target_status.value / structure_path
-            
-        if path != target_path:
-            target_path.parent.mkdir(parents=True, exist_ok=True)
-            path.rename(target_path)
-
-    # Hook: Recursive Aggregation (FEAT-0003)
-    if updated_meta.parent:
-        recalculate_parent(issues_root, updated_meta.parent)
-        
-    return updated_meta
 
 def delete_issue_file(issues_root: Path, issue_id: str):
     """

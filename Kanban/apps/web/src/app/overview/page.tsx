@@ -21,6 +21,7 @@ import KanbanColumn from "../components/KanbanColumn";
 import IssueDetailModal from "../components/IssueDetailModal";
 import CreateIssueDialog from "../components/CreateIssueDialog";
 import { Issue } from "../types";
+import { useTerms } from "../contexts/TermContext";
 
 export default function OverviewPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -29,6 +30,7 @@ export default function OverviewPage() {
   const [focusedIssueId, setFocusedIssueId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [filterText, setFilterText] = useState("");
+  const { t } = useTerms();
 
   // @ts-ignore - core types might be lagging
   const { daemonUrl, status, currentProjectId } = useDaemonStore();
@@ -110,7 +112,45 @@ export default function OverviewPage() {
     return { epics, groupedIssues: grouped, unassigned };
   }, [issues, filterText]);
 
+      // ... inside component ...
+  const handleIssueDrop = async (issueId: string, stageId: string) => {
+    if (status !== "connected") return;
+    
+    // Find issue to verify change is needed
+    const issue = issues.find(i => i.id === issueId);
+    if (!issue || issue.stage === stageId) return;
+
+    try {
+      const res = await fetch(`${daemonUrl}/api/v1/issues/${issueId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+            stage: stageId,
+            project_id: currentProjectId 
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.detail || "Failed to update issue stage");
+      }
+      
+      // SSE will handle the UI update
+    } catch (err: any) {
+      console.error(err);
+      // Dynamic import to avoid SSR issues with Blueprint Toaster if any
+      const { OverlayToaster, Position: ToasterPosition } = await import("@blueprintjs/core");
+      const toaster = await OverlayToaster.createAsync({ position: ToasterPosition.TOP });
+      toaster.show({ 
+          message: `Failed to move ${issueId}: ${err.message}`, 
+          intent: "danger",
+          icon: "error"
+      });
+    }
+  };
+
   const getColumns = (groupIssues: Issue[]) => {
+      // ... existing getColumns logic ...
     const byStage: Record<string, Issue[]> = {
       todo: [],
       doing: [],
@@ -136,10 +176,10 @@ export default function OverviewPage() {
     });
 
     return [
-      { id: "todo", title: "To Do", items: byStage.todo },
-      { id: "doing", title: "Doing", items: byStage.doing },
-      { id: "review", title: "Review", items: byStage.review },
-      { id: "done", title: "Done", items: byStage.done },
+      { id: "todo", title: t("todo", "To Do"), items: byStage.todo },
+      { id: "doing", title: t("doing", "Doing"), items: byStage.doing },
+      { id: "review", title: t("review", "Review"), items: byStage.review },
+      { id: "done", title: t("done", "Done"), items: byStage.done },
     ];
   };
 
@@ -266,6 +306,7 @@ export default function OverviewPage() {
                   issues={col.items}
                   activeIssueId={focusedIssueId}
                   onIssueClick={(issue) => setFocusedIssueId(issue.id)}
+                  onDrop={handleIssueDrop}
                 />
               ))}
             </div>
@@ -294,6 +335,7 @@ export default function OverviewPage() {
                   issues={col.items}
                   activeIssueId={focusedIssueId}
                   onIssueClick={(issue) => setFocusedIssueId(issue.id)}
+                  onDrop={handleIssueDrop}
                 />
               ))}
             </div>

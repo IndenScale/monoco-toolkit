@@ -12,6 +12,7 @@ import {
 import Editor from "@monaco-editor/react";
 import { Issue } from "../types";
 import { useDaemonStore } from "@monoco/kanban-core";
+import { useTerms } from "../contexts/TermContext";
 
 interface IssueDetailModalProps {
   issueId: string | null;
@@ -29,8 +30,10 @@ export default function IssueDetailModal({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTerms();
 
   useEffect(() => {
+    // ... (fetch logic remains same) ...
     if (!issueId || !daemonUrl) {
       setIssue(null);
       return;
@@ -49,7 +52,6 @@ export default function IssueDetailModal({
         if (!res.ok) throw new Error("Failed to load issue");
         const data = await res.json();
         setIssue(data);
-        // Use raw_content for editing if available (full file), otherwise body
         setEditContent(data.raw_content || data.body || "");
       } catch (err: any) {
         setError(err.message);
@@ -63,6 +65,7 @@ export default function IssueDetailModal({
   }, [issueId, daemonUrl, currentProjectId]);
 
   const handleSave = async () => {
+      // ... (handleSave logic remains same) ...
     if (!issueId || !daemonUrl) return;
 
     setLoading(true);
@@ -87,26 +90,8 @@ export default function IssueDetailModal({
         throw new Error(errData.detail || "Failed to save issue");
       }
 
-      const updatedIssue = await res.json();
-      setIssue(updatedIssue);
-      // Update edit content with the new state (though it should be same as what we sent)
-      // Actually updatedIssue might not have raw_content if the response model is just Metadata?
-      // The endpoint returns IssueMetadata, not IssueDetail.
-      // So we might need to refetch or just assume success.
-      // But let's check what the endpoint returns.
-      // It returns `IssueMetadata` which doesn't have body/raw_content.
-      // So we should re-fetch the issue details to get the fresh content/body.
-      
-      // Re-fetch logic (simplified by just calling the effect logic or separate function)
-      // But we can't easily call the effect.
-      // Let's just switch off editing mode.
       setIsEditing(false);
       
-      // Optionally we can trigger a re-fetch of the specific issue
-      // We can reuse the fetch logic if we extract it, but for now let's just:
-      // We need to update the body view.
-      // Since we don't get the body back, the view will be stale if we don't refetch.
-      // So let's refetch.
       const params = currentProjectId ? `?project_id=${currentProjectId}` : "";
       const refreshRes = await fetch(`${daemonUrl}/api/v1/issues/${issueId}${params}`);
       if (refreshRes.ok) {
@@ -119,6 +104,32 @@ export default function IssueDetailModal({
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTransition = async (newStage: string) => {
+    if (!issueId || !daemonUrl) return;
+    setLoading(true);
+    try {
+        const res = await fetch(`${daemonUrl}/api/v1/issues/${issueId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stage: newStage, project_id: currentProjectId })
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || "Failed to transition issue");
+        }
+        // Refresh
+        const params = currentProjectId ? `?project_id=${currentProjectId}` : "";
+        const refreshRes = await fetch(`${daemonUrl}/api/v1/issues/${issueId}${params}`);
+        if (refreshRes.ok) {
+            setIssue(await refreshRes.json());
+        }
+    } catch (err: any) {
+        setError(err.message);
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -181,7 +192,7 @@ export default function IssueDetailModal({
                       Status
                     </div>
                     <Tag intent={getStatusIntent(issue.status)} minimal large>
-                      {issue.status?.toUpperCase()}
+                      {t(issue.status?.toLowerCase(), issue.status?.toUpperCase())}
                     </Tag>
                   </div>
                   <Divider className="h-8" />
@@ -190,7 +201,7 @@ export default function IssueDetailModal({
                       Stage
                     </div>
                     <div className="text-text-primary font-medium">
-                      {issue.stage ? issue.stage.toUpperCase() : "-"}
+                      {issue.stage ? t(issue.stage.toLowerCase(), issue.stage.toUpperCase()) : "-"}
                     </div>
                   </div>
                   <Divider className="h-8" />
@@ -199,7 +210,7 @@ export default function IssueDetailModal({
                       Type
                     </div>
                     <Tag minimal icon="clean">
-                      {issue.type?.toUpperCase()}
+                      {t(issue.type?.toLowerCase(), issue.type?.toUpperCase())}
                     </Tag>
                   </div>
                 </div>
@@ -256,6 +267,24 @@ export default function IssueDetailModal({
           Classes.DIALOG_FOOTER + " bg-surface border-t border-border-subtle"
         }>
         <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+          {!isEditing && issue?.stage?.toLowerCase() === 'review' && (
+             <>
+                <Button 
+                    text="Reject" 
+                    intent={Intent.DANGER} 
+                    icon="cross"
+                    onClick={() => handleTransition('doing')} 
+                />
+                <Button 
+                    text="Approve" 
+                    intent={Intent.SUCCESS} 
+                    icon="tick"
+                    onClick={() => handleTransition('done')} 
+                />
+                <Divider />
+             </>
+          )}
+
           {isEditing ? (
             <>
               <Button text="Cancel" onClick={() => setIsEditing(false)} />
