@@ -1,0 +1,13 @@
+{
+  "name": "@monoco/kanban-root",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspace=@monoco/kanban-web",
+    "start": "npm run start --workspace=@monoco/kanban-web"
+  }
+}

@@ -1,0 +1,20 @@
+export interface Issue {
+  id: string;
+  type: string;
+  title: string;
+  status: string;
+  stage?: string;
+  parent?: string;
+  dependencies?: string[];
+  created_at?: string;
+  body?: string;
+  raw_content?: string;
+  tags?: string[];
+}
+
+export interface BoardData {
+  todo: Issue[];
+  doing: Issue[];
+  review: Issue[];
+  done: Issue[];
+}
