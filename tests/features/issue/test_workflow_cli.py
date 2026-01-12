@@ -17,7 +17,7 @@ def test_feature_0012_workflow(issues_root):
     # 1. Test Creation (Normal)
     # ------------------------------------------------
     print("\n[Test] Creating Normal Issue...")
-    fid = core.create_issue_file(issues_root, IssueType.FEATURE, "Test Feature", status=IssueStatus.OPEN)
+    fid = core.create_issue_file(issues_root, IssueType.FEATURE, "Test Feature", status=IssueStatus.OPEN)[0].id
     
     f_path = core.find_issue_path(issues_root, fid)
     assert f_path.exists()
@@ -79,7 +79,7 @@ def test_feature_0012_workflow(issues_root):
     # 6. Test Creation (Backlog directly)
     # ------------------------------------------------
     print("\n[Test] creating directly in backlog...")
-    bid = core.create_issue_file(issues_root, IssueType.FEATURE, "Backlog Feature", status=IssueStatus.BACKLOG)
+    bid = core.create_issue_file(issues_root, IssueType.FEATURE, "Backlog Feature", status=IssueStatus.BACKLOG)[0].id
     b_path = core.find_issue_path(issues_root, bid)
     
     assert "Features/backlog" in str(b_path)

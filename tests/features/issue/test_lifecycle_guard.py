@@ -12,7 +12,7 @@ def test_guard_conditions(issues_root):
     
     # Setup: Create a DOING issue
     print("\n[Test] Creating Issue in DOING state...")
-    fid = core.create_issue_file(issues_root, IssueType.FEATURE, "Guard Test Feature")
+    fid = core.create_issue_file(issues_root, IssueType.FEATURE, "Guard Test Feature")[0].id
     # Move to DOING
     core.update_issue(issues_root, fid, stage=IssueStage.DOING)
     
@@ -30,7 +30,8 @@ def test_guard_conditions(issues_root):
         raise AssertionError("Close Guard Failed")
     except ValueError as e:
         print(f"✅ PASSED: Correctly caught error: {e}")
-        assert "Cannot close issue in progress" in str(e)
+        assert "Lifecycle Policy" in str(e)
+        # assert "Cannot close issue in progress" in str(e) # eclipsed by stricter rule
 
     # 2. Test Happy Path (Doing -> Review -> Closed)
     # ------------------------------------------------
@@ -52,7 +53,7 @@ def test_guard_conditions(issues_root):
     # ------------------------------------------------
     print("\n[Test] Transitioning DOING -> TODO -> CLOSED...")
     # Create new Doing issue
-    fid2 = core.create_issue_file(issues_root, IssueType.FEATURE, "Abandon Test Feature")
+    fid2 = core.create_issue_file(issues_root, IssueType.FEATURE, "Abandon Test Feature")[0].id
     core.update_issue(issues_root, fid2, stage=IssueStage.DOING)
     
     # Back to Todo
