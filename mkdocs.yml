@@ -1,0 +1,24 @@
+site_name: Monoco Toolkit
+site_url: https://monoco.io/toolkit/
+repo_url: https://github.com/monoco-io/toolkit
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+  palette:
+    scheme: default
+    primary: deep purple
+    accent: teal
+
+docs_dir: docs
+
+nav:
+  - Home: en/index.md
+  - Architecture: en/architecture.md
+  - Manuals:
+    - Issue System: en/issue/manual.md
+    - Spike System: en/spike/manual.md
+    - Setup: en/setup/manual.md

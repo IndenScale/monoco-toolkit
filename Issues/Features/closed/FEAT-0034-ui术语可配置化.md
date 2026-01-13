@@ -1,16 +1,18 @@
 ---
 id: FEAT-0034
 type: feature
-status: open
-stage: todo
+status: closed
+stage: done
 title: UI术语可配置化
-created_at: "2026-01-12T17:27:04.755703"
-opened_at: "2026-01-12T17:27:04.755690"
-updated_at: "2026-01-12T17:27:04.755704"
+created_at: '2026-01-12T17:27:04.755703'
+opened_at: '2026-01-12T17:27:04.755690'
+updated_at: '2026-01-13T08:35:36.579401'
+closed_at: '2026-01-13T08:35:36.579422'
 parent: EPIC-0004
+solution: implemented
 dependencies:
-  - FEAT-0029
-  - FEAT-0014
+- FEAT-0029
+- FEAT-0014
 related: []
 tags: []
 ---
@@ -31,8 +33,8 @@ tags: []
 
 ## Technical Tasks
 
-- [ ] **Config**: 更新 `CoreConfig` 模型，增加 `ui_dictionary` 字段及默认值。
-- [ ] **API**: 在 `Daemon` 的配置接口中返回处理后的字典数据。
-- [ ] **Frontend (Context)**: 创建 `TermContext` (React Context)，全局分发术语定义。
-- [ ] **Frontend (UI)**: 替换所有硬编码的文本（如 `status === 'open'` 显示为 `dictionary.status_open`）。
-- [ ] **Docs**: 编写关于如何定制领域术语的用户文档示例。
+- [x] **Config**: 更新 `CoreConfig` 模型，增加 `ui_dictionary` 字段及默认值。
+- [x] **API**: 在 `Daemon` 的配置接口中返回处理后的字典数据。
+- [x] **Frontend (Context)**: 创建 `TermContext` (React Context)，全局分发术语定义。
+- [x] **Frontend (UI)**: 替换所有硬编码的文本（如 `status === 'open'` 显示为 `dictionary.status_open`）。
+- [x] **Docs**: 编写关于如何定制领域术语的用户文档示例。

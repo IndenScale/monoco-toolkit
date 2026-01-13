@@ -2,6 +2,52 @@ from enum import Enum
 from typing import List, Optional, Any
 from pydantic import BaseModel, Field, model_validator
 from datetime import datetime
+import hashlib
+import secrets
+
+
+class IssueID:
+    """
+    Helper for parsing Issue IDs that might be namespaced (e.g. 'toolkit::FEAT-0001').
+    """
+    def __init__(self, raw: str):
+        self.raw = raw
+        if "::" in raw:
+            self.namespace, self.local_id = raw.split("::", 1)
+        else:
+            self.namespace = None
+            self.local_id = raw
+
+    def __str__(self):
+        if self.namespace:
+            return f"{self.namespace}::{self.local_id}"
+        return self.local_id
+        
+    def __repr__(self):
+        return f"IssueID({self.raw})"
+
+    @property
+    def is_local(self) -> bool:
+        return self.namespace is None
+
+    def matches(self, other_id: str) -> bool:
+        """Check if this ID matches another ID string."""
+        return str(self) == other_id or (self.is_local and self.local_id == other_id)
+
+def current_time() -> datetime:
+    return datetime.now().replace(microsecond=0)
+
+def generate_uid() -> str:
+    """
+    Generate a globally unique 6-character short hash for issue identity.
+    Uses timestamp + random bytes to ensure uniqueness across projects.
+    """
+    timestamp = str(datetime.now().timestamp()).encode()
+    random_bytes = secrets.token_bytes(8)
+    combined = timestamp + random_bytes
+    hash_digest = hashlib.sha256(combined).hexdigest()
+    return hash_digest[:6]
+
 
 class IssueType(str, Enum):
     EPIC = "epic"
@@ -35,21 +81,22 @@ class IssueIsolation(BaseModel):
     type: IsolationType
     ref: str  # Git branch name
     path: Optional[str] = None  # Worktree path (relative to repo root or absolute)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=current_time)
 
 class IssueMetadata(BaseModel):
     model_config = {"extra": "allow"}
     
     id: str
+    uid: Optional[str] = None  # Global unique identifier for cross-project identity
     type: IssueType
     status: IssueStatus = IssueStatus.OPEN
     stage: Optional[IssueStage] = None
     title: str
     
     # Time Anchors
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=current_time)
     opened_at: Optional[datetime] = None
-    updated_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=current_time)
     closed_at: Optional[datetime] = None
 
     parent: Optional[str] = None
@@ -59,6 +106,7 @@ class IssueMetadata(BaseModel):
     dependencies: List[str] = []
     related: List[str] = []
     tags: List[str] = []
+
 
     @model_validator(mode='before')
     @classmethod
@@ -92,7 +140,7 @@ class IssueMetadata(BaseModel):
                 self.stage = IssueStage.DONE
             # Auto-fill closed_at if missing
             if not self.closed_at:
-                self.closed_at = datetime.now()
+                self.closed_at = current_time()
         
         elif self.status == IssueStatus.OPEN:
             # Ensure valid stage for open status

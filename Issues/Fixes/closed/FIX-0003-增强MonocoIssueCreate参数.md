@@ -1,18 +1,18 @@
 ---
 id: FIX-0003
 type: fix
-status: open
-stage: doing
+status: closed
+stage: done
 title: 增强 monoco issue create 以支持缺失参数和输出 (Enhance monoco issue create)
-created_at: "2026-01-10T20:40:55.417933"
-opened_at: "2026-01-10T20:58:47.694689"
-updated_at: "2026-01-10T20:58:47.694693"
-closed_at: "2026-01-10T20:46:20.951561"
+created_at: '2026-01-10T20:40:55.417933'
+opened_at: '2026-01-10T20:58:47.694689'
+updated_at: '2026-01-13T08:37:54.758332'
+closed_at: '2026-01-10T20:46:20.951561'
+parent: EPIC-0002
 solution: implemented
 dependencies: []
 related: []
 tags: []
-parent: EPIC-0002
 ---
 
 ## FIX-0003: 增强 monoco issue create 以支持缺失参数和输出
@@ -33,7 +33,7 @@ parent: EPIC-0002
 
 ## 技术任务 (Technical Tasks)
 
-- [ ] 更新 `Toolkit/monoco/features/issue/commands.py`: 为 `create` 命令添加 `sprint` 和 `tags` 选项。
-- [ ] 更新 `Toolkit/monoco/features/issue/core.py`: 更新 `create_issue_file` 签名和逻辑以处理新字段。
-- [ ] 在 `create_issue_file` 中实现对 `dependencies` 和 `related` 的存在性检查（重用 `find_issue_path`）。
-- [ ] 修改 `Toolkit/monoco/features/issue/commands.py`: 更新成功打印信息以包含 `issue_path`。
+- [x] 更新 `Toolkit/monoco/features/issue/commands.py`: 为 `create` 命令添加 `sprint` 和 `tags` 选项。
+- [x] 更新 `Toolkit/monoco/features/issue/core.py`: 更新 `create_issue_file` 签名和逻辑以处理新字段。
+- [x] 在 `create_issue_file` 中实现对 `dependencies` 和 `related` 的存在性检查（重用 `find_issue_path`）。
+- [x] 修改 `Toolkit/monoco/features/issue/commands.py`: 更新成功打印信息以包含 `issue_path`。

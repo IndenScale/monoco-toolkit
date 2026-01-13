@@ -8,6 +8,7 @@ from asyncio import Queue
 from pathlib import Path
 
 from monoco.features.issue.core import parse_issue, IssueMetadata
+import json
 
 logger = logging.getLogger("monoco.daemon.services")
 
@@ -35,7 +36,7 @@ class Broadcaster:
         
         message = {
             "event": event_type,
-            "data": payload
+            "data": json.dumps(payload)
         }
         
         # Dispatch to all queues

@@ -3,19 +3,21 @@
 id: EPIC-0006
 type: epic
 status: open
-stage: todo
+stage: doing
 title: Monoco 看板 Web 应用 (Monoco Kanban Web App)
-created_at: "2026-01-11T10:35:29.959257"
-opened_at: "2026-01-11T10:35:29.959240"
-updated_at: "2026-01-11T10:35:29.959259"
+created_at: '2026-01-11T10:35:29.959257'
+opened_at: '2026-01-11T10:35:29.959240'
+updated_at: '2026-01-11T10:35:29.959259'
 dependencies:
-  - EPIC-0002
-  - EPIC-0005
+- EPIC-0002
+- EPIC-0005
 related: []
 tags:
-  - frontend
-  - visualization
-  - ux
+- frontend
+- visualization
+- ux
+progress: 1/4
+files_count: 0
 ---
 
 ## EPIC-0006: Monoco 看板 Web 应用 (Monoco Kanban Web App)
