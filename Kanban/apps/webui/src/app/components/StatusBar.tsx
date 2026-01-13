@@ -1,9 +1,9 @@
 import React from "react";
-import { Icon, Spinner, Intent } from "@blueprintjs/core";
+import { Icon, Spinner, Intent, Tooltip } from "@blueprintjs/core";
 import { useDaemonStore } from "@monoco-io/kanban-core";
 
 export default function StatusBar() {
-  const { status, daemonUrl } = useDaemonStore();
+  const { status, daemonUrl, checkConnection } = useDaemonStore();
 
   const getStatusColor = () => {
     switch (status) {
@@ -21,11 +21,9 @@ export default function StatusBar() {
   const getStatusText = () => {
     switch (status) {
       case "connected":
-        return `Connected to ${daemonUrl}`;
+        return "Connected";
       case "connecting":
-        return "Connecting to Daemon...";
-      case "error":
-        return "Connection Error";
+        return "Connecting...";
       default:
         return "Disconnected";
     }
@@ -34,10 +32,15 @@ export default function StatusBar() {
   return (
     <footer className="h-6 bg-surface-highlight border-t border-border-subtle flex items-center px-3 text-[11px] text-text-muted select-none z-50 shrink-0 justify-between">
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 hover:bg-white/5 px-2 py-0.5 rounded cursor-pointer transition-colors">
-          <div className={`w-2 h-2 rounded-full ${getStatusColor()}`} />
-          <span>{getStatusText()}</span>
-        </div>
+        <Tooltip content={`Server: ${daemonUrl || "Not Set"}`} hoverOpenDelay={300}>
+            <div 
+                className="flex items-center gap-2 hover:bg-white/5 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                onClick={() => checkConnection()}
+            >
+                <div className={`w-2 h-2 rounded-full ${getStatusColor()}`} />
+                <span>{getStatusText()}</span>
+            </div>
+        </Tooltip>
         
         <div className="flex items-center gap-1 hover:bg-white/5 px-2 py-0.5 rounded cursor-pointer transition-colors">
             <Icon icon="git-branch" size={12} />

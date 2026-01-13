@@ -6,60 +6,111 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Core Palette */
-  --color-canvas: #020617; /* Slate 950 */
-  --color-surface: #0f172a; /* Slate 900 */
-  --color-surface-highlight: #1e293b; /* Slate 800 */
-  --color-border: #334155; /* Slate 700 */
-  --color-border-subtle: rgba(51, 65, 85, 0.4);
+@layer base {
+  :root {
+    /* Shadcn/UI Variables (Light - Default) */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-  /* Text */
-  --color-text-primary: #f8fafc; /* Slate 50 */
-  --color-text-secondary: #94a3b8; /* Slate 400 */
-  --color-text-muted: #64748b; /* Slate 500 */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-  /* Accents */
-  --color-accent: #3b82f6; /* Blue 500 */
-  --color-accent-glow: rgba(59, 130, 246, 0.5);
-  
-  /* Status */
-  --color-success: #10b981; /* Emerald 500 */
-  --color-warning: #f59e0b; /* Amber 500 */
-  --color-danger: #ef4444; /* Red 500 */
-  
-  /* Blueprint Overrides */
-  --bp-intent-primary: var(--color-accent);
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    /* Legacy Map (Compat) */
+    --color-canvas: #ffffff;
+    --color-surface: #f8fafc;
+    --color-text-primary: #0f172a;
+  }
+
+  .dark {
+    /* Shadcn/UI Variables (Dark - Slate) */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    /* Legacy Map (Compat - Monoco Dark) */
+    --color-canvas: #020617;
+    --color-surface: #0f172a;
+    --color-text-primary: #f8fafc;
+  }
 }
 
-body {
-  background-color: var(--color-canvas);
-  color: var(--color-text-primary);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
-/* Glassmorphism Utilities */
+/* Glassmorphism Utilities (Preserved) */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border-subtle);
+  @apply bg-background/60 backdrop-blur-md border border-border;
+}
+
+/* Blueprint Override: Ensure Cards use Theme Variables */
+.bp6-card, .bp5-card {
+  @apply bg-card text-card-foreground shadow-sm rounded-lg border border-border !important;
+  box-shadow: none !important; /* Reset BP shadow to avoid conflict */
 }
 
 .glass-card {
-  background: rgba(30, 41, 59, 0.4);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--color-border-subtle);
-  transition: all 0.2s ease;
+  @apply bg-surface/40 backdrop-blur-sm border border-border/40 transition-all duration-200;
 }
 
 .glass-card:hover {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: var(--color-accent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+  @apply bg-surface/60 border-accent/50 -translate-y-0.5 shadow-lg;
 }
 
 .heading-gradient {
@@ -67,40 +118,3 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
-/* Scrollbar Customization */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-/* Blueprint Dark Mode Overrides for consistency */
-.bp5-dark {
-  /* background-color: transparent !important;  <-- Removed to avoid making body transparent */
-}
-
-body.bp5-dark {
-  background-color: var(--color-canvas) !important;
-  color: var(--color-text-primary) !important;
-}
-
-.bp5-card {
-  background-color: var(--color-surface) !important;
-  color: var(--color-text-primary) !important;
-  box-shadow: none !important;
-  border: 1px solid var(--color-border-subtle) !important;
-}
-

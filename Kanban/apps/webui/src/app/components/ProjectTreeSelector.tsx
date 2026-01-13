@@ -4,7 +4,6 @@ import React, { useMemo } from "react";
 import {
   Menu,
   MenuItem,
-  MenuDivider,
   Icon,
   Classes,
   Tree,
@@ -43,7 +42,7 @@ const buildProjectTree = (projects: any[], currentProjectId: string | null): Tre
 };
 
 export default function ProjectTreeSelector({ onSelect }: ProjectTreeSelectorProps) {
-  const { projects, currentProjectId, setCurrentProjectId, refreshProjects } = useDaemonStore();
+  const { projects, currentProjectId, setCurrentProjectId } = useDaemonStore();
 
   const handleNodeClick = (node: TreeNodeInfo) => {
     const project = node.nodeData as any;
@@ -71,10 +70,6 @@ export default function ProjectTreeSelector({ onSelect }: ProjectTreeSelectorPro
             onNodeClick={handleNodeClick}
             className={Classes.ELEVATION_0}
         />
-        <MenuDivider />
-        <Menu>
-            <MenuItem icon="refresh" text="Refresh Projects" onClick={() => refreshProjects && refreshProjects()} />
-        </Menu>
     </div>
   );
 }

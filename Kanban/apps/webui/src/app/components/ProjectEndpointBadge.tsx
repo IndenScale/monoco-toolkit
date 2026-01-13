@@ -56,7 +56,7 @@ export default function ProjectEndpointBadge() {
               Endpoint URL
             </label>
             <InputGroup
-              className="bp5-dark"
+              className="bp6-dark"
               value={inputUrl}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setInputUrl(e.target.value)

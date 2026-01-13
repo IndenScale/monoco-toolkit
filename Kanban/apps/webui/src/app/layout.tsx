@@ -7,10 +7,16 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Monoco Kanban",
   description: "Task as Code Client",
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
 };
 
 import { Providers } from "./providers";
 import LayoutShell from "./components/LayoutShell";
+import { ThemeProvider } from "../components/theme-provider";
 
 export default function RootLayout({
   children,
@@ -18,11 +24,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bp5-dark`}>
-        <Providers>
-          <LayoutShell>{children}</LayoutShell>
-        </Providers>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className}`}>
+        <ThemeProvider defaultTheme="system" storageKey="monoco-ui-theme">
+          <Providers>
+            <LayoutShell>{children}</LayoutShell>
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );

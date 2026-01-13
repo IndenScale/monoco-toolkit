@@ -162,7 +162,7 @@ export default function IssueDetailModal({
           "Loading..."
         )
       }
-      className="bp5-dark w-[90vw] h-[90vh] flex flex-col p-0"
+      className="bp6-dark w-[90vw] h-[90vh] flex flex-col p-0"
       style={{ width: "1200px", maxWidth: "95vw", height: "85vh" }}>
       <div
         className={
