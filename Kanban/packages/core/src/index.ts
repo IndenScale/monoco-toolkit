@@ -28,7 +28,9 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     set({ isLoading: true });
     try {
       const params = currentProjectId ? `?project_id=${currentProjectId}` : '';
-      const res = await fetch(`${daemonUrl}/api/v1/issues${params}`);
+      const res = await fetch(`${daemonUrl}/api/v1/issues${params}`, {
+        cache: "no-store",
+      });
       if (res.ok) {
         const issues: Issue[] = await res.json();
         set({ issues, isLoading: false });
@@ -96,12 +98,22 @@ export function useKanbanSync() {
       fetchStats();
     };
 
+    const onProjectChange = () => {
+      useDaemonStore.getState().refreshProjects();
+    };
+
     const unsubUpsert = sseManager.on("issue_upserted", onUpsert);
     const unsubDelete = sseManager.on("issue_deleted", onDelete);
+    const unsubPrjCreate = sseManager.on("project_created", onProjectChange);
+    const unsubPrjUpdate = sseManager.on("project_updated", onProjectChange);
+    const unsubPrjDelete = sseManager.on("project_deleted", onProjectChange);
 
     return () => {
       unsubUpsert();
       unsubDelete();
+      unsubPrjCreate();
+      unsubPrjUpdate();
+      unsubPrjDelete();
     };
   }, [upsertIssue, removeIssue, fetchStats, currentProjectId]);
 }

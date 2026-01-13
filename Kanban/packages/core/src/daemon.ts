@@ -4,13 +4,38 @@ import { DaemonInfo, DaemonStatus, Project } from "./types";
 const DEFAULT_DAEMON_URL =
   typeof window !== "undefined"
     ? window.localStorage?.getItem("monoco_daemon_url") ||
+      process.env.NEXT_PUBLIC_MONOCO_DAEMON_URL ||
       "http://127.0.0.1:8642"
-    : "http://127.0.0.1:8642";
+    : process.env.NEXT_PUBLIC_MONOCO_DAEMON_URL || "http://127.0.0.1:8642";
+
+// Helper for fetch with timeout
+async function fetchWithTimeout(
+  resource: RequestInfo,
+  options: RequestInit & { timeout?: number } = {}
+) {
+  const { timeout = 2000, ...rest } = options;
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(resource, {
+      ...rest,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(id);
+  }
+}
 
 export class DaemonClient {
   static async checkHealth(url: string): Promise<boolean> {
     try {
-      const res = await fetch(`${url}/health`);
+      const res = await fetchWithTimeout(`${url}/health`, {
+        cache: "no-store",
+        timeout: 5000,
+      });
       return res.ok;
     } catch {
       return false;
@@ -19,20 +44,29 @@ export class DaemonClient {
 
   static async getInfo(url: string, projectId?: string): Promise<DaemonInfo> {
     const params = projectId ? `?project_id=${projectId}` : "";
-    const res = await fetch(`${url}/api/v1/info${params}`);
+    const res = await fetchWithTimeout(`${url}/api/v1/info${params}`, {
+      cache: "no-store",
+      timeout: 5000,
+    });
     if (!res.ok) throw new Error("Failed to fetch info");
     return res.json();
   }
 
   static async getProjects(url: string): Promise<Project[]> {
-    const res = await fetch(`${url}/api/v1/projects`);
+    const res = await fetchWithTimeout(`${url}/api/v1/projects`, {
+      cache: "no-store",
+      timeout: 5000,
+    });
     if (!res.ok) throw new Error("Failed to fetch projects");
     return res.json();
   }
 
   static async getWorkspaceState(url: string): Promise<any> {
     try {
-      const res = await fetch(`${url}/api/v1/workspace/state`);
+      const res = await fetchWithTimeout(`${url}/api/v1/workspace/state`, {
+        cache: "no-store",
+        timeout: 5000,
+      });
       if (res.ok) return res.json();
     } catch (e) {
       console.warn("Failed to fetch workspace state", e);
@@ -42,10 +76,11 @@ export class DaemonClient {
 
   static async setWorkspaceState(url: string, state: any): Promise<void> {
     try {
-      await fetch(`${url}/api/v1/workspace/state`, {
+      await fetchWithTimeout(`${url}/api/v1/workspace/state`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(state),
+        timeout: 5000,
       });
     } catch (e) {
       console.warn("Failed to set workspace state", e);
@@ -60,6 +95,7 @@ interface DaemonState {
   currentProjectId: string | null;
   lastChecked: number;
   daemonUrl: string;
+  errorCount: number;
   setStatus: (status: DaemonStatus) => void;
   setInfo: (info: DaemonInfo) => void;
   setProjects: (projects: Project[]) => void;
@@ -76,6 +112,7 @@ export const useDaemonStore = create<DaemonState>((set, get) => ({
   currentProjectId: null,
   lastChecked: 0,
   daemonUrl: DEFAULT_DAEMON_URL,
+  errorCount: 0,
   setStatus: (status) => set({ status }),
   setInfo: (info) => set({ info }),
   setProjects: (projects) => set({ projects }),
@@ -134,6 +171,7 @@ export const useDaemonStore = create<DaemonState>((set, get) => ({
       const isHealthy = await DaemonClient.checkHealth(daemonUrl);
 
       if (isHealthy) {
+        set({ errorCount: 0 });
         // Fetch projects first
         const projects = await DaemonClient.getProjects(daemonUrl);
         set({ projects });
@@ -164,16 +202,38 @@ export const useDaemonStore = create<DaemonState>((set, get) => ({
           }
         }
 
-        const info = await DaemonClient.getInfo(
-          daemonUrl,
-          targetProjectId || undefined
-        );
-        set({ status: "connected", info });
+        if (targetProjectId) {
+          const info = await DaemonClient.getInfo(daemonUrl, targetProjectId);
+          set({ status: "connected", info });
+        } else {
+          set({ status: "connected", info: null });
+        }
       } else {
+        const { errorCount, status } = get();
+        const newErrorCount = errorCount + 1;
+        set({ errorCount: newErrorCount });
+
+        if (status === "connected" && newErrorCount < 3) {
+          // Keep connection alive for minor glitches
+          return;
+        }
         set({ status: "error" });
       }
-    } catch (error) {
-      console.error("Daemon connection failed:", error);
+    } catch (error: any) {
+      // Enhanced logging to debug "permanent offline" issues
+      if (error.name === "AbortError") {
+        console.warn(`[Daemon] Connection timed out after 5000ms`);
+      } else {
+        console.error("[Daemon] Connection failed:", error);
+      }
+
+      const { errorCount, status } = get();
+      const newErrorCount = errorCount + 1;
+      set({ errorCount: newErrorCount });
+
+      if (status === "connected" && newErrorCount < 3) {
+        return;
+      }
       set({ status: "error" });
     }
   },
@@ -182,36 +242,57 @@ export const useDaemonStore = create<DaemonState>((set, get) => ({
 import { useEffect, useRef } from "react";
 
 export function useDaemonLifecycle(
-  baseIntervalMs = 15000,
-  maxIntervalMs = 30000
+  baseIntervalMs = 5000,
+  maxIntervalMs = 10000
 ) {
-  const { checkConnection, status } = useDaemonStore();
+  const status = useDaemonStore((s) => s.status);
+  const daemonUrl = useDaemonStore((s) => s.daemonUrl);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const intervalRef = useRef(baseIntervalMs);
+  // Start with a short interval for quick feedback on load
+  const intervalRef = useRef(1000);
+  const isMountedRef = useRef(true);
+
+  // Hydrate URL from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUrl = window.localStorage.getItem("monoco_daemon_url");
+      const currentUrl = useDaemonStore.getState().daemonUrl;
+      // If we have a stored URL that differs from default/current, use it
+      if (storedUrl && storedUrl !== currentUrl) {
+        useDaemonStore.getState().setDaemonUrl(storedUrl);
+      }
+    }
+  }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
+    const checkConnection = useDaemonStore.getState().checkConnection;
+
+    // Reset interval on url change
+    intervalRef.current = 1000;
+
     const scheduleNextCheck = () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
       timeoutRef.current = setTimeout(async () => {
+        if (!isMountedRef.current) return;
+
         await checkConnection();
+
+        if (!isMountedRef.current) return;
 
         // Determine next interval based on result
         const currentStatus = useDaemonStore.getState().status;
 
         if (currentStatus === "connected") {
-          // Reset to fast polling when connected
+          // Reset to slow polling when connected
           intervalRef.current = baseIntervalMs;
         } else {
-          // Exponential backoff when disconnected/error
+          // Exponential backoff when disconnected/error, but start from current interval
+          // Start fast (1s) -> 1.5s -> 2.25s -> ... -> max (10s)
           intervalRef.current = Math.min(
             intervalRef.current * 1.5,
             maxIntervalMs
-          );
-          console.log(
-            `Daemon offline. Retrying in ${Math.round(
-              intervalRef.current / 1000
-            )}s...`
           );
         }
 
@@ -221,14 +302,16 @@ export function useDaemonLifecycle(
 
     // Initial check immediately
     checkConnection().then(() => {
-      // Start the loop
-      scheduleNextCheck();
+      if (isMountedRef.current) {
+        scheduleNextCheck();
+      }
     });
 
     return () => {
+      isMountedRef.current = false;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [checkConnection, baseIntervalMs, maxIntervalMs]);
+  }, [baseIntervalMs, maxIntervalMs, daemonUrl]);
 
   return status;
 }

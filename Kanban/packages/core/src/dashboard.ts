@@ -20,7 +20,9 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     set({ isLoading: true });
     try {
       const params = currentProjectId ? `?project_id=${currentProjectId}` : '';
-      const res = await fetch(`${daemonUrl}/api/v1/stats/dashboard${params}`);
+      const res = await fetch(`${daemonUrl}/api/v1/stats/dashboard${params}`, {
+        cache: "no-store",
+      });
       if (res.ok) {
         const stats: DashboardStats = await res.json();
         set({ stats, isLoading: false });
