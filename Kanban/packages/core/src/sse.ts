@@ -13,7 +13,9 @@ class SSEManager {
 
     if (
       this.currentUrl === targetUrl &&
-      this.eventSource?.readyState === EventSource.OPEN
+      this.eventSource &&
+      (this.eventSource.readyState === EventSource.OPEN ||
+        this.eventSource.readyState === EventSource.CONNECTING)
     ) {
       return;
     }
@@ -55,6 +57,9 @@ class SSEManager {
 
     bindEvent("issue_upserted");
     bindEvent("issue_deleted");
+    bindEvent("project_created");
+    bindEvent("project_updated");
+    bindEvent("project_deleted");
 
     this.eventSource.onerror = (err) => {
       console.error("[SSE] Connection error", err);
