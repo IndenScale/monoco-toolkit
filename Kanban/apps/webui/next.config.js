@@ -2,6 +2,7 @@ const path = require("path");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "export",
   transpilePackages: ["@monoco/kanban-core"],
   outputFileTracingRoot: path.join(__dirname, "../../../"),
   experimental: {

@@ -39,12 +39,19 @@ monoco init
 
 ### 3. 掌握全局实况
 
+启动后台控制中枢：
+
 ```bash
-# 启动控制中枢
 monoco serve
 ```
 
-访问 `http://localhost:3213` 即可进入你的驾驶舱。
+在任意位置启动可视化看板控制台：
+
+```bash
+npx @monoco/kanban
+```
+
+访问 `http://localhost:3123`（或终端显示的地址）即可进入你的驾驶舱。
 
 ---
 
