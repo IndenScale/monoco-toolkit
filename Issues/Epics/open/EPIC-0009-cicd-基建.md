@@ -3,14 +3,16 @@ id: EPIC-0009
 uid: baa5a5
 type: epic
 status: open
-stage: todo
+stage: doing
 title: CICD 基建
-created_at: "2026-01-13T13:21:48"
-opened_at: "2026-01-13T13:21:48"
-updated_at: "2026-01-13T13:21:48"
+created_at: '2026-01-13T13:21:48'
+opened_at: '2026-01-13T13:21:48'
+updated_at: '2026-01-13T13:21:48'
 dependencies: []
 related: []
 tags: []
+progress: 1/1
+files_count: 0
 ---
 
 ## EPIC-0009: CICD 基建

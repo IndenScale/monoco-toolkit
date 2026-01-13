@@ -1,0 +1,44 @@
+name: Publish to NPM
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish-kanban:
+    name: Publish Kanban to NPM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: |
+          cd Toolkit/Kanban
+          npm install
+
+      - name: Build WebUI
+        run: |
+          cd Toolkit/Kanban
+          npm run build --workspace=@monoco/kanban-webui
+
+      - name: Prepare Package
+        run: |
+          mkdir -p Toolkit/Kanban/packages/monoco-kanban/dist
+          cp -r Toolkit/Kanban/apps/webui/out/* Toolkit/Kanban/packages/monoco-kanban/dist/
+          # Sync version from tag
+          VERSION=${GITHUB_REF#refs/tags/v}
+          sed -i "s/\"version\": \"0.1.0\"/\"version\": \"$VERSION\"/g" Toolkit/Kanban/packages/monoco-kanban/package.json
+
+      - name: Publish to NPM
+        run: |
+          cd Toolkit/Kanban/packages/monoco-kanban
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

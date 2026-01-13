@@ -39,12 +39,19 @@ monoco init
 
 ### 3. Take Control
 
+Start the backend control hub:
+
 ```bash
-# Start the control hub
 monoco serve
 ```
 
-Visit `http://localhost:3213` to enter your cockpit.
+Then, launch the visual mission dashboard from anywhere:
+
+```bash
+npx @monoco/kanban
+```
+
+Visit `http://localhost:3123` (or the URL displayed in your terminal) to enter your cockpit.
 
 ---
 
