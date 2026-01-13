@@ -1,7 +1,7 @@
 import os
 import uuid
 import json
-import httpx
+
 import time
 from pathlib import Path
 from typing import Optional, Dict, Any
@@ -73,7 +73,10 @@ class Telemetry:
 
         # Send asynchronously? For now, we'll do a simple non-blocking-ish call
         try:
+            import httpx
             httpx.post(f"{POSTHOG_HOST}/capture/", json=data, timeout=1.0)
+        except ImportError:
+            pass # Telemetry is optional
         except Exception:
             pass
 
