@@ -4,7 +4,6 @@ const path = require("path");
 const nextConfig = {
   output: "export",
   transpilePackages: ["@monoco-io/kanban-core"],
-  outputFileTracingRoot: path.join(__dirname, "../../../"),
   experimental: {
     externalDir: true,
   },
