@@ -20,7 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@monoco/kanban-core": ["../../packages/core/src/index.ts"]
+      "@monoco-io/kanban-core": ["../../packages/core/src/index.ts"]
     }
   },
   "include": [
