@@ -75,10 +75,10 @@ export default function KanbanColumn({
   onIssueClick,
   onDrop,
 }: KanbanColumnProps) {
+  const [isDragOver, setIsDragOver] = React.useState(false);
   const accentColor = getColumnColor(id);
 
   const { roots, childrenMap } = useMemo(() => {
-    // ... same logic ...
     const map = new Map<string, Issue>();
     issues.forEach((i) => map.set(i.id, i));
 
@@ -102,9 +102,26 @@ export default function KanbanColumn({
     e.dataTransfer.dropEffect = "move";
   };
 
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    // Only set to false if we are leaving the main container
+    // This is a bit tricky with children, but for a simple column it might be enough
+    // improved check: if the related target is not inside the current component
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragOver(false);
     const issueId = e.dataTransfer.getData("text/plain");
+    console.log(`Dropped issue ${issueId} on column ${id}`);
     if (issueId && onDrop) {
       onDrop(issueId, id);
     }
@@ -112,8 +129,12 @@ export default function KanbanColumn({
 
   return (
     <div
-      className="flex flex-col flex-1 min-w-[280px] h-full"
+      className={`flex flex-col flex-1 min-w-[280px] h-full transition-colors duration-200 rounded-xl ${
+        isDragOver ? "bg-white/5 ring-2 ring-primary/50" : ""
+      }`}
       onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}>
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
@@ -129,7 +150,12 @@ export default function KanbanColumn({
         </span>
       </div>
 
-      <div className="flex-1 glass-panel rounded-xl p-2 overflow-y-auto custom-scrollbar flex flex-col gap-2 border-t-4 border-t-transparent hover:border-t-border-subtle transition-colors">
+      <div
+        className={`flex-1 glass-panel rounded-xl p-2 overflow-y-auto custom-scrollbar flex flex-col gap-2 border-t-4 transition-colors ${
+          isDragOver
+            ? "border-t-primary bg-primary/5"
+            : "border-t-transparent hover:border-t-border-subtle"
+        }`}>
         {roots.map((issue) => (
           <IssueNode
             key={issue.id}

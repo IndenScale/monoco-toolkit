@@ -1,52 +1,51 @@
-# Monoco Toolkit
+# Monoco: 驾驭智能体
 
-> **原生代理 (Agent-Native) 开发体验。**
+> **在狂暴的 AI 动力与人类有限的带宽之间，建立一道确定性的屏障。**
 
-Monoco Toolkit 是一套专为弥合“人类意图”与“代理执行”之间鸿沟而设计的工具链。它通过为 Agent 提供标准化的、确定性的接口来交互代码库、管理任务和获取外部知识，从而解决“自举悖论”。
+LLM 时代的生产力正以垂直曲线爆发。一个 Agent 可以 24/7 不断执行任务、产生海量数据，而人类的生物性信息带宽是有限的。当 Agent 的规模从一变成一百，系统的瓶颈不再是"智能不足"，而是"无法驾驭"。
 
-## 愿景 (Vision)
+**Monoco 就是你的驾驶舱。**
 
-构建一个 **人机共生开发环境 (Symbiotic Development Environment)**：
+它存在的目的不是为了"观察"代理，而是为了"封装"代理。它在 LLM 原始且狂暴的执行力与人类严谨且有限的决策带宽之间，建立了一套人机对齐的控制界面。它确保所有的智能体行为，最终都坍缩为你所预期的结果。
 
-- **人类** 专注于 战略 (Strategy)、价值定义 (Value) 和 审查 (Review) —— 通过 Kanban UI。
-- **代理** 负责 执行 (Execution)、维护 (Maintenance) 和 验证 (Validation) —— 通过 Toolkit CLI。
+## 工作流：规划 - 执行 - 审核 - 归档
 
-## 核心组件 (Components)
+Monoco 将智能体的执行过程纳入一个清晰的循环：
 
-Toolkit 包含其实包含两个主要界面：
+1. **规划 (Plan)**：通过 **Project → Epic → Feature** 的层级分解，将复杂艰巨的任务拆解为可执行的最小单元。
+2. **执行 (Execute)**：Agent 根据 Issue 中定义的验收标准自主工作，所有中间状态通过结构化文件持久化。
+3. **审核 (Review)**：人类通过 Kanban 看板实时监控任务进展，仅在关键决策点介入。
+4. **归档 (Archive)**：完成的任务自动流转至归档状态，形成可追溯的项目历史。
 
-### 1. Toolkit CLI (`monoco`)
+## 控制矩阵
 
-_Agent 的感官延伸。_
-一个基于 Python 的 CLI，提供对项目状态的结构化、确定性访问。它奉行 **"Task as Code"** 哲学，将任务、Spike 和质量检查作为文件系统上的结构化文件进行管理。
+- **任务锚定 (Issues)**：通过结构化的文件定义任务，为 Agent 设定明确的活动范围和验收标准。
+- **确定性接口 (CLI)**：作为 Agent 的感官延伸，为其提供确定性的、结构化的项目感知能力，消除过度联想。
+- **意图大盘 (Kanban)**：高带宽的可视化控制台，让人类通过极低的操作成本完成高频的任务审计与状态流转。
 
-### 2. Kanban UI
+## 快速上手
 
-_人类的驾驶舱。_
-一个基于 Next.js 的 Web 应用程序，由 `monoco serve` 驱动，为管理由 Toolkit 定义的史诗、故事和任务提供类似 Linear 的现代化体验。
-
-## 快速开始 (Quick Start)
-
-### 1. 安装 CLI
+### 1. 安装控制套件
 
 ```bash
-cd Toolkit
-pip install -e .
+pip install monoco-toolkit
 ```
 
-### 2. 启动守护进程与 UI
+### 2. 初始化工作流
 
 ```bash
-# 启动后端守护进程
+monoco init
+```
+
+### 3. 掌握全局实况
+
+```bash
+# 启动控制中枢
 monoco serve
-
-# 在另一个终端启动 UI
-cd Toolkit/Kanban
-npm run dev
 ```
 
-## 文档索引 (Documentation)
+访问 `http://localhost:3213` 即可进入你的驾驶舱。
 
-- **架构设计**: [设计哲学与标准](docs/zh/architecture.md)
-- **Issue 系统**: [用户手册](docs/zh/issue/manual.md)
-- **Spike 系统**: [用户手册](docs/zh/spike/manual.md)
+---
+
+_"车是用来开的，不是用来修的。"_

@@ -4,8 +4,9 @@ import yaml
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any, Set, Set
 from datetime import datetime
-from .models import IssueMetadata, IssueType, IssueStatus, IssueSolution, IssueStage, IssueDetail, IsolationType, IssueIsolation
+from .models import IssueMetadata, IssueType, IssueStatus, IssueSolution, IssueStage, IssueDetail, IsolationType, IssueIsolation, IssueID, current_time, generate_uid
 from monoco.core import git
+from monoco.core.config import get_config
 
 PREFIX_MAP = {
     IssueType.EPIC: "EPIC",
@@ -126,6 +127,7 @@ def create_issue_file(
     
     metadata = IssueMetadata(
         id=issue_id,
+        uid=generate_uid(),  # Generate global unique identifier
         type=issue_type,
         status=status,
         stage=stage,
@@ -135,15 +137,15 @@ def create_issue_file(
         related=related,
         sprint=sprint,
         tags=tags,
-        opened_at=datetime.now() if status == IssueStatus.OPEN else None
+        opened_at=current_time() if status == IssueStatus.OPEN else None
     )
+
     
     yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
     slug = _get_slug(title)
     filename = f"{issue_id}-{slug}.md"
     
-    file_content = f"""
----
+    file_content = f"""---
 {yaml_header}---
 
 ## {issue_id}: {title}
@@ -158,6 +160,8 @@ def create_issue_file(
 """
     file_path = target_dir / filename
     file_path.write_text(file_content)
+    
+    return metadata, file_path
 def validate_transition(
     current_status: IssueStatus,
     current_stage: Optional[IssueStage],
@@ -201,14 +205,42 @@ def validate_transition(
                         raise ValueError(f"Dependency Block: Cannot close {issue_id} because dependency {dep_id} is not closed.")
 
 def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
-    prefix = issue_id.split("-")[0].upper()
+    parsed = IssueID(issue_id)
+
+    if not parsed.is_local:
+        # Resolve Workspace
+        # Assumption: issues_root is direct child of project_root. 
+        # This is a weak assumption but fits current architecture.
+        project_root = issues_root.parent
+        conf = get_config(str(project_root))
+        
+        member_rel_path = conf.project.members.get(parsed.namespace)
+        if not member_rel_path:
+            return None
+            
+        member_root = (project_root / member_rel_path).resolve()
+        # Assume standard "Issues" directory for members to avoid loading full config
+        member_issues = member_root / "Issues"
+        
+        if not member_issues.exists():
+             return None
+        
+        # Recursively search in member project
+        return find_issue_path(member_issues, parsed.local_id)
+
+    # Local Search
+    try:
+        prefix = parsed.local_id.split("-")[0].upper()
+    except IndexError:
+        return None
+        
     issue_type = REVERSE_PREFIX_MAP.get(prefix)
     if not issue_type:
         return None
         
     base_dir = get_issue_dir(issue_type, issues_root)
     # Search in all status subdirs recursively
-    for f in base_dir.rglob(f"{issue_id}-*.md"):
+    for f in base_dir.rglob(f"{parsed.local_id}-*.md"):
         return f
     return None
 
@@ -296,13 +328,13 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
         # Only set if not already set? Or always reset?
         # Let's set it if not present, or update it to reflect "Latest activation"
         # FEAT-0012 says: "update opened_at to now"
-        data['opened_at'] = datetime.now()
+        data['opened_at'] = current_time()
     
     # 2. Backlog Push: Handled by IssueMetadata.validate_lifecycle (Status=Backlog -> Stage=None)
     # 3. Closed: Handled by IssueMetadata.validate_lifecycle (Status=Closed -> Stage=Done, ClosedAt=Now)
 
     # Touch updated_at
-    data['updated_at'] = datetime.now()
+    data['updated_at'] = current_time()
     
     # Re-hydrate through Model to trigger Logic (Stage, ClosedAt defaults)
     try:
@@ -413,7 +445,7 @@ def start_issue_isolation(issues_root: Path, issue_id: str, mode: IsolationType,
         data['isolation'] = isolation_meta.model_dump(mode='json')
         # Also ensure stage is DOING (logic link)
         data['stage'] = IssueStage.DOING.value
-        data['updated_at'] = datetime.now()
+        data['updated_at'] = current_time()
 
         new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
         new_content = content.replace(match.group(1), "\n" + new_yaml)
@@ -481,7 +513,7 @@ def prune_issue_resources(issues_root: Path, issue_id: str, force: bool, project
         
         if 'isolation' in data:
             del data['isolation']
-            data['updated_at'] = datetime.now()
+            data['updated_at'] = current_time()
             
             new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
             new_content = content.replace(match.group(1), "\n" + new_yaml)
@@ -577,7 +609,7 @@ def get_resources() -> Dict[str, Any]:
     }
 
 
-def list_issues(issues_root: Path) -> List[IssueMetadata]:
+def list_issues(issues_root: Path, recursive_workspace: bool = False) -> List[IssueMetadata]:
     """
     List all issues in the project.
     """
@@ -591,6 +623,29 @@ def list_issues(issues_root: Path) -> List[IssueMetadata]:
                     meta = parse_issue(f)
                     if meta:
                         issues.append(meta)
+
+    if recursive_workspace:
+        # Resolve Workspace Members
+        try:
+            # weak assumption: issues_root.parent is project_root
+            project_root = issues_root.parent
+            conf = get_config(str(project_root))
+            
+            for name, rel_path in conf.project.members.items():
+                member_root = (project_root / rel_path).resolve()
+                member_issues_dir = member_root / "Issues" # Standard convention
+                
+                if member_issues_dir.exists():
+                    # Fetch member issues (non-recursive to avoid loops)
+                    member_issues = list_issues(member_issues_dir, False)
+                    for m in member_issues:
+                        # Namespace the ID to avoid collisions and indicate origin
+                        m.id = f"{name}::{m.id}"
+                        issues.append(m)
+        except Exception:
+            # Fail silently on workspace resolution errors (config missing etc)
+            pass
+
     return issues
 
 def get_board_data(issues_root: Path) -> Dict[str, List[IssueMetadata]]:
@@ -788,6 +843,145 @@ def count_files_in_delivery(issue_path: Path) -> int:
         pass
     return 0
 
+def parse_search_query(query: str) -> Tuple[List[str], List[str], List[str]]:
+    """
+    Parse a search query string into explicit positives, optional terms, and negatives.
+    Supported syntax:
+      - `+term`: Must include (AND)
+      - `-term`: Must not include (NOT)
+      - `term`: Optional (Nice to have) - OR logic if no +term exists
+      - `"phrase with space"`: Quoted match
+    """
+    if not query:
+        return [], [], []
+        
+    import shlex
+    try:
+        tokens = shlex.split(query)
+    except ValueError:
+        # Fallback for unbalanced quotes
+        tokens = query.split()
+
+    explicit_positives = []
+    terms = []
+    negatives = []
+    
+    for token in tokens:
+        token_lower = token.lower()
+        if token_lower.startswith("-") and len(token_lower) > 1:
+            negatives.append(token_lower[1:])
+        elif token_lower.startswith("+") and len(token_lower) > 1:
+            explicit_positives.append(token_lower[1:])
+        else:
+            terms.append(token_lower)
+            
+    return explicit_positives, terms, negatives
+
+def check_issue_match(issue: IssueMetadata, explicit_positives: List[str], terms: List[str], negatives: List[str], full_content: str = "") -> bool:
+    """
+    Check if an issue matches the search criteria.
+    Consider fields: id, title, status, stage, type, tags, dependencies, related.
+    Optional: full_content (body) if available.
+    """
+    # 1. Aggregate Searchable Text
+    # We join all fields with spaces to create a searchable blob
+    searchable_parts = [
+        issue.id,
+        issue.title,
+        issue.status.value,
+        issue.type.value,
+        str(issue.stage.value) if issue.stage else "",
+        *(issue.tags or []),
+        *(issue.dependencies or []),
+        *(issue.related or []),
+        full_content
+    ]
+    
+    # Normalize blob
+    blob = " ".join(filter(None, searchable_parts)).lower()
+    
+    # 2. Check Negatives (Fast Fail)
+    for term in negatives:
+        if term in blob:
+            return False
+            
+    # 3. Check Explicit Positives (Must match ALL)
+    for term in explicit_positives:
+        if term not in blob:
+            return False
+            
+    # 4. Check Terms (Nice to Have)
+    # If explicit_positives exist, terms are optional (implicit inclusion).
+    # If NO explicit_positives, terms act as Implicit OR (must match at least one).
+    if terms:
+        if not explicit_positives:
+             # Must match at least one term
+             if not any(term in blob for term in terms):
+                 return False
+        
+    return True
+
+def search_issues(issues_root: Path, query: str) -> List[IssueMetadata]:
+    """
+    Search issues using advanced query syntax.
+    Returns list of matching IssueMetadata.
+    """
+    explicit_positives, terms, negatives = parse_search_query(query)
+    
+    # Optimization: If no query, return empty? Or all?
+    # Usually search implies input. CLI `list` is for all.
+    # But if query is empty string, we return all?
+    # Let's align with "grep": empty pattern matches everything? 
+    # Or strict: empty query -> all.
+    if not explicit_positives and not terms and not negatives:
+         return list_issues(issues_root)
+
+    matches = []
+    all_files = []
+    
+    # 1. Gather all files first (we need to read content for deep search)
+    # Using list_issues is inefficient if we need body content, as list_issues only parses frontmatter (usually).
+    # But parse_issue uses `IssueMetadata` which ignores body.
+    # We need a robust way. `parse_issue` reads full text but discards body in current implementation?
+    # Wait, `parse_issue` in core.py *only* reads frontmatter via `yaml.safe_load(match.group(1))`.
+    # It does NOT return body.
+    
+    # To support deep search (Body), we need to read files.
+    # Let's iterate files directly.
+    
+    for issue_type in IssueType:
+        base_dir = get_issue_dir(issue_type, issues_root)
+        for status_dir in ["open", "backlog", "closed"]:
+            d = base_dir / status_dir
+            if d.exists():
+                for f in d.rglob("*.md"):
+                    all_files.append(f)
+
+    for f in all_files:
+        # We need full content for body search
+        try:
+            content = f.read_text()
+            # Parse Metadata
+            match = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+            if not match:
+                continue
+            
+            yaml_str = match.group(1)
+            data = yaml.safe_load(yaml_str)
+            if not isinstance(data, dict):
+                 continue
+            
+            meta = IssueMetadata(**data)
+            
+            # Match
+            if check_issue_match(meta, explicit_positives, terms, negatives, full_content=content):
+                matches.append(meta)
+                
+        except Exception:
+            continue
+            
+    return matches
+
 def recalculate_parent(issues_root: Path, parent_id: str):
     """
     Update parent Epic/Feature stats based on children.
@@ -859,3 +1053,122 @@ def recalculate_parent(issues_root: Path, parent_id: str):
         parent_parent = data.get("parent")
         if parent_parent:
             recalculate_parent(issues_root, parent_parent)
+
+def move_issue(
+    source_issues_root: Path,
+    issue_id: str,
+    target_issues_root: Path,
+    renumber: bool = False
+) -> Tuple[IssueMetadata, Path]:
+    """
+    Move an issue from one project to another.
+    
+    Args:
+        source_issues_root: Source project's Issues directory
+        issue_id: ID of the issue to move
+        target_issues_root: Target project's Issues directory
+        renumber: If True, automatically renumber on ID conflict
+        
+    Returns:
+        Tuple of (updated metadata, new file path)
+        
+    Raises:
+        FileNotFoundError: If source issue doesn't exist
+        ValueError: If ID conflict exists and renumber=False
+    """
+    # 1. Find source issue
+    source_path = find_issue_path(source_issues_root, issue_id)
+    if not source_path:
+        raise FileNotFoundError(f"Issue {issue_id} not found in source project.")
+    
+    # 2. Parse issue metadata
+    issue = parse_issue_detail(source_path)
+    if not issue:
+        raise ValueError(f"Failed to parse issue {issue_id}.")
+    
+    # 3. Check for ID conflict in target
+    target_conflict_path = find_issue_path(target_issues_root, issue_id)
+    
+    if target_conflict_path:
+        # Conflict detected
+        conflict_issue = parse_issue(target_conflict_path)
+        
+        # Check if it's the same issue (same UID)
+        if issue.uid and conflict_issue and conflict_issue.uid == issue.uid:
+            raise ValueError(
+                f"Issue {issue_id} (uid: {issue.uid}) already exists in target project. "
+                "This appears to be a duplicate."
+            )
+        
+        # Different issues with same ID
+        if not renumber:
+            conflict_info = ""
+            if conflict_issue:
+                conflict_info = f" (uid: {conflict_issue.uid}, created: {conflict_issue.created_at}, stage: {conflict_issue.stage})"
+            raise ValueError(
+                f"ID conflict: Target project already has {issue_id}{conflict_info}.\n"
+                f"Use --renumber to automatically assign a new ID."
+            )
+        
+        # Auto-renumber
+        new_id = find_next_id(issue.type, target_issues_root)
+        old_id = issue.id
+        issue.id = new_id
+    else:
+        new_id = issue.id
+        old_id = issue.id
+    
+    # 4. Construct target path
+    target_type_dir = get_issue_dir(issue.type, target_issues_root)
+    target_status_dir = target_type_dir / issue.status.value
+    
+    # Preserve subdirectory structure if any
+    try:
+        source_type_dir = get_issue_dir(issue.type, source_issues_root)
+        rel_path = source_path.relative_to(source_type_dir)
+        # Remove status directory component
+        structure_path = Path(*rel_path.parts[1:]) if len(rel_path.parts) > 1 else Path(source_path.name)
+    except ValueError:
+        structure_path = Path(source_path.name)
+    
+    # Update filename if ID changed
+    if new_id != old_id:
+        old_filename = source_path.name
+        new_filename = old_filename.replace(old_id, new_id, 1)
+        structure_path = structure_path.parent / new_filename if structure_path.parent != Path('.') else Path(new_filename)
+    
+    target_path = target_status_dir / structure_path
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # 5. Update content if ID changed
+    if new_id != old_id:
+        # Update frontmatter
+        content = issue.raw_content
+        match = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+        if match:
+            yaml_str = match.group(1)
+            data = yaml.safe_load(yaml_str) or {}
+            data['id'] = new_id
+            data['updated_at'] = current_time()
+            
+            new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
+            
+            # Update body (replace old ID in heading)
+            body = content[match.end():]
+            body = body.replace(f"## {old_id}:", f"## {new_id}:", 1)
+            
+            new_content = f"---\n{new_yaml}---{body}"
+        else:
+            new_content = issue.raw_content
+    else:
+        new_content = issue.raw_content
+    
+    # 6. Write to target
+    target_path.write_text(new_content)
+    
+    # 7. Remove source
+    source_path.unlink()
+    
+    # 8. Return updated metadata
+    final_meta = parse_issue(target_path)
+    return final_meta, target_path

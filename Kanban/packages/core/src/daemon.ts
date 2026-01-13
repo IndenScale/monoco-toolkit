@@ -18,7 +18,7 @@ export class DaemonClient {
   }
 
   static async getInfo(url: string, projectId?: string): Promise<DaemonInfo> {
-    const params = projectId ? `?project_id=${projectId}` : '';
+    const params = projectId ? `?project_id=${projectId}` : "";
     const res = await fetch(`${url}/api/v1/info${params}`);
     if (!res.ok) throw new Error("Failed to fetch info");
     return res.json();
@@ -28,6 +28,28 @@ export class DaemonClient {
     const res = await fetch(`${url}/api/v1/projects`);
     if (!res.ok) throw new Error("Failed to fetch projects");
     return res.json();
+  }
+
+  static async getWorkspaceState(url: string): Promise<any> {
+    try {
+      const res = await fetch(`${url}/api/v1/workspace/state`);
+      if (res.ok) return res.json();
+    } catch (e) {
+      console.warn("Failed to fetch workspace state", e);
+    }
+    return {};
+  }
+
+  static async setWorkspaceState(url: string, state: any): Promise<void> {
+    try {
+      await fetch(`${url}/api/v1/workspace/state`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state),
+      });
+    } catch (e) {
+      console.warn("Failed to set workspace state", e);
+    }
   }
 }
 
@@ -58,32 +80,44 @@ export const useDaemonStore = create<DaemonState>((set, get) => ({
   setInfo: (info) => set({ info }),
   setProjects: (projects) => set({ projects }),
   setCurrentProjectId: (id) => {
-      set({ currentProjectId: id });
-      // When project changes, refresh info
-      get().checkConnection();
+    set({ currentProjectId: id });
+    // Persist state when checking project
+    if (id) {
+      DaemonClient.setWorkspaceState(get().daemonUrl, {
+        last_active_project_id: id,
+      });
+    }
+    // When project changes, refresh info
+    get().checkConnection();
   },
   setDaemonUrl: (url) => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem("monoco_daemon_url", url);
     }
     // Force UI update and reset state for new URL
-    set({ daemonUrl: url, status: "connecting", info: null, projects: [], currentProjectId: null });
+    set({
+      daemonUrl: url,
+      status: "connecting",
+      info: null,
+      projects: [],
+      currentProjectId: null,
+    });
     get().checkConnection();
   },
   refreshProjects: async () => {
-      const { daemonUrl } = get();
-      try {
-          const projects = await DaemonClient.getProjects(daemonUrl);
-          set({ projects });
-          
-          // Auto-select first project if none selected
-          const { currentProjectId } = get();
-          if (!currentProjectId && projects.length > 0) {
-              set({ currentProjectId: projects[0].id });
-          }
-      } catch (e) {
-          console.error("Failed to refresh projects", e);
+    const { daemonUrl } = get();
+    try {
+      const projects = await DaemonClient.getProjects(daemonUrl);
+      set({ projects });
+
+      // Auto-select first project if none selected
+      const { currentProjectId } = get();
+      if (!currentProjectId && projects.length > 0) {
+        set({ currentProjectId: projects[0].id });
       }
+    } catch (e) {
+      console.error("Failed to refresh projects", e);
+    }
   },
   checkConnection: async () => {
     // If already connected or connecting, skip simple health checks
@@ -103,14 +137,37 @@ export const useDaemonStore = create<DaemonState>((set, get) => ({
         // Fetch projects first
         const projects = await DaemonClient.getProjects(daemonUrl);
         set({ projects });
-        
+
         let targetProjectId = currentProjectId;
-        if (!targetProjectId && projects.length > 0) {
+
+        // If no project selected (e.g. initial load), try to restore from server state
+        if (!targetProjectId) {
+          const state = await DaemonClient.getWorkspaceState(daemonUrl);
+          if (state.last_active_project_id) {
+            // Validate existence in current project list
+            if (
+              projects.some(
+                (p: Project) => p.id === state.last_active_project_id
+              )
+            ) {
+              targetProjectId = state.last_active_project_id;
+            }
+          }
+
+          // Fallback to first project if still null
+          if (!targetProjectId && projects.length > 0) {
             targetProjectId = projects[0].id;
+          }
+
+          if (targetProjectId) {
             set({ currentProjectId: targetProjectId });
+          }
         }
 
-        const info = await DaemonClient.getInfo(daemonUrl, targetProjectId || undefined);
+        const info = await DaemonClient.getInfo(
+          daemonUrl,
+          targetProjectId || undefined
+        );
         set({ status: "connected", info });
       } else {
         set({ status: "error" });

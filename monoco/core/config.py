@@ -22,6 +22,7 @@ class ProjectConfig(BaseModel):
     name: str = Field(default="Monoco Project", description="Project name")
     key: str = Field(default="MON", description="Project key/prefix for IDs")
     spike_repos: Dict[str, str] = Field(default_factory=dict, description="Managed external research repositories (name -> url)")
+    members: Dict[str, str] = Field(default_factory=dict, description="Workspace member projects (name -> relative_path)")
 
 class I18nConfig(BaseModel):
     """Configuration for internationalization."""
@@ -31,6 +32,10 @@ class I18nConfig(BaseModel):
 class UIConfig(BaseModel):
     """Configuration for UI customizations."""
     dictionary: Dict[str, str] = Field(default_factory=dict, description="Custom domain terminology mapping")
+
+class TelemetryConfig(BaseModel):
+    """Configuration for Telemetry."""
+    enabled: Optional[bool] = Field(default=None, description="Whether telemetry is enabled")
 
 class MonocoConfig(BaseModel):
     """
@@ -42,6 +47,7 @@ class MonocoConfig(BaseModel):
     project: ProjectConfig = Field(default_factory=ProjectConfig)
     i18n: I18nConfig = Field(default_factory=I18nConfig)
     ui: UIConfig = Field(default_factory=UIConfig)
+    telemetry: TelemetryConfig = Field(default_factory=TelemetryConfig)
 
     @staticmethod
     def _deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:

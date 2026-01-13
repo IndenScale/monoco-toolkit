@@ -12,11 +12,14 @@ app = typer.Typer(
 
 
 @app.callback()
-def main():
+def main(ctx: typer.Context):
     """
     Monoco Toolkit - The sensory and motor system for Monoco Agents.
     """
-    pass
+    # Capture command execution
+    from monoco.core.telemetry import capture_event
+    if ctx.invoked_subcommand:
+        capture_event("cli_command_executed", {"command": ctx.invoked_subcommand})
 
 from monoco.core.setup import init_cli
 app.command(name="init")(init_cli)
@@ -56,10 +59,12 @@ def info():
 from monoco.features.issue import commands as issue_cmd
 from monoco.features.spike import commands as spike_cmd
 from monoco.features.i18n import commands as i18n_cmd
+from monoco.features.config import commands as config_cmd
 
 app.add_typer(issue_cmd.app, name="issue", help="Manage development issues")
 app.add_typer(spike_cmd.app, name="spike", help="Manage research spikes")
 app.add_typer(i18n_cmd.app, name="i18n", help="Manage documentation i18n")
+app.add_typer(config_cmd.app, name="config", help="Manage configuration")
 
 from monoco.daemon.commands import serve
 app.command(name="serve")(serve)

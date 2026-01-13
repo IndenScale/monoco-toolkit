@@ -9,7 +9,7 @@ import typer
 
 from monoco.core.config import get_config
 from monoco.core.output import print_output
-from .models import IssueType, IssueStatus, IssueSolution, IssueStage, IsolationType
+from .models import IssueType, IssueStatus, IssueSolution, IssueStage, IsolationType, IssueMetadata
 from . import core
 
 app = typer.Typer(help="Agent-Native Issue Management.")
@@ -250,6 +250,59 @@ def delete(
         console.print(f"[red]✘ Error:[/red] {str(e)}")
         raise typer.Exit(code=1)
 
+@app.command("move")
+def move(
+    issue_id: str = typer.Argument(..., help="Issue ID to move"),
+    target: str = typer.Option(..., "--to", help="Target project directory (e.g., ../OtherProject)"),
+    renumber: bool = typer.Option(False, "--renumber", help="Automatically renumber on ID conflict"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override source issues root directory"),
+):
+    """Move an issue to another project."""
+    config = get_config()
+    source_issues_root = _resolve_issues_root(config, root)
+    
+    # Resolve target project
+    target_path = Path(target).resolve()
+    
+    # Check if target is a project root or Issues directory
+    if (target_path / "Issues").exists():
+        target_issues_root = target_path / "Issues"
+    elif target_path.name == "Issues" and target_path.exists():
+        target_issues_root = target_path
+    else:
+        console.print(f"[red]✘ Error:[/red] Target path must be a project root with 'Issues' directory or an 'Issues' directory itself.")
+        raise typer.Exit(code=1)
+    
+    try:
+        updated_meta, new_path = core.move_issue(
+            source_issues_root,
+            issue_id,
+            target_issues_root,
+            renumber=renumber
+        )
+        
+        try:
+            rel_path = new_path.relative_to(Path.cwd())
+        except ValueError:
+            rel_path = new_path
+        
+        if updated_meta.id != issue_id:
+            console.print(f"[green]✔[/green] Moved and renumbered: [bold]{issue_id}[/bold] → [bold]{updated_meta.id}[/bold]")
+        else:
+            console.print(f"[green]✔[/green] Moved [bold]{issue_id}[/bold] to target project.")
+        
+        console.print(f"[dim]New path: {rel_path}[/dim]")
+        
+    except FileNotFoundError as e:
+        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        raise typer.Exit(code=1)
+    except ValueError as e:
+        console.print(f"[red]✘ Conflict:[/red] {str(e)}")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        raise typer.Exit(code=1)
+
 @app.command("board")
 def board(
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
@@ -310,6 +363,7 @@ def list_cmd(
     type: Optional[IssueType] = typer.Option(None, "--type", "-t", help="Filter by type"),
     stage: Optional[IssueStage] = typer.Option(None, "--stage", help="Filter by stage"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    workspace: bool = typer.Option(False, "--workspace", "-w", help="Include issues from workspace members"),
 ):
     """List issues in a table format with filtering."""
     config = get_config()
@@ -322,7 +376,7 @@ def list_cmd(
          
     target_status = status.lower() if status else "open"
     
-    issues = core.list_issues(issues_root)
+    issues = core.list_issues(issues_root, recursive_workspace=workspace)
     filtered = []
     
     for i in issues:
@@ -342,10 +396,16 @@ def list_cmd(
         filtered.append(i)
         
     # Sort: Updated Descending
+        filtered.append(i)
+        
+    # Sort: Updated Descending
     filtered.sort(key=lambda x: x.updated_at, reverse=True)
     
     # Render
-    table = Table(title=f"Issues ({len(filtered)})", show_header=True, header_style="bold magenta")
+    _render_issues_table(filtered, title=f"Issues ({len(filtered)})")
+
+def _render_issues_table(issues: List[IssueMetadata], title: str = "Issues"):
+    table = Table(title=title, show_header=True, header_style="bold magenta")
     table.add_column("ID", style="cyan", width=12)
     table.add_column("Type", width=10)
     table.add_column("Status", width=10)
@@ -366,7 +426,7 @@ def list_cmd(
         IssueStatus.CLOSED: "dim"
     }
 
-    for i in filtered:
+    for i in issues:
         t_color = type_colors.get(i.type, "white")
         s_color = status_colors.get(i.status, "white")
         
@@ -384,39 +444,55 @@ def list_cmd(
         
     console.print(table)
 
+@app.command("query")
+def query_cmd(
+    query: str = typer.Argument(..., help="Search query (e.g. '+bug -ui' or 'login')"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+):
+    """
+    Search issues using advanced syntax.
+    
+    Syntax:
+      term   : Must include 'term' (implicit AND)
+      +term  : Must include 'term'
+      -term  : Must NOT include 'term'
+    
+    Scope: ID, Title, Body, Tags, Status, Stage, Dependencies, Related.
+    """
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+    
+    results = core.search_issues(issues_root, query)
+    
+    # Sort by relevance? Or just updated?
+    # For now, updated at descending is useful.
+    results.sort(key=lambda x: x.updated_at, reverse=True)
+    
+    _render_issues_table(results, title=f"Search Results for '{query}' ({len(results)})")
+
 @app.command("scope")
 def scope(
     sprint: Optional[str] = typer.Option(None, "--sprint", help="Filter by Sprint ID"),
     all: bool = typer.Option(False, "--all", "-a", help="Show all, otherwise show only open items"),
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursively scan subdirectories"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    workspace: bool = typer.Option(False, "--workspace", "-w", help="Include issues from workspace members"),
 ):
     """Show progress tree."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     
-    issues = []
+    issues = core.list_issues(issues_root, recursive_workspace=workspace)
+    filtered_issues = []
     
-    for subdir in ["Epics", "Features", "Chores", "Fixes"]:
-        d = issues_root / subdir
-        if d.exists():
-            if recursive:
-                files = d.rglob("*.md")
-            else:
-                files = []
-                for status in ["open", "closed", "backlog"]:
-                    status_dir = d / status
-                    if status_dir.exists():
-                        files.extend(status_dir.glob("*.md"))
+    for meta in issues:
+        if sprint and meta.sprint != sprint:
+            continue
+        if not all and meta.status != IssueStatus.OPEN:
+            continue
+        filtered_issues.append(meta)
             
-            for f in files:
-                meta = core.parse_issue(f)
-                if meta:
-                    if sprint and meta.sprint != sprint:
-                        continue
-                    if not all and meta.status != IssueStatus.OPEN:
-                        continue
-                    issues.append(meta)
+    issues = filtered_issues
 
     tree = Tree(f"[bold blue]Monoco Issue Scope[/bold blue]")
     epics = sorted([i for i in issues if i.type == IssueType.EPIC], key=lambda x: x.id)

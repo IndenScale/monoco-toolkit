@@ -1,9 +1,33 @@
 [project]
 name = "monoco-toolkit"
 version = "0.1.0"
-description = "Agent Native Toolkit for Monoco"
+description = "Agent Native Toolkit for Monoco - Task Management & Kanban for AI Agents"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+keywords = [
+    "monoco",
+    "agent-native",
+    "task-management",
+    "kanban",
+    "ai-agents",
+    "workflow",
+    "cli",
+]
 authors = [
     { name = "Monoco Team", email = "dev@monoco.io" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Office/Business :: Groupware",
 ]
 dependencies = [
     "typer[all]>=0.9.0",
@@ -15,9 +39,14 @@ dependencies = [
     "uvicorn[standard]>=0.20.0",
     "sse-starlette>=1.6.0",
     "watchdog>=6.0.0",
+    "httpx>=0.28.1",
 ]
-requires-python = ">=3.10"
-readme = "README.md"
+
+[project.urls]
+Homepage = "https://monoco.io"
+Repository = "https://github.com/IndenScale/Monoco"
+Documentation = "https://monoco.io/docs"
+Issues = "https://github.com/IndenScale/Monoco/issues"
 
 [project.scripts]
 monoco = "monoco.main:app"

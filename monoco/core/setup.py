@@ -128,10 +128,15 @@ def init_cli(
             default_author = get_git_user() or os.getenv("USER", "developer")
             author = ask_with_selection("Your Name (for issue tracking)", default_author)
             
+            telemetry_enabled = Confirm.ask("Enable anonymous telemetry to help improve Monoco?", default=True)
+
             user_config = {
                 "core": {
                     "author": author,
                     # Editor is handled by env/config defaults, no need to prompt
+                },
+                "telemetry": {
+                    "enabled": telemetry_enabled
                 }
             }
             
@@ -180,6 +185,69 @@ def init_cli(
     with open(project_config_path, "w") as f:
         yaml.dump(project_config, f, default_flow_style=False)
 
+    # 2b. Generate Config Template
+    template_path = project_config_dir / "config_template.yaml"
+    template_content = """# Monoco Configuration Template
+# This file serves as a reference for all available configuration options.
+# Rename this file to config.yaml to use it.
+
+core:
+  # Default author for new artifacts (e.g. issues)
+  # author: "Developer Name"
+  
+  # Logging verbosity (DEBUG, INFO, WARNING, ERROR)
+  # log_level: "INFO"
+  
+  # Preferred text editor
+  # editor: "vim"
+
+project:
+  # The display name of the project
+  name: "My Project"
+  
+  # The prefix used for issue IDs (e.g. MON-001)
+  key: "MON"
+  
+  # Managed external research repositories (name -> url)
+  # spike_repos:
+  #   react: "https://github.com/facebook/react"
+
+paths:
+  # Directory for tracking issues
+  issues: "Issues"
+  
+  # Directory for specifications/documents
+  specs: "SPECS"
+  
+  # Directory for research references (spikes)
+  spikes: ".references"
+
+i18n:
+  # Source language code
+  source_lang: "en"
+  
+  # Target language codes for translation
+  target_langs: 
+    - "zh"
+
+ui:
+  # Custom Domain Terminology Mapping
+  # Use this to rename core concepts in the UI without changing internal logic.
+  dictionary:
+    # Entities
+    epic: "Saga"
+    feature: "Story"
+    chore: "Task"
+    fix: "Bug"
+    
+    # Statuses
+    todo: "Pending"
+    doing: "In Progress"
+    review: "QA"
+    done: "Released"
+"""
+    with open(template_path, "w") as f:
+        f.write(template_content)
 
     # 3. Scaffold Directories & Modules
     
@@ -209,6 +277,7 @@ def init_cli(
     skills.init(cwd, resources)
 
     console.print(f"[green]✓ Project config initialized at {project_config_path}[/green]")
+    console.print(f"[green]✓ Config template generated at {template_path}[/green]")
 
 
 

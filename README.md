@@ -1,52 +1,51 @@
-# Monoco Toolkit
+# Monoco: Harnessing AI Agents
 
-> **The Agent-Native Development Experience.**
+> **The control interface between raw AI velocity and human information bandwidth.**
 
-Monoco Toolkit is a specialized toolchain designed to bridge the gap between Human intention and Agent execution. It solves the "Bootstrap Paradox" by providing a standardized, deterministic interface for Agents to interact with the codebase, manageable tasks, and external knowledge.
+Production in the LLM era is exploding along a vertical curve. A single AI agent can work 24/7, generating massive amounts of intermediate data that far exceeds the biological information bandwidth of a human supervisor. When one agent becomes a hundred, the bottleneck is no longer "intelligence"—it is "command and control."
 
-## Vision
+**Monoco is the Cockpit.**
 
-To build a **Symbiotic Development Environment** where:
+It doesn't just "run" agents; it "encapsulates" them. It provides a deterministic barrier between the chaotic, raw execution power of LLMs and the rigorous, finite decision bandwidth of human engineers. It ensures that every agentic action eventually collapses into the outcome you intended.
 
-- **Humans** focus on Strategy, Value Definition, and Review (via Kanban UI).
-- **Agents** handle Execution, Maintenance, and Validation (via CLI Toolkit).
+## Workflow: Plan - Execute - Review - Archive
 
-## Components
+Monoco channels agent execution into a clear cycle:
 
-The Toolkit consists of two primary interfaces:
+1. **Plan**: Decompose complex missions through **Project → Epic → Feature** hierarchies into executable atomic units.
+2. **Execute**: Agents work autonomously based on acceptance criteria defined in Issues, with all intermediate states persisted as structured files.
+3. **Review**: Humans monitor progress through the Kanban dashboard, intervening only at critical decision points.
+4. **Archive**: Completed tasks automatically transition to archived states, forming a traceable project history.
 
-### 1. The Toolkit CLI (`monoco`)
+## The Control Matrix
 
-_The Sensory Extension for Agents._
-A Python-based CLI that provides structured, deterministic access to the project's state. It treats **"Task as Code"**, managing issues, research spikes, and quality checks as structured files on the filesystem.
-
-### 2. The Kanban UI
-
-_The Cockpit for Humans._
-A Next.js-based web application that visualizes the project status, providing a "Linear-like" experience for managing Epics, Stories, and Tasks defined by the toolkit.
+- **Task Anchors (Issues)**: Define missions via structured files, setting clear boundaries and acceptance criteria for agents.
+- **Deterministic Interface (CLI)**: Acts as a sensory extension for LLMs, providing them with structured perception of project state and eliminating hallucinated guesses.
+- **Mission Dashboard (Kanban)**: A high-fidelity visual console that allows humans to audit tasks and transition states with minimal cognitive load.
 
 ## Quick Start
 
-### 1. Install the CLI
+### 1. Install the Control Suite
 
 ```bash
-cd Toolkit
-pip install -e .
+pip install monoco-toolkit
 ```
 
-### 2. Run the Daemon & UI
+### 2. Initialize the Workflow
 
 ```bash
-# Start the backend daemon
+monoco init
+```
+
+### 3. Take Control
+
+```bash
+# Start the control hub
 monoco serve
-
-# In a separate terminal, start the UI
-cd Toolkit/Kanban
-npm run dev
 ```
 
-## Documentation
+Visit `http://localhost:3213` to enter your cockpit.
 
-- **Architecture**: [Design Philosophy & Standards](docs/en/architecture.md)
-- **Issue System**: [Manual](docs/en/issue/manual.md)
-- **Spike System**: [Manual](docs/en/spike/manual.md)
+---
+
+_"Cars are made to drive, not to fix."_

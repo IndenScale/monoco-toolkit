@@ -8,9 +8,6 @@ import {
   Button,
   InputGroup,
   Popover,
-  Position,
-  Menu,
-  MenuItem,
 } from "@blueprintjs/core";
 import {
   useDaemonStore,
@@ -22,6 +19,93 @@ import IssueDetailModal from "../components/IssueDetailModal";
 import CreateIssueDialog from "../components/CreateIssueDialog";
 import { Issue } from "../types";
 import { useTerms } from "../contexts/TermContext";
+
+const parseSearchQuery = (query: string) => {
+  // Regex to match quoted strings OR non-whitespace/non-quote sequences
+  // This basically splits by spaces but Respects Quotes
+  // e.g. 'foo "bar baz"' -> ['foo', '"bar baz"']
+  // e.g. '-"bar baz"' -> ['-"bar baz"']
+  const regex = /([+\-]?"[^"]*")|([^\s]+)/g;
+  const matches = query.match(regex) || [];
+
+  const tokens = matches.map((t) => t.toLowerCase());
+
+  const explicitPositives: string[] = [];
+  const terms: string[] = [];
+  const negatives: string[] = [];
+
+  tokens.forEach((token) => {
+    if (token.startsWith("-")) {
+      // Exclude
+      // Remove '-' and strip quotes if present
+      let term = token.slice(1);
+      if (term.startsWith('"') && term.endsWith('"')) {
+        term = term.slice(1, -1);
+      }
+      if (term) negatives.push(term);
+    } else if (token.startsWith("+")) {
+      // Explicit Include
+      // Remove '+' and strip quotes if present
+      let term = token.slice(1);
+      if (term.startsWith('"') && term.endsWith('"')) {
+        term = term.slice(1, -1);
+      }
+      if (term) explicitPositives.push(term);
+    } else {
+      // Neutral Term (Nice to have)
+      let term = token;
+      // Strip quotes
+      if (term.startsWith('"') && term.endsWith('"')) {
+        term = term.slice(1, -1);
+      }
+      if (term) terms.push(term);
+    }
+  });
+
+  return { explicitPositives, terms, negatives };
+};
+
+const checkMatch = (
+  issue: Issue,
+  explicitPositives: string[],
+  terms: string[],
+  negatives: string[]
+) => {
+  const content = [
+    issue.id,
+    issue.title,
+    issue.status,
+    issue.body || "",
+    issue.raw_content || "",
+    ...(issue.tags || []),
+    ...(issue.dependencies || []),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  // 1. Check Negatives
+  if (negatives.some((t) => content.includes(t))) return false;
+
+  // 2. Check Explicit Positives (Must include ALL)
+  if (!explicitPositives.every((t) => content.includes(t))) return false;
+
+  // 3. Check Terms
+  // Rule: If explicit positives exist, terms are optional.
+  //       If NO explicit positives, terms act as Implicit OR (at least one must match)
+  const hasExplicit = explicitPositives.length > 0;
+
+  if (terms.length > 0) {
+    if (!hasExplicit) {
+      // Implicit OR (Standard Search Engine behavior)
+      return terms.some((t) => content.includes(t));
+    }
+    // Else: we have explicit filters, so "terms" are just nice-to-have,
+    // they don't filter out anything.
+    // So we return true.
+  }
+
+  return true;
+};
 
 export default function OverviewPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -85,47 +169,123 @@ export default function OverviewPage() {
   }, [fetchIssues, currentProjectId]);
 
   const { epics, groupedIssues, unassigned } = useMemo(() => {
-    const epics = issues
+    // 1. Parse Query
+    const { explicitPositives, terms, negatives } =
+      parseSearchQuery(filterText);
+    const hasFilter =
+      explicitPositives.length > 0 || terms.length > 0 || negatives.length > 0;
+
+    // 2. Classify Issues
+    const allEpics = issues
       .filter((i) => i.type === "epic" && i.status !== "closed")
-      .sort((a, b) => a.id.localeCompare(b.id)); // Sort by ID
-    const otherIssues = issues.filter((i) => i.type !== "epic");
+      .sort((a, b) => a.id.localeCompare(b.id));
 
+    const allTasks = issues.filter((i) => i.type !== "epic");
+
+    // 3. Determine Matches (independent of hierarchy)
+    const epicMatches = new Set<string>();
+    const taskMatches = new Set<string>();
+
+    if (!hasFilter) {
+      // optimization: match everything
+      allEpics.forEach((e) => epicMatches.add(e.id));
+      allTasks.forEach((t) => taskMatches.add(t.id));
+    } else {
+      allEpics.forEach((e) => {
+        if (checkMatch(e, explicitPositives, terms, negatives))
+          epicMatches.add(e.id);
+      });
+      allTasks.forEach((t) => {
+        if (checkMatch(t, explicitPositives, terms, negatives))
+          taskMatches.add(t.id);
+      });
+    }
+
+    // 4. Resolve Visibility (Hierarchy Logic)
+    // - Epic is visible if: It matches OR it has a matching child
+    // - Task is visible if: It matches OR its parent matches
+    const finalEpics: Issue[] = [];
     const grouped: Record<string, Issue[]> = {};
-    const unassigned: Issue[] = [];
+    const unassignedList: Issue[] = [];
 
-    otherIssues.forEach((issue) => {
-      if (
-        filterText &&
-        !issue.title.toLowerCase().includes(filterText.toLowerCase()) &&
-        !issue.id.toLowerCase().includes(filterText.toLowerCase())
-      ) {
-        return;
-      }
+    // Helper to check if epic has matching children
+    const epicHasMatchingChildren = (epicId: string) => {
+      return allTasks.some((t) => t.parent === epicId && taskMatches.has(t.id));
+    };
 
-      if (issue.parent) {
-        if (!grouped[issue.parent]) {
-          grouped[issue.parent] = [];
-        }
-        grouped[issue.parent].push(issue);
-      } else {
-        unassigned.push(issue);
+    allEpics.forEach((epic) => {
+      const selfMatch = epicMatches.has(epic.id);
+      const childMatch = epicHasMatchingChildren(epic.id);
+
+      if (selfMatch || childMatch) {
+        finalEpics.push(epic);
+        grouped[epic.id] = []; // Initialize group
       }
     });
 
-    return { epics, groupedIssues: grouped, unassigned };
+    allTasks.forEach((task) => {
+      const selfMatch = taskMatches.has(task.id);
+      const parentMatch = task.parent && epicMatches.has(task.parent); // This logic implies "Search Epic" shows all its tasks
+
+      if (selfMatch || parentMatch) {
+        if (task.parent) {
+          // Only add if the parent is actually an active epic we're tracking
+          if (grouped[task.parent]) {
+            grouped[task.parent].push(task);
+          } else {
+            // Parent might be closed or missing, treat as unassigned or invisible?
+            // If parent matched but wasn't in 'finalEpics', that's impossible per logic above.
+            // But if ONLY child matched and parent didn't, parent IS in finalEpics.
+            // So this case handles matching tasks whose parent might be missing/closed.
+            // If task matches, we want to see it.
+            unassignedList.push(task);
+          }
+        } else {
+          unassignedList.push(task);
+        }
+      }
+    });
+
+    return {
+      epics: finalEpics,
+      groupedIssues: grouped,
+      unassigned: unassignedList,
+    };
   }, [issues, filterText]);
 
   // ... inside component ...
   const handleIssueDrop = async (issueId: string, stageId: string) => {
-    if (status !== "connected") return;
+    console.log(
+      `handleIssueDrop called with issueId: ${issueId}, stageId: ${stageId}, status: ${status}`
+    );
+    if (status !== "connected") {
+      console.warn("Daemon status is not connected, aborting drop");
+      return;
+    }
 
     // Find issue to verify change is needed
     const issue = issues.find((i) => i.id === issueId);
-    if (!issue || issue.stage === stageId) return;
+    if (!issue) {
+      console.warn("Issue not found in local state");
+      return;
+    }
+    if (issue.stage === stageId) {
+      console.log("Issue already in target stage, ignoring");
+      return;
+    }
+
+    // Optimistic update
+    const previousIssues = [...issues];
+    setIssues((prev) =>
+      prev.map((i) => (i.id === issueId ? { ...i, stage: stageId } : i))
+    );
 
     try {
+      console.log(
+        `Sending PATCH request to ${daemonUrl}/api/v1/issues/${issueId}`
+      );
       const res = await fetch(`${daemonUrl}/api/v1/issues/${issueId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           stage: stageId,
@@ -134,13 +294,18 @@ export default function OverviewPage() {
       });
 
       if (!res.ok) {
+        // Revert on failure
+        setIssues(previousIssues);
         const errData = await res.json();
         throw new Error(errData.detail || "Failed to update issue stage");
       }
+      console.log("Issue update successful");
 
-      // SSE will handle the UI update
+      // SSE will handle the UI update or confirm it
     } catch (err: any) {
-      console.error(err);
+      // Revert on error
+      setIssues(previousIssues);
+      console.error("Error in handleIssueDrop:", err);
       // Dynamic import to avoid SSR issues with Blueprint Toaster if any
       const { OverlayToaster, Position: ToasterPosition } = await import(
         "@blueprintjs/core"
@@ -231,32 +396,65 @@ export default function OverviewPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Popover
+            content={
+              <div className="p-3 bg-surface border border-border rounded-lg shadow-2xl min-w-[240px]">
+                <div className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 border-b border-border-subtle pb-2">
+                  Search Syntax
+                </div>
+                <ul className="list-none space-y-2 m-0 p-0 text-sm">
+                  <li className="flex items-center justify-between gap-4">
+                    <span className="text-text-secondary">Fuzzy match</span>
+                    <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-accent">
+                      text
+                    </code>
+                  </li>
+                  <li className="flex items-center justify-between gap-4">
+                    <span className="text-text-secondary">Exact phrase</span>
+                    <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-accent">
+                      "foo bar"
+                    </code>
+                  </li>
+                  <li className="flex items-center justify-between gap-4">
+                    <span className="text-text-secondary">Must include</span>
+                    <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-accent">
+                      +term
+                    </code>
+                  </li>
+                  <li className="flex items-center justify-between gap-4">
+                    <span className="text-text-secondary">Exclude</span>
+                    <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-red-400">
+                      -term
+                    </code>
+                  </li>
+                </ul>
+              </div>
+            }
+            interactionKind="hover"
+            placement="bottom-start"
+            minimal={true}
+            popoverClassName="bp5-dark"
+            targetTagName="div"
+            modifiers={{
+              offset: { enabled: true, options: { offset: [0, 4] } },
+              flip: { enabled: true },
+              preventOverflow: { enabled: true, options: { padding: 10 } },
+            }}>
+            <InputGroup
+              leftIcon="filter"
+              placeholder="Filter..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              className="w-64 bg-surface text-text-primary focus:border-accent"
+              type="search"
+            />
+          </Popover>
           <Button
             icon="plus"
             intent={Intent.PRIMARY}
             text="New Issue"
             onClick={() => setIsCreateOpen(true)}
           />
-          <Popover
-            position={Position.BOTTOM_RIGHT}
-            content={
-              <div className="p-2 bg-surface border border-border-subtle rounded shadow-sm">
-                <InputGroup
-                  leftIcon="filter"
-                  placeholder="Filter issues..."
-                  value={filterText}
-                  onChange={(e) => setFilterText(e.target.value)}
-                  className="bg-surface text-text-primary"
-                />
-              </div>
-            }>
-            <Button
-              icon="filter"
-              minimal
-              text={filterText ? "Filtering..." : "Filter"}
-              active={!!filterText}
-            />
-          </Popover>
         </div>
       </header>
 

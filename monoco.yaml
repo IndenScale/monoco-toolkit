@@ -1,9 +1,11 @@
 project:
   name: Monoco Toolkit
   key: TOO
+  members:
+    MON: ".."
   spike_repos:
     vibe-kanban: https://github.com/BloopAI/vibe-kanban
 i18n:
   source_lang: en
   target_langs:
-  - zh
+    - zh
