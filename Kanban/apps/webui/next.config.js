@@ -8,6 +8,10 @@ const nextConfig = {
   experimental: {
     externalDir: true,
   },
+  devIndicators: {
+    appIsrStatus: false,
+    buildActivity: false,
+  },
 };
 
 module.exports = nextConfig;
