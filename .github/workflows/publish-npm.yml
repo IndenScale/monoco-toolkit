@@ -23,10 +23,10 @@ jobs:
           cd Kanban
           npm install
 
-      - name: Build WebUI
+      - name: Build All Workspaces
         run: |
           cd Kanban
-          npm run build --workspace=@monoco-io/kanban-webui
+          npm run build --workspaces
 
       - name: Prepare Package
         run: |
