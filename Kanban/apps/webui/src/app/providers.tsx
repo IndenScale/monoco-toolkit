@@ -5,7 +5,7 @@ import {
   useSSEConnection,
   useKanbanSync,
   useDaemonStore,
-} from "@monoco/kanban-core";
+} from "@monoco-io/kanban-core";
 import { loader } from "@monaco-editor/react";
 import { useEffect } from "react";
 import { TermProvider } from "./contexts/TermContext";

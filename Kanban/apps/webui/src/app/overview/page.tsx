@@ -433,7 +433,7 @@ export default function OverviewPage() {
             interactionKind="hover"
             placement="bottom-start"
             minimal={true}
-            popoverClassName="bp5-dark"
+            popoverClassName="bp6-dark"
             targetTagName="div"
             modifiers={{
               offset: { enabled: true, options: { offset: [0, 4] } },
