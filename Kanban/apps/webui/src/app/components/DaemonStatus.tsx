@@ -1,6 +1,6 @@
 "use client";
 
-import { useDaemonStore } from "@monoco/kanban-core";
+import { useDaemonStore } from "@monoco-io/kanban-core";
 import { Tag, Spinner } from "@blueprintjs/core";
 
 export default function DaemonStatus() {

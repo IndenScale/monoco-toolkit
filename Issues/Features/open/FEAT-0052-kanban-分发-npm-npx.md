@@ -16,11 +16,11 @@ tags: []
 
 ## Objective
 
-建立 Monoco Kanban 的 NPM 自动发布流水线，使用户能够通过 `npx @monoco/kanban` 或 `npm install -g @monoco/kanban` 一键启动看板界面。该工具应能自动发现并连接本地运行的 Monoco Toolkit 后端。
+建立 Monoco Kanban 的 NPM 自动发布流水线，使用户能够通过 `npx @monoco-io/kanban` 或 `npm install -g @monoco-io/kanban` 一键启动看板界面。该工具应能自动发现并连接本地运行的 Monoco Toolkit 后端。
 
 ## Acceptance Criteria
 
-- [ ] **npx 启动**：运行 `npx @monoco/kanban` 能够启动一个轻量级 Web 服务并自动打开浏览器。
+- [ ] **npx 启动**：运行 `npx @monoco-io/kanban` 能够启动一个轻量级 Web 服务并自动打开浏览器。
 - [ ] **静态分发**：NPM 包应包含 `webui` 的预构建静态资源，无需用户本地进行 `next build`。
 - [ ] **后端发现**：能够默认连接到 `http://localhost:3213` (Monoco 默认端口)，并支持通过参数修改。
 - [ ] **自动化发布**：Git Tag (`v*`) 触发自动发布至 NPM Registry。

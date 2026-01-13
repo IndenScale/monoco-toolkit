@@ -1,5 +1,5 @@
 {
-  "name": "@monoco/kanban-root",
+  "name": "@monoco-io/kanban-root",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "dev": "npm run dev --workspace=@monoco/kanban-webui",
-    "start": "npm run start --workspace=@monoco/kanban-webui"
+    "dev": "npm run dev --workspace=@monoco-io/kanban-webui",
+    "start": "npm run start --workspace=@monoco-io/kanban-webui"
   }
 }

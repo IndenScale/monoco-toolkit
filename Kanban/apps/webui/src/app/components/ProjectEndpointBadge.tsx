@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useDaemonStore } from "@monoco/kanban-core";
+import { useDaemonStore } from "@monoco-io/kanban-core";
 import { Tag, Popover, InputGroup, Button, Intent } from "@blueprintjs/core";
 
 export default function ProjectEndpointBadge() {

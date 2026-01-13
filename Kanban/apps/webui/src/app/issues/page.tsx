@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useKanbanStore, useKanbanSync } from "@monoco/kanban-core";
+import { useKanbanStore, useKanbanSync } from "@monoco-io/kanban-core";
 import { HTMLTable, Tag, InputGroup, Spinner, Intent, Icon, Button, ButtonGroup, Collapse } from "@blueprintjs/core";
 import IssueDetailModal from "../components/IssueDetailModal";
 import { Issue } from "../types";

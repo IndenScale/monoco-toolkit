@@ -1,6 +1,6 @@
 import React from "react";
 import { Icon, Spinner, Intent } from "@blueprintjs/core";
-import { useDaemonStore } from "@monoco/kanban-core";
+import { useDaemonStore } from "@monoco-io/kanban-core";
 
 export default function StatusBar() {
   const { status, daemonUrl } = useDaemonStore();

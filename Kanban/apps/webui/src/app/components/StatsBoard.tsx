@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Elevation, Icon, Intent, Spinner, Tag } from "@blueprintjs/core";
-import { useDashboardStore } from "@monoco/kanban-core";
+import { useDashboardStore } from "@monoco-io/kanban-core";
 
 export default function StatsBoard() {
   const { stats, isLoading } = useDashboardStore();

@@ -10,7 +10,7 @@ import {
   Tree,
   TreeNodeInfo,
 } from "@blueprintjs/core";
-import { useDaemonStore } from "@monoco/kanban-core";
+import { useDaemonStore } from "@monoco-io/kanban-core";
 
 interface ProjectTreeSelectorProps {
   onSelect?: () => void;

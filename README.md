@@ -48,7 +48,7 @@ monoco serve
 Then, launch the visual mission dashboard from anywhere:
 
 ```bash
-npx @monoco/kanban
+npx @monoco-io/kanban
 ```
 
 Visit `http://localhost:3123` (or the URL displayed in your terminal) to enter your cockpit.

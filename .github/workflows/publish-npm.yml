@@ -26,7 +26,7 @@ jobs:
       - name: Build WebUI
         run: |
           cd Kanban
-          npm run build --workspace=@monoco/kanban-webui
+          npm run build --workspace=@monoco-io/kanban-webui
 
       - name: Prepare Package
         run: |

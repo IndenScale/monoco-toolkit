@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Icon, Tooltip, Position, Popover, Button, Classes } from "@blueprintjs/core";
 import Link from "next/link";
 import StatusBar from "./StatusBar";
-import { useDaemonLifecycle, useDaemonStore } from "@monoco/kanban-core";
+import { useDaemonLifecycle, useDaemonStore } from "@monoco-io/kanban-core";
 import ProjectTreeSelector from "./ProjectTreeSelector";
 import ActivityDrawer from "./ActivityDrawer";
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Drawer, Position, Classes, Icon, Intent, Spinner, Card, Elevation } from "@blueprintjs/core";
-import { useDashboardStore, ActivityItem, ActivityType } from "@monoco/kanban-core";
+import { useDashboardStore, ActivityItem, ActivityType } from "@monoco-io/kanban-core";
 
 interface ActivityDrawerProps {
   isOpen: boolean;

@@ -11,7 +11,7 @@ import {
 } from "@blueprintjs/core";
 import Editor from "@monaco-editor/react";
 import { Issue } from "../types";
-import { useDaemonStore } from "@monoco/kanban-core";
+import { useDaemonStore } from "@monoco-io/kanban-core";
 import { useTerms } from "../contexts/TermContext";
 
 interface IssueDetailModalProps {
