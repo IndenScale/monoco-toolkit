@@ -13,7 +13,7 @@ import {
   useDaemonStore,
   useSSEConnection,
   sseManager,
-} from "@monoco/kanban-core";
+} from "@monoco-io/kanban-core";
 import KanbanColumn from "../components/KanbanColumn";
 import IssueDetailModal from "../components/IssueDetailModal";
 import CreateIssueDialog from "../components/CreateIssueDialog";

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useKanbanStore } from "@monoco/kanban-core";
+import { useKanbanStore } from "@monoco-io/kanban-core";
 import {
   Card,
   Button,

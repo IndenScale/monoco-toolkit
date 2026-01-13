@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Elevation, Icon, Intent, Spinner } from "@blueprintjs/core";
-import { useDashboardStore, ActivityType } from "@monoco/kanban-core";
+import { useDashboardStore, ActivityType } from "@monoco-io/kanban-core";
 
 // Helper to format date
 const formatDate = (dateStr: string) => {

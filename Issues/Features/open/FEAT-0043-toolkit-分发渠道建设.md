@@ -29,8 +29,8 @@ tags: []
   - [ ] `monoco serve` 成功启动并对外暴露开发者 API。
 - [ ] **Tier 2 (Package Managers)**:
   - [ ] Homebrew Formula 验证通过。
-  - [ ] NPM Shim (`npm i -g @monoco/kanban`) 发布。
-  - [ ] 用户可以通过 `npx @monoco/kanban` 快速打开本地 Kanban 界面。
+  - [ ] NPM Shim (`npm i -g @monoco-io/kanban`) 发布。
+  - [ ] 用户可以通过 `npx @monoco-io/kanban` 快速打开本地 Kanban 界面。
 - [ ] **Tier 3 (Consumer Native)**:
   - [ ] MacOS App (.dmg) 打包验证 (PyInstaller)。
   - [ ] Windows App (.exe) 打包验证 (PyInstaller)。

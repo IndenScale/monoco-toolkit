@@ -48,7 +48,7 @@ monoco serve
 在任意位置启动可视化看板控制台：
 
 ```bash
-npx @monoco/kanban
+npx @monoco-io/kanban
 ```
 
 访问 `http://localhost:3123`（或终端显示的地址）即可进入你的驾驶舱。

@@ -1,5 +1,5 @@
 {
-  "name": "@monoco/kanban-webui",
+  "name": "@monoco-io/kanban-webui",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,7 +12,7 @@
     "@blueprintjs/core": "^5.0.0",
     "@blueprintjs/icons": "^5.0.0",
     "@monaco-editor/react": "^4.6.0",
-    "@monoco/kanban-core": "*",
+    "@monoco-io/kanban-core": "*",
     "@tailwindcss/typography": "^0.5.19",
     "monaco-editor": "^0.55.1",
     "next": "latest",

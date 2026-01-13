@@ -2,7 +2,7 @@
 
 import React from "react";
 import StatsBoard from "../components/StatsBoard";
-import { useDaemonStore } from "@monoco/kanban-core";
+import { useDaemonStore } from "@monoco-io/kanban-core";
 import { Callout, NonIdealState, Button, Intent } from "@blueprintjs/core";
 import Link from "next/link";
 
