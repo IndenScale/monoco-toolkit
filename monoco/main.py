@@ -11,8 +11,24 @@ app = typer.Typer(
 )
 
 
+def version_callback(value: bool):
+    if value:
+        import importlib.metadata
+        try:
+            version = importlib.metadata.version("monoco-toolkit")
+        except importlib.metadata.PackageNotFoundError:
+            version = "unknown"
+        print(f"Monoco Toolkit v{version}")
+        raise typer.Exit()
+
+
 @app.callback()
-def main(ctx: typer.Context):
+def main(
+    ctx: typer.Context,
+    version: Optional[bool] = typer.Option(
+        None, "--version", "-v", help="Show version and exit", callback=version_callback, is_eager=True
+    ),
+):
     """
     Monoco Toolkit - The sensory and motor system for Monoco Agents.
     """
@@ -42,8 +58,14 @@ def info():
 
     mode = "Agent (JSON)" if os.getenv("AGENT_FLAG") == "true" else "Human (Rich)"
     
+    import importlib.metadata
+    try:
+        version = importlib.metadata.version("monoco-toolkit")
+    except importlib.metadata.PackageNotFoundError:
+        version = "unknown"
+
     status = Status(
-        version="0.1.0",
+        version=version,
         mode=mode,
         root=os.getcwd(),
         project=f"{settings.project.name} ({settings.project.key})"
