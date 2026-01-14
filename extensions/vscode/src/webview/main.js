@@ -614,17 +614,62 @@ function createEpicNode(epic, children, isVirtual = false) {
   const header = document.createElement("div");
   header.className = "tree-group-header";
 
-  // Count Badge Logic
-  const count = children.length;
-  const countDisplay = count > 99 ? "99+" : count;
-  const countBadge =
-    count > 0 ? `<div class="tree-group-count">${countDisplay}</div>` : "";
+  // 1. Calculate Stats
+  const stats = { done: 0, review: 0, doing: 0, todo: 0 };
+  children.forEach((c) => {
+    const s = (c.stage || c.status || "todo").toLowerCase();
+    if (s.includes("done") || s.includes("closed") || s.includes("implemented"))
+      stats.done++;
+    else if (s.includes("review")) stats.review++;
+    else if (s.includes("doing")) stats.doing++;
+    else stats.todo++;
+  });
+
+  const total = children.length;
+
+  // 2. Count Display (Capsule)
+  const countDisplay = total > 99 ? "99+" : total;
+  const countHtml =
+    total > 0 ? `<div class="tree-group-count">${countDisplay}</div>` : "";
 
   header.innerHTML = `
     <div class="chevron">${ICONS.CHEVRON}</div>
     <div class="tree-group-title">${escapeHtml(epic.title)}</div>
-    ${countBadge}
+    ${countHtml}
   `;
+
+  // 3. Progress Bar (The 2px Line)
+  if (total > 0) {
+    const pDone = (stats.done / total) * 100;
+    const pReview = (stats.review / total) * 100;
+    const pDoing = (stats.doing / total) * 100;
+    // Todo takes the rest
+
+    // Stack Order: Done (Green) -> Review (Purple) -> Doing (Blue) -> Todo (Transparent/Grey)
+    // We use var colors from CSS.
+    const bar = document.createElement("div");
+    bar.className = "epic-progress-bar";
+
+    // Construct Gradient
+    // Stops:
+    // Green: 0% -> pDone%
+    // Purple: pDone% -> (pDone+pReview)%
+    // Blue: (pDone+pReview)% -> (pDone+pReview+pDoing)%
+    // Grey: (pDone+pReview+pDoing)% -> 100%
+
+    const stop1 = pDone;
+    const stop2 = pDone + pReview;
+    const stop3 = pDone + pReview + pDoing;
+
+    bar.style.background = `linear-gradient(to right, 
+      var(--status-done) 0% ${stop1}%, 
+      var(--status-review) ${stop1}% ${stop2}%, 
+      var(--status-doing) ${stop2}% ${stop3}%, 
+      var(--border-color) ${stop3}% 100%
+    )`;
+
+    header.appendChild(bar);
+  }
 
   // Add "+" button (Allow for Epics and Unassigned)
   if (!isVirtual || epic.id === "virtual-orphans") {

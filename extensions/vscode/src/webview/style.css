@@ -161,19 +161,31 @@ body {
 
 .tree-group-count {
   font-size: 10px;
-  color: var(--text-secondary);
+  /* Use badge colors if available, otherwise fallback to subtle grey */
   background-color: var(--vscode-badge-background, rgba(128, 128, 128, 0.2));
   color: var(--vscode-badge-foreground, var(--text-primary));
-  padding: 0 4px;
-  border-radius: 9px;
-  min-width: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  min-width: 16px;
   height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-left: 6px;
-  margin-right: 4px; /* Space from button */
   flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* Epic Progress Bar (Gradient Line) */
+.epic-progress-bar {
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: transparent; /* Fallback */
+  opacity: 0.8;
+  pointer-events: none;
 }
 
 /* Issue List */

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
+import { checkAndBootstrap } from "./bootstrap";
 import { IssueLensProvider } from "./providers/IssueLensProvider";
 import {
   toggleStatus,
@@ -8,7 +9,7 @@ import {
   selectParent,
 } from "./commands/issueCommands";
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "monoco-vscode" is now active!');
 
   // Kanban Sidebar
@@ -34,8 +35,11 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Try to start daemon on activation if not running
-  checkDaemonAndNotify();
+  // Check dependencies and bootstrap if needed
+  checkAndBootstrap().then(() => {
+    // Try to start daemon on activation if not running
+    checkDaemonAndNotify();
+  });
 
   context.subscriptions.push(
     vscode.commands.registerCommand("monoco.refreshEntry", () => {
