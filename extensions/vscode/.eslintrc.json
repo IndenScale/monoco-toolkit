@@ -22,6 +22,14 @@
         "format": ["camelCase", "snake_case"]
       }
     ],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
     "@typescript-eslint/semi": "warn",
     "curly": "warn",
     "eqeqeq": "warn",
