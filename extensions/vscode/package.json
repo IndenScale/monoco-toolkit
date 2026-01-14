@@ -3,7 +3,7 @@
   "displayName": "Monoco",
   "description": "Monoco VS Code Cockpit Integration",
   "version": "0.1.4",
-  "publisher": "monoco",
+  "publisher": "indenscale",
   "repository": {
     "type": "git",
     "url": "https://github.com/IndenScale/Monoco.git",
