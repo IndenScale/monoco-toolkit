@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useLayout } from "../contexts/LayoutContext";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import StatusBar from "./StatusBar";
@@ -19,6 +20,7 @@ import {
   Bell,
 } from "lucide-react";
 
+import { TerminalPanel } from "@/components/terminal/TerminalPanel";
 import {
   Tooltip,
   TooltipContent,
@@ -30,7 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface LayoutShellProps {
@@ -75,7 +77,7 @@ const NavItem = ({
 
 export default function LayoutShell({ children }: LayoutShellProps) {
   const { projects, currentProjectId } = useDaemonStore();
-  const [isActivityOpen, setIsActivityOpen] = useState(false);
+  const { isActivityOpen, closeActivity } = useLayout();
 
   const currentProject = projects?.find((p: any) => p.id === currentProjectId);
 
@@ -132,57 +134,13 @@ export default function LayoutShell({ children }: LayoutShellProps) {
           <div className="absolute inset-0 bg-gradient-to-tr from-canvas via-transparent to-transparent pointer-events-none" />
 
           {/* Top Bar */}
-          <div className="h-14 w-full flex items-center justify-between px-6 border-b border-border-subtle bg-surface/30 backdrop-blur-sm z-20 shrink-0">
-            {/* Project Selector */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <div className="flex items-center gap-2 cursor-pointer hover:bg-surface-highlight p-1.5 rounded-md transition-colors">
-                  <div
-                    className={`w-6 h-6 flex items-center justify-center rounded bg-accent/10 text-accent`}>
-                    <Briefcase size={14} />
-                  </div>
-                  <span className="font-semibold text-sm text-text-primary max-w-[200px] truncate">
-                    {currentProject?.name || "Select Project"}
-                  </span>
-                  <ChevronDown size={12} className="text-text-muted" />
-                </div>
-              </PopoverTrigger>
-              <PopoverContent className="w-[300px] p-0" align="start">
-                <ProjectTreeSelector />
-              </PopoverContent>
-            </Popover>
-
-            {/* Right Actions */}
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsActivityOpen(true)}
-                      className={
-                        isActivityOpen
-                          ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400"
-                          : "text-text-muted hover:text-text-primary"
-                      }>
-                      <Bell size={18} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">Activity Feed</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
 
           <div className="relative z-0 flex-1 w-full overflow-hidden">
             {children}
+            <TerminalPanel />
           </div>
 
-          <ActivityDrawer
-            isOpen={isActivityOpen}
-            onClose={() => setIsActivityOpen(false)}
-          />
+          <ActivityDrawer isOpen={isActivityOpen} onClose={closeActivity} />
         </div>
       </div>
 

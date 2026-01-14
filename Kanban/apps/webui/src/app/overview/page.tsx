@@ -1,4 +1,5 @@
 "use client";
+import MergedPageHeader from "../components/MergedPageHeader";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import {
@@ -383,80 +384,68 @@ export default function OverviewPage() {
       />
 
       {/* Page Header */}
-      <header className="px-6 py-6 flex justify-between items-end shrink-0 z-10 border-b border-border-subtle bg-surface/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary tracking-tight mb-1">
-              Overview
-            </h1>
-            <p className="text-sm text-text-muted">
-              Track progress and manage tasks across the board.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Popover
-            content={
-              <div className="p-3 bg-surface border border-border rounded-lg shadow-2xl min-w-[240px]">
-                <div className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 border-b border-border-subtle pb-2">
-                  Search Syntax
-                </div>
-                <ul className="list-none space-y-2 m-0 p-0 text-sm">
-                  <li className="flex items-center justify-between gap-4">
-                    <span className="text-text-secondary">Fuzzy match</span>
-                    <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-accent">
-                      text
-                    </code>
-                  </li>
-                  <li className="flex items-center justify-between gap-4">
-                    <span className="text-text-secondary">Exact phrase</span>
-                    <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-accent">
-                      "foo bar"
-                    </code>
-                  </li>
-                  <li className="flex items-center justify-between gap-4">
-                    <span className="text-text-secondary">Must include</span>
-                    <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-accent">
-                      +term
-                    </code>
-                  </li>
-                  <li className="flex items-center justify-between gap-4">
-                    <span className="text-text-secondary">Exclude</span>
-                    <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-red-400">
-                      -term
-                    </code>
-                  </li>
-                </ul>
+      {/* Page Header */}
+      <MergedPageHeader title="Overview">
+        <Popover
+          content={
+            <div className="p-3 bg-surface border border-border rounded-lg shadow-2xl min-w-[240px]">
+              <div className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 border-b border-border-subtle pb-2">
+                Search Syntax
               </div>
-            }
-            interactionKind="hover"
-            placement="bottom-start"
-            minimal={true}
-            popoverClassName="bp6-dark"
-            targetTagName="div"
-            modifiers={{
-              offset: { enabled: true, options: { offset: [0, 4] } },
-              flip: { enabled: true },
-              preventOverflow: { enabled: true, options: { padding: 10 } },
-            }}>
-            <InputGroup
-              leftIcon="filter"
-              placeholder="Filter..."
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              className="w-64 bg-surface text-text-primary focus:border-accent"
-              type="search"
-            />
-          </Popover>
-          <Button
-            icon="plus"
-            intent={Intent.PRIMARY}
-            text="New Issue"
-            onClick={() => setIsCreateOpen(true)}
+              <ul className="list-none space-y-2 m-0 p-0 text-sm">
+                <li className="flex items-center justify-between gap-4">
+                  <span className="text-text-secondary">Fuzzy match</span>
+                  <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-accent">
+                    text
+                  </code>
+                </li>
+                <li className="flex items-center justify-between gap-4">
+                  <span className="text-text-secondary">Exact phrase</span>
+                  <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-accent">
+                    "foo bar"
+                  </code>
+                </li>
+                <li className="flex items-center justify-between gap-4">
+                  <span className="text-text-secondary">Must include</span>
+                  <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-accent">
+                    +term
+                  </code>
+                </li>
+                <li className="flex items-center justify-between gap-4">
+                  <span className="text-text-secondary">Exclude</span>
+                  <code className="bg-surface-highlight px-1.5 py-0.5 rounded text-xs font-mono text-red-400">
+                    -term
+                  </code>
+                </li>
+              </ul>
+            </div>
+          }
+          interactionKind="hover"
+          placement="bottom-start"
+          minimal={true}
+          popoverClassName="bp6-dark"
+          targetTagName="div"
+          modifiers={{
+            offset: { enabled: true, options: { offset: [0, 4] } },
+            flip: { enabled: true },
+            preventOverflow: { enabled: true, options: { padding: 10 } },
+          }}>
+          <InputGroup
+            leftIcon="filter"
+            placeholder="Filter..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            className="w-64 bg-surface text-text-primary focus:border-accent"
+            type="search"
           />
-        </div>
-      </header>
+        </Popover>
+        <Button
+          icon="plus"
+          intent={Intent.PRIMARY}
+          text="New Issue"
+          onClick={() => setIsCreateOpen(true)}
+        />
+      </MergedPageHeader>
 
       {/* Error State */}
       {error && (
