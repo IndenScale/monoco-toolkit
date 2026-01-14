@@ -11,6 +11,9 @@ const nextConfig = {
     appIsrStatus: false,
     buildActivity: false,
   },
+  images: {
+    unoptimized: true,
+  },
 };
 
 module.exports = nextConfig;

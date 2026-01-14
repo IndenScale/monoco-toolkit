@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { TermProvider } from "./contexts/TermContext";
 import { TerminalProvider } from "./contexts/TerminalContext";
 import { LayoutProvider } from "./contexts/LayoutContext";
+import { BridgeProvider } from "./contexts/BridgeContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   /* ... existing monaco config ... */
@@ -43,7 +44,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <TermProvider>
       <TerminalProvider>
-        <LayoutProvider>{children}</LayoutProvider>
+        <BridgeProvider>
+          <LayoutProvider>{children}</LayoutProvider>
+        </BridgeProvider>
       </TerminalProvider>
     </TermProvider>
   );

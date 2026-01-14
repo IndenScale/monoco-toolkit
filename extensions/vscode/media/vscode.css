@@ -1,0 +1,60 @@
+:root {
+  --container-padding: 20px;
+  --input-padding-vertical: 6px;
+  --input-padding-horizontal: 4px;
+  --input-margin-vertical: 4px;
+  --input-margin-horizontal: 0;
+}
+
+body {
+  padding: 0 var(--container-padding);
+  color: var(--vscode-foreground);
+  font-family: var(--vscode-font-family);
+  font-weight: var(--vscode-font-weight);
+  font-size: var(--vscode-font-size);
+  background-color: var(--vscode-sideBar-background);
+}
+
+ol,
+ul {
+  padding-left: var(--container-padding);
+}
+
+body > * {
+  margin-block-start: var(--input-margin-vertical);
+  margin-block-end: var(--input-margin-vertical);
+}
+
+.error-text {
+  color: var(--vscode-errorForeground);
+}
+
+/**
+ * Examples of items to use:
+ * var(--vscode-button-background);
+ * var(--vscode-button-foreground);
+ * var(--vscode-button-hoverBackground);
+ */
+button {
+  border: none;
+  padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+  width: 100%;
+  text-align: center;
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+}
+
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+  cursor: pointer;
+}
+
+button:focus {
+  outline-color: var(--vscode-focusBorder);
+}
+
+button:active {
+  background: var(--vscode-button-secondaryBackground);
+}

@@ -13,6 +13,7 @@ import Editor from "@monaco-editor/react";
 import { Issue } from "../types";
 import { useDaemonStore } from "@monoco-io/kanban-core";
 import { useTerms } from "../contexts/TermContext";
+import IssueMarkdown from "./IssueMarkdown";
 
 interface IssueDetailModalProps {
   issueId: string | null;
@@ -65,25 +66,22 @@ export default function IssueDetailModal({
   }, [issueId, daemonUrl, currentProjectId]);
 
   const handleSave = async () => {
-      // ... (handleSave logic remains same) ...
+    // ... (handleSave logic remains same) ...
     if (!issueId || !daemonUrl) return;
 
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
-        `${daemonUrl}/api/v1/issues/${issueId}/content`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            content: editContent,
-            project_id: currentProjectId,
-          }),
-        }
-      );
+      const res = await fetch(`${daemonUrl}/api/v1/issues/${issueId}/content`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: editContent,
+          project_id: currentProjectId,
+        }),
+      });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -91,15 +89,16 @@ export default function IssueDetailModal({
       }
 
       setIsEditing(false);
-      
-      const params = currentProjectId ? `?project_id=${currentProjectId}` : "";
-      const refreshRes = await fetch(`${daemonUrl}/api/v1/issues/${issueId}${params}`);
-      if (refreshRes.ok) {
-          const refreshedData = await refreshRes.json();
-          setIssue(refreshedData);
-          setEditContent(refreshedData.raw_content || refreshedData.body || "");
-      }
 
+      const params = currentProjectId ? `?project_id=${currentProjectId}` : "";
+      const refreshRes = await fetch(
+        `${daemonUrl}/api/v1/issues/${issueId}${params}`
+      );
+      if (refreshRes.ok) {
+        const refreshedData = await refreshRes.json();
+        setIssue(refreshedData);
+        setEditContent(refreshedData.raw_content || refreshedData.body || "");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -111,25 +110,27 @@ export default function IssueDetailModal({
     if (!issueId || !daemonUrl) return;
     setLoading(true);
     try {
-        const res = await fetch(`${daemonUrl}/api/v1/issues/${issueId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ stage: newStage, project_id: currentProjectId })
-        });
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.detail || "Failed to transition issue");
-        }
-        // Refresh
-        const params = currentProjectId ? `?project_id=${currentProjectId}` : "";
-        const refreshRes = await fetch(`${daemonUrl}/api/v1/issues/${issueId}${params}`);
-        if (refreshRes.ok) {
-            setIssue(await refreshRes.json());
-        }
+      const res = await fetch(`${daemonUrl}/api/v1/issues/${issueId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage: newStage, project_id: currentProjectId }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Failed to transition issue");
+      }
+      // Refresh
+      const params = currentProjectId ? `?project_id=${currentProjectId}` : "";
+      const refreshRes = await fetch(
+        `${daemonUrl}/api/v1/issues/${issueId}${params}`
+      );
+      if (refreshRes.ok) {
+        setIssue(await refreshRes.json());
+      }
     } catch (err: any) {
-        setError(err.message);
+      setError(err.message);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -192,7 +193,10 @@ export default function IssueDetailModal({
                       Status
                     </div>
                     <Tag intent={getStatusIntent(issue.status)} minimal large>
-                      {t(issue.status?.toLowerCase(), issue.status?.toUpperCase())}
+                      {t(
+                        issue.status?.toLowerCase(),
+                        issue.status?.toUpperCase()
+                      )}
                     </Tag>
                   </div>
                   <Divider className="h-8" />
@@ -201,7 +205,12 @@ export default function IssueDetailModal({
                       Stage
                     </div>
                     <div className="text-text-primary font-medium">
-                      {issue.stage ? t(issue.stage.toLowerCase(), issue.stage.toUpperCase()) : "-"}
+                      {issue.stage
+                        ? t(
+                            issue.stage.toLowerCase(),
+                            issue.stage.toUpperCase()
+                          )
+                        : "-"}
                     </div>
                   </div>
                   <Divider className="h-8" />
@@ -237,27 +246,28 @@ export default function IssueDetailModal({
               )}
             </div>
 
-            {/* Content Area - Monaco */}
-            <div className="flex-1 min-h-0 relative bg-[#1e1e1e]">
-              {/* ^ bg matching vs-dark default */}
-              <Editor
-                height="100%"
-                defaultLanguage="markdown"
-                theme="vs-dark"
-                value={isEditing ? editContent : issue.body || ""}
-                onChange={(val) => setEditContent(val || "")}
-                options={{
-                  readOnly: !isEditing,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  fontSize: 14,
-                  wordWrap: "on",
-                  padding: { top: 20, bottom: 20 },
-                  lineNumbers: "off", // Cleaner for reading
-                  renderLineHighlight: "none",
-                  fontFamily: "'JetBrains Mono', monospace",
-                }}
-              />
+            {/* Content Area */}
+            <div className="flex-1 min-h-0 relative bg-canvas overflow-y-auto custom-scrollbar p-6">
+              {isEditing ? (
+                <Editor
+                  height="100%"
+                  defaultLanguage="markdown"
+                  theme="vs-dark"
+                  value={editContent}
+                  onChange={(val) => setEditContent(val || "")}
+                  options={{
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    fontSize: 14,
+                    wordWrap: "on",
+                    padding: { top: 20, bottom: 20 },
+                    lineNumbers: "on",
+                    fontFamily: "'JetBrains Mono', monospace",
+                  }}
+                />
+              ) : (
+                <IssueMarkdown content={issue.body || ""} />
+              )}
             </div>
           </div>
         )}
@@ -267,22 +277,22 @@ export default function IssueDetailModal({
           Classes.DIALOG_FOOTER + " bg-surface border-t border-border-subtle"
         }>
         <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-          {!isEditing && issue?.stage?.toLowerCase() === 'review' && (
-             <>
-                <Button 
-                    text="Reject" 
-                    intent={Intent.DANGER} 
-                    icon="cross"
-                    onClick={() => handleTransition('doing')} 
-                />
-                <Button 
-                    text="Approve" 
-                    intent={Intent.SUCCESS} 
-                    icon="tick"
-                    onClick={() => handleTransition('done')} 
-                />
-                <Divider />
-             </>
+          {!isEditing && issue?.stage?.toLowerCase() === "review" && (
+            <>
+              <Button
+                text="Reject"
+                intent={Intent.DANGER}
+                icon="cross"
+                onClick={() => handleTransition("doing")}
+              />
+              <Button
+                text="Approve"
+                intent={Intent.SUCCESS}
+                icon="tick"
+                onClick={() => handleTransition("done")}
+              />
+              <Divider />
+            </>
           )}
 
           {isEditing ? (

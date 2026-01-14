@@ -51,7 +51,11 @@ def parse_issue(file_path: Path) -> Optional[IssueMetadata]:
         data = yaml.safe_load(match.group(1))
         if not isinstance(data, dict):
              return None
-        return IssueMetadata(**data)
+        
+        # Inject path before validation to ensure it persists
+        data['path'] = str(file_path.absolute())
+        meta = IssueMetadata(**data)
+        return meta
     except Exception:
         return None
 
@@ -72,6 +76,8 @@ def parse_issue_detail(file_path: Path) -> Optional[IssueDetail]:
         data = yaml.safe_load(yaml_str)
         if not isinstance(data, dict):
              return None
+             
+        data['path'] = str(file_path.absolute())
         return IssueDetail(**data, body=body, raw_content=content)
     except Exception:
         return None
@@ -160,6 +166,9 @@ def create_issue_file(
 """
     file_path = target_dir / filename
     file_path.write_text(file_content)
+    
+    # Inject path into returned metadata
+    metadata.path = str(file_path.absolute())
     
     return metadata, file_path
 def validate_transition(
