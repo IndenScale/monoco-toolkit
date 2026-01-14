@@ -78,6 +78,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   els.btnBackCreate.innerHTML = ICONS.BACK;
   els.btnBackSettings.innerHTML = ICONS.BACK;
 
+  initHoverWidget();
+
   // Restore State
   const savedState = vscode.getState();
   if (savedState) {
@@ -638,6 +640,8 @@ function createEpicNode(epic, children, isVirtual = false) {
     ${countHtml}
   `;
 
+  setupHover(header, epic);
+
   // 3. Progress Bar (The 2px Line)
   if (total > 0) {
     const pDone = (stats.done / total) * 100;
@@ -742,6 +746,8 @@ function createIssueItem(issue) {
   item.addEventListener("dragstart", (e) => {
     setupDragData(e, issue);
   });
+
+  setupHover(item, issue);
 
   // Status Class Mapping
   let statusClass = "todo";
@@ -904,4 +910,121 @@ function escapeHtml(unsafe) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+// ----------------------------------------------------
+// Hover Logic
+// ----------------------------------------------------
+
+let hoverTimer = null;
+let hoverWidget = null;
+const HOVER_DELAY = 600;
+
+function initHoverWidget() {
+  hoverWidget = document.createElement("div");
+  hoverWidget.className = "hover-widget";
+  document.body.appendChild(hoverWidget);
+}
+
+function setupHover(element, issue) {
+  element.addEventListener("mouseenter", (e) => {
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(() => showHover(element, issue), HOVER_DELAY);
+  });
+
+  element.addEventListener("mouseleave", () => {
+    clearTimeout(hoverTimer);
+    hideHover();
+  });
+
+  // Hide on click to avoid obstruction
+  element.addEventListener("mousedown", () => {
+    clearTimeout(hoverTimer);
+    hideHover();
+  });
+}
+
+async function showHover(target, issue) {
+  try {
+    // Check cache or fetch? For now fetch always to be fresh
+    const res = await fetch(`${state.settings.apiBase}/issues/${issue.id}`);
+    if (!res.ok) return;
+    const detail = await res.json();
+
+    renderHover(detail);
+    positionHover(target);
+
+    // Fade in
+    requestAnimationFrame(() => {
+      hoverWidget.classList.add("visible");
+    });
+  } catch (e) {
+    // Silent fail
+  }
+}
+
+function hideHover() {
+  if (hoverWidget) {
+    hoverWidget.classList.remove("visible");
+  }
+}
+
+function renderHover(detail) {
+  const icon = getIcon(detail.type);
+  const status = detail.stage || detail.status;
+  let bodyText = (detail.body || "").trim();
+
+  // Remove Markdown headers for clearer preview? Or just let standard font handle it.
+  // Strip first # Title if it duplicates
+  bodyText = bodyText.replace(/^#\s+.*$/m, "").trim();
+
+  hoverWidget.innerHTML = `
+        <div class="hover-header">
+            <div class="hover-type-icon type-${detail.type}">${icon}</div>
+            <div class="hover-title-group">
+                <div class="hover-title">${escapeHtml(detail.title)}</div>
+                <div class="hover-id">${detail.id}</div>
+            </div>
+            <div class="hover-status-badge">${status}</div>
+        </div>
+        <div class="hover-body">${escapeHtml(bodyText)}</div>
+        <div class="hover-footer">
+             ${(detail.tags || [])
+               .map((t) => `<span class="hover-tag">#${t}</span>`)
+               .join("")}
+             <span class="hover-tag" style="margin-left:auto; opacity:0.7">Click to Open</span>
+        </div>
+    `;
+}
+
+function positionHover(target) {
+  const rect = target.getBoundingClientRect();
+  const widgetRect = hoverWidget.getBoundingClientRect();
+
+  // 1. Try Right Side
+  let left = rect.right + 10;
+  let top = rect.top;
+
+  // 2. Check Horizontal Overflow (Sidebar Boundary)
+  // If moving right pushes it out, or if it's too wide
+  if (left + widgetRect.width > window.innerWidth - 10) {
+    // Strategy: Move to Bottom, Left-Aligned (with safe padding)
+    left = 10;
+    top = rect.bottom + 4;
+  }
+
+  // 3. Check Vertical Overflow
+  if (top + widgetRect.height > window.innerHeight - 10) {
+    // If bottom clips, try shifting UP
+    // If we are in "Bottom" mode (left=10), move it ABOVE the element
+    if (left === 10) {
+      top = rect.top - widgetRect.height - 4;
+    } else {
+      // If we are in "Right" mode, just clamp to bottom
+      top = window.innerHeight - widgetRect.height - 10;
+    }
+  }
+
+  hoverWidget.style.top = `${top}px`;
+  hoverWidget.style.left = `${left}px`;
 }
