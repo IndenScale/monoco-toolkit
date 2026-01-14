@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Monoco VS Code Cockpit Integration",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "monoco",
   "repository": {
     "type": "git",
@@ -88,18 +88,20 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.90.0",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "20.x",
+    "@types/sinon": "^10.0.0",
+    "@types/vscode": "^1.90.0",
     "@typescript-eslint/eslint-plugin": "^7.14.1",
     "@typescript-eslint/parser": "^7.14.1",
+    "@vscode/test-electron": "^2.4.0",
     "@vscode/vsce": "^2.22.0",
     "eslint": "^8.57.0",
     "glob": "^10.3.10",
     "mocha": "^10.4.0",
     "ovsx": "^0.8.3",
-    "typescript": "^5.4.5",
-    "@vscode/test-electron": "^2.4.0"
+    "sinon": "^17.0.0",
+    "typescript": "^5.4.5"
   }
 }
