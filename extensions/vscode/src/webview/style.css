@@ -528,6 +528,103 @@ body {
   margin-top: 8px;
 }
 
-.primary-btn:hover {
-  background-color: var(--vscode-button-hoverBackground);
+/* Hover Widget */
+.hover-widget {
+  position: fixed;
+  z-index: 10000;
+  background-color: var(--vscode-editorHoverWidget-background);
+  color: var(--vscode-editorHoverWidget-foreground);
+  border: 1px solid var(--vscode-editorHoverWidget-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+  padding: 10px;
+  width: auto;
+  max-width: 300px;
+  min-width: 200px;
+  pointer-events: none;
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.hover-widget.visible {
+  opacity: 1;
+}
+
+.hover-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--vscode-editorHoverWidget-border);
+}
+
+.hover-type-icon {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  transform: scale(0.9);
+}
+
+.hover-title-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.hover-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--vscode-editorHoverWidget-foreground);
+  margin-bottom: 2px;
+}
+
+.hover-id {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.hover-status-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-left: 8px;
+  background-color: var(--bg-hover);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.hover-body {
+  color: var(--text-secondary);
+  font-size: 12px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  white-space: pre-wrap;
+}
+
+.hover-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--vscode-editorHoverWidget-border);
+  display: flex;
+  gap: 8px;
+}
+
+.hover-tag {
+  font-size: 10px;
+  color: var(--text-secondary);
+  background: rgba(128, 128, 128, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
 }
