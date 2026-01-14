@@ -222,10 +222,10 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
   }
 
   private getHtmlForWebview() {
-    // Point to src/webview for dev mode. In prod this should be dist or media.
+    // Point to out/webview for prod mode (copied by build script).
     const webviewPath = vscode.Uri.joinPath(
       this.extensionUri,
-      "src",
+      "out",
       "webview"
     );
 
