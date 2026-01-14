@@ -120,22 +120,22 @@ async function checkDaemonRunning(): Promise<boolean> {
 
 class MonocoKanbanProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "monoco-kanban";
-  private _view?: vscode.WebviewView;
+  private view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(private readonly extensionUri: vscode.Uri) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
-    _context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken
+    context: vscode.WebviewViewResolveContext,
+    token: vscode.CancellationToken
   ) {
-    this._view = webviewView;
+    this.view = webviewView;
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this._extensionUri],
+      localResourceRoots: [this.extensionUri],
     };
 
-    webviewView.webview.html = this._getHtmlForWebview();
+    webviewView.webview.html = this.getHtmlForWebview();
 
     webviewView.webview.onDidReceiveMessage(async (data: any) => {
       switch (data.type) {
@@ -179,7 +179,7 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
               // Sending 'CREATE_ISSUE' to extension is only to get USER INPUT (InputBox).
               // So we should send the Title back to Webview!
 
-              this._view?.webview.postMessage({
+              this.view?.webview.postMessage({
                 type: "CREATE_ISSUE_RESPONSE",
                 value: { title, type, parent, projectId },
               });
@@ -198,7 +198,7 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
             await vscode.workspace
               .getConfiguration("monoco")
               .update("apiBaseUrl", url, vscode.ConfigurationTarget.Global);
-            this._view?.webview.postMessage({ type: "REFRESH" }); // Full reload might be needed to re-inject? No, just refresh logic.
+            this.view?.webview.postMessage({ type: "REFRESH" }); // Full reload might be needed to re-inject? No, just refresh logic.
             vscode.commands.executeCommand(
               "workbench.action.webview.reloadWebviewAction"
             );
@@ -221,19 +221,19 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  private _getHtmlForWebview() {
+  private getHtmlForWebview() {
     // Point to src/webview for dev mode. In prod this should be dist or media.
     const webviewPath = vscode.Uri.joinPath(
-      this._extensionUri,
+      this.extensionUri,
       "src",
       "webview"
     );
 
     const indexUri = vscode.Uri.joinPath(webviewPath, "index.html");
-    const styleUri = this._view!.webview.asWebviewUri(
+    const styleUri = this.view!.webview.asWebviewUri(
       vscode.Uri.joinPath(webviewPath, "style.css")
     );
-    const scriptUri = this._view!.webview.asWebviewUri(
+    const scriptUri = this.view!.webview.asWebviewUri(
       vscode.Uri.joinPath(webviewPath, "main.js")
     );
 
@@ -265,8 +265,8 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
   }
 
   public refresh() {
-    if (this._view) {
-      this._view.webview.postMessage({ type: "REFRESH" });
+    if (this.view) {
+      this.view.webview.postMessage({ type: "REFRESH" });
     }
   }
 }

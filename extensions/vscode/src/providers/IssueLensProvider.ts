@@ -5,16 +5,16 @@ import { IssueParser, FieldLocation } from "./IssueParser";
  * Provides CodeLens for Issue file fields
  */
 export class IssueLensProvider implements vscode.CodeLensProvider {
-  private _onDidChangeCodeLenses: vscode.EventEmitter<void> =
+  private onDidChangeCodeLensesEmitter: vscode.EventEmitter<void> =
     new vscode.EventEmitter<void>();
   public readonly onDidChangeCodeLenses: vscode.Event<void> =
-    this._onDidChangeCodeLenses.event;
+    this.onDidChangeCodeLensesEmitter.event;
 
   /**
    * Refresh CodeLens (call when file changes)
    */
   public refresh(): void {
-    this._onDidChangeCodeLenses.fire();
+    this.onDidChangeCodeLensesEmitter.fire();
   }
 
   provideCodeLenses(
