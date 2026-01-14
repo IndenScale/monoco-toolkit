@@ -8,7 +8,8 @@ export const sys = {
 
 export async function checkAndBootstrap() {
   // 1. Check if monoco is already available
-  if (await isCommandAvailable("monoco")) {
+  // Use --help because older versions of monoco (typer default) don't support --version
+  if (await isCommandAvailable("monoco", "--help")) {
     return;
   }
 
@@ -38,11 +39,14 @@ export async function checkAndBootstrap() {
   }
 }
 
-async function isCommandAvailable(cmd: string): Promise<boolean> {
+async function isCommandAvailable(
+  cmd: string,
+  flag: string = "--version"
+): Promise<boolean> {
   return new Promise((resolve) => {
     // use 'command -v' on unix, 'where' on windows, or just run --version
     // --version is safest for most CLIs
-    sys.exec(`${cmd} --version`, (err) => {
+    sys.exec(`${cmd} ${flag}`, (err) => {
       resolve(!err);
     });
   });

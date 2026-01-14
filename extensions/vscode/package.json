@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Monoco VS Code Cockpit Integration",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "indenscale",
   "repository": {
     "type": "git",
@@ -81,7 +81,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && mkdir -p out/webview && cp src/webview/* out/webview/",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
