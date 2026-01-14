@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Issue } from "../types";
 import KanbanCard from "./KanbanCard";
+import { useBridge } from "../contexts/BridgeContext";
 
 interface KanbanColumnProps {
   id: string;
@@ -97,6 +98,8 @@ export default function KanbanColumn({
     return { roots, childrenMap };
   }, [issues]);
 
+  const { isVsCode } = useBridge();
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
@@ -129,9 +132,9 @@ export default function KanbanColumn({
 
   return (
     <div
-      className={`flex flex-col flex-1 min-w-[280px] h-full transition-colors duration-200 rounded-xl ${
-        isDragOver ? "bg-white/5 ring-2 ring-primary/50" : ""
-      }`}
+      className={`flex flex-col flex-1 h-full transition-colors duration-200 rounded-xl ${
+        isVsCode ? "min-w-[200px]" : "min-w-[280px]"
+      } ${isDragOver ? "bg-white/5 ring-2 ring-primary/50" : ""}`}
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}

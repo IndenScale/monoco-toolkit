@@ -105,7 +105,10 @@ class IssueMetadata(BaseModel):
     isolation: Optional[IssueIsolation] = None
     dependencies: List[str] = []
     related: List[str] = []
+    dependencies: List[str] = []
+    related: List[str] = []
     tags: List[str] = []
+    path: Optional[str] = None  # Absolute path to the issue file
 
 
     @model_validator(mode='before')

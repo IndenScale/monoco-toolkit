@@ -88,7 +88,31 @@ class SSEManager {
   }
 
   private emit(event: string, data: any) {
+    if (event === "issue_upserted") {
+      this.bufferIssueUpdate(data);
+      return;
+    }
     this.listeners.get(event)?.forEach((cb) => cb(data));
+  }
+
+  private issueBuffer: Map<string, any> = new Map();
+  private batchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private bufferIssueUpdate(data: any) {
+    const id = data.id;
+    if (id) {
+      // Deduplicate: latest update wins
+      this.issueBuffer.set(id, data);
+    }
+
+    if (!this.batchTimer) {
+      this.batchTimer = setTimeout(() => {
+        const batch = Array.from(this.issueBuffer.values());
+        this.issueBuffer.clear();
+        this.batchTimer = null;
+        this.listeners.get("issues_batch_upserted")?.forEach((cb) => cb(batch));
+      }, 100); // 100ms batch window
+    }
   }
 }
 

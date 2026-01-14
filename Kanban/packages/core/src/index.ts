@@ -12,6 +12,7 @@ interface KanbanState {
   fetchIssues: () => Promise<void>;
   setFilter: (filter: string) => void;
   upsertIssue: (issue: Issue) => void;
+  batchUpsertIssues: (newIssues: Issue[]) => void;
   removeIssue: (issueId: string) => void;
 }
 
@@ -27,7 +28,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
 
     set({ isLoading: true });
     try {
-      const params = currentProjectId ? `?project_id=${currentProjectId}` : '';
+      const params = currentProjectId ? `?project_id=${currentProjectId}` : "";
       const res = await fetch(`${daemonUrl}/api/v1/issues${params}`, {
         cache: "no-store",
       });
@@ -58,6 +59,27 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     }
   },
 
+  batchUpsertIssues: (newItems: Issue[]) => {
+    const { issues } = get();
+    const issuesCopy = [...issues];
+    let changed = false;
+
+    newItems.forEach((item) => {
+      const index = issuesCopy.findIndex((t) => t.id === item.id);
+      if (index >= 0) {
+        issuesCopy[index] = item;
+        changed = true;
+      } else {
+        issuesCopy.push(item);
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      set({ issues: issuesCopy });
+    }
+  },
+
   removeIssue: (issueId: string) => {
     set({ issues: get().issues.filter((t) => t.id !== issueId) });
   },
@@ -66,7 +88,8 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
 export function useKanbanSync() {
   // @ts-ignore
   const { status, currentProjectId } = useDaemonStore();
-  const { fetchIssues, upsertIssue, removeIssue } = useKanbanStore();
+  const { fetchIssues, upsertIssue, batchUpsertIssues, removeIssue } =
+    useKanbanStore();
   const { fetchStats } = useDashboardStore();
 
   // Initial fetch on connection or project change
@@ -79,20 +102,35 @@ export function useKanbanSync() {
 
   // SSE Event binding
   useEffect(() => {
-    const onUpsert = (data: any) => {
-         // Filter by project_id if available
-         if (data.project_id && currentProjectId && data.project_id !== currentProjectId) {
-             return;
-         }
-         upsertIssue(data);
-         fetchStats();
-    }
+    const onBatchUpsert = (items: any[]) => {
+      // Filter by project_id if available
+      const filtered = items.filter((data) => {
+        if (
+          data.project_id &&
+          currentProjectId &&
+          data.project_id !== currentProjectId
+        ) {
+          return false;
+        }
+        return true;
+      });
+
+      if (filtered.length > 0) {
+        batchUpsertIssues(filtered);
+        fetchStats();
+      }
+    };
     const onDelete = (data: any) => {
       // Handle if data is just ID or object with ID
       const id = typeof data === "string" ? data : data.id;
       // Filter by project_id if available (assuming data might be an object now)
-      if (typeof data === 'object' && data.project_id && currentProjectId && data.project_id !== currentProjectId) {
-          return;
+      if (
+        typeof data === "object" &&
+        data.project_id &&
+        currentProjectId &&
+        data.project_id !== currentProjectId
+      ) {
+        return;
       }
       if (id) removeIssue(id);
       fetchStats();
@@ -102,7 +140,7 @@ export function useKanbanSync() {
       useDaemonStore.getState().refreshProjects();
     };
 
-    const unsubUpsert = sseManager.on("issue_upserted", onUpsert);
+    const unsubUpsert = sseManager.on("issues_batch_upserted", onBatchUpsert);
     const unsubDelete = sseManager.on("issue_deleted", onDelete);
     const unsubPrjCreate = sseManager.on("project_created", onProjectChange);
     const unsubPrjUpdate = sseManager.on("project_updated", onProjectChange);
@@ -115,10 +153,11 @@ export function useKanbanSync() {
       unsubPrjUpdate();
       unsubPrjDelete();
     };
-  }, [upsertIssue, removeIssue, fetchStats, currentProjectId]);
+  }, [batchUpsertIssues, removeIssue, fetchStats, currentProjectId]);
 }
 
 export * from "./types";
 export * from "./daemon";
 export * from "./sse";
 export * from "./dashboard";
+export * from "./bridge";

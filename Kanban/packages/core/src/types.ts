@@ -55,3 +55,21 @@ export interface DashboardStats {
   velocity_trend: number;
   recent_activities: ActivityItem[];
 }
+
+export type BridgeCommandType =
+  | "OPEN_FILE"
+  | "SHOW_MESSAGE"
+  | "GET_CONFIG"
+  | "SET_CONFIG"
+  | "WEBVIEW_READY";
+
+export interface BridgeCommand {
+  type: BridgeCommandType;
+  payload?: any;
+}
+
+export interface OpenFilePayload {
+  path: string;
+  line?: number;
+  column?: number;
+}

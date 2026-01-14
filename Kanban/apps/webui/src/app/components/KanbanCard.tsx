@@ -11,6 +11,7 @@ import {
 } from "@blueprintjs/core";
 import { Issue } from "../types";
 import { useTerms } from "../contexts/TermContext";
+import { useBridge } from "../contexts/BridgeContext";
 
 interface KanbanCardProps {
   issue: Issue;
@@ -66,6 +67,7 @@ const getTypeColor = (type: string) => {
 
 export default function KanbanCard({ issue }: KanbanCardProps) {
   const { t } = useTerms();
+  const { isVsCode } = useBridge();
 
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData("text/plain", issue.id);
@@ -76,9 +78,11 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
     <div
       draggable={true}
       onDragStart={handleDragStart}
-      className="group relative glass-card rounded-xl p-3 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-accent/30 hover:bg-surface-highlight/50 border-l-4 border-l-transparent hover:border-l-accent active:cursor-grabbing">
+      className={`group relative glass-card rounded-xl cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-accent/30 hover:bg-surface-highlight/50 border-l-4 border-l-transparent hover:border-l-accent active:cursor-grabbing ${
+        isVsCode ? "p-2 mb-2" : "p-3 mb-3"
+      }`}>
       {/* Header: ID, Type, Actions */}
-      <div className="flex flex-row justify-between items-start mb-2">
+      <div className="flex flex-row justify-between items-start mb-1">
         <div className="flex flex-row items-center gap-2">
           <span className="font-mono text-[10px] text-text-muted opacity-70 group-hover:opacity-100 transition-opacity">
             {issue.id}
@@ -87,7 +91,8 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
             className={`flex flex-row items-center gap-1 text-[10px] uppercase font-bold tracking-wider ${getTypeColor(
               issue.type
             )}`}>
-            <Icon icon={getTypeIcon(issue.type)} size={10} />
+            {/* Hide Icon in extreme compact mode if needed, but keeping for now */}
+            {!isVsCode && <Icon icon={getTypeIcon(issue.type)} size={10} />}
             <span>{t(issue.type, issue.type)}</span>
           </div>
         </div>
@@ -107,14 +112,22 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
       </div>
 
       {/* Title */}
-      <h4 className="text-text-primary text-sm font-medium leading-relaxed mb-3 group-hover:text-white transition-colors">
+      <h4
+        className={`text-text-primary font-medium leading-relaxed group-hover:text-white transition-colors ${
+          isVsCode ? "text-xs mb-1" : "text-sm mb-3"
+        }`}>
         {issue.title}
       </h4>
 
       {/* Footer: Status, Metadata */}
-      <div className="flex flex-row justify-between items-center pt-2 border-t border-white/5">
+      {/* In VS Code Compact Mode, we might want to hide the footer or simplify it */}
+      <div
+        className={`flex flex-row justify-between items-center border-t border-white/5 ${
+          isVsCode ? "pt-1" : "pt-2"
+        }`}>
         <div className="flex flex-row items-center gap-2">
-          {issue.parent && (
+          {/* Only show Parent in non-compact mode or if it fits */}
+          {!isVsCode && issue.parent && (
             <div
               className="flex flex-row items-center gap-1 text-[10px] text-text-muted"
               title={`Parent: ${issue.parent}`}>
@@ -129,7 +142,9 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
         <Tag
           minimal
           intent={getStatusIntent(issue.status)}
-          className="!bg-white/5 !text-[10px] !h-5 !min-h-0 font-semibold uppercase tracking-wide border border-white/10 group-hover:border-white/20">
+          className={`!bg-white/5 !text-[10px] !min-h-0 font-semibold uppercase tracking-wide border border-white/10 group-hover:border-white/20 ${
+            isVsCode ? "!h-4 !px-1 text-[9px]" : "!h-5"
+          }`}>
           {t(issue.status, issue.status)}
         </Tag>
       </div>

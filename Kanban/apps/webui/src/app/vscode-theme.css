@@ -1,0 +1,46 @@
+.vscode-mode {
+  /* VS Code Theme Mapping */
+  /* By default, shadcn uses HSL values (e.g., 222.2 84% 4.9%) */
+  /* But to map VS Code variables (which are hex usually), we might need to override the utility classes or use raw values */
+  /* Fortunately, Tailwind also supports raw colors. But shadcn components use `bg-background` which maps to `hsl(var(--background))` */
+
+  /* STRATEGY: We cannot easily convert VS Code's HEX/RGB vars to HSL for shadcn to use with `background: hsl(var(--...))` syntax. */
+  /* So we must override the root variables to be valid color values if possible, OR re-define the utilities. */
+
+  /* However, modern CSS permits `hsl(from var(--color) h s l)` but support varies. */
+  /* The safest bet for "Theme Sync" without complex JS conversion is to simply override the variable usage using `theme()` or standard CSS properties where possible. */
+
+  /* But since Shadcn relies heavily on HSL variables for opacity modifiers (bg-primary/90), we have a conflict if VS Code only gives us Hex. */
+
+  /* FALLBACK STRATEGY for FEAT-0060 (MVP): */
+  /* We will use a script component to read VS Code computed styles and inject HSL values into the document root. */
+  /* For now, let's define the CSS class to at least start targeting. */
+
+  --vscode-font-family: var(
+    --vscode-font-family,
+    "Segoe UI",
+    Tahoma,
+    Geneva,
+    Verdana,
+    sans-serif
+  );
+  font-family: var(--vscode-font-family);
+}
+
+/* Force background to transparent in VS Code so it picks up the editor/sidebar bg? */
+.vscode-mode body {
+  background-color: transparent;
+  color: var(--vscode-editor-foreground);
+}
+
+/* Override Layout Shell background */
+.vscode-mode .bg-canvas {
+  background-color: var(
+    --vscode-sideBar-background,
+    var(--vscode-editor-background)
+  );
+}
+
+.vscode-mode .text-text-primary {
+  color: var(--vscode-editor-foreground);
+}
