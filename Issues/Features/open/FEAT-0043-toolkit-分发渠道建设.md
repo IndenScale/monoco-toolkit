@@ -3,11 +3,11 @@ id: FEAT-0043
 uid: d7f2a1
 type: feature
 status: open
-stage: draft
+stage: doing
 title: Toolkit 分发渠道建设
 created_at: "2026-01-13T10:17:58"
 opened_at: "2026-01-13T10:17:58"
-updated_at: "2026-01-13T12:22:00"
+updated_at: "2026-01-15T20:19:00"
 parent: null
 dependencies: []
 related: []
@@ -24,20 +24,20 @@ tags: []
 ## Acceptance Criteria
 
 - [ ] **Tier 1 (Developer Native)**:
-  - [ ] GitHub Release 流程自动化。
+  - [x] GitHub Release 流程自动化。
   - [ ] PyPI 包 (`pip install monoco-toolkit`) 包含编译好的 Kanban UI 资源。
-  - [ ] `monoco serve` 成功启动并对外暴露开发者 API。
+  - [x] `monoco serve` 成功启动并对外暴露开发者 API。
 - [ ] **Tier 2 (Package Managers)**:
   - [ ] Homebrew Formula 验证通过。
-  - [ ] NPM Shim (`npm i -g @monoco-io/kanban`) 发布。
-  - [ ] 用户可以通过 `npx @monoco-io/kanban` 快速打开本地 Kanban 界面。
+  - [x] NPM Shim (`npm i -g @monoco-io/kanban`) 发布。
+  - [x] 用户可以通过 `npx @monoco-io/kanban` 快速打开本地 Kanban 界面。
 - [ ] **Tier 3 (Consumer Native)**:
   - [ ] MacOS App (.dmg) 打包验证 (PyInstaller)。
   - [ ] Windows App (.exe) 打包验证 (PyInstaller)。
 
 ## Technical Tasks
 
-- [ ] 配置 GitHub Actions 自动构建 PyPI 包。
-- [ ] 开发 NPM Wrapper 脚本 (调用系统 Python 或下载二进制)。
+- [x] 配置 GitHub Actions 自动构建 PyPI 包。
+- [x] 开发 NPM Wrapper 脚本 (调用系统 Python 或下载二进制)。
 - [ ] 编写 PyInstaller spec 文件以支持包含静态资源。
 - [ ] 研究并验证 MacOS 菜单栏驻留 (Menu Bar App) 方案。

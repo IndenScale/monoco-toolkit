@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Monoco VS Code Cockpit Integration",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "publisher": "indenscale",
   "repository": {
     "type": "git",
@@ -24,7 +24,7 @@
   "activationEvents": [
     "onLanguage:markdown"
   ],
-  "main": "./out/extension.js",
+  "main": "./client/out/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -42,6 +42,11 @@
           "type": "webview",
           "name": "Monoco",
           "icon": "media/icon.svg"
+        },
+        {
+          "id": "monoco-executions",
+          "name": "Actions",
+          "icon": "media/icon.svg"
         }
       ]
     },
@@ -54,6 +59,11 @@
         "command": "monoco.refreshEntry",
         "title": "Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "monoco.runAction",
+        "title": "Run Action",
+        "icon": "$(play)"
       }
     ],
     "menus": {
@@ -62,17 +72,24 @@
           "command": "monoco.refreshEntry",
           "when": "view == monoco-kanban",
           "group": "navigation"
+        },
+        {
+          "command": "monoco.refreshEntry",
+          "when": "view == monoco-executions",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "monoco.runAction",
+          "when": "view == monoco-executions && viewItem == action",
+          "group": "inline"
         }
       ]
     },
     "configuration": {
       "title": "Monoco",
       "properties": {
-        "monoco.apiBaseUrl": {
-          "type": "string",
-          "default": "http://127.0.0.1:8642/api/v1",
-          "description": "Base URL for Monoco Daemon API"
-        },
         "monoco.webUrl": {
           "type": "string",
           "default": "http://127.0.0.1:8642",
@@ -83,14 +100,15 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./ && mkdir -p out/webview && cp src/webview/* out/webview/",
-    "watch": "tsc -watch -p ./",
+    "compile": "tsc -b client/tsconfig.json && tsc -b server/tsconfig.json && npm run copy-assets && npm run copy-server-assets",
+    "copy-assets": "mkdir -p client/out/webview && cp client/src/webview/* client/out/webview/",
+    "copy-server-assets": "mkdir -p server/out/schema && cp server/src/schema/* server/out/schema/",
+    "watch": "tsc -b client/tsconfig.json -w",
     "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "lint": "eslint client/src --ext ts",
+    "test": "node ./client/out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "20.x",
     "@types/sinon": "^10.0.0",
@@ -105,5 +123,8 @@
     "ovsx": "^0.8.3",
     "sinon": "^17.0.0",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.0"
   }
 }

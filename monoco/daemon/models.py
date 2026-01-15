@@ -17,6 +17,10 @@ class UpdateIssueRequest(BaseModel):
     status: Optional[IssueStatus] = None
     stage: Optional[IssueStage] = None
     solution: Optional[IssueSolution] = None
+    parent: Optional[str] = None
+    dependencies: Optional[List[str]] = None
+    related: Optional[List[str]] = None
+    tags: Optional[List[str]] = None
     project_id: Optional[str] = None
 
 class UpdateIssueContentRequest(BaseModel):

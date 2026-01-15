@@ -1,0 +1,18 @@
+.color-list {
+  list-style: none;
+  padding: 0;
+}
+
+.color-entry {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  margin-bottom: 5px;
+  border: 1px solid var(--vscode-panel-border);
+}
+
+.color-box {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}

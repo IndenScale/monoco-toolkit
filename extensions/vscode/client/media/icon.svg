@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 4L4 16V48L32 60L60 48V16L32 4Z" stroke="currentColor" stroke-width="4" fill="none"/>
+<path d="M32 16V48" stroke="currentColor" stroke-width="4"/>
+<path d="M4 16L32 28L60 16" stroke="currentColor" stroke-width="4"/>
+<path d="M4 48L32 36L60 48" stroke="currentColor" stroke-width="4"/>
+</svg>

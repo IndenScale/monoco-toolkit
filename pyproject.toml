@@ -1,6 +1,6 @@
 [project]
 name = "monoco-toolkit"
-version = "0.1.7"
+version = "0.2.0"
 description = "Agent Native Toolkit for Monoco - Task Management & Kanban for AI Agents"
 readme = "README.md"
 requires-python = ">=3.10"

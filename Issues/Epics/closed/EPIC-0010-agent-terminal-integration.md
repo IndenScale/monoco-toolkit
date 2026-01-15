@@ -17,7 +17,7 @@ tags:
 - cli
 - websocket
 owner: Product Owner
-progress: 2/2
+progress: 4/4
 files_count: 0
 uid: d8a571
 ---
