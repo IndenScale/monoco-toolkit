@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import List, Optional, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from monoco.core.config import get_config, MonocoConfig
 
@@ -20,8 +20,7 @@ class MonocoProject(BaseModel):
             return issues_path
         return (self.path / issues_path).resolve()
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 def is_project_root(path: Path) -> bool:
     """
@@ -97,5 +96,4 @@ class Workspace(BaseModel):
                 return p
         return None
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)

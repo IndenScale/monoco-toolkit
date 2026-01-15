@@ -109,11 +109,9 @@ connection.onInitialized(() => {
     );
   }
   if (hasWorkspaceFolderCapability) {
-    connection.workspace.onDidChangeWorkspaceFolders(
-      (_event) => {
-        connection.console.log("Workspace folder change event received.");
-      }
-    );
+    connection.workspace.onDidChangeWorkspaceFolders((_event: any) => {
+      connection.console.log("Workspace folder change event received.");
+    });
   }
 
   // Initial scan
