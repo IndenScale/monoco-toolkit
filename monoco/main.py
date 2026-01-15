@@ -44,6 +44,16 @@ from monoco.core.sync import sync_command, uninstall_command
 app.command(name="sync")(sync_command)
 app.command(name="uninstall")(uninstall_command)
 
+@app.command(name="doctor")
+def doctor_cmd(
+    force: bool = typer.Option(False, "--force", "-f", help="Force refresh of agent state")
+):
+    """
+    Diagnose Agent Environment.
+    """
+    from monoco.features.agent.doctor import doctor
+    doctor(force)
+
 @app.command()
 def info():
     """
@@ -91,6 +101,9 @@ app.add_typer(issue_cmd.app, name="issue", help="Manage development issues")
 app.add_typer(spike_cmd.app, name="spike", help="Manage research spikes")
 app.add_typer(i18n_cmd.app, name="i18n", help="Manage documentation i18n")
 app.add_typer(config_cmd.app, name="config", help="Manage configuration")
+
+from monoco.features.agent import commands as agent_cmd
+app.add_typer(agent_cmd.app, name="agent", help="Delegate tasks to Agent CLIs")
 
 from monoco.daemon.commands import serve
 app.command(name="serve")(serve)

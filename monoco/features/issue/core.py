@@ -52,9 +52,9 @@ def parse_issue(file_path: Path) -> Optional[IssueMetadata]:
         if not isinstance(data, dict):
              return None
         
-        # Inject path before validation to ensure it persists
         data['path'] = str(file_path.absolute())
         meta = IssueMetadata(**data)
+        meta.actions = get_available_actions(meta)
         return meta
     except Exception:
         return None
@@ -171,47 +171,36 @@ def create_issue_file(
     metadata.path = str(file_path.absolute())
     
     return metadata, file_path
-def validate_transition(
-    current_status: IssueStatus,
-    current_stage: Optional[IssueStage],
-    target_status: IssueStatus,
-    target_stage: Optional[IssueStage],
-    target_solution: Optional[str],
-    issue_dependencies: List[str],
-    issues_root: Path,
-    issue_id: str
-):
-    """
-    Centralized validation logic for state transitions.
-    """
-    # Policy: Prevent Backlog -> Review
-    if target_stage == IssueStage.REVIEW and current_status == IssueStatus.BACKLOG:
-         raise ValueError(f"Lifecycle Policy: Cannot submit Backlog issue directly. Run `monoco issue pull {issue_id}` first.")
+def get_available_actions(meta: IssueMetadata) -> List[Any]:
+    from .models import IssueAction
+    actions = []
 
-    if target_status == IssueStatus.CLOSED:
-        if not target_solution:
-            raise ValueError(f"Closing an issue requires a solution. Please provide --solution or edit the file metadata.")
-            
-        # Policy: IMPLEMENTED requires REVIEW stage (unless we are already in REVIEW)
-        # Check current stage.
-        if target_solution == IssueSolution.IMPLEMENTED.value:
-            # If we are transitioning FROM Review, it's fine.
-            # If we are transitioning TO Closed, current stage must be Review.
-            if current_stage != IssueStage.REVIEW:
-                raise ValueError(f"Lifecycle Policy: 'Implemented' issues must be submitted for review first.\nCurrent stage: {current_stage}\nAction: Run `monoco issue submit {issue_id}`.")
+    if meta.status == IssueStatus.OPEN:
+        # Stage-based movements
+        if meta.stage == IssueStage.DRAFT:
+            actions.append(IssueAction(label="Start", target_status=IssueStatus.OPEN, target_stage=IssueStage.DOING))
+            actions.append(IssueAction(label="Freeze", target_status=IssueStatus.BACKLOG))
+        elif meta.stage == IssueStage.DOING:
+            actions.append(IssueAction(label="Stop", target_status=IssueStatus.OPEN, target_stage=IssueStage.DRAFT))
+            actions.append(IssueAction(label="Submit", target_status=IssueStatus.OPEN, target_stage=IssueStage.REVIEW))
+        elif meta.stage == IssueStage.REVIEW:
+            actions.append(IssueAction(label="Approve", target_status=IssueStatus.CLOSED, target_stage=IssueStage.DONE, target_solution=IssueSolution.IMPLEMENTED))
+            actions.append(IssueAction(label="Reject", target_status=IssueStatus.OPEN, target_stage=IssueStage.DOING))
+        elif meta.stage == IssueStage.DONE:
+            actions.append(IssueAction(label="Reopen", target_status=IssueStatus.OPEN, target_stage=IssueStage.DRAFT))
+            actions.append(IssueAction(label="Close", target_status=IssueStatus.CLOSED, target_stage=IssueStage.DONE, target_solution=IssueSolution.IMPLEMENTED))
+        
+        # Generic cancel
+        actions.append(IssueAction(label="Cancel", target_status=IssueStatus.CLOSED, target_stage=IssueStage.DONE, target_solution=IssueSolution.CANCELLED))
 
-        # Policy: No closing from DOING (General Safety)
-        if current_stage == IssueStage.DOING:
-             raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
-             
-        # Policy: Dependencies must be closed
-        if issue_dependencies:
-            for dep_id in issue_dependencies:
-                dep_path = find_issue_path(issues_root, dep_id)
-                if dep_path:
-                    dep_meta = parse_issue(dep_path)
-                    if dep_meta and dep_meta.status != IssueStatus.CLOSED:
-                        raise ValueError(f"Dependency Block: Cannot close {issue_id} because dependency {dep_id} is not closed.")
+    elif meta.status == IssueStatus.BACKLOG:
+        actions.append(IssueAction(label="Pull", target_status=IssueStatus.OPEN, target_stage=IssueStage.DRAFT))
+        actions.append(IssueAction(label="Cancel", target_status=IssueStatus.CLOSED, target_stage=IssueStage.DONE, target_solution=IssueSolution.CANCELLED))
+
+    elif meta.status == IssueStatus.CLOSED:
+        actions.append(IssueAction(label="Reopen", target_status=IssueStatus.OPEN, target_stage=IssueStage.DRAFT))
+
+    return actions
 
 def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
     parsed = IssueID(issue_id)
@@ -253,7 +242,17 @@ def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
         return f
     return None
 
-def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus] = None, stage: Optional[IssueStage] = None, solution: Optional[IssueSolution] = None) -> IssueMetadata:
+def update_issue(
+    issues_root: Path, 
+    issue_id: str, 
+    status: Optional[IssueStatus] = None, 
+    stage: Optional[IssueStage] = None, 
+    solution: Optional[IssueSolution] = None,
+    parent: Optional[str] = None,
+    dependencies: Optional[List[str]] = None,
+    related: Optional[List[str]] = None,
+    tags: Optional[List[str]] = None
+) -> IssueMetadata:
     path = find_issue_path(issues_root, issue_id)
     if not path:
         raise FileNotFoundError(f"Issue {issue_id} not found.")
@@ -262,7 +261,7 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
     content = path.read_text()
     
     # Split Frontmatter and Body
-    match = re.search(r"^---(.*?)---\n(.*)$\n", content, re.DOTALL | re.MULTILINE)
+    match = re.search(r"^---(.*?)---\n(.*)\n", content, re.DOTALL | re.MULTILINE)
     if not match:
         # Fallback
         match_simple = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
@@ -313,14 +312,29 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
              raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
              
         # Policy: Dependencies must be closed
-        dependencies = data.get('dependencies', [])
-        if dependencies:
-            for dep_id in dependencies:
+        dependencies_to_check = dependencies if dependencies is not None else data.get('dependencies', [])
+        if dependencies_to_check:
+            for dep_id in dependencies_to_check:
                 dep_path = find_issue_path(issues_root, dep_id)
                 if dep_path:
                     dep_meta = parse_issue(dep_path)
                     if dep_meta and dep_meta.status != IssueStatus.CLOSED:
                         raise ValueError(f"Dependency Block: Cannot close {issue_id} because dependency {dep_id} is [Status: {dep_meta.status.value}].")
+    
+    # Validate new parent/dependencies/related exist
+    if parent is not None and parent != "":
+        if not find_issue_path(issues_root, parent):
+            raise ValueError(f"Parent issue {parent} not found.")
+    
+    if dependencies is not None:
+        for dep_id in dependencies:
+            if not find_issue_path(issues_root, dep_id):
+                raise ValueError(f"Dependency issue {dep_id} not found.")
+    
+    if related is not None:
+        for rel_id in related:
+            if not find_issue_path(issues_root, rel_id):
+                raise ValueError(f"Related issue {rel_id} not found.")
             
     # Update Data
     if status:
@@ -330,6 +344,21 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
         data['stage'] = stage.value
     if solution:
         data['solution'] = solution.value
+    
+    if parent is not None:
+        if parent == "":
+            data.pop('parent', None)  # Remove parent field
+        else:
+            data['parent'] = parent
+    
+    if dependencies is not None:
+        data['dependencies'] = dependencies
+    
+    if related is not None:
+        data['related'] = related
+    
+    if tags is not None:
+        data['tags'] = tags
     
     # Lifecycle Hooks
     # 1. Opened At: If transitioning to OPEN
@@ -385,11 +414,15 @@ def update_issue(issues_root: Path, issue_id: str, status: Optional[IssueStatus]
         if path != target_path:
             target_path.parent.mkdir(parents=True, exist_ok=True)
             path.rename(target_path)
+            path = target_path # Update local path variable for returned meta
 
     # Hook: Recursive Aggregation (FEAT-0003)
     if updated_meta.parent:
         recalculate_parent(issues_root, updated_meta.parent)
-        
+    
+    # Update returned metadata with final absolute path
+    updated_meta.path = str(path.absolute())
+    updated_meta.actions = get_available_actions(updated_meta)
     return updated_meta
 
 def start_issue_isolation(issues_root: Path, issue_id: str, mode: IsolationType, project_root: Path) -> IssueMetadata:

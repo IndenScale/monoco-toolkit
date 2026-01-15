@@ -1,7 +1,10 @@
+from typing import List, Tuple, Optional, Dict, Callable, Awaitable
+import asyncio
+import logging
 import subprocess
-import shutil
 from pathlib import Path
-from typing import List, Tuple, Optional, Dict
+
+logger = logging.getLogger("monoco.core.git")
 
 def _run_git(args: List[str], cwd: Path) -> Tuple[int, str, str]:
     """Run a raw git command."""
@@ -182,3 +185,49 @@ def worktree_remove(path: Path, worktree_path: Path, force: bool = False):
     code, _, stderr = _run_git(cmd, path)
     if code != 0:
         raise RuntimeError(f"Failed to remove worktree: {stderr}")
+
+class GitMonitor:
+    """
+    Polls the Git repository for HEAD changes and triggers updates.
+    """
+    def __init__(self, path: Path, on_head_change: Callable[[str], Awaitable[None]], poll_interval: float = 2.0):
+        self.path = path
+        self.on_head_change = on_head_change
+        self.poll_interval = poll_interval
+        self.last_head_hash: Optional[str] = None
+        self.is_running = False
+
+    async def get_head_hash(self) -> Optional[str]:
+        try:
+            process = await asyncio.create_subprocess_exec(
+                "git", "rev-parse", "HEAD",
+                cwd=self.path,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, _ = await process.communicate()
+            if process.returncode == 0:
+                return stdout.decode().strip()
+            return None
+        except Exception as e:
+            logger.error(f"Git polling error: {e}")
+            return None
+
+    async def start(self):
+        self.is_running = True
+        logger.info(f"Git Monitor started for {self.path}.")
+        
+        self.last_head_hash = await self.get_head_hash()
+        
+        while self.is_running:
+            await asyncio.sleep(self.poll_interval)
+            current_hash = await self.get_head_hash()
+            
+            if current_hash and current_hash != self.last_head_hash:
+                logger.info(f"Git HEAD changed: {self.last_head_hash} -> {current_hash}")
+                self.last_head_hash = current_hash
+                await self.on_head_change(current_hash)
+
+    def stop(self):
+        self.is_running = False
+        logger.info(f"Git Monitor stopping for {self.path}...")

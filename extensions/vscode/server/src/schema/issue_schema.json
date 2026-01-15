@@ -1,0 +1,336 @@
+{
+  "$defs": {
+    "IsolationType": {
+      "enum": [
+        "branch",
+        "worktree"
+      ],
+      "title": "IsolationType",
+      "type": "string"
+    },
+    "IssueAction": {
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "target_status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IssueStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "target_stage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IssueStage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "target_solution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IssueSolution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Icon"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Command"
+        },
+        "params": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Params",
+          "type": "object"
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "title": "IssueAction",
+      "type": "object"
+    },
+    "IssueIsolation": {
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/IsolationType"
+        },
+        "ref": {
+          "title": "Ref",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "ref"
+      ],
+      "title": "IssueIsolation",
+      "type": "object"
+    },
+    "IssueSolution": {
+      "enum": [
+        "implemented",
+        "cancelled",
+        "wontfix",
+        "duplicate"
+      ],
+      "title": "IssueSolution",
+      "type": "string"
+    },
+    "IssueStage": {
+      "enum": [
+        "draft",
+        "doing",
+        "review",
+        "done",
+        "freezed"
+      ],
+      "title": "IssueStage",
+      "type": "string"
+    },
+    "IssueStatus": {
+      "enum": [
+        "open",
+        "closed",
+        "backlog"
+      ],
+      "title": "IssueStatus",
+      "type": "string"
+    },
+    "IssueType": {
+      "enum": [
+        "epic",
+        "feature",
+        "chore",
+        "fix"
+      ],
+      "title": "IssueType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "uid": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Uid"
+    },
+    "type": {
+      "$ref": "#/$defs/IssueType"
+    },
+    "status": {
+      "$ref": "#/$defs/IssueStatus",
+      "default": "open"
+    },
+    "stage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/IssueStage"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "opened_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Opened At"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    },
+    "closed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Closed At"
+    },
+    "parent": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent"
+    },
+    "sprint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sprint"
+    },
+    "solution": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/IssueSolution"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "isolation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/IssueIsolation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "dependencies": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Dependencies",
+      "type": "array"
+    },
+    "related": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Related",
+      "type": "array"
+    },
+    "tags": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Path"
+    },
+    "actions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/IssueAction"
+      },
+      "title": "Actions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "title"
+  ],
+  "title": "IssueMetadata",
+  "type": "object"
+}
