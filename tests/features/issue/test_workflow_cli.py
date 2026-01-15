@@ -25,8 +25,8 @@ def test_feature_0012_workflow(issues_root):
     
     meta = core.parse_issue(f_path)
     assert meta.status == IssueStatus.OPEN
-    assert meta.stage == IssueStage.TODO  # Default
-    print(f"✅ Created {fid} in Open/Todo")
+    assert meta.stage == IssueStage.DRAFT  # Default
+    print(f"✅ Created {fid} in Open/Draft")
 
     # 2. Test Backlog Push
     # ------------------------------------------------
@@ -45,20 +45,20 @@ def test_feature_0012_workflow(issues_root):
     # ------------------------------------------------
     print("\n[Test] Pulling from Backlog...")
     # Simulate some time passing if needed, but we check logic
-    core.update_issue(issues_root, fid, status=IssueStatus.OPEN, stage=IssueStage.TODO)
+    core.update_issue(issues_root, fid, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
     
     f_path = core.find_issue_path(issues_root, fid)
     assert "Features/open" in str(f_path)
     
     meta = core.parse_issue(f_path)
     assert meta.status == IssueStatus.OPEN
-    assert meta.stage == IssueStage.TODO
+    assert meta.stage == IssueStage.DRAFT
     assert meta.opened_at is not None
     # Check if opened_at is recent (simple check)
     assert (datetime.now() - meta.opened_at).total_seconds() < 5
     print(f"✅ Issue pulled to Open (Stage: {meta.stage}, OpenedAt: {meta.opened_at})")
 
-    # 4. Test Lifecycle: Start (Todo -> Doing)
+    # 4. Test Lifecycle: Start (Draft -> Doing)
     # ------------------------------------------------
     print("\n[Test] Starting Issue...")
     core.update_issue(issues_root, fid, stage=IssueStage.DOING)

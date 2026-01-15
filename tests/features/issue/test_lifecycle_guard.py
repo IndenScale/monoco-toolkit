@@ -49,15 +49,15 @@ def test_guard_conditions(issues_root):
     assert meta.stage == IssueStage.DONE
     print(f"✅ PASSED: Happy path closed successfully.")
 
-    # 3. Test Abandon Path (Doing -> Todo -> Closed)
+    # 3. Test Abandon Path (Doing -> Draft -> Closed)
     # ------------------------------------------------
-    print("\n[Test] Transitioning DOING -> TODO -> CLOSED...")
+    print("\n[Test] Transitioning DOING -> DRAFT -> CLOSED...")
     # Create new Doing issue
     fid2 = core.create_issue_file(issues_root, IssueType.FEATURE, "Abandon Test Feature")[0].id
     core.update_issue(issues_root, fid2, stage=IssueStage.DOING)
     
-    # Back to Todo
-    core.update_issue(issues_root, fid2, stage=IssueStage.TODO)
+    # Back to Draft
+    core.update_issue(issues_root, fid2, stage=IssueStage.DRAFT)
     
     # Close
     core.update_issue(issues_root, fid2, status=IssueStatus.CLOSED, solution=IssueSolution.WONTFIX)
