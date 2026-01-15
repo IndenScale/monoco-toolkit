@@ -30,6 +30,12 @@ def mock_project(tmp_path):
     mock_proj.id = "test-project"
     mock_proj.name = "Test Project"
     mock_proj.issues_root = issues_root
+    
+    # Mock async notify_move method
+    async def mock_notify_move(old_path: str, new_path: str, issue_data: dict):
+        pass
+    mock_proj.notify_move = mock_notify_move
+    
     return mock_proj
 
 @pytest.fixture
