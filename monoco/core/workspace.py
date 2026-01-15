@@ -1,36 +1,101 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict
+from pydantic import BaseModel, Field
+
+from monoco.core.config import get_config, MonocoConfig
+
+class MonocoProject(BaseModel):
+    """
+    Representation of a single Monoco project.
+    """
+    id: str  # Unique ID within the workspace (usually the directory name)
+    name: str
+    path: Path
+    config: MonocoConfig
+
+    @property
+    def issues_root(self) -> Path:
+        issues_path = Path(self.config.paths.issues)
+        if issues_path.is_absolute():
+            return issues_path
+        return (self.path / issues_path).resolve()
+
+    class Config:
+        arbitrary_types_allowed = True
 
 def is_project_root(path: Path) -> bool:
     """
     Check if a directory serves as a Monoco project root.
     Criteria:
-    - has .monoco/ directory
+    - has .monoco/ directory (which should contain config.yaml)
     """
     if not path.is_dir():
         return False
         
     return (path / ".monoco").is_dir()
 
-def find_projects(workspace_root: Path) -> List[Path]:
+def load_project(path: Path) -> Optional[MonocoProject]:
+    """Load a project from a path if it is a valid project root."""
+    if not is_project_root(path):
+        return None
+    
+    try:
+        config = get_config(str(path))
+        # If name is default, use directory name
+        name = config.project.name
+        if name == "Monoco Project":
+            name = path.name
+            
+        return MonocoProject(
+            id=path.name,
+            name=name,
+            path=path,
+            config=config
+        )
+    except Exception:
+        return None
+
+def find_projects(workspace_root: Path) -> List[MonocoProject]:
     """
     Scan for projects in a workspace.
-    Returns list of paths that are project roots.
+    Returns list of MonocoProject instances.
     """
     projects = []
     
     # 1. Check workspace root itself
-    if is_project_root(workspace_root):
-        projects.append(workspace_root)
+    root_project = load_project(workspace_root)
+    if root_project:
+        projects.append(root_project)
     
     # 2. Check first-level subdirectories
-    # Prevent scanning giant node_modules or .git
     for item in workspace_root.iterdir():
         if item.is_dir() and not item.name.startswith('.'):
-            if is_project_root(item):
-                # If workspace root is also a project, we might deduce duplicates
-                # But here we just append items. 
-                # If workspace_root == item (impossible for iterdir child), no risk.
-                projects.append(item)
+            # Avoid re-adding root if it was already added (unlikely due to iterdir)
+            if item == workspace_root: continue
+            
+            p = load_project(item)
+            if p:
+                projects.append(p)
                 
     return projects
+
+class Workspace(BaseModel):
+    """
+    Standardized Workspace primitive.
+    """
+    root: Path
+    projects: List[MonocoProject] = []
+    
+    @classmethod
+    def discover(cls, root: Path) -> "Workspace":
+        projects = find_projects(root)
+        return cls(root=root, projects=projects)
+
+    def get_project(self, project_id: str) -> Optional[MonocoProject]:
+        for p in self.projects:
+            if p.id == project_id:
+                return p
+        return None
+
+    class Config:
+        arbitrary_types_allowed = True
