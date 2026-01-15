@@ -1,0 +1,17 @@
+i18n:
+  source_lang: zh
+  target_langs:
+  - en
+project:
+  key: TOO
+  members:
+    MON: ..
+  name: Monoco Toolkit
+  spike_repos:
+    vibe-kanban: https://github.com/BloopAI/vibe-kanban
+    gemini-cli: https://github.com/google-gemini/gemini-cli
+    qwen-code: https://github.com/QwenLM/qwen-code
+    skills: https://github.com/anthropics/skills
+    agentskills: https://github.com/agentskills/agentskills
+telemetry:
+  enabled: null

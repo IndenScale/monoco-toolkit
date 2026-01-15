@@ -4,17 +4,18 @@ type: feature
 status: closed
 stage: done
 title: 实现 monoco issue list 命令 (Implement List Command)
-created_at: "2026-01-11T11:07:44.936747"
-opened_at: "2026-01-11T11:07:54.651842"
-updated_at: "2026-01-11T11:10:42.635925"
-closed_at: "2026-01-11T11:10:42.635955"
+created_at: '2026-01-11T11:07:44.936747'
+opened_at: '2026-01-11T11:07:54.651842'
+updated_at: '2026-01-11T11:10:42.635925'
+closed_at: '2026-01-11T11:10:42.635955'
 solution: implemented
 dependencies: []
 related: []
 tags:
-  - cli
-  - ux
+- cli
+- ux
 parent: EPIC-0002
+uid: a295cf
 ---
 
 ## FEAT-0013: 实现 monoco issue list 命令

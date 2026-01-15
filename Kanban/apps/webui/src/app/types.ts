@@ -13,7 +13,7 @@ export interface Issue {
 }
 
 export interface BoardData {
-  todo: Issue[];
+  draft: Issue[];
   doing: Issue[];
   review: Issue[];
   done: Issue[];

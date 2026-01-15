@@ -11,16 +11,18 @@ A security audit was performed on the Toolkit codebase in preparation for the Gi
 
 - Source code directory (`monoco/`)
 - Test directory (`tests/`)
-- Configuration files (`monoco.yaml`, `.monoco/`)
+- Configuration files (`.monoco/config.yaml`, `.monoco/`)
 - Gitignore rules
 
 ## Findings
 
 1.  **Secrets Scanning**:
+
     - Scanned for keywords: `password`, `secret`, `token`, `api_key`.
     - **Result**: No hardcoded secrets found in tracked files.
 
 2.  **Configuration**:
+
     - `.env` is correctly added to `.gitignore`.
     - `local_config.yaml` is correctly added to `.gitignore`.
     - Default configuration in `monoco/core/config.py` contains no sensitive defaults.

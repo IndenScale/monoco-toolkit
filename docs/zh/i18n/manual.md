@@ -104,7 +104,7 @@ monoco i18n scan --root ./docs
 
 ## 配置
 
-i18n 的行为可以通过项目配置文件 `monoco.yaml` (如有) 或全局配置进行微调。
+i18n 的行为可以通过项目配置文件 `.monoco/config.yaml` (如有) 或全局配置进行微调。
 
 (注：系统默认源语言为 EN，目标语言包含 ZH)
 

@@ -61,7 +61,7 @@ class IssueStatus(str, Enum):
     BACKLOG = "backlog"
 
 class IssueStage(str, Enum):
-    TODO = "todo"
+    DRAFT = "draft"
     DOING = "doing"
     REVIEW = "review"
     DONE = "done"
@@ -125,6 +125,8 @@ class IssueMetadata(BaseModel):
             # Stage normalization
             if "stage" in v and isinstance(v["stage"], str):
                 v["stage"] = v["stage"].lower()
+                if v["stage"] == "todo":
+                    v["stage"] = "draft"
         return v
 
     @model_validator(mode='after')
@@ -132,7 +134,7 @@ class IssueMetadata(BaseModel):
         # Logic Definition:
         # status: backlog -> stage: null
         # status: closed -> stage: done
-        # status: open -> stage: todo | doing | review (default todo)
+        # status: open -> stage: draft | doing | review (default draft)
 
         if self.status == IssueStatus.BACKLOG:
             self.stage = IssueStage.FREEZED
@@ -148,7 +150,7 @@ class IssueMetadata(BaseModel):
         elif self.status == IssueStatus.OPEN:
             # Ensure valid stage for open status
             if self.stage is None or self.stage == IssueStage.DONE:
-                self.stage = IssueStage.TODO
+                self.stage = IssueStage.DRAFT
         
         return self
 

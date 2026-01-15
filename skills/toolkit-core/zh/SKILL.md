@@ -39,4 +39,4 @@ Agent 在调用 `monoco` 命令时，应始终关注其 JSON 输出（如果提�
 
 ### 2. 上下文自动识别
 
-Toolkit 会自动从当前目录向上寻找 `.monoco` 文件夹或 `monoco.yaml` 文件以确定项目根目录。Agent 无需手动指定路径。
+Toolkit 会自动从当前目录向上寻找 `.monoco` 文件夹以确定项目根目录。Agent 无需手动指定路径。

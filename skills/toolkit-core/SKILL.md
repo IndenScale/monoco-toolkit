@@ -39,4 +39,4 @@ When calling `monoco` commands, Agents should always pay attention to its JSON o
 
 ### 2. Automatic Context Recognition
 
-The Toolkit will automatically search upwards from the current directory for a `.monoco` folder or a `monoco.yaml` file to determine the project root directory. Agents do not need to specify paths manually.
+The Toolkit will automatically search upwards from the current directory for a `.monoco` folder to determine the project root directory. Agents do not need to specify paths manually.

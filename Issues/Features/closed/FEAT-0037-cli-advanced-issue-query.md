@@ -12,6 +12,7 @@ solution: implemented
 dependencies: []
 related: []
 tags: []
+uid: f37584
 ---
 
 ## FEAT-0037: CLI Advanced Issue Query

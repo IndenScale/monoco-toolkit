@@ -111,4 +111,4 @@ Issue 之间通过三种引用关系连接，构成项目的知识图谱。
 
 - **语法**: `project_name::ISSUE-ID`
 - **示例**: `monoco::EPIC-001`
-- **要求**: 需在 `monoco.yaml` 中配置 `members`。
+- **要求**: 需在 `.monoco/config.yaml` 中配置 `members`。
