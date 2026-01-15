@@ -583,15 +583,6 @@ description: Monoco Issue System 的官方技能定义。将 Issue 视为通用�
 5. **Modification**: `monoco issue start/submit/delete <id>`
 """
 
-PROMPT_CONTENT = """
-### Issue Management
-System for managing tasks using `monoco issue`.
-- **Create**: `monoco issue create <type> -t "Title"` (types: epic, feature, chore, fix)
-- **Status**: `monoco issue open|close|backlog <id>`
-- **Check**: `monoco issue lint` (Must run after manual edits)
-- **Lifecycle**: `monoco issue start|submit|delete <id>`
-- **Structure**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (e.g. `Issues/Features/open/`). Do not deviate.
-"""
 
 def init(issues_root: Path):
     """Initialize the Issues directory structure."""
@@ -612,9 +603,7 @@ def get_resources() -> Dict[str, Any]:
         "skills": {
             "issues-management": SKILL_CONTENT
         },
-        "prompts": {
-            "issues-management": PROMPT_CONTENT
-        }
+        "prompts": {} # Handled by adapter via resource files
     }
 
 
@@ -662,7 +651,7 @@ def get_board_data(issues_root: Path) -> Dict[str, List[IssueMetadata]]:
     Get open issues grouped by their stage for Kanban view.
     """
     board = {
-        IssueStage.TODO.value: [],
+        IssueStage.DRAFT.value: [],
         IssueStage.DOING.value: [],
         IssueStage.REVIEW.value: [],
         IssueStage.DONE.value: []
@@ -1042,11 +1031,11 @@ def recalculate_parent(issues_root: Path, parent_id: str):
         # FEAT-0003 Req: "If first child starts doing, auto-start Parent?"
         # If parent is OPEN/TODO and child is DOING/REVIEW/DONE, set parent to DOING?
         current_status = data.get("status", "open").lower()
-        current_stage = data.get("stage", "todo").lower()
+        current_stage = data.get("stage", "draft").lower()
         
-        if current_status == "open" and current_stage == "todo":
+        if current_status == "open" and current_stage == "draft":
             # Check if any child is active
-            active_children = [c for c in children if c.status == IssueStatus.OPEN and c.stage != IssueStage.TODO]
+            active_children = [c for c in children if c.status == IssueStatus.OPEN and c.stage != IssueStage.DRAFT]
             closed_children = [c for c in children if c.status == IssueStatus.CLOSED]
             
             if active_children or closed_children:

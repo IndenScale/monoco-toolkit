@@ -3,7 +3,7 @@ id: FEAT-0062
 uid: vsc004
 type: feature
 status: open
-stage: todo
+stage: draft
 title: Drag-and-Drop Workflow via Text/URL
 created_at: "2026-01-14T14:07:00"
 opened_at: "2026-01-14T14:07:00"

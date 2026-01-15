@@ -12,6 +12,7 @@ solution: implemented
 dependencies: []
 related: []
 tags: []
+uid: 38f911
 ---
 
 ## FIX-0004: 修复Issue文件名生成不支持中文的问题

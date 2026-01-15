@@ -3,7 +3,7 @@ id: FEAT-0061
 uid: vsc003
 type: feature
 status: open
-stage: todo
+stage: draft
 title: Interactive Context Actions (Go-to & File Linking)
 created_at: "2026-01-14T14:05:00"
 opened_at: "2026-01-14T14:05:00"

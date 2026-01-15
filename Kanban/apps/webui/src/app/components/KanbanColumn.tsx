@@ -14,7 +14,7 @@ interface KanbanColumnProps {
 
 const getColumnColor = (id: string) => {
   switch (id) {
-    case "todo":
+    case "draft":
       return "bg-slate-500";
     case "doing":
       return "bg-blue-500";

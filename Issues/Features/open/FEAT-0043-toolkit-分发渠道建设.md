@@ -3,7 +3,7 @@ id: FEAT-0043
 uid: d7f2a1
 type: feature
 status: open
-stage: todo
+stage: draft
 title: Toolkit 分发渠道建设
 created_at: "2026-01-13T10:17:58"
 opened_at: "2026-01-13T10:17:58"

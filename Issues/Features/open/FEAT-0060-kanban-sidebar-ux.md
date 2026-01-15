@@ -3,7 +3,7 @@ id: FEAT-0060
 uid: vsc002
 type: feature
 status: open
-stage: todo
+stage: draft
 title: Kanban Sidebar UX Optimization
 created_at: "2026-01-14T13:42:00"
 opened_at: "2026-01-14T13:42:00"

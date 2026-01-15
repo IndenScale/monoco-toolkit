@@ -11,6 +11,7 @@ tags:
 progress: 5/6
 files_count: 0
 stage: doing
+uid: f49381
 ---
 
 ## EPIC-0001: Monoco 生态内核构建 (Kernel Construction)

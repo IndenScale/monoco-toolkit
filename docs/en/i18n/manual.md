@@ -104,7 +104,7 @@ monoco i18n scan --root ./docs
 
 ## Configuration
 
-The behavior of i18n can be fine-tuned through the project configuration file `monoco.yaml` (if available) or global configuration.
+The behavior of i18n can be fine-tuned through the project configuration file `.monoco/config.yaml` (if available) or global configuration.
 
 (Note: The system defaults to EN as the source language and includes ZH as a target language)
 

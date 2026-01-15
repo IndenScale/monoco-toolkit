@@ -3,7 +3,7 @@ id: FEAT-0045
 uid: f8d3c1
 type: feature
 status: open
-stage: todo
+stage: draft
 parent: null
 title: Channel Observability (Distribution Stats)
 created_at: "2026-01-13T11:16:44"

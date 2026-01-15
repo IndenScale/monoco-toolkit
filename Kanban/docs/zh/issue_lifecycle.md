@@ -21,7 +21,7 @@ Monoco 遵循 **"Task as Code"** 哲学。为了平衡文件系统的物理属�
 | 逻辑阶段 (Stage) | 物理位置   | 判定条件 (Metadata & Logic)      | 含义                      |
 | :--------------- | :--------- | :------------------------------- | :------------------------ |
 | **Backlog**      | `backlog/` | `status: backlog`                | 构想池，等待进入 Sprint。 |
-| **To Do**        | `open/`    | `status: open` + `stage: todo`   | 已排期，等待认领。        |
+| **To Do**        | `open/`    | `status: open` + `stage: draft`  | 已排期，等待认领。        |
 | **In Progress**  | `open/`    | `status: open` + `stage: doing`  | 正在开发/设计中。         |
 | **In Review**    | `open/`    | `status: open` + `stage: review` | 代码审查或验收测试中。    |
 | **Done**         | `closed/`  | `status: closed`                 | 完成并合并。              |

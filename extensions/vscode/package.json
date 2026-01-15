@@ -21,7 +21,9 @@
     "Other"
   ],
   "icon": "media/icon.png",
-  "activationEvents": [],
+  "activationEvents": [
+    "*"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -68,12 +70,12 @@
       "properties": {
         "monoco.apiBaseUrl": {
           "type": "string",
-          "default": "http://localhost:8642/api/v1",
+          "default": "http://127.0.0.1:8642/api/v1",
           "description": "Base URL for Monoco Daemon API"
         },
         "monoco.webUrl": {
           "type": "string",
-          "default": "http://localhost:8642",
+          "default": "http://127.0.0.1:8642",
           "description": "URL for Monoco Web UI"
         }
       }
