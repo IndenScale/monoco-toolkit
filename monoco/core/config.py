@@ -1,11 +1,14 @@
 import os
 import yaml
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable, Awaitable
 from enum import Enum
 from pydantic import BaseModel, Field
 
 import logging
+import asyncio
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 # Import AgentIntegration for type hints
 from typing import TYPE_CHECKING
@@ -163,3 +166,41 @@ def save_raw_config(scope: ConfigScope, data: Dict[str, Any], project_root: Opti
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
         yaml.dump(data, f, default_flow_style=False)
+
+class ConfigEventHandler(FileSystemEventHandler):
+    def __init__(self, loop, on_change: Callable[[], Awaitable[None]], config_path: Path):
+        self.loop = loop
+        self.on_change = on_change
+        self.config_path = config_path
+
+    def on_modified(self, event):
+        if event.src_path == str(self.config_path):
+            asyncio.run_coroutine_threadsafe(self.on_change(), self.loop)
+
+class ConfigMonitor:
+    """
+    Monitors a configuration file for changes.
+    """
+    def __init__(self, config_path: Path, on_change: Callable[[], Awaitable[None]]):
+        self.config_path = config_path
+        self.on_change = on_change
+        self.observer = Observer()
+
+    async def start(self):
+        loop = asyncio.get_running_loop()
+        event_handler = ConfigEventHandler(loop, self.on_change, self.config_path)
+        
+        if not self.config_path.exists():
+            # Ensure parent exists at least
+            self.config_path.parent.mkdir(parents=True, exist_ok=True)
+            
+        # We watch the parent directory for the specific file
+        self.observer.schedule(event_handler, str(self.config_path.parent), recursive=False)
+        self.observer.start()
+        logger.info(f"Config Monitor started for {self.config_path}")
+
+    def stop(self):
+        if self.observer.is_alive():
+            self.observer.stop()
+            self.observer.join()
+        logger.info(f"Config Monitor stopped for {self.config_path}")

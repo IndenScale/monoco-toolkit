@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from pydantic import BaseModel, Field, model_validator
 from datetime import datetime
 import hashlib
@@ -83,6 +83,17 @@ class IssueIsolation(BaseModel):
     path: Optional[str] = None  # Worktree path (relative to repo root or absolute)
     created_at: datetime = Field(default_factory=current_time)
 
+class IssueAction(BaseModel):
+    label: str
+    target_status: Optional[IssueStatus] = None
+    target_stage: Optional[IssueStage] = None
+    target_solution: Optional[IssueSolution] = None
+    icon: Optional[str] = None
+    
+    # Generic execution extensions
+    command: Optional[str] = None
+    params: Dict[str, Any] = {}
+
 class IssueMetadata(BaseModel):
     model_config = {"extra": "allow"}
     
@@ -105,10 +116,11 @@ class IssueMetadata(BaseModel):
     isolation: Optional[IssueIsolation] = None
     dependencies: List[str] = []
     related: List[str] = []
-    dependencies: List[str] = []
-    related: List[str] = []
     tags: List[str] = []
     path: Optional[str] = None  # Absolute path to the issue file
+    
+    # Proxy UI Actions (Excluded from file persistence)
+    actions: List[IssueAction] = Field(default=[], exclude=True)
 
 
     @model_validator(mode='before')
@@ -132,9 +144,9 @@ class IssueMetadata(BaseModel):
     @model_validator(mode='after')
     def validate_lifecycle(self) -> 'IssueMetadata':
         # Logic Definition:
-        # status: backlog -> stage: null
+        # status: backlog -> stage: freezed
         # status: closed -> stage: done
-        # status: open -> stage: draft | doing | review (default draft)
+        # status: open -> stage: draft | doing | review | done (default draft)
 
         if self.status == IssueStatus.BACKLOG:
             self.stage = IssueStage.FREEZED
@@ -149,7 +161,7 @@ class IssueMetadata(BaseModel):
         
         elif self.status == IssueStatus.OPEN:
             # Ensure valid stage for open status
-            if self.stage is None or self.stage == IssueStage.DONE:
+            if self.stage is None:
                 self.stage = IssueStage.DRAFT
         
         return self

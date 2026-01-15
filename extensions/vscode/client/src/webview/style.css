@@ -1,0 +1,761 @@
+/* VS Code Theme & Variables */
+:root {
+  /* Spacing */
+  --s-xs: 4px;
+  --s-sm: 8px;
+  --s-md: 12px;
+
+  /* Colors - Derived from VS Code */
+  --bg-app: var(--vscode-sideBar-background);
+  --bg-hover: var(--vscode-list-hoverBackground);
+  --bg-active: var(--vscode-list-activeSelectionBackground);
+  --text-primary: var(--vscode-foreground);
+  --text-secondary: var(--vscode-descriptionForeground);
+  --text-active: var(--vscode-list-activeSelectionForeground);
+  --border-color: var(--vscode-tree-indentGuidesStroke);
+
+  /* Status Colors */
+  --status-todo: var(--vscode-descriptionForeground);
+  --status-doing: #3b82f6; /* Blue */
+  --status-review: #a855f7; /* Purple */
+  --status-done: #22c55e; /* Green */
+
+  /* Type Colors (Keep subtle) */
+  --color-epic: #a855f7;
+  --color-feature: #3b82f6;
+  --color-chore: #94a3b8;
+  --color-fix: #ef4444;
+
+  /* Fonts */
+  --font-family: var(
+    --vscode-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif
+  );
+  --font-size: 13px;
+  --line-height: 22px; /* Standard VS Code Tree Item Height */
+}
+
+/* Reset & Base */
+body {
+  padding: 0;
+  margin: 0;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  overflow-x: hidden;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Project Selector */
+.project-bar {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--vscode-sidebar-border, rgba(0, 0, 0, 0.1));
+}
+
+.project-selector-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.project-selector {
+  appearance: none;
+  width: 100%;
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  padding: 4px 8px;
+  padding-right: 24px;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 11px;
+  height: 24px;
+  outline: none;
+}
+
+.project-selector:focus {
+  border-color: var(--vscode-focusBorder);
+}
+
+.selector-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+  font-size: 8px;
+}
+
+/* Tree Container */
+.issue-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 4px;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* Tree Nodes (Epics & Issues) */
+.tree-group {
+  margin-bottom: 2px;
+}
+
+.tree-group-header {
+  display: flex;
+  align-items: center;
+  height: var(--line-height);
+  padding: 0 8px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tree-group-header:hover {
+  background-color: var(--bg-hover);
+}
+
+.tree-group-header .chevron {
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+  color: var(--text-secondary);
+}
+
+.tree-group-header .chevron svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.1s;
+}
+
+.tree-group.collapsed .chevron svg {
+  transform: rotate(-90deg);
+}
+
+.tree-group-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.tree-group-count {
+  font-size: 10px;
+  /* Use badge colors if available, otherwise fallback to subtle grey */
+  background-color: var(--vscode-badge-background, rgba(128, 128, 128, 0.2));
+  color: var(--vscode-badge-foreground, var(--text-primary));
+  padding: 0 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* Epic Progress Bar (Gradient Line) */
+.epic-progress-bar {
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: transparent; /* Fallback */
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Issue List */
+.tree-group-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.tree-group.collapsed .tree-group-list {
+  display: none;
+}
+
+/* Issue Item (The Row) */
+.issue-item {
+  display: flex;
+  align-items: center;
+  height: var(--line-height);
+  padding-left: 28px; /* Indent under chevron */
+  padding-right: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background-color 0.1s;
+}
+
+.issue-item:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.issue-item .icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-right: 4px;
+}
+
+.card-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0; /* Important for ellipsis */
+}
+
+.issue-item .title {
+  flex: 1;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Action Buttons (Right side) */
+.action-group {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+  flex-shrink: 0;
+  opacity: 0.6; /* Dim by default, bright on hover */
+  transition: opacity 0.2s;
+}
+
+.issue-item:hover .action-group {
+  opacity: 1;
+}
+
+.action-btn {
+  background-color: var(
+    --vscode-button-secondaryBackground,
+    rgba(128, 128, 128, 0.15)
+  );
+  color: var(--vscode-button-secondaryForeground, var(--text-primary));
+  border: 1px solid var(--vscode-button-border, transparent);
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 14px;
+  transition: all 0.1s;
+}
+
+.action-btn:hover {
+  background-color: var(--vscode-button-hoverBackground);
+  color: var(--vscode-button-foreground);
+  border-color: var(--vscode-focusBorder);
+}
+
+.issue-item.done .title {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Old Status Lights (deprecated but kept for compatibility if needed) */
+.status-light {
+  display: none;
+}
+
+/* Status: Review (Breathing Purple) */
+.status-light.review {
+  background-color: var(--status-review);
+  box-shadow: 0 0 4px var(--status-review);
+  animation: breathe 2s infinite ease-in-out;
+}
+
+/* Status: Done (Static Green) */
+.status-light.done {
+  background-color: var(--status-done);
+}
+
+.status-light.closed {
+  background-color: var(--text-secondary);
+  opacity: 0.3;
+}
+
+@keyframes breathe {
+  0% {
+    opacity: 0.6;
+    box-shadow: 0 0 0px currentColor;
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 6px currentColor;
+  }
+  100% {
+    opacity: 0.6;
+    box-shadow: 0 0 0px currentColor;
+  }
+}
+
+/* Type Colors */
+.type-epic {
+  color: var(--color-epic);
+}
+.type-feature {
+  color: var(--color-feature);
+}
+.type-bug {
+  color: var(--color-fix);
+}
+.type-fix {
+  color: var(--color-fix);
+}
+.type-chore {
+  color: var(--color-chore);
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 8px;
+  background-color: var(--bg-app);
+  border-bottom: 1px solid var(--border-color);
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.search-wrapper {
+  flex: 1;
+  min-width: 0; /* Critical for flex child truncation */
+  display: flex;
+  align-items: center;
+}
+
+#search-input {
+  width: 100%;
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid transparent; /* Flat style */
+  padding: 4px 6px;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+#search-input:focus {
+  border-color: var(--vscode-focusBorder);
+  background-color: var(--vscode-input-activeOptionBackground);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.1s, background-color 0.1s;
+}
+
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
+  /* Monoline style: stroke usually, but if using fill="currentColor" icons, keep fill.
+     If using stroke icons, set fill="none" stroke="currentColor".
+     We will assume filled icons or stroke icons defined in JS.
+  */
+}
+
+.icon-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Modifying Tree Group to support Header Button */
+.tree-group-header {
+  position: relative; /* For button positioning if needed */
+}
+
+/* Add Button in Epic Header */
+.add-feature-btn {
+  opacity: 0;
+  margin-left: 0; /* No auto margin, let flex layout handle it */
+  width: 20px; /* Slightly wider click area */
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  color: var(--text-secondary);
+  font-weight: bold;
+  font-size: 14px;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.tree-group-header:hover .add-feature-btn {
+  opacity: 1;
+}
+
+.add-feature-btn:hover {
+  background-color: var(--vscode-list-hoverBackground);
+  color: var(--text-primary);
+}
+
+/* Bottom Add Zone */
+.add-epic-zone {
+  margin: 10px;
+  border: 1px dashed var(--border-color);
+  border-radius: 4px;
+  padding: 8px;
+  text-align: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.add-epic-zone:hover {
+  border-color: var(--text-secondary);
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Draggable Visuals */
+.issue-item[draggable="true"] {
+  cursor: grab;
+}
+.issue-item[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* View Manager */
+.view {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+}
+
+.view.active {
+  display: flex;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.8;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-app);
+}
+
+.view-title {
+  font-weight: 600;
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+.view-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  padding: 6px 8px;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--vscode-focusBorder);
+}
+
+/* Button variants */
+.primary-btn {
+  width: 100%;
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* Hover Widget */
+.hover-widget {
+  position: fixed;
+  z-index: 10000;
+  background-color: var(--vscode-editorHoverWidget-background);
+  color: var(--vscode-editorHoverWidget-foreground);
+  border: 1px solid var(--vscode-editorHoverWidget-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+  padding: 10px;
+  width: auto;
+  max-width: 300px;
+  min-width: 200px;
+  pointer-events: none;
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.hover-widget.visible {
+  opacity: 1;
+}
+
+.hover-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--vscode-editorHoverWidget-border);
+}
+
+.hover-type-icon {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  transform: scale(0.9);
+}
+
+.hover-title-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.hover-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--vscode-editorHoverWidget-foreground);
+  margin-bottom: 2px;
+}
+
+.hover-id {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.hover-status-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-left: 8px;
+  background-color: var(--bg-hover);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.hover-body {
+  color: var(--text-secondary);
+  font-size: 12px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  white-space: pre-wrap;
+}
+
+.hover-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--vscode-editorHoverWidget-border);
+  display: flex;
+  gap: 8px;
+}
+
+/* Settings Tabs */
+.settings-tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tab-header {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-app);
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  padding: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+}
+
+.tab-btn.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--vscode-focusBorder);
+}
+
+.tab-content {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Execution List */
+.hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 0;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.execution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.execution-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  background-color: var(--vscode-list-hoverBackground);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.1s;
+}
+
+.execution-item:hover {
+  border-color: var(--vscode-focusBorder);
+  transform: translateX(2px);
+}
+
+.exec-icon {
+  margin-right: 10px;
+  color: var(--text-secondary);
+}
+
+.exec-info {
+  flex: 1;
+}
+
+.exec-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: capitalize;
+}
+
+.exec-source {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.loading {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 20px;
+  font-style: italic;
+}

@@ -24,8 +24,8 @@ class OutputManager:
         """
         Check if running in Agent Mode.
         Triggers:
-        1. Environment variable AGENT_FLAG=true (or 1)
-        2. Environment variable MONOCO_AGENT=true (or 1)
+            1. Environment variable AGENT_FLAG=true (or 1)
+            2. Environment variable MONOCO_AGENT=true (or 1)
         """
         return os.getenv("AGENT_FLAG", "").lower() in ("true", "1") or \
                os.getenv("MONOCO_AGENT", "").lower() in ("true", "1")
@@ -39,6 +39,16 @@ class OutputManager:
             OutputManager._render_agent(data)
         else:
             OutputManager._render_human(data, title)
+
+    @staticmethod
+    def error(message: str):
+        """
+        Print error message.
+        """
+        if OutputManager.is_agent_mode():
+            print(json.dumps({"error": message}))
+        else:
+            rprint(f"[bold red]Error:[/bold red] {message}")
 
     @staticmethod
     def _render_agent(data: Any):
@@ -95,3 +105,4 @@ class OutputManager:
 
 # Global helper
 print_output = OutputManager.print
+print_error = OutputManager.error

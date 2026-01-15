@@ -6,7 +6,9 @@ import asyncio
 import logging
 import os
 from typing import Optional, List, Dict
-from monoco.daemon.services import Broadcaster, GitMonitor, ProjectManager
+from monoco.daemon.services import Broadcaster, ProjectManager
+from monoco.core.git import GitMonitor
+from monoco.core.config import get_config, ConfigMonitor, ConfigScope, get_config_path
 from fastapi import FastAPI, Request, HTTPException, Query
 
 # Configure logging
@@ -15,6 +17,7 @@ logger = logging.getLogger("monoco.daemon")
 from pathlib import Path
 from monoco.core.config import get_config
 from monoco.features.issue.core import list_issues
+from monoco.core.execution import scan_execution_profiles, get_profile_detail, ExecutionProfile
 
 description = """
 Monoco Daemon Process
@@ -25,7 +28,8 @@ Monoco Daemon Process
 
 # Service Instances
 broadcaster = Broadcaster()
-git_monitor = GitMonitor(broadcaster)
+git_monitor: GitMonitor | None = None
+config_monitor: ConfigMonitor | None = None
 project_manager: ProjectManager | None = None
 
 @asynccontextmanager
@@ -33,23 +37,45 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Monoco Daemon services...")
     
-    global project_manager
+    global project_manager, git_monitor, config_monitor
     # Use MONOCO_SERVER_ROOT if set, otherwise CWD
     env_root = os.getenv("MONOCO_SERVER_ROOT")
     workspace_root = Path(env_root) if env_root else Path.cwd()
     logger.info(f"Workspace Root: {workspace_root}")
     project_manager = ProjectManager(workspace_root, broadcaster)
     
+    async def on_git_change(new_hash: str):
+        await broadcaster.broadcast("HEAD_UPDATED", {
+            "ref": "HEAD",
+            "hash": new_hash
+        })
+    
+    async def on_config_change():
+        logger.info("Config file changed, broadcasting update...")
+        await broadcaster.broadcast("CONFIG_UPDATED", {
+            "scope": "workspace",
+            "path": str(workspace_root / ".monoco" / "config.yaml")
+        })
+
+    git_monitor = GitMonitor(workspace_root, on_git_change)
+    
+    config_path = get_config_path(ConfigScope.PROJECT, workspace_root)
+    config_monitor = ConfigMonitor(config_path, on_config_change)
+    
     await project_manager.start_all()
-    monitor_task = asyncio.create_task(git_monitor.start())
+    git_task = asyncio.create_task(git_monitor.start())
+    config_task = asyncio.create_task(config_monitor.start())
     
     yield
     # Shutdown
     logger.info("Shutting down Monoco Daemon services...")
-    git_monitor.stop()
+    if git_monitor:
+        git_monitor.stop()
+    if config_monitor:
+        config_monitor.stop()
     if project_manager:
         project_manager.stop_all()
-    await monitor_task
+    await asyncio.gather(git_task, config_task)
     
 app = FastAPI(
     title="Monoco Daemon",
@@ -160,10 +186,33 @@ async def sse_endpoint(request: Request):
     return EventSourceResponse(event_generator())
 
 @app.get("/api/v1/issues")
-async def get_issues(project_id: Optional[str] = None):
+async def get_issues(
+    project_id: Optional[str] = None,
+    path: Optional[str] = Query(None, description="Absolute file path for reverse lookup")
+):
     """
-    List all issues in the project.
+    List all issues in the project, or get a single issue by file path.
+    
+    Query Parameters:
+    - project_id: Optional project filter
+    - path: Optional absolute file path for reverse lookup (returns single issue)
+    
+    If 'path' is provided, returns a single IssueMetadata object.
+    Otherwise, returns a list of all issues.
     """
+    # Reverse lookup by path
+    if path:
+        p = Path(path)
+        if not p.exists():
+            raise HTTPException(status_code=404, detail=f"File {path} not found")
+            
+        issue = parse_issue(p)
+        if not issue:
+            raise HTTPException(status_code=400, detail=f"File {path} is not a valid Monoco issue")
+            
+        return issue
+    
+    # Standard list operation
     project = get_project_or_404(project_id)
     issues = list_issues(project.issues_root)
     return issues
@@ -221,11 +270,22 @@ async def create_issue_endpoint(payload: CreateIssueRequest):
 @app.get("/api/v1/issues/{issue_id}", response_model=IssueDetail)
 async def get_issue_endpoint(issue_id: str, project_id: Optional[str] = None):
     """
-    Get issue details by ID.
+    Get issue details by ID. Supports cross-project search if project_id is omitted.
     """
-    project = get_project_or_404(project_id)
-    
-    path = find_issue_path(project.issues_root, issue_id)
+    path = None
+    if project_id:
+        project = get_project_or_404(project_id)
+        path = find_issue_path(project.issues_root, issue_id)
+    else:
+        # Global Search across all projects in the workspace
+        if not project_manager:
+            raise HTTPException(status_code=503, detail="Daemon not fully initialized")
+        
+        for p_ctx in project_manager.projects.values():
+            path = find_issue_path(p_ctx.issues_root, issue_id)
+            if path:
+                break
+                
     if not path:
         raise HTTPException(status_code=404, detail=f"Issue {issue_id} not found")
         
@@ -235,21 +295,36 @@ async def get_issue_endpoint(issue_id: str, project_id: Optional[str] = None):
         
     return issue
 
+
 @app.patch("/api/v1/issues/{issue_id}", response_model=IssueMetadata)
 async def update_issue_endpoint(issue_id: str, payload: UpdateIssueRequest):
     """
-    Update an issue logic state (Status, Stage, Solution).
+    Update an issue's metadata (Status, Stage, Solution, Parent, Dependencies, etc.).
     """
     project = get_project_or_404(payload.project_id)
     
     try:
+        # Pre-lookup to get the current path for move detection
+        old_path_obj = find_issue_path(project.issues_root, issue_id)
+        old_path = str(old_path_obj.absolute()) if old_path_obj else None
+
         issue = update_issue(
             project.issues_root, 
             issue_id, 
             status=payload.status, 
             stage=payload.stage, 
-            solution=payload.solution
+            solution=payload.solution,
+            parent=payload.parent,
+            dependencies=payload.dependencies,
+            related=payload.related,
+            tags=payload.tags
         )
+
+        # Post-update: check if path changed
+        if old_path and issue.path != old_path:
+            # Trigger a specialized move event to help editors redirect
+            await project.notify_move(old_path, issue.path, issue.model_dump(mode='json'))
+
         return issue
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"Issue {issue_id} not found")
@@ -311,12 +386,34 @@ async def refresh_monitor():
     # Or just returning the hash confirms the daemon sees it.
     return {"status": "refreshed", "head": current_hash}
 
-# --- Workspace State Management ---
-import json
-from pydantic import BaseModel
+# --- Execution Profiles ---
 
-class WorkspaceState(BaseModel):
-    last_active_project_id: Optional[str] = None
+@app.get("/api/v1/execution/profiles", response_model=List[ExecutionProfile])
+async def get_execution_profiles(project_id: Optional[str] = None):
+    """
+    List all execution profiles available for the project/workspace.
+    """
+    project = None
+    if project_id:
+        project = get_project_or_404(project_id)
+    elif project_manager and project_manager.projects:
+        # Fallback to first project if none specified
+        project = list(project_manager.projects.values())[0]
+    
+    return scan_execution_profiles(project.path if project else None)
+
+@app.get("/api/v1/execution/profiles/detail", response_model=ExecutionProfile)
+async def get_execution_profile_detail(path: str):
+    """
+    Get full content of an execution profile.
+    """
+    profile = get_profile_detail(path)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
+
+# --- Workspace State Management ---
+from monoco.core.state import WorkspaceState
 
 @app.get("/api/v1/workspace/state", response_model=WorkspaceState)
 async def get_workspace_state():
@@ -326,21 +423,7 @@ async def get_workspace_state():
     if not project_manager:
          raise HTTPException(status_code=503, detail="Daemon not initialized")
     
-    state_file = project_manager.workspace_root / ".monoco" / "state.json"
-    if not state_file.exists():
-        # Default empty state
-        return WorkspaceState()
-        
-    try:
-        content = state_file.read_text(encoding='utf-8')
-        if not content.strip():
-            return WorkspaceState()
-        data = json.loads(content)
-        return WorkspaceState(**data)
-    except Exception as e:
-        logger.error(f"Failed to read state file: {e}")
-        # Return empty state instead of crashing, so frontend can fallback
-        return WorkspaceState()
+    return WorkspaceState.load(project_manager.workspace_root)
 
 @app.post("/api/v1/workspace/state", response_model=WorkspaceState)
 async def update_workspace_state(state: WorkspaceState):
@@ -350,29 +433,9 @@ async def update_workspace_state(state: WorkspaceState):
     if not project_manager:
          raise HTTPException(status_code=503, detail="Daemon not initialized")
 
-    state_file = project_manager.workspace_root / ".monoco" / "state.json"
-    
-    # Ensure directory exists
-    if not state_file.parent.exists():
-        state_file.parent.mkdir(parents=True, exist_ok=True)
-    
     try:
-        # We merge with existing state to avoid data loss if we extend model later
-        current_data = {}
-        if state_file.exists():
-            try:
-                content = state_file.read_text(encoding='utf-8')
-                if content.strip():
-                    current_data = json.loads(content)
-            except:
-                pass # ignore read errors on write
-        
-        # Update with new values
-        new_data = state.model_dump(exclude_unset=True)
-        current_data.update(new_data)
-        
-        state_file.write_text(json.dumps(current_data, indent=2), encoding='utf-8')
-        return WorkspaceState(**current_data)
+        state.save(project_manager.workspace_root)
+        return state
     except Exception as e:
         logger.error(f"Failed to write state file: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to persist state: {str(e)}")
