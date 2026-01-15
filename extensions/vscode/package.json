@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Monoco VS Code Cockpit Integration",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "publisher": "indenscale",
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
   ],
   "icon": "media/icon.png",
   "activationEvents": [
-    "*"
+    "onLanguage:markdown"
   ],
   "main": "./out/extension.js",
   "contributes": {

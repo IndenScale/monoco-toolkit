@@ -130,11 +130,7 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
 
   constructor(private readonly extensionUri: vscode.Uri) {}
 
-  public resolveWebviewView(
-    webviewView: vscode.WebviewView,
-    _context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken
-  ) {
+  public resolveWebviewView(webviewView: vscode.WebviewView) {
     this.view = webviewView;
     webviewView.webview.options = {
       enableScripts: true,
