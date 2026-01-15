@@ -129,7 +129,7 @@ class ProjectManager:
     def scan(self):
         """
         Scans workspace for potential Monoco projects.
-        A directory is a project if it has monoco.yaml or .monoco/config.yaml or an Issues directory.
+        A directory is a project if it has a .monoco/ directory.
         """
         logger.info(f"Scanning workspace: {self.workspace_root}")
         from monoco.core.workspace import find_projects

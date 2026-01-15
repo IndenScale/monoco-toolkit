@@ -40,6 +40,10 @@ def main(
 from monoco.core.setup import init_cli
 app.command(name="init")(init_cli)
 
+from monoco.core.sync import sync_command, uninstall_command
+app.command(name="sync")(sync_command)
+app.command(name="uninstall")(uninstall_command)
+
 @app.command()
 def info():
     """

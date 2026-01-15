@@ -3,10 +3,14 @@ id: CHORE-0002
 type: chore
 status: closed
 title: 完善 monoco i18n 命令文档 (Complete i18n Docs)
-created_at: "2026-01-09"
-solution: "completed"
-tags: ["documentation", "i18n", "cli"]
+created_at: '2026-01-09'
+solution: completed
+tags:
+- documentation
+- i18n
+- cli
 parent: EPIC-0001
+uid: 7e54fe
 ---
 
 ## CHORE-0002: 完善 monoco i18n 命令文档

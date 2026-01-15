@@ -36,10 +36,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Check dependencies and bootstrap if needed
-  checkAndBootstrap().then(() => {
-    // Try to start daemon on activation if not running
-    checkDaemonAndNotify();
-  });
+  // We run this in parallel with daemon check because bootstrap might check for global CLI
+  // while we can run via 'uv run' locally even if global is missing.
+  checkAndBootstrap();
+
+  // Try to start daemon on activation
+  checkDaemonAndNotify();
 
   context.subscriptions.push(
     vscode.commands.registerCommand("monoco.refreshEntry", () => {
@@ -81,12 +83,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
 async function checkDaemonAndNotify() {
   const isRunning = await checkDaemonRunning();
+  console.log(`[Monoco] Daemon status: ${isRunning ? "Running" : "Stopped"}`);
+
   if (!isRunning) {
     // Check configuration or just auto-start if valid project
     // For now, we prefer auto-start if we are in a Monoco project
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     if (workspaceFolder) {
       const root = findProjectRoot(workspaceFolder.uri.fsPath);
+      console.log(`[Monoco] Project Root check: ${root}`);
+
       if (root) {
         console.log(`[Monoco] Auto-starting daemon in ${root}`);
         startDaemon(root);
@@ -158,6 +164,27 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
           }
           break;
         }
+        case "OPEN_FILE": {
+          if (data.path) {
+            try {
+              const doc = await vscode.workspace.openTextDocument(data.path);
+              await vscode.window.showTextDocument(doc, { preview: true });
+            } catch (e) {
+              vscode.window.showErrorMessage(
+                `Could not open file: ${data.path}`
+              );
+            }
+          }
+          break;
+        }
+        case "FETCH_EXECUTION_PROFILES": {
+          const profiles = await scanExecutionProfiles();
+          this.view?.webview.postMessage({
+            type: "EXECUTION_PROFILES",
+            value: profiles,
+          });
+          break;
+        }
         case "INFO": {
           vscode.window.showInformationMessage(data.value);
           break;
@@ -192,7 +219,7 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
         case "OPEN_SETTINGS": {
           const url = await vscode.window.showInputBox({
             prompt: "Monoco API Base URL",
-            value: "http://localhost:8642/api/v1",
+            value: "http://127.0.0.1:8642/api/v1",
           });
           if (url) {
             await vscode.workspace
@@ -241,8 +268,21 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
 
     // Inject Configuration
     const config = vscode.workspace.getConfiguration("monoco");
-    const apiBase = config.get("apiBaseUrl") || "http://localhost:8642/api/v1";
-    const webUrl = config.get("webUrl") || "http://localhost:8642";
+    const apiBase = config.get("apiBaseUrl") || "http://127.0.0.1:8642/api/v1";
+    const webUrl = config.get("webUrl") || "http://127.0.0.1:8642";
+
+    console.log(`[Monoco] Injecting config - API: ${apiBase}, Web: ${webUrl}`);
+
+    // CSP: Allow styles/scripts from extension, and connect to localhost API
+    const csp = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${
+      this.view!.webview.cspSource
+    } 'unsafe-inline'; script-src ${
+      this.view!.webview.cspSource
+    } 'unsafe-inline'; connect-src http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; img-src ${
+      this.view!.webview.cspSource
+    } https: data:;">`;
+
+    html = html.replace("<head>", `<head>\n${csp}`);
 
     html = html.replace(
       "<!-- CONFIG_INJECTION -->",
@@ -271,13 +311,46 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
   }
 }
 
+async function scanExecutionProfiles(): Promise<any[]> {
+  const profiles: any[] = [];
+  const homedir = require("os").homedir();
+  const globalPath = path.join(homedir, ".monoco", "execution");
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  const projectPath = workspaceFolder
+    ? path.join(workspaceFolder, ".monoco", "execution")
+    : null;
+
+  async function scanDir(basePath: string, source: string) {
+    if (fs.existsSync(basePath)) {
+      const actions = fs.readdirSync(basePath);
+      for (const action of actions) {
+        const actionDir = path.join(basePath, action);
+        if (fs.statSync(actionDir).isDirectory()) {
+          const sopPath = path.join(actionDir, "SOP.md");
+          if (fs.existsSync(sopPath)) {
+            profiles.push({
+              name: action, // e.g. "implement"
+              source: source, // "Global" or "Project"
+              path: sopPath,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  await scanDir(globalPath, "Global");
+  if (projectPath) {
+    await scanDir(projectPath, "Project");
+  }
+
+  return profiles;
+}
+
 function findProjectRoot(startPath: string): string | undefined {
   let currentPath = startPath;
   while (true) {
-    if (
-      fs.existsSync(path.join(currentPath, "monoco.yaml")) ||
-      fs.existsSync(path.join(currentPath, ".monoco"))
-    ) {
+    if (fs.existsSync(path.join(currentPath, ".monoco"))) {
       return currentPath;
     }
     const parentPath = path.dirname(currentPath);
@@ -308,6 +381,9 @@ function startDaemon(explicitRoot?: string) {
       cwd: cwd,
       iconPath: new vscode.ThemeIcon("server"),
     });
-    backendTerm.sendText("monoco serve");
   }
+
+  backendTerm.show();
+  // Always try to start since we only call this if health check failed
+  backendTerm.sendText("uv run monoco serve");
 }

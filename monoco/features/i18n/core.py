@@ -154,25 +154,15 @@ i18n is a "first-class citizen" in Monoco.
 - Run `monoco i18n scan` to verify coverage.
 """
 
-PROMPT_CONTENT = """### Documentation I18n
-Manage internationalization.
-- **Scan**: `monoco i18n scan` (Check for missing translations)
-- **Structure**:
-  - Root files: `FILE_ZH.md`
-  - Subdirs: `folder/zh/file.md`"""
 
 def init(root: Path):
     """Initialize I18n environment (No-op currently as it relies on config)."""
     # In future, could generate i18n config section if missing.
     pass
 
-def get_resources() -> Dict[str, Any]:
     return {
         "skills": {
             "i18n": SKILL_CONTENT
         },
-        "prompts": {
-            "i18n": PROMPT_CONTENT
-        }
+        "prompts": {} # Handled by adapter via resource files
     }
-

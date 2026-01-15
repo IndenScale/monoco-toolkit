@@ -325,19 +325,19 @@ export default function OverviewPage() {
   const getColumns = (groupIssues: Issue[]) => {
     // ... existing getColumns logic ...
     const byStage: Record<string, Issue[]> = {
-      todo: [],
+      draft: [],
       doing: [],
       review: [],
       done: [],
     };
 
     groupIssues.forEach((issue) => {
-      const stage = issue.stage || "todo";
+      const stage = issue.stage || "draft";
       if (byStage[stage]) {
         byStage[stage].push(issue);
       } else {
         // Fallback
-        byStage["todo"].push(issue);
+        byStage["draft"].push(issue);
       }
     });
 
@@ -349,7 +349,7 @@ export default function OverviewPage() {
     });
 
     return [
-      { id: "todo", title: t("todo", "To Do"), items: byStage.todo },
+      { id: "draft", title: t("draft", "Draft"), items: byStage.draft },
       { id: "doing", title: t("doing", "Doing"), items: byStage.doing },
       { id: "review", title: t("review", "Review"), items: byStage.review },
       { id: "done", title: t("done", "Done"), items: byStage.done },

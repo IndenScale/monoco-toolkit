@@ -46,7 +46,13 @@ async function isCommandAvailable(
   return new Promise((resolve) => {
     // use 'command -v' on unix, 'where' on windows, or just run --version
     // --version is safest for most CLIs
-    sys.exec(`${cmd} ${flag}`, (err) => {
+    sys.exec(`${cmd} ${flag}`, (err, _stdout, _stderr) => {
+      if (err) {
+        console.log(
+          `[Monoco] Command check failed for '${cmd}': ${err.message}`
+        );
+        console.log(`[Monoco] PATH: ${process.env.PATH}`);
+      }
       resolve(!err);
     });
   });

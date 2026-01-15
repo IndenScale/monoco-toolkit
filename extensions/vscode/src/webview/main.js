@@ -10,11 +10,12 @@ let state = {
   workspaceState: {},
   searchQuery: "",
   settings: {
-    apiBase: "http://localhost:8642/api/v1",
-    webUrl: "http://localhost:8642",
+    apiBase: "http://127.0.0.1:8642/api/v1",
+    webUrl: "http://127.0.0.1:8642",
   },
 };
 
+// Icons (Abstract Monoline SVGs)
 // Icons (Abstract Monoline SVGs)
 const ICONS = {
   EPIC: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2" /><path d="M5 8h6M8 5v6" /></svg>`,
@@ -26,17 +27,22 @@ const ICONS = {
   SETTINGS: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8.5 1.5a.5.5 0 0 0-1 0l-.25 1.5a5.5 5.5 0 0 0-1.7.7l-1.4-.6a.5.5 0 0 0-.6.2l-1 1.7a.5.5 0 0 0 .1.6l1.2 1a5.5 5.5 0 0 0 0 1.8l-1.2 1a.5.5 0 0 0-.1.6l1 1.7a.5.5 0 0 0 .6.2l1.4-.6a5.5 5.5 0 0 0 1.7.7l.25 1.5a.5.5 0 0 0 1 0l.25-1.5a5.5 5.5 0 0 0 1.7-.7l1.4.6a.5.5 0 0 0 .6-.2l1-1.7a.5.5 0 0 0-.1-.6l-1.2-1a5.5 5.5 0 0 0 0-1.8l1.2-1a.5.5 0 0 0 .1-.6l-1-1.7a.5.5 0 0 0-.6-.2l-1.4.6a5.5 5.5 0 0 0-1.7-.7L8.5 1.5z"/><circle cx="8" cy="8" r="2.5"/></svg>`,
   PLUS: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3v10M3 8h10"/></svg>`,
   BACK: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M10 13L5 8l5-5"/></svg>`,
+  EXECUTION: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 3l10 5-10 5V3z"/></svg>`,
 };
 
+/**
+ * Get SVG icon for a given issue type.
+ * @param {string} type
+ * @returns {string} The SVG string.
+ */
 function getIcon(type) {
-  const map = {
-    epic: ICONS.EPIC,
-    feature: ICONS.FEATURE,
-    bug: ICONS.BUG,
-    fix: ICONS.BUG,
-    chore: ICONS.CHORE,
-  };
-  return map[type ? type.toLowerCase() : "feature"] || ICONS.FEATURE;
+  const t = (type || "").toUpperCase();
+  if (t === "EPIC") return ICONS.EPIC;
+  if (t === "FEATURE") return ICONS.FEATURE;
+  if (t === "BUG") return ICONS.BUG;
+  if (t === "CHORE") return ICONS.CHORE;
+  if (t === "FIX") return ICONS.BUG;
+  return ICONS.FEATURE;
 }
 
 // Elements
@@ -65,6 +71,9 @@ const els = {
   settingApiBase: document.getElementById("setting-api-base"),
   settingWebUrl: document.getElementById("setting-web-url"),
   btnSaveSettings: document.getElementById("btn-save-settings"),
+  // Tabs
+  settingsTabs: document.querySelectorAll(".settings-tabs .tab-btn"),
+  executionList: document.getElementById("execution-list"),
   // Other
   addEpicZone: document.getElementById("add-epic-zone"),
 };
@@ -81,36 +90,56 @@ document.addEventListener("DOMContentLoaded", async () => {
   initHoverWidget();
 
   // Restore State
-  const savedState = vscode.getState();
-  if (savedState) {
-    if (savedState.expandedIds) {
-      state.expandedIds = new Set(savedState.expandedIds);
+  const previousState = vscode.getState();
+  if (previousState) {
+    state.expandedIds = new Set(previousState.expandedIds || []);
+    state.searchQuery = previousState.searchQuery || "";
+    if (els.searchInput) {
+      els.searchInput.value = state.searchQuery;
     }
-    if (savedState.searchQuery) {
-      state.searchQuery = savedState.searchQuery;
-      if (els.searchInput) els.searchInput.value = state.searchQuery;
-    }
-    if (savedState.settings) {
-      state.settings = savedState.settings;
+    if (previousState.settings) {
+      state.settings = { ...state.settings, ...previousState.settings };
     }
   }
 
-  // Inject Config if available (priority over default, but savedState takes precedence logic?)
-  // Actually, let's respect window config if provided, else Use State
-  // Inject Config if available (Merge to ensure new keys like rootPath are picked up)
+  // Config Injection (Overrides saved settings if provided by extension)
   if (window.monocoConfig) {
-    state.settings = { ...state.settings, ...window.monocoConfig };
+    state.settings.apiBase =
+      window.monocoConfig.apiBase || state.settings.apiBase;
+    state.settings.webUrl = window.monocoConfig.webUrl || state.settings.webUrl;
   }
-
-  // Debug: Verify configuration
-  console.log("[Init] Settings loaded:", state.settings);
-  console.log("[Init] Root path:", state.settings.rootPath);
 
   // Event Listeners
   window.addEventListener("message", async (event) => {
     const message = event.data;
     if (message.type === "REFRESH") refreshAll();
+    if (message.type === "EXECUTION_PROFILES") {
+      renderExecutionProfiles(message.value);
+    }
   });
+
+  // Tap switching
+  els.settingsTabs.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      // Deactivate all
+      els.settingsTabs.forEach((b) => b.classList.remove("active"));
+      document
+        .querySelectorAll(".tab-content")
+        .forEach((c) => c.classList.remove("active"));
+
+      // Activate Clicked
+      btn.classList.add("active");
+      const targetId = btn.getAttribute("data-tab");
+      document.getElementById(targetId).classList.add("active");
+
+      // Logic
+      if (targetId === "tab-execution") {
+        vscode.postMessage({ type: "FETCH_EXECUTION_PROFILES" });
+      }
+    });
+  });
+
+  // ... (Rest of event listeners logic)
 
   els.projectSelector.addEventListener("change", async (e) => {
     await setActiveProject(e.target.value);
@@ -442,9 +471,9 @@ async function performCreateIssueFromForm() {
 }
 
 async function toggleIssueStatus(issue) {
-  // Logic: Todo -> Doing -> Review -> Done (Closed)
+  // Logic: Draft -> Doing -> Review -> Done (Closed)
   // Map current stage or status to next
-  const currentStage = (issue.stage || "todo").toLowerCase();
+  const currentStage = (issue.stage || "draft").toLowerCase();
   let nextStage = null;
   let nextStatus = "open";
   let solution = null;
@@ -452,9 +481,9 @@ async function toggleIssueStatus(issue) {
   if (issue.status === "closed") {
     // Reopen?
     nextStatus = "open";
-    nextStage = "todo";
+    nextStage = "draft";
   } else {
-    if (currentStage === "todo") nextStage = "doing";
+    if (currentStage === "draft") nextStage = "doing";
     else if (currentStage === "doing") nextStage = "review";
     else if (currentStage === "review") {
       nextStatus = "closed";
@@ -462,7 +491,7 @@ async function toggleIssueStatus(issue) {
       solution = "implemented";
     } else {
       // Default reset
-      nextStage = "todo";
+      nextStage = "draft";
     }
   }
 
@@ -597,7 +626,7 @@ function renderTree() {
 }
 
 function statusWeight(status) {
-  const map = { doing: 0, todo: 1, review: 2, backlog: 3, done: 4, closed: 5 };
+  const map = { doing: 0, draft: 1, review: 2, backlog: 3, done: 4, closed: 5 };
   return map[status] ?? 99;
 }
 
@@ -617,14 +646,14 @@ function createEpicNode(epic, children, isVirtual = false) {
   header.className = "tree-group-header";
 
   // 1. Calculate Stats
-  const stats = { done: 0, review: 0, doing: 0, todo: 0 };
+  const stats = { done: 0, review: 0, doing: 0, draft: 0 };
   children.forEach((c) => {
-    const s = (c.stage || c.status || "todo").toLowerCase();
+    const s = (c.stage || c.status || "draft").toLowerCase();
     if (s.includes("done") || s.includes("closed") || s.includes("implemented"))
       stats.done++;
     else if (s.includes("review")) stats.review++;
     else if (s.includes("doing")) stats.doing++;
-    else stats.todo++;
+    else stats.draft++;
   });
 
   const total = children.length;
@@ -750,14 +779,14 @@ function createIssueItem(issue) {
   setupHover(item, issue);
 
   // Status Class Mapping
-  let statusClass = "todo";
-  const s = (issue.stage || issue.status || "todo").toLowerCase();
+  let statusClass = "draft";
+  const s = (issue.stage || issue.status || "draft").toLowerCase();
 
   if (s.includes("doing") || s.includes("progress")) statusClass = "doing";
   else if (s.includes("review")) statusClass = "review";
   else if (s.includes("done")) statusClass = "done";
   else if (s.includes("closed")) statusClass = "closed";
-  else statusClass = "todo";
+  else statusClass = "draft";
 
   // HTML Construction
   item.innerHTML = `
@@ -788,21 +817,59 @@ function createIssueItem(issue) {
   return item;
 }
 
+function renderExecutionProfiles(profiles) {
+  if (!els.executionList) return;
+  els.executionList.innerHTML = "";
+
+  if (!profiles || profiles.length === 0) {
+    els.executionList.innerHTML = `<div class="empty-state" style="padding:10px;">No execution configs found.<br/>Checked ~/.monoco/execution and ./.monoco/execution</div>`;
+    return;
+  }
+
+  profiles.forEach((p) => {
+    const item = document.createElement("div");
+    item.className = "execution-item";
+    item.innerHTML = `
+      <div class="exec-icon">${ICONS.EXECUTION}</div>
+      <div class="exec-info">
+        <div class="exec-name">${escapeHtml(p.name)}</div>
+        <div class="exec-source">${p.source} • ${escapeHtml(
+      p.path.split("/").pop()
+    )}</div>
+      </div>
+      <div class="chevron" style="transform: rotate(-90deg); opacity: 0.5;">${
+        ICONS.CHEVRON
+      }</div>
+    `;
+
+    item.addEventListener("click", () => {
+      vscode.postMessage({ type: "OPEN_FILE", path: p.path });
+    });
+
+    els.executionList.appendChild(item);
+  });
+}
+
+/**
+ * Configure drag and drop data for an issue.
+ * @param {DragEvent} e
+ * @param {any} issue
+ */
 function setupDragData(e, issue) {
-  e.dataTransfer.effectAllowed = "copyMove";
+  const root = window.monocoConfig?.rootPath;
+  let fullPath = issue.path;
 
-  // Internal payload for webview drops
-  e.dataTransfer.setData("application/monoco-issue", JSON.stringify(issue));
-
-  // Determine content for external drops (Terminal/Editor)
-  const root = state.settings.rootPath || "";
-  let fullPath = issue.path || "";
+  if (!fullPath) {
+    // Fallback: no path available, just set plain text ID
+    e.dataTransfer.setData("text/plain", issue.id);
+    return;
+  }
 
   // Check if path is absolute
   const isAbsolute = fullPath.startsWith("/") || fullPath.match(/^[a-zA-Z]:/);
 
   // Resolve relative path if root is available
-  if (fullPath && root && !isAbsolute) {
+  if (root && !isAbsolute) {
     // Handle path separators
     const sep = root.includes("\\") ? "\\" : "/";
 
@@ -812,8 +879,7 @@ function setupDragData(e, issue) {
     // Join paths properly
     const joinedPath = root + (root.endsWith(sep) ? "" : sep) + normalizedPath;
 
-    // Normalize the result (handle ../ and ./)
-    // For browser/webview context, we can use a simple approach
+    // Normalize the result (handle ../ and ./ )
     fullPath = joinedPath
       .split("/")
       .reduce((acc, part) => {
@@ -842,46 +908,35 @@ function setupDragData(e, issue) {
     fullPath
   );
 
-  if (!fullPath) {
-    // Fallback: no path available, just set plain text ID
-    e.dataTransfer.setData("text/plain", issue.id);
-    return;
-  }
-
   // Construct proper file:// URI with URL encoding
   // VS Code expects: file:///absolute/path (with URL encoding for special chars)
-
-  // Step 1: Split path into segments and encode each
   const pathSegments = fullPath.split("/").map((segment) => {
-    // encodeURIComponent encodes spaces as %20, etc.
     return encodeURIComponent(segment);
   });
 
-  // Step 2: Reconstruct path
   let encodedPath = pathSegments.join("/");
-
-  // Step 3: Handle Windows vs Unix
   let fileUri;
   if (fullPath.match(/^[a-zA-Z]:/)) {
     // Windows: file:///C:/path/to/file
     fileUri = "file:///" + encodedPath;
   } else {
     // Unix: file:///path/to/file
-    // Already has leading slash from normalization
     fileUri = "file://" + encodedPath;
   }
 
   console.log("[Drag] File URI:", fileUri);
 
-  // CRITICAL: Set data in the correct order per VS Code expectations
   // 1. text/uri-list - Primary for opening files
   e.dataTransfer.setData("text/uri-list", fileUri);
 
-  // 2. text/plain - Fallback for terminal/text areas (use decoded absolute path)
+  // 2. text/plain - Fallback
   e.dataTransfer.setData("text/plain", fullPath);
 
-  // 3. VS Code specific hint (optional, but helps with tree views)
+  // 3. VS Code specific hint
   e.dataTransfer.setData("application/vnd.code.tree.monoco", fileUri);
+
+  // Also set custom data for our internal drop handling
+  e.dataTransfer.setData("application/monoco-issue", JSON.stringify(issue));
 }
 
 function openFile(issue) {

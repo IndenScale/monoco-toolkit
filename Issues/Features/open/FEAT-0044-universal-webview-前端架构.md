@@ -3,7 +3,7 @@ id: FEAT-0044
 uid: e9c5b2
 type: feature
 status: open
-stage: todo
+stage: draft
 title: Universal Webview 前端架构
 created_at: "2026-01-13T10:17:59"
 opened_at: "2026-01-13T10:17:59"

@@ -13,6 +13,7 @@ solution: implemented
 dependencies: []
 related: []
 tags: []
+uid: cdf64e
 ---
 
 ## FIX-0003: 增强 monoco issue create 以支持缺失参数和输出

@@ -23,7 +23,7 @@ def create(
     title: str = typer.Option(..., "--title", "-t", help="Issue title"),
     parent: Optional[str] = typer.Option(None, "--parent", "-p", help="Parent Issue ID"),
     is_backlog: bool = typer.Option(False, "--backlog", help="Create as backlog item"),
-    stage: Optional[IssueStage] = typer.Option(None, "--stage", help="Issue stage (todo, doing, review)"),
+    stage: Optional[IssueStage] = typer.Option(None, "--stage", help="Issue stage (draft, doing, review)"),
     dependencies: List[str] = typer.Option([], "--dependency", "-d", help="Issue dependency ID(s)"),
     related: List[str] = typer.Option([], "--related", "-r", help="Related Issue ID(s)"),
     subdir: Optional[str] = typer.Option(None, "--subdir", "-s", help="Subdirectory for organization (e.g. 'Backend/Auth')"),
@@ -73,13 +73,13 @@ def move_open(
     issue_id: str = typer.Argument(..., help="Issue ID to open"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
-    """Move issue to open status and set stage to Todo."""
+    """Move issue to open status and set stage to Draft."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
         # Pull operation: Force stage to TODO
-        core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.TODO)
-        console.print(f"[green]▶[/green] Issue [bold]{issue_id}[/bold] moved to open/todo.")
+        core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
+        console.print(f"[green]▶[/green] Issue [bold]{issue_id}[/bold] moved to open/draft.")
     except Exception as e:
         console.print(f"[red]✘ Error:[/red] {str(e)}")
         raise typer.Exit(code=1)
@@ -210,11 +210,11 @@ def pull(
     issue_id: str = typer.Argument(..., help="Issue ID to pull from backlog"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
-    """Pull issue from backlog (Open & Todo)."""
+    """Pull issue from backlog (Open & Draft)."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
-        core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.TODO)
+        core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
         console.print(f"[green]🔥[/green] Issue [bold]{issue_id}[/bold] pulled from backlog.")
     except Exception as e:
         console.print(f"[red]✘ Error:[/red] {str(e)}")
@@ -319,7 +319,7 @@ def board(
     columns: List[RenderableType] = []
     
     stage_titles = {
-        "todo": "[bold white]TODO[/bold white]",
+        "draft": "[bold white]DRAFT[/bold white]",
         "doing": "[bold yellow]DOING[/bold yellow]",
         "review": "[bold cyan]REVIEW[/bold cyan]",
         "done": "[bold green]DONE[/bold green]"
@@ -547,7 +547,7 @@ def _resolve_issues_root(config, cli_root: Optional[str]) -> Path:
     # We need to detect if we are in a Workspace Root with multiple projects
     cwd = Path.cwd()
     
-    # If CWD is NOT a project root (no monoco.yaml/Issues), scan for subprojects
+    # If CWD is NOT a project root (no .monoco/), scan for subprojects
     if not is_project_root(cwd):
         subprojects = find_projects(cwd)
         if len(subprojects) > 1:

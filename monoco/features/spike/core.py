@@ -31,17 +31,10 @@ def run_git_command(cmd: List[str], cwd: Path) -> bool:
 
 def get_config_file_path(root: Path) -> Path:
     """Determine the config file to update."""
-    # Priority 1: .monoco/config.yaml
+    # Standard: .monoco/config.yaml
     hidden = root / ".monoco" / "config.yaml"
-    if hidden.exists():
-        return hidden
     
-    # Priority 2: monoco.yaml
-    visible = root / "monoco.yaml"
-    if visible.exists():
-        return visible
-    
-    # Default to .monoco/config.yaml for new files
+    # Ensure parent exists
     hidden.parent.mkdir(exist_ok=True)
     return hidden
 
@@ -131,24 +124,14 @@ This skill normalizes how we introduce external code repositories.
 3. **Remove**: `monoco spike remove <name>`
 """
 
-PROMPT_CONTENT = """### Spike (Research)
-Manage external reference repositories.
-- **Add Repo**: `monoco spike add <url>` (Available in `.reference/<name>` for reading)
-- **Sync**: `monoco spike sync` (Run to download content)
-- **Constraint**: Never edit files in `.reference/`. Treat them as read-only external knowledge."""
-
 def init(root: Path, spikes_dir_name: str):
     """Initialize Spike environment."""
     ensure_gitignore(root, spikes_dir_name)
     (root / spikes_dir_name).mkdir(exist_ok=True)
 
-def get_resources() -> Dict[str, Any]:
     return {
         "skills": {
             "git-repo-spike": SKILL_CONTENT
         },
-        "prompts": {
-            "spike": PROMPT_CONTENT
-        }
+        "prompts": {} # Handled by adapter via resource files
     }
-

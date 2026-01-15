@@ -1,6 +1,10 @@
 import os
 import re
+import yaml
+import hashlib
+import secrets
 from pathlib import Path
+from datetime import datetime
 
 # Migration Mappings
 DIR_MAP = {
@@ -31,10 +35,21 @@ ID_PREFIX_MAP = {
 }
 
 ROOTS = [
-    Path("."),
-    Path("Chassis"),
-    Path("Toolkit")
+    Path("/Users/indenscale/Documents/Projects/Monoco"),
+    Path("/Users/indenscale/Documents/Projects/Monoco/Chassis"),
+    Path("/Users/indenscale/Documents/Projects/Monoco/Toolkit")
 ]
+
+def generate_uid() -> str:
+    """
+    Generate a globally unique 6-character short hash for issue identity.
+    Uses timestamp + random bytes to ensure uniqueness across projects.
+    """
+    timestamp = str(datetime.now().timestamp()).encode()
+    random_bytes = secrets.token_bytes(8)
+    combined = timestamp + random_bytes
+    hash_digest = hashlib.sha256(combined).hexdigest()
+    return hash_digest[:6]
 
 def migrate_root(root_path: Path):
     issues_dir = root_path / "Issues"
@@ -43,7 +58,7 @@ def migrate_root(root_path: Path):
         if (root_path / "ISSUES").exists():
              issues_dir = root_path / "ISSUES"
         else:
-             print(f"No Issues dir found in {root_path}")
+             print(f"[{root_path}] No Issues dir found. Skipping.")
              return
 
     print(f"Migrating {issues_dir}...")
@@ -85,8 +100,11 @@ def migrate_root(root_path: Path):
                 import shutil
                 shutil.rmtree(old_path)
             else:
-                print(f"  Renaming {old_path} -> {new_path}")
-                old_path.rename(new_path)
+                try:
+                    print(f"  Renaming {old_path} -> {new_path}")
+                    old_path.rename(new_path)
+                except OSError as e:
+                    print(f"  Warning: Could not rename {old_path}: {e}")
 
     # 2. Rename Files and Update Content
     # We now operate on the NEW directory names
@@ -100,20 +118,52 @@ def migrate_root(root_path: Path):
             content = file_path.read_text()
             new_content = content
             
+            # --- Regex based replacements for Type and Links ---
+            
             # Replace Type in Frontmatter
             for old_type, new_type in TYPE_MAP.items():
-                new_content = re.sub(rf"type:\s*{old_type}", f"type: {new_type}", new_content, flags=re.IGNORECASE)
+                new_content = re.sub(rf"^type:\s*{old_type}", f"type: {new_type}", new_content, flags=re.IGNORECASE | re.MULTILINE)
             
             # Replace ID Prefixes in links and metadata
             for old_prefix, new_prefix in ID_PREFIX_MAP.items():
                 # Replace [[STORY-123]] -> [[FEAT-123]]
                 new_content = new_content.replace(f"[[{old_prefix}-", f"[[{new_prefix}-")
                 # Replace id: STORY-123 -> id: FEAT-123
-                new_content = new_content.replace(f"id: {old_prefix}-", f"id: {new_prefix}-")
+                new_content = re.sub(rf"^id: {old_prefix}-", f"id: {new_prefix}-", new_content, flags=re.MULTILINE)
                 # Replace parent: STORY-123 -> parent: FEAT-123
-                new_content = new_content.replace(f"parent: {old_prefix}-", f"parent: {new_prefix}-")
+                new_content = re.sub(rf"^parent: {old_prefix}-", f"parent: {new_prefix}-", new_content, flags=re.MULTILINE)
                  # Replace in dependencies: [STORY-123] -> [FEAT-123]
                 new_content = new_content.replace(f"{old_prefix}-", f"{new_prefix}-")
+
+            # --- YAML Parsing for Structural Updates (UID, Stage) ---
+            match = re.search(r"^---(.*?)---", new_content, re.DOTALL | re.MULTILINE)
+            if match:
+                yaml_str = match.group(1)
+                try:
+                    data = yaml.safe_load(yaml_str) or {}
+                    changed = False
+                    
+                    # 1. Backfill UID
+                    if 'uid' not in data:
+                        data['uid'] = generate_uid()
+                        changed = True
+                        print(f"  Backfilling UID for {file_path.name}")
+                        
+                    # 2. Migrate Stage: todo -> draft
+                    if 'stage' in data:
+                        if data['stage'] == 'todo':
+                            data['stage'] = 'draft'
+                            changed = True
+                            print(f"  Migrating stage todo->draft for {file_path.name}")
+                            
+                    if changed:
+                         # Re-serialize YAML
+                         # We want to preserve comments if possible, but safe_dump kills them.
+                         # Since we are automating, re-dumping is acceptable collateral.
+                         new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
+                         new_content = new_content.replace(match.group(1), "\n" + new_yaml)
+                except yaml.YAMLError:
+                    print(f"  Warning: Invalid YAML in {file_path}")
 
             if new_content != content:
                 print(f"  Updating content in {file_path}")

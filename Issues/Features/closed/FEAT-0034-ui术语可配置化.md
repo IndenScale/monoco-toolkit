@@ -15,6 +15,7 @@ dependencies:
 - FEAT-0014
 related: []
 tags: []
+uid: fd8604
 ---
 
 ## FEAT-0034: UI 术语可配置化

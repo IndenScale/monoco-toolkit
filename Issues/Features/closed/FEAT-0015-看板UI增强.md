@@ -13,6 +13,7 @@ dependencies: []
 related: []
 tags: []
 parent: EPIC-0003
+uid: 78a1a1
 ---
 
 ## FEAT-0015: 看板 UI 增强
