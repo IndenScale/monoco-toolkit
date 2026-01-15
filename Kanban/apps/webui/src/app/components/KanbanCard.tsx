@@ -20,7 +20,7 @@ interface KanbanCardProps {
 const getStatusIntent = (status: string): Intent => {
   switch (status?.toLowerCase()) {
     case "open":
-    case "todo":
+    case "draft":
       return Intent.NONE;
     case "in_progress":
     case "doing":

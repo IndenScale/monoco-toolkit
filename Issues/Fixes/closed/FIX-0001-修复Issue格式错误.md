@@ -3,12 +3,14 @@ id: FIX-0001
 type: fix
 status: closed
 title: 修复 Issue 格式错误 (Fix Issue Formatting Errors)
-created_at: "2026-01-09"
+created_at: '2026-01-09'
 dependencies: []
-related: ["FEAT-0009"]
+related:
+- FEAT-0009
 solution: implemented
 tags: []
 parent: EPIC-0002
+uid: dca954
 ---
 
 ## FIX-0001: 修复 Issue 格式错误

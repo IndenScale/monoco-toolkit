@@ -3,7 +3,7 @@ id: FEAT-0053
 uid: e1a2b3
 type: feature
 status: in_progress
-stage: todo
+stage: draft
 title: Kanban UI 重构与依赖现代化
 created_at: "2026-01-13T16:33:00"
 opened_at: "2026-01-13T16:33:00"

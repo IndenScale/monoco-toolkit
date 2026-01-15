@@ -3,20 +3,21 @@ id: FEAT-0004
 type: feature
 status: closed
 stage: done
-title: "特性: 仓库管理 (Spike) (Repo Management - Spike)"
-created_at: "2026-01-08T00:00:00"
-opened_at: "2026-01-11T23:48:45.930778"
-updated_at: "2026-01-11T23:48:49.554833"
-closed_at: "2026-01-11T23:48:49.554866"
+title: '特性: 仓库管理 (Spike) (Repo Management - Spike)'
+created_at: '2026-01-08T00:00:00'
+opened_at: '2026-01-11T23:48:45.930778'
+updated_at: '2026-01-11T23:48:49.554833'
+closed_at: '2026-01-11T23:48:49.554866'
 parent: EPIC-0003
 solution: implemented
 dependencies: []
 related: []
 tags:
-  - toolkit
-  - feature
-  - repo
-  - workspace
+- toolkit
+- feature
+- repo
+- workspace
+uid: bc3287
 ---
 
 ## FEAT-0004: 特性: 仓库管理 (Spike)

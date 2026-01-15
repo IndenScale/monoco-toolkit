@@ -3,12 +3,13 @@ id: FEAT-0009
 type: feature
 status: closed
 title: 建立 Spike 系统使用文档体系 (Establish Spike Docs)
-created_at: "2026-01-09"
+created_at: '2026-01-09'
 dependencies: []
 related: []
 solution: implemented
 tags: []
 parent: EPIC-0003
+uid: e6fd0b
 ---
 
 ## FEAT-0009: 建立 Spike 系统使用文档体系

@@ -3,10 +3,11 @@ id: FEAT-0005
 type: feature
 status: closed
 title: 实现 i18n 扫描能力 (Implement i18n scan)
-created_at: "2026-01-08"
+created_at: '2026-01-08'
 solution: implemented
 parent: EPIC-0004
 tags: []
+uid: baf2ce
 ---
 
 ## FEAT-0005: 实现 i18n 扫描能力

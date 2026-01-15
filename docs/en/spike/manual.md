@@ -19,7 +19,7 @@ Monoco encourages "standing on the shoulders of giants" (referencing excellent o
 The Spike System addresses these issues through **Physical Isolation** and **Automated Management**:
 
 - **Store in `.reference/`**: Defaults to downloading all reference repositories to a directory excluded by `.gitignore`.
-- **Configuration Management**: Records the list of repositories in `monoco.yaml` (or configuration system) instead of committing code directly.
+- **Configuration Management**: Records the list of repositories in `.monoco/config.yaml` (or configuration system) instead of committing code directly.
 - **On-Demand Sync**: New members only need to run `sync` to pull all reference materials.
 
 ---

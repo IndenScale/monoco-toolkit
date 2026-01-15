@@ -3,12 +3,16 @@ id: FEAT-0008
 type: feature
 status: closed
 title: 建立 Issue 系统使用文档体系 (Establish Issue Docs)
-created_at: "2026-01-09"
+created_at: '2026-01-09'
 dependencies: []
 related: []
 solution: implemented
-tags: [docs, i18n, issue]
+tags:
+- docs
+- i18n
+- issue
 parent: EPIC-0002
+uid: 3a2bc7
 ---
 
 ## FEAT-0008: 建立 Issue 系统使用文档体系

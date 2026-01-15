@@ -16,7 +16,8 @@ tags:
 created_at: 2026-01-14
 progress: 0/4
 files_count: 0
-stage: todo
+stage: draft
+uid: 287d08
 ---
 
 # EPIC-0011: VS Code Cockpit Integration (VS Code 驾驶舱集成)

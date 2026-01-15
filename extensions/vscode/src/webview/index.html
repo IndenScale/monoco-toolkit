@@ -81,18 +81,39 @@
               <button id="btn-back-settings" class="icon-btn back-btn">←</button>
               <span class="view-title">Settings</span>
           </div>
-           <div class="view-content form-container">
-              <div class="form-group">
-                  <label>API Base URL</label>
-                  <input type="text" id="setting-api-base" class="form-input" placeholder="http://localhost:8642/api/v1" />
+
+          <div class="settings-tabs">
+            <div class="tab-header">
+              <button class="tab-btn active" data-tab="tab-general">General</button>
+              <button class="tab-btn" data-tab="tab-execution">Execution</button>
+            </div>
+            
+            <div id="tab-general" class="tab-content active">
+               <div class="view-content form-container">
+                  <div class="form-group">
+                      <label>API Base URL</label>
+                      <input type="text" id="setting-api-base" class="form-input" placeholder="http://localhost:8642/api/v1" />
+                  </div>
+                  <div class="form-group">
+                      <label>Web UI URL</label>
+                      <input type="text" id="setting-web-url" class="form-input" placeholder="http://localhost:8642" />
+                  </div>
+                  <div class="form-actions">
+                      <button id="btn-save-settings" class="primary-btn">Save</button>
+                  </div>
               </div>
-              <div class="form-group">
-                  <label>Web UI URL</label>
-                  <input type="text" id="setting-web-url" class="form-input" placeholder="http://localhost:8642" />
+            </div>
+
+            <div id="tab-execution" class="tab-content">
+              <div class="view-content">
+                <p class="hint">Click to edit execution profiles (SOPs).</p>
+                <div id="execution-list" class="execution-list">
+                  <!-- Injected by JS -->
+                  <div class="loading">Loading profiles...</div>
+                </div>
               </div>
-              <div class="form-actions">
-                  <button id="btn-save-settings" class="primary-btn">Save</button>
-              </div>
+            </div>
+
           </div>
       </div>
     </div>
