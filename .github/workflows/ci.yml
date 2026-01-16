@@ -3,8 +3,18 @@ name: CI
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "mkdocs.yml"
+      - "Kanban/docs/**"
   pull_request:
     branches: ["main"]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "mkdocs.yml"
+      - "Kanban/docs/**"
 
 jobs:
   build-and-test:
