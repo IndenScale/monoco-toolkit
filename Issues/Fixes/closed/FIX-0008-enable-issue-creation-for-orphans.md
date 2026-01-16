@@ -4,7 +4,7 @@ uid: afa8e7
 type: fix
 status: closed
 stage: done
-title: Enable Issue Creation for Orphans
+title: 启用孤儿问题的创建
 created_at: '2026-01-14T16:57:42'
 opened_at: '2026-01-14T16:57:42'
 updated_at: '2026-01-14T16:57:47'
@@ -16,20 +16,20 @@ related: []
 tags: []
 ---
 
-## FIX-0008: Enable Issue Creation for Orphans
+## FIX-0008: 启用孤儿问题的创建
 
-## Objective
+## 目标
 
-Ensure that issues can be created even when they are "orphans" (i.e., do not have a parent Epic).
+确保即使问题是"孤儿"（即没有父史诗）时也能创建问题。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] Orphan issues can be created successfully without errors.
+- [x] 孤儿问题可以成功创建而不出现错误。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Allow `parent` to be null during issue creation.
+- [x] 允许在问题创建期间`parent`为空。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review

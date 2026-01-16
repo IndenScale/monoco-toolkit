@@ -63,7 +63,7 @@ def main(
     NO_WORKSPACE_COMMANDS = ["init", "clone"] 
     
     # Initialize Config
-    from monoco.core.config import get_config
+    from monoco.core.config import get_config, find_monoco_root
     from pathlib import Path
 
     # If subcommand is not in whitelist, we enforce workspace
@@ -74,7 +74,16 @@ def main(
     try:
         # We pass root if provided. If require_workspace is True, get_config will throw if not found.
         # Note: If root is None, it defaults to CWD in get_config.
-        get_config(project_root=root, require_project=require_workspace)
+        
+        # Auto-discover root if not provided
+        config_root = root
+        if config_root is None:
+            discovered = find_monoco_root()
+            # Only use discovered root if it actually has .monoco
+            if (discovered / ".monoco").exists():
+                config_root = str(discovered)
+        
+        get_config(project_root=config_root, require_project=require_workspace)
     except FileNotFoundError as e:
         # Graceful exit for workspace errors
         from rich.console import Console

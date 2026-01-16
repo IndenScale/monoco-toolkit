@@ -1,37 +1,84 @@
-# Monoco VS Code Extension
+# Monoco for VS Code
 
-Monoco VS Code Cockpit Integration - 在 VS Code 中直接管理和查看 Monoco 项目的 Issue Board。
+[![Version](https://img.shields.io/visual-studio-marketplace/v/indenscale.monoco-vscode)](https://marketplace.visualstudio.com/items?itemName=indenscale.monoco-vscode)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/indenscale.monoco-vscode)](https://marketplace.visualstudio.com/items?itemName=indenscale.monoco-vscode)
+[![License](https://img.shields.io/github/license/IndenScale/Monoco)](https://github.com/IndenScale/Monoco)
 
-## 功能特性
+**Monoco** is the official VS Code extension for the Monoco Toolkit. It transforms your editor into a powerful "Agent-Native" development cockpit, seamlessly integrating project management, Kanban visualization, and AI agent orchestration directly into your workflow.
 
-- 📋 **Issue Board 视图**: 在侧边栏中查看项目的所有 Epic、Feature、Chore 和 Bug
-- 🔄 **实时同步**: 与 Monoco Daemon 实时同步 Issue 状态
-- 🎯 **快速导航**: 点击 Issue 直接打开对应的文件
-- 🏷️ **状态管理**: 可视化展示 Issue 的状态（Todo、Doing、Review、Done）
-- 🌐 **Web 集成**: 一键在浏览器中打开完整的 Kanban 界面
+> **Note**: This extension requires the [Monoco Toolkit](https://github.com/IndenScale/Monoco) to be installed on your system.
 
-## 使用方法
+---
 
-1. 安装扩展后，在活动栏中点击 Monoco 图标
-2. 在设置中配置 Monoco Daemon 的 API 地址（默认：`http://localhost:8642/api/v1`）
-3. 选择项目后即可查看和管理 Issues
+## ✨ Features
 
-## 配置项
+### 1. Visual Kanban Board
+Manage your project's heartbeat without leaving VS Code. The **Monoco Cockpit** provides a real-time Kanban view of your issues.
+- **Drag & Drop**: Move tasks between Todo, Doing, Review, and Done.
+- **Filtering**: Quickly filter by Epics, Features, Chores, or Bugs.
+- **One-Click Navigation**: Click any card to jump directly to the underlying Markdown file.
 
-- `monoco.apiBaseUrl`: Monoco Daemon API 基础地址
-- `monoco.webUrl`: Monoco Web UI 地址
-- `monoco.executablePath`: Monoco CLI 可执行文件路径（如果未在系统 PATH 中）
+### 2. Intelligent Markdown Editing (LSP)
+Monoco uses a dedicated **Language Server** to treat your Issue Markdown files as first-class citizens.
+- **Diagnostics**: Get real-time error reporting for invalid frontmatter, lifecycle violations (e.g., closing an issue without completing it), and schema errors.
+- **Auto-Completion**: Type `#` to trigger intelligent suggestions for Issue IDs, referencing other tasks instantly.
+- **Go to Definition**: `Ctrl+Click` (or `Cmd+Click`) on any Issue ID to navigate to its definition.
 
-## 要求
+### 3. Seamless Agent Orchestration
+Execute Monoco Agent skills and SOPs directly from the editor.
+- **Action Discovery**: Browses available actions defined in your project.
+- **Context-Aware**: Agents are aware of your current workspace context.
 
-- VS Code 1.90.0 或更高版本
-- Monoco Daemon 运行中
+### 4. Zero-Config Runtime
+- **Auto-Daemon**: The extension automatically detects and launches the `monoco serve` daemon if it's not running.
+- **Project Detection**: Automatically identifies Monoco projects based on `.monoco` configuration.
 
-## 许可证
+---
 
-MIT License
+## 🚀 Getting Started
 
-## 更多信息
+1.  **Install the Extension**: Search for "Monoco" in the VS Code Marketplace and install it.
+2.  **Open a Monoco Project**: Open a folder containing a `.monoco` directory.
+3.  **Launch the Cockpit**: Click the Monoco icon in the Activity Bar (sidebar).
+4.  **Start Managing**: You should see your issues populate the board.
 
-- [Monoco 项目主页](https://github.com/IndenScale/Monoco)
-- [问题反馈](https://github.com/IndenScale/Monoco/issues)
+## ⚙️ Configuration
+
+You can customize the extension via VS Code Settings (`Ctrl+,`):
+
+| Setting | Default | Description |
+| :--- | :--- | :--- |
+| `monoco.apiBaseUrl` | `http://127.0.0.1:8642/api/v1` | URL for the Monoco Daemon API. |
+| `monoco.webUrl` | `http://127.0.0.1:8642` | URL for the full Web UI. |
+| `monoco.executablePath` | `monoco` | Path to the `monoco` CLI executable. |
+
+## 📦 Requirements
+
+- **VS Code**: v1.90.0 or higher.
+- **Monoco Toolkit**: Python-based toolkit installed (`pip install monoco-toolkit` or equivalent).
+
+---
+
+## 🌏 中文说明 (Chinese)
+
+**Monoco VS Code 扩展** 为您的开发工作流带来原生的看板管理与 AI 智能体编排体验。
+
+### 主要功能
+- **可视化看板**: 在侧边栏直接管理 Epic、Feature 和 Bug，支持拖拽流转状态。
+- **智能编辑 (LSP)**: 提供 Markdown 文件的语法检查、生命周期校验和 ID 自动补全。
+- **一键跳转**: 点击 Issue ID 即可跳转到对应文件。
+- **零配置**: 自动启动后台守护进程，开箱即用。
+
+### 快速开始
+1. 安装本插件。
+2. 打开包含 `.monoco` 目录的项目文件夹。
+3. 点击侧边栏的 Monoco 图标即可开启看板。
+
+---
+
+## 🔗 Links
+
+- [GitHub Repository](https://github.com/IndenScale/Monoco)
+- [Report Issues](https://github.com/IndenScale/Monoco/issues)
+
+**Enjoying Monoco?** Please leave a review! ⭐⭐⭐⭐⭐
