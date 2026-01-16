@@ -2,7 +2,7 @@ import typer
 import yaml
 import json
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional, Any, Annotated
 from rich.console import Console
 from rich.syntax import Syntax
 from pydantic import ValidationError
@@ -15,6 +15,7 @@ from monoco.core.config import (
     save_raw_config,
     get_config_path
 )
+from monoco.core.output import AgentOutput, OutputManager
 
 app = typer.Typer(help="Manage Monoco configuration")
 console = Console()
@@ -38,12 +39,17 @@ def _parse_value(value: str) -> Any:
 @app.command()
 def show(
     output: str = typer.Option("yaml", "--output", "-o", help="Output format: yaml or json"),
+    json_output: AgentOutput = False,
 ):
     """Show the currently active (merged) configuration."""
     config = get_config()
     # Pydantic v1/v2 compat: use dict() or model_dump()
     data = config.dict()
     
+    if OutputManager.is_agent_mode():
+        OutputManager.print(data)
+        return
+
     if output == "json":
         print(json.dumps(data, indent=2))
     else:
@@ -52,7 +58,10 @@ def show(
         console.print(syntax)
 
 @app.command()
-def get(key: str = typer.Argument(..., help="Configuration key (e.g. project.name)")):
+def get(
+    key: str = typer.Argument(..., help="Configuration key (e.g. project.name)"),
+    json_output: AgentOutput = False,
+):
     """Get a specific configuration value."""
     config = get_config()
     data = config.dict()
@@ -64,22 +73,26 @@ def get(key: str = typer.Argument(..., help="Configuration key (e.g. project.nam
         if isinstance(current, dict) and part in current:
             current = current[part]
         else:
-            console.print(f"[red]Key '{key}' not found.[/red]")
+            OutputManager.error(f"Key '{key}' not found.")
             raise typer.Exit(code=1)
             
-    if isinstance(current, (dict, list)):
-        if isinstance(current, dict):
-            print(yaml.dump(current, default_flow_style=False))
-        else:
-            print(json.dumps(current))
+    if OutputManager.is_agent_mode():
+        OutputManager.print({"key": key, "value": current})
     else:
-        print(current)
+        if isinstance(current, (dict, list)):
+            if isinstance(current, dict):
+                print(yaml.dump(current, default_flow_style=False))
+            else:
+                print(json.dumps(current))
+        else:
+            print(current)
 
 @app.command(name="set")
 def set_val(
     key: str = typer.Argument(..., help="Config key (e.g. telemetry.enabled)"),
     value: str = typer.Argument(..., help="Value to set"),
     global_scope: bool = typer.Option(False, "--global", "-g", help="Update global configuration"),
+    json_output: AgentOutput = False,
 ):
     """Set a configuration value in specific scope (project by default)."""
     scope = ConfigScope.GLOBAL if global_scope else ConfigScope.PROJECT
@@ -98,7 +111,7 @@ def set_val(
         target = target[part]
         if not isinstance(target, dict):
             parent_key = ".".join(parts[:i+1])
-            console.print(f"[red]Cannot set '{key}': '{parent_key}' is not a dictionary ({type(target)}).[/red]")
+            OutputManager.error(f"Cannot set '{key}': '{parent_key}' is not a dictionary ({type(target)}).")
             raise typer.Exit(code=1)
             
     parsed_val = _parse_value(value)
@@ -113,18 +126,26 @@ def set_val(
         # But simpler is to check if MonocoConfig accepts this structure.
         MonocoConfig(**raw_data)
     except ValidationError as e:
-        console.print(f"[red]Validation failed for key '{key}':[/red]")
-        console.print(e)
+        OutputManager.error(f"Validation failed for key '{key}':\n{e}")
         raise typer.Exit(code=1)
     except Exception as e:
-        console.print(f"[red]Unexpected validation error: {e}[/red]")
+        OutputManager.error(f"Unexpected validation error: {e}")
         raise typer.Exit(code=1)
 
     # 4. Save
     save_raw_config(scope, raw_data)
     
     scope_display = "Global" if global_scope else "Project"
-    console.print(f"[green]✓ Set {key} = {parsed_val} in {scope_display} config.[/green]")
+    
+    if OutputManager.is_agent_mode():
+        OutputManager.print({
+            "status": "updated",
+            "scope": scope_display.lower(),
+            "key": key,
+            "value": parsed_val
+        })
+    else:
+        console.print(f"[green]✓ Set {key} = {parsed_val} in {scope_display} config.[/green]")
 
 if __name__ == "__main__":
     app()

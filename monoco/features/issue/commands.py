@@ -8,7 +8,7 @@ from rich.table import Table
 import typer
 
 from monoco.core.config import get_config
-from monoco.core.output import print_output
+from monoco.core.output import print_output, OutputManager, AgentOutput
 from .models import IssueType, IssueStatus, IssueSolution, IssueStage, IsolationType, IssueMetadata
 from . import core
 
@@ -30,6 +30,7 @@ def create(
     sprint: Optional[str] = typer.Option(None, "--sprint", help="Sprint ID"),
     tags: List[str] = typer.Option([], "--tag", help="Tags"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Create a new issue."""
     config = get_config()
@@ -39,7 +40,7 @@ def create(
     if parent:
         parent_path = core.find_issue_path(issues_root, parent)
         if not parent_path:
-            console.print(f"[red]✘ Error:[/red] Parent issue {parent} not found.")
+            OutputManager.error(f"Parent issue {parent} not found.")
             raise typer.Exit(code=1)
 
     try:
@@ -62,10 +63,14 @@ def create(
         except ValueError:
             rel_path = path
 
-        console.print(f"[green]✔[/green] Created [bold]{issue.id}[/bold] in status [cyan]{issue.status.value}[/cyan].")
-        console.print(f"[dim]Path: {rel_path}[/dim]")
+        OutputManager.print({
+            "issue": issue,
+            "path": str(rel_path),
+            "status": "created"
+        })
+
     except ValueError as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @app.command("update")
@@ -80,13 +85,14 @@ def update(
     related: Optional[List[str]] = typer.Option(None, "--related", "-r", help="Related Issue ID(s)"),
     tags: Optional[List[str]] = typer.Option(None, "--tag", help="Tags"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Update an existing issue."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     
     try:
-        core.update_issue(
+        issue = core.update_issue(
             issues_root, 
             issue_id, 
             status=status, 
@@ -99,25 +105,33 @@ def update(
             tags=tags
         )
         
-        console.print(f"[green]✔[/green] Updated [bold]{issue_id}[/bold].")
+        OutputManager.print({
+            "issue": issue,
+            "status": "updated"
+        })
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
+
 
 @app.command("open")
 def move_open(
     issue_id: str = typer.Argument(..., help="Issue ID to open"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Move issue to open status and set stage to Draft."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
         # Pull operation: Force stage to TODO
-        core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
-        console.print(f"[green]▶[/green] Issue [bold]{issue_id}[/bold] moved to open/draft.")
+        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
+        OutputManager.print({
+            "issue": issue,
+            "status": "opened"
+        })
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @app.command("start")
@@ -126,6 +140,7 @@ def start(
     branch: bool = typer.Option(False, "--branch", "-b", help="Start in a new git branch"),
     worktree: bool = typer.Option(False, "--worktree", "-w", help="Start in a new git worktree"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Start working on an issue (Stage -> Doing)."""
     config = get_config()
@@ -133,32 +148,38 @@ def start(
     project_root = _resolve_project_root(config)
 
     if branch and worktree:
-         console.print("[red]Error:[/red] Cannot specify both --branch and --worktree.")
+         OutputManager.error("Cannot specify both --branch and --worktree.")
          raise typer.Exit(code=1)
 
     try:
         # Implicitly ensure status is Open
-        core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DOING)
+        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DOING)
         
+        isolation_info = None
+
         if branch:
             try:
-                meta = core.start_issue_isolation(issues_root, issue_id, IsolationType.BRANCH, project_root)
-                console.print(f"[green]✔[/green] Switched to branch [bold]{meta.isolation.ref}[/bold]")
+                issue = core.start_issue_isolation(issues_root, issue_id, IsolationType.BRANCH, project_root)
+                isolation_info = {"type": "branch", "ref": issue.isolation.ref}
             except Exception as e:
-                console.print(f"[red]Error:[/red] Failed to create branch: {e}")
+                OutputManager.error(f"Failed to create branch: {e}")
                 raise typer.Exit(code=1)
                 
         if worktree:
             try:
-                meta = core.start_issue_isolation(issues_root, issue_id, IsolationType.WORKTREE, project_root)
-                console.print(f"[green]✔[/green] Created worktree at [bold]{meta.isolation.path}[/bold]")
+                issue = core.start_issue_isolation(issues_root, issue_id, IsolationType.WORKTREE, project_root)
+                isolation_info = {"type": "worktree", "path": issue.isolation.path, "ref": issue.isolation.ref}
             except Exception as e:
-                console.print(f"[red]Error:[/red] Failed to create worktree: {e}")
+                OutputManager.error(f"Failed to create worktree: {e}")
                 raise typer.Exit(code=1)
 
-        console.print(f"[green]🚀[/green] Issue [bold]{issue_id}[/bold] started.")
+        OutputManager.print({
+            "issue": issue,
+            "status": "started",
+            "isolation": isolation_info
+        })
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @app.command("submit")
@@ -167,6 +188,7 @@ def submit(
     prune: bool = typer.Option(False, "--prune", help="Delete branch/worktree after submit"),
     force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Submit issue for review (Stage -> Review) and generate delivery report."""
     config = get_config()
@@ -174,27 +196,33 @@ def submit(
     project_root = _resolve_project_root(config)
     try:
         # Implicitly ensure status is Open
-        core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.REVIEW)
-        console.print(f"[green]🚀[/green] Issue [bold]{issue_id}[/bold] submitted for review.")
+        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.REVIEW)
         
         # Delivery Report Generation
+        report_status = "skipped"
         try:
              core.generate_delivery_report(issues_root, issue_id, project_root)
-             console.print(f"[dim]✔ Delivery report appended to issue file.[/dim]")
+             report_status = "generated"
         except Exception as e:
-             console.print(f"[yellow]⚠ Failed to generate delivery report: {e}[/yellow]")
+             report_status = f"failed: {e}"
         
+        pruned_resources = []
         if prune:
             try:
-                deleted = core.prune_issue_resources(issues_root, issue_id, force, project_root)
-                if deleted:
-                    console.print(f"[dim]✔ Pruned resources: {', '.join(deleted)}[/dim]")
+                pruned_resources = core.prune_issue_resources(issues_root, issue_id, force, project_root)
             except Exception as e:
-                console.print(f"[red]Prune Error:[/red] {e}")
+                OutputManager.error(f"Prune Error: {e}")
                 raise typer.Exit(code=1)
              
+        OutputManager.print({
+            "issue": issue,
+            "status": "submitted",
+            "report": report_status,
+            "pruned": pruned_resources
+        })
+             
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @app.command("close")
@@ -204,6 +232,7 @@ def move_close(
     prune: bool = typer.Option(False, "--prune", help="Delete branch/worktree after close"),
     force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Close issue."""
     config = get_config()
@@ -213,85 +242,104 @@ def move_close(
     # Pre-flight check for interactive guidance (Requirement FEAT-0082 #6)
     if solution is None:
         valid_solutions = [e.value for e in IssueSolution]
-        console.print(f"[red]✘ Error:[/red] Closing an issue requires a solution.")
-        console.print(f"Please specify one of: [bold]{', '.join(valid_solutions)}[/bold]")
+        OutputManager.error(f"Closing an issue requires a solution. Options: {', '.join(valid_solutions)}")
         raise typer.Exit(code=1)
 
     try:
-        core.update_issue(issues_root, issue_id, status=IssueStatus.CLOSED, solution=solution)
-        console.print(f"[dim]✔[/dim] Issue [bold]{issue_id}[/bold] closed.")
+        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.CLOSED, solution=solution)
         
+        pruned_resources = []
         if prune:
             try:
-                deleted = core.prune_issue_resources(issues_root, issue_id, force, project_root)
-                if deleted:
-                    console.print(f"[dim]✔ Pruned resources: {', '.join(deleted)}[/dim]")
+                pruned_resources = core.prune_issue_resources(issues_root, issue_id, force, project_root)
             except Exception as e:
-                console.print(f"[red]Prune Error:[/red] {e}")
+                OutputManager.error(f"Prune Error: {e}")
                 raise typer.Exit(code=1)
 
+        OutputManager.print({
+            "issue": issue,
+            "status": "closed",
+            "pruned": pruned_resources
+        })
+
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @backlog_app.command("push")
 def push(
     issue_id: str = typer.Argument(..., help="Issue ID to push to backlog"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Push issue to backlog."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
-        core.update_issue(issues_root, issue_id, status=IssueStatus.BACKLOG)
-        console.print(f"[blue]💤[/blue] Issue [bold]{issue_id}[/bold] pushed to backlog.")
+        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.BACKLOG)
+        OutputManager.print({
+            "issue": issue,
+            "status": "pushed_to_backlog"
+        })
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @backlog_app.command("pull")
 def pull(
     issue_id: str = typer.Argument(..., help="Issue ID to pull from backlog"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Pull issue from backlog (Open & Draft)."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
-        core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
-        console.print(f"[green]🔥[/green] Issue [bold]{issue_id}[/bold] pulled from backlog.")
+        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
+        OutputManager.print({
+            "issue": issue,
+            "status": "pulled_from_backlog"
+        })
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @app.command("cancel")
 def cancel(
     issue_id: str = typer.Argument(..., help="Issue ID to cancel"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Cancel issue."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
-        core.update_issue(issues_root, issue_id, status=IssueStatus.CLOSED, solution=IssueSolution.CANCELLED)
-        console.print(f"[red]✘[/red] Issue [bold]{issue_id}[/bold] cancelled.")
+        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.CLOSED, solution=IssueSolution.CANCELLED)
+        OutputManager.print({
+            "issue": issue,
+            "status": "cancelled"
+        })
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @app.command("delete")
 def delete(
     issue_id: str = typer.Argument(..., help="Issue ID to delete"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Physically remove an issue file."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
         core.delete_issue_file(issues_root, issue_id)
-        console.print(f"[red]✔[/red] Issue [bold]{issue_id}[/bold] physically deleted.")
+        OutputManager.print({
+            "id": issue_id,
+            "status": "deleted"
+        })
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @app.command("move")
@@ -300,6 +348,7 @@ def move(
     target: str = typer.Option(..., "--to", help="Target project directory (e.g., ../OtherProject)"),
     renumber: bool = typer.Option(False, "--renumber", help="Automatically renumber on ID conflict"),
     root: Optional[str] = typer.Option(None, "--root", help="Override source issues root directory"),
+    json: AgentOutput = False,
 ):
     """Move an issue to another project."""
     config = get_config()
@@ -314,7 +363,7 @@ def move(
     elif target_path.name == "Issues" and target_path.exists():
         target_issues_root = target_path
     else:
-        console.print(f"[red]✘ Error:[/red] Target path must be a project root with 'Issues' directory or an 'Issues' directory itself.")
+        OutputManager.error("Target path must be a project root with 'Issues' directory or an 'Issues' directory itself.")
         raise typer.Exit(code=1)
     
     try:
@@ -330,32 +379,37 @@ def move(
         except ValueError:
             rel_path = new_path
         
-        if updated_meta.id != issue_id:
-            console.print(f"[green]✔[/green] Moved and renumbered: [bold]{issue_id}[/bold] → [bold]{updated_meta.id}[/bold]")
-        else:
-            console.print(f"[green]✔[/green] Moved [bold]{issue_id}[/bold] to target project.")
-        
-        console.print(f"[dim]New path: {rel_path}[/dim]")
+        OutputManager.print({
+            "issue": updated_meta,
+            "new_path": str(rel_path),
+            "status": "moved",
+            "renumbered": updated_meta.id != issue_id
+        })
         
     except FileNotFoundError as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
     except ValueError as e:
-        console.print(f"[red]✘ Conflict:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
     except Exception as e:
-        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
 @app.command("board")
 def board(
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Visualize issues in a Kanban board."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     
     board_data = core.get_board_data(issues_root)
+
+    if OutputManager.is_agent_mode():
+        OutputManager.print(board_data)
+        return
     
     from rich.columns import Columns
     from rich.console import RenderableType
@@ -408,6 +462,7 @@ def list_cmd(
     stage: Optional[IssueStage] = typer.Option(None, "--stage", help="Filter by stage"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
     workspace: bool = typer.Option(False, "--workspace", "-w", help="Include issues from workspace members"),
+    json: AgentOutput = False,
 ):
     """List issues in a table format with filtering."""
     config = get_config()
@@ -415,7 +470,7 @@ def list_cmd(
     
     # Validation
     if status and status.lower() not in ["open", "closed", "backlog", "all"]:
-         console.print(f"[red]Invalid status:[/red] {status}. Use open, closed, backlog or all.")
+         OutputManager.error(f"Invalid status: {status}. Use open, closed, backlog or all.")
          raise typer.Exit(code=1)
          
     target_status = status.lower() if status else "open"
@@ -440,11 +495,12 @@ def list_cmd(
         filtered.append(i)
         
     # Sort: Updated Descending
-        filtered.append(i)
-        
-    # Sort: Updated Descending
     filtered.sort(key=lambda x: x.updated_at, reverse=True)
     
+    if OutputManager.is_agent_mode():
+        OutputManager.print(filtered)
+        return
+
     # Render
     _render_issues_table(filtered, title=f"Issues ({len(filtered)})")
 
@@ -492,6 +548,7 @@ def _render_issues_table(issues: List[IssueMetadata], title: str = "Issues"):
 def query_cmd(
     query: str = typer.Argument(..., help="Search query (e.g. '+bug -ui' or 'login')"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """
     Search issues using advanced syntax.
@@ -512,6 +569,10 @@ def query_cmd(
     # For now, updated at descending is useful.
     results.sort(key=lambda x: x.updated_at, reverse=True)
     
+    if OutputManager.is_agent_mode():
+        OutputManager.print(results)
+        return
+
     _render_issues_table(results, title=f"Search Results for '{query}' ({len(results)})")
 
 @app.command("scope")
@@ -521,6 +582,7 @@ def scope(
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursively scan subdirectories"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
     workspace: bool = typer.Option(False, "--workspace", "-w", help="Include issues from workspace members"),
+    json: AgentOutput = False,
 ):
     """Show progress tree."""
     config = get_config()
@@ -537,6 +599,10 @@ def scope(
         filtered_issues.append(meta)
             
     issues = filtered_issues
+
+    if OutputManager.is_agent_mode():
+        OutputManager.print(issues)
+        return
 
     tree = Tree(f"[bold blue]Monoco Issue Scope[/bold blue]")
     epics = sorted([i for i in issues if i.type == IssueType.EPIC], key=lambda x: x.id)
@@ -563,11 +629,16 @@ def lint(
     format: str = typer.Option("table", "--format", "-f", help="Output format (table, json)"),
     file: Optional[str] = typer.Option(None, "--file", help="Validate a single file instead of scanning the entire workspace"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
 ):
     """Verify the integrity of the Issues directory (declarative check)."""
     from . import linter
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
+    
+    if OutputManager.is_agent_mode():
+        format = "json"
+
     linter.run_lint(issues_root, recursive=recursive, fix=fix, format=format, file_path=file)
 
 def _resolve_issues_root(config, cli_root: Optional[str]) -> Path:
