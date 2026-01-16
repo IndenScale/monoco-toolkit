@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Monoco VS Code Cockpit Integration",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "publisher": "indenscale",
   "repository": {
     "type": "git",
@@ -79,6 +79,11 @@
         "command": "monoco.openWebUI",
         "title": "Open Web UI",
         "icon": "$(browser)"
+      },
+      {
+        "command": "monoco.checkDependencies",
+        "title": "Check Dependencies",
+        "icon": "$(info)"
       }
     ],
     "menus": {
