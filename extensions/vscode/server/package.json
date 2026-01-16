@@ -1,6 +1,6 @@
 {
   "name": "monoco-language-server",
-  "version": "1.0.0",
+  "version": "0.2.5",
   "description": "Language Server for Monoco",
   "engines": {
     "node": "*"
