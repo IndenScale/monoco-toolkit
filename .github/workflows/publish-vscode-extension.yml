@@ -2,12 +2,8 @@ name: Publish Toolkit VS Code Extension
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
-    paths:
-      - "extensions/vscode/**"
   pull_request:
     paths:
       - "extensions/vscode/**"
