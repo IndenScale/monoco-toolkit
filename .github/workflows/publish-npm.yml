@@ -34,7 +34,8 @@ jobs:
           cp -r Kanban/apps/webui/out/* Kanban/packages/monoco-kanban/dist/
           # Sync version from tag
           VERSION=${GITHUB_REF#refs/tags/v}
-          sed -i "s/\"version\": \"0.1.0\"/\"version\": \"$VERSION\"/g" Kanban/packages/monoco-kanban/package.json
+          cd Kanban/packages/monoco-kanban
+          npm version $VERSION --allow-same-version --no-git-tag-version
 
       - name: Publish to NPM
         env:
