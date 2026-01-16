@@ -2,6 +2,21 @@
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
 
+### Design Philosophy
+### 设计哲学
+
+Monoco CLI is designed as an **Agent-Native Interface**.
+Monoco CLI 被设计为 **Agent 原生接口**。
+
+- **Strictly Non-Interactive**: Commands MUST NOT prompt for user input. If arguments are missing, the command MUST fail immediately.
+- **严格非交互**: 命令绝不允许提示用户输入。如果参数缺失，命令必须立即失败。这确保了 Agent 行为的确定性。
+
+- **Text as Interface**: We prefer structured text (Markdown/YAML) over complex UI states.
+- **文本即接口**: 我们倾向于结构化文本 (Markdown/YAML) 而非复杂的 UI 状态。
+
+- **Explicit Context**: Agents must provide full context (e.g., explicit paths) to avoid ambiguity.
+- **显式上下文**: Agent 必须提供完整上下文（如显式路径）以避免歧义。
+
 ### Issue Management
 
 ### Issue 管理

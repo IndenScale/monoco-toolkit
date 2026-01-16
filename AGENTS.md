@@ -2,6 +2,14 @@
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
 
+### Design Philosophy
+
+Monoco CLI is designed as an **Agent-Native Interface**.
+
+- **Strictly Non-Interactive**: Commands MUST NOT prompt for user input. If arguments are missing, the command MUST fail immediately. This ensures deterministic behavior for Agents.
+- **Text as Interface**: We prefer structured text (Markdown/YAML) over complex UI states.
+- **Explicit Context**: Agents must provide full context (e.g., explicit paths) to avoid ambiguity.
+
 ### Issue Management
 
 System for managing tasks using `monoco issue`.
