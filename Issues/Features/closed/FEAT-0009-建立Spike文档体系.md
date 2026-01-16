@@ -2,6 +2,7 @@
 id: FEAT-0009
 type: feature
 status: closed
+stage: Done
 title: 建立 Spike 系统使用文档体系 (Establish Spike Docs)
 created_at: '2026-01-09'
 dependencies: []
@@ -12,7 +13,7 @@ parent: EPIC-0003
 uid: e6fd0b
 ---
 
-## FEAT-0009: 建立 Spike 系统使用文档体系
+## FEAT-0009: 建立 Spike 系统使用文档体系 (Establish Spike Docs)
 
 ## 目标 (Objective)
 
@@ -39,3 +40,7 @@ uid: e6fd0b
 - [x] **翻译英文**: 撰写对应的英文手册 `Toolkit/docs/en/spike/manual.md`。
 - [x] **更新索引**: 在 `README.md` 和 `README_ZH.md` 中添加指向该文档的链接。
 - [x] **验证**: 使用 `monoco i18n scan` 验证。
+
+## Review Comments
+
+- [x] Self-Review

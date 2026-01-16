@@ -20,6 +20,7 @@ Monoco VS Code Cockpit Integration - 在 VS Code 中直接管理和查看 Monoco
 
 - `monoco.apiBaseUrl`: Monoco Daemon API 基础地址
 - `monoco.webUrl`: Monoco Web UI 地址
+- `monoco.executablePath`: Monoco CLI 可执行文件路径（如果未在系统 PATH 中）
 
 ## 要求
 

@@ -36,6 +36,13 @@ def test_guard_conditions(issues_root):
     # 2. Test Happy Path (Doing -> Review -> Closed)
     # ------------------------------------------------
     print("\n[Test] Transitioning DOING -> REVIEW -> CLOSED...")
+    
+    # Complete tasks to satisfy validator
+    content = f_path.read_text()
+    new_content = content.replace("- [ ]", "- [x]")
+    new_content += "\n\n## Review Comments\n\n- [x] Self-Review\n"
+    f_path.write_text(new_content)
+    
     # Update to Review
     core.update_issue(issues_root, fid, stage=IssueStage.REVIEW)
     meta = core.parse_issue(f_path)
@@ -59,6 +66,13 @@ def test_guard_conditions(issues_root):
     # Back to Draft
     core.update_issue(issues_root, fid2, stage=IssueStage.DRAFT)
     
+    # FIX: Prepare content for Close (Done)
+    f_path2 = core.find_issue_path(issues_root, fid2)
+    content2 = f_path2.read_text()
+    new_content2 = content2.replace("- [ ]", "- [x]")
+    new_content2 += "\n\n## Review Comments\n\n- [x] Cancelled\n"
+    f_path2.write_text(new_content2)
+
     # Close
     core.update_issue(issues_root, fid2, status=IssueStatus.CLOSED, solution=IssueSolution.WONTFIX)
     

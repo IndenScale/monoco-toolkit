@@ -20,6 +20,8 @@ stage: draft
 uid: 287d08
 ---
 
+## EPIC-0011: VS Code Cockpit Integration (VS Code 驾驶舱集成)
+
 # EPIC-0011: VS Code Cockpit Integration (VS Code 驾驶舱集成)
 
 ## 执行摘要 (Executive Summary)
@@ -41,28 +43,14 @@ uid: 287d08
 - **KR3**: 提供一键“由代码创建 Issue”和“一键定位 Issue 关联代码”的功能。
 - **KR4**: 在右侧 Agent Bar 实现与 EPIC-0010 PTY 对接的实时执行流展示。
 
-## 范围 (Scope)
+## Acceptance Criteria
 
-### VS Code Extension (桥接层)
+- [ ] KR1: VS Code Sidebar/Webview integration.
+- [ ] KR2: Message Bus for communication.
 
-- **Activity Bar & Sidebar**: 挂载任务导航。
-- **Status Bar**: 显示 Agent 状态与任务进度。
-- **Command Palette Integration**: 快速调用 `monoco issue` 等命令。
-- **Webview Adapter**: 实现 `acquireVsCodeApi` 到 Monoco Protocol 的适配。
+## Technical Tasks
 
-### Toolkit/Kanban (展现层)
+- [ ] Setup VS Code extension project.
+- [ ] Implement Webview bridge.
 
-- **Universal Adpater**: 适配 Web 环境与 VS Code 环境的通信差异。
-- **UX Tuning**: 针对小尺寸侧边栏设计的高密压缩视图。
-
-### Experience (体验层)
-
-- **Code Link**: Issue 详情页中的文件路径可点击，直接在 VS Code 中打开对应位置。
-- **Agent Cockpit**: 类似 Cursor 的侧边交互栏，用于触发和监控 Agent 行为。
-
-## 路线图 (Roadmap)
-
-1. **原型验证 (P0)**: 验证 Webview 通信与样式适配。
-2. **核心链接 (P1)**: 实现看板与 IDE 代码定位的联动。
-3. **Agent 协同 (P2)**: 实现右侧 Agent Bar 与 PTY 的集成。
-4. **生态扩展 (P3)**: 发布至 VS Code Marketplace。
+## Review Comments

@@ -115,3 +115,7 @@ graph TD
 **变更说明：**
 
 - **配置管理集成 (De-scoped)**：考虑到安全模型与 KISS 原则，决定不为 Agent 提供配置修改接口。配置管理相关功能收敛至 `EPIC-0013` 并在 CLI 侧完成实现。
+
+## Review Comments
+
+- [x] Self-Review

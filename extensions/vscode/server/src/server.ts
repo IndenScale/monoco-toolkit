@@ -38,10 +38,26 @@ const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 const indexer = new WorkspaceIndexer();
 let currentWorkspaceRoot: string | null = null;
+let initialScanResolver: () => void;
+const initialScanPromise = new Promise<void>((resolve) => {
+  initialScanResolver = resolve;
+});
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
+
+interface MonocoSettings {
+  executablePath: string;
+  webUrl: string;
+}
+
+const defaultSettings: MonocoSettings = {
+  executablePath: "monoco",
+  webUrl: "http://127.0.0.1:8642",
+};
+
+let globalSettings: MonocoSettings = defaultSettings;
 
 // Load Schema
 // We expect the schema to be in ../schema/issue_schema.json relative to 'out/server.js'
@@ -117,103 +133,208 @@ connection.onInitialized(() => {
   // Initial scan
   connection.workspace
     .getWorkspaceFolders()
-    .then((folders: WorkspaceFolder[] | null) => {
+    .then(async (folders: WorkspaceFolder[] | null) => {
+      connection.console.log(`[Monoco LSP] Workspace folders: ${JSON.stringify(folders)}`);
       if (folders && folders.length > 0) {
         try {
           currentWorkspaceRoot = fileURLToPath(folders[0].uri);
+          connection.console.log(`[Monoco LSP] Scanning workspace root: ${currentWorkspaceRoot}`);
           indexer.setWorkspaceRoot(currentWorkspaceRoot);
-          indexer.scan();
+          
+          const executable = await resolveMonocoExecutable(currentWorkspaceRoot);
+          await indexer.scan(executable);
+          
           connection.console.log(
             `[Monoco LSP] Indexed ${indexer.getAll().length} issues.`
           );
         } catch (e) {
           connection.console.error(`[Monoco LSP] Failed to index: ${e}`);
         }
+      } else {
+        connection.console.warn("[Monoco LSP] No workspace folders found.");
       }
+      initialScanResolver();
     });
+});
+
+connection.onDidChangeConfiguration((change) => {
+  if (hasConfigurationCapability) {
+    // Reset all cached document settings
+  } else {
+    globalSettings = <MonocoSettings>(
+      (change.settings.monoco || defaultSettings)
+    );
+  }
 });
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
-documents.onDidChangeContent(
-  (change: TextDocumentChangeEvent<TextDocument>) => {
-    validateTextDocument(change.document);
-  }
-);
+// documents.onDidChangeContent((change) => {
+//   validateTextDocument(change.document);
+// });
+
+// Only validate on open and save, because monoco CLI reads from disk
+documents.onDidOpen((change) => {
+  validateTextDocument(change.document);
+});
+
+documents.onDidSave((change) => {
+  validateTextDocument(change.document);
+});
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-  const text = textDocument.getText();
   const diagnostics: Diagnostic[] = [];
 
-  // 1. Identify Frontmatter
-  // Regex to match start of file
+  // Check if this is an issue file (has frontmatter)
+  const text = textDocument.getText();
   const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
   const match = frontmatterRegex.exec(text);
 
   if (!match) {
-    // No frontmatter, maybe not an issue file or just empty
-    // We could warn if it looks like an issue ID filename but has no FM.
+    // Not an issue file, skip validation
     return;
   }
 
-  const frontmatterContent = match[1];
-  const frontmatterEndIndex = match[0].length;
-  // Use yaml parser to get object
-  let data: any;
+  // Call monoco CLI for validation (SSOT)
   try {
-    data = yaml.load(frontmatterContent);
-  } catch (e: any) {
-    // YAML Syntax error
-    const diagnostic: Diagnostic = {
-      severity: DiagnosticSeverity.Error,
-      range: {
-        start: textDocument.positionAt(0),
-        end: textDocument.positionAt(frontmatterEndIndex),
-      },
-      message: `YAML Error: ${e.message}`,
-      source: "Monoco LSP",
-    };
-    diagnostics.push(diagnostic);
-    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-    return;
-  }
+    const filePath = fileURLToPath(textDocument.uri);
+    const cliDiagnostics = await callMonocoCLI(filePath);
+    diagnostics.push(...cliDiagnostics);
+  } catch (error: any) {
+    // If CLI is not available or fails, show a warning
+    connection.console.warn(
+      `[Monoco LSP] CLI validation failed: ${error.message}`
+    );
 
-  if (!data || typeof data !== "object") {
-    return;
-  }
-
-  // 2. Validate against logic
-  // "status: closed -> stage: done"
-  if (data.status === "closed" && data.stage !== "done") {
-    const stageLine = findLineOfKey(frontmatterContent, "stage");
-    const range = getRangeForLine(textDocument, stageLine, 3); // Approx logic to map back to file pos
-
-    const diagnostic: Diagnostic = {
-      severity: DiagnosticSeverity.Error,
-      range: range,
-      message: `Invalid state: If status is 'closed', stage must be 'done'. Found: '${data.stage}'`,
-      source: "Monoco Logic",
-      code: "logic-lifecycle",
-    };
-    diagnostics.push(diagnostic);
-  }
-
-  // "status: backlog -> stage: freezed"
-  if (data.status === "backlog" && data.stage !== "freezed") {
-    const stageLine = findLineOfKey(frontmatterContent, "stage");
-    const range = getRangeForLine(textDocument, stageLine, 3);
-
-    const diagnostic: Diagnostic = {
-      severity: DiagnosticSeverity.Error,
-      range: range,
-      message: `Invalid state: If status is 'backlog', stage must be 'freezed'.`,
-      source: "Monoco Logic",
-      code: "logic-lifecycle",
-    };
-    diagnostics.push(diagnostic);
+    // Fallback: Basic YAML syntax check only
+    try {
+      yaml.load(match[1]);
+    } catch (e: any) {
+      const diagnostic: Diagnostic = {
+        severity: DiagnosticSeverity.Error,
+        range: {
+          start: textDocument.positionAt(0),
+          end: textDocument.positionAt(match[0].length),
+        },
+        message: `YAML Error: ${e.message}`,
+        source: "Monoco LSP (Fallback)",
+      };
+      diagnostics.push(diagnostic);
+    }
   }
 
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+}
+
+function findProjectRoot(startPath: string): string | null {
+  let current = startPath;
+  if (fs.existsSync(startPath) && fs.statSync(startPath).isFile()) {
+    current = path.dirname(startPath);
+  }
+
+  while (true) {
+    if (fs.existsSync(path.join(current, ".monoco"))) {
+      return current;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) {
+      return null;
+    }
+    current = parent;
+  }
+}
+
+/**
+ * Call monoco CLI to get diagnostics for a file.
+ * Returns LSP-compatible diagnostics.
+ */
+async function callMonocoCLI(filePath: string): Promise<Diagnostic[]> {
+  const { spawn } = await import("child_process");
+
+  // Determine workspace root
+  // Priority: 1. Find .monoco upwards from file. 2. Current workspace root. 3. File directory.
+  const projectRoot = findProjectRoot(filePath);
+  const workspaceRoot = projectRoot || currentWorkspaceRoot || path.dirname(filePath);
+  
+  connection.console.log(`[Monoco LSP] Validating ${filePath} in root ${workspaceRoot}`);
+
+  // Determine executable path
+  const executable = await resolveMonocoExecutable(workspaceRoot);
+
+  return new Promise((resolve, reject) => {
+    // Spawn monoco CLI process
+    // Explicitly pass --root to enforce strict workspace check
+    const args = ["--root", workspaceRoot, "issue", "lint", "--file", filePath, "--format", "json"];
+    connection.console.log(`[Monoco LSP] Running: ${executable} ${args.join(" ")}`);
+    
+    const proc = spawn(
+      executable,
+      args,
+      {
+        cwd: workspaceRoot,
+        env: process.env,
+      }
+    );
+
+    let stdout = "";
+    let stderr = "";
+
+    proc.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
+
+    proc.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    proc.on("close", (code) => {
+      // monoco lint exits with code 1 if there are errors, but still outputs valid JSON
+      // So we accept both 0 and 1 as valid exit codes
+      if (code !== 0 && code !== 1) {
+        connection.console.error(`[Monoco LSP] CLI failed with code ${code}. Stderr: ${stderr}. Stdout: ${stdout}`);
+        reject(new Error(`monoco CLI exited with code ${code}: ${stderr}`));
+        return;
+      }
+
+      try {
+        // Parse JSON output
+        const cliDiagnostics = JSON.parse(stdout);
+
+        // Convert CLI diagnostics to LSP diagnostics
+        const lspDiagnostics: Diagnostic[] = cliDiagnostics.map((d: any) => ({
+          range: {
+            start: {
+              line: d.range?.start?.line || 0,
+              character: d.range?.start?.character || 0,
+            },
+            end: {
+              line: d.range?.end?.line || 0,
+              character: d.range?.end?.character || 100,
+            },
+          },
+          severity: d.severity || DiagnosticSeverity.Warning,
+          code: d.code || undefined,
+          source: d.source || "Monoco CLI",
+          message: d.message || "Unknown error",
+        }));
+        
+        connection.console.log(`[Monoco LSP] Found ${lspDiagnostics.length} diagnostics.`);
+        resolve(lspDiagnostics);
+      } catch (e: any) {
+        connection.console.error(`[Monoco LSP] JSON Parse Error: ${e.message}. Output was: ${stdout}`);
+        reject(
+          new Error(
+            `Failed to parse CLI output: ${e.message}\nOutput: ${stdout}`
+          )
+        );
+      }
+    });
+
+    proc.on("error", (err) => {
+      connection.console.error(`[Monoco LSP] Spawn Error: ${err.message}`);
+      reject(new Error(`Failed to spawn monoco CLI: ${err.message}`));
+    });
+  });
 }
 
 function findLineOfKey(yamlContent: string, key: string): number {
@@ -315,8 +436,14 @@ connection.onDefinition((params: DefinitionParams) => {
 });
 
 // Monoco Custom Implementations for Cockpit
-connection.onRequest("monoco/getAllIssues", () => {
+connection.onRequest("monoco/getAllIssues", async () => {
+  await initialScanPromise;
   return indexer.getAll();
+});
+
+connection.onRequest("monoco/getMetadata", async () => {
+  await initialScanPromise;
+  return indexer.getMetadata();
 });
 
 connection.onRequest(
@@ -325,64 +452,44 @@ connection.onRequest(
     const issue = indexer.get(params.id);
     if (!issue) return { success: false, error: "Issue not found" };
 
-    // Try to get document from manager (open file)
-    let document = documents.get(issue.uri);
-    let text = "";
+    const args = ["issue", "update", params.id];
 
-    if (document) {
-      text = document.getText();
-    } else {
-      // Read from disk
-      try {
-        text = fs.readFileSync(issue.filePath, "utf-8");
-        // Create a temporary document instance to help with position calculation
-        document = TextDocument.create(issue.uri, "markdown", 0, text);
-      } catch (e) {
-        return { success: false, error: "Failed to read file" };
-      }
-    }
-
-    if (!document) {
-      return { success: false, error: "Could not load document" };
-    }
-
-    const edits: TextEdit[] = [];
-
-    // Simple Regex replacers for now to preserve comments
     for (const [key, value] of Object.entries(params.changes)) {
-      // Regex to match "key: value" within the frontmatter
-      // We assume frontmatter is at the top.
-      const regex = new RegExp(`^${key}:\\s*(.*)$`, "m");
-      const match = regex.exec(text);
-      if (match) {
-        const startOffset = match.index; // 0-based index of match in input string
-        const endOffset = startOffset + match[0].length;
+      if (value === null || value === undefined) continue;
 
-        const range = Range.create(
-          document.positionAt(startOffset),
-          document.positionAt(endOffset)
-        );
-
-        edits.push(TextEdit.replace(range, `${key}: ${value}`));
+      switch (key) {
+        case "title":
+        case "status":
+        case "stage":
+        case "sprint":
+        case "parent":
+          args.push(`--${key}`, String(value));
+          break;
+        case "dependencies":
+          if (Array.isArray(value)) {
+            value.forEach((v: string) => args.push("--dependency", v));
+          }
+          break;
+        case "related":
+          if (Array.isArray(value)) {
+            value.forEach((v: string) => args.push("--related", v));
+          }
+          break;
+        case "tags":
+          if (Array.isArray(value)) {
+            value.forEach((v: string) => args.push("--tag", v));
+          }
+          break;
       }
     }
 
-    if (edits.length > 0) {
-      const workspaceEdit: WorkspaceEdit = {
-        changes: {
-          [issue.uri]: edits,
-        },
-      };
-      await connection.workspace.applyEdit(workspaceEdit);
-
-      // Update index immediately (optimistic)
-      // Actually, onDidChangeWatchedFiles will trigger re-index, but we can do it here too?
-      // No, let the watcher handle it to be consistent.
-
+    try {
+      const cwd = currentWorkspaceRoot || path.dirname(issue.filePath);
+      await execMonocoCommand(args, cwd);
       return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
     }
-
-    return { success: false, error: "No changes logic applied" };
   }
 );
 
@@ -446,9 +553,87 @@ function scanDir(
   return profiles;
 }
 
+async function execMonocoCommand(args: string[], root: string): Promise<string> {
+  const { spawn } = await import("child_process");
+  
+  // Determine executable path
+  const executable = await resolveMonocoExecutable(root);
+
+  return new Promise((resolve, reject) => {
+    // Explicitly pass --root to enforce strict workspace check
+    const finalArgs = ["--root", root, ...args];
+    
+    const proc = spawn(executable, finalArgs, {
+      cwd: root,
+      env: process.env,
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    proc.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
+
+    proc.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    proc.on("close", (code) => {
+      if (code === 0) {
+        resolve(stdout);
+      } else {
+        reject(new Error(`Command failed with code ${code}: ${stderr}`));
+      }
+    });
+
+    proc.on("error", (err) => {
+      reject(new Error(`Failed to spawn command: ${err.message}`));
+    });
+  });
+}
+
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
 
 // Listen on the connection
 connection.listen();
+
+async function resolveMonocoExecutable(root: string): Promise<string> {
+  let executable = globalSettings.executablePath;
+
+  if (hasConfigurationCapability) {
+    try {
+      const config = await connection.workspace.getConfiguration("monoco");
+      if (config && config.executablePath) {
+        executable = config.executablePath;
+      }
+    } catch (e) {
+      connection.console.warn(`[Monoco LSP] Failed to get configuration: ${e}`);
+    }
+  }
+
+  // If executable is default "monoco", try to find it in common uv locations
+  if (executable === "monoco") {
+    const home = os.homedir();
+    const uvPath = path.join(home, ".local", "bin", "monoco");
+    if (fs.existsSync(uvPath)) {
+      executable = uvPath;
+    }
+  }
+
+  const devBuildPath = path.join(
+    root,
+    "Toolkit",
+    "dist",
+    "monoco"
+  );
+  
+  // In a real extension, we would find the extension install path.
+  // For local dev, we check the dist folder.
+  if (fs.existsSync(devBuildPath)) {
+      executable = devBuildPath;
+  }
+  return executable;
+}

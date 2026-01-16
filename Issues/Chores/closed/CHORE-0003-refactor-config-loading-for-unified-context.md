@@ -15,7 +15,7 @@ related: []
 tags: []
 ---
 
-## CHORE-0003: Consolidate Configuration to `.monoco/` directory
+## CHORE-0003: Refactor Config Loading for Unified Context
 
 ## Context
 
@@ -50,3 +50,7 @@ Refactored configuration loading to standardize on `.monoco/config.yaml`. Remove
 Migrated existing `monoco.yaml` files in the repository to their respective `.monoco/` directories.
 Added a legacy warning in `monoco.core.config.py` for users still using `monoco.yaml`.
 Updated `core.workspace.is_project_root` to identify projects solely by the existence of a `.monoco/` directory.
+
+## Review Comments
+
+- [x] Self-Review

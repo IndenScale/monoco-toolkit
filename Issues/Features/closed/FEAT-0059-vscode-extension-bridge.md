@@ -8,10 +8,7 @@ title: VS Code Extension Scaffold & Webview Bridge
 created_at: "2026-01-14T13:40:00"
 opened_at: "2026-01-14T13:40:00"
 updated_at: "2026-01-15T22:50:00"
-solution: >
-  Created the VS Code extension project structure.
-  Implemented the WebviewProvider to host the Kanban app.
-  Established the `VsCodeMessenger` bridge for bidirectional communication between the Webview and the Extension Host.
+solution: implemented
 parent: EPIC-0011
 dependencies:
   - FEAT-0044
@@ -44,3 +41,7 @@ tags:
 - [x] 创建 `extensions/vscode` 目录。
 - [x] 实现 VS Code 端的 `WebviewProvider`。
 - [x] 制定 Webview 指令集定义 (e.g., `OPEN_FILE`, `GET_CONFIG`)。
+
+## Review Comments
+
+- [x] Self-Review

@@ -50,3 +50,7 @@ tags: []
 - [x] **CLI**: 实现 `show` 命令（支持 `--format`）。
 - [x] **CLI**: 实现 `get` 命令（支持点号路径访问 `project.name`）。
 - [x] **CLI**: 实现 `set` 命令（集成 Pydantic 校验和 YAML 回写）。
+
+## Review Comments
+
+- [x] Self-Review

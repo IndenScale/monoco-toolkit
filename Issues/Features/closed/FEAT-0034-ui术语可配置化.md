@@ -5,7 +5,7 @@ status: closed
 stage: done
 title: UI术语可配置化
 created_at: '2026-01-12T17:27:04.755703'
-opened_at: '2026-01-12T17:27:04.755690'
+opened_at: '2026-01-12T17:27:04.755703'
 updated_at: '2026-01-13T08:35:36.579401'
 closed_at: '2026-01-13T08:35:36.579422'
 parent: EPIC-0004
@@ -18,7 +18,7 @@ tags: []
 uid: fd8604
 ---
 
-## FEAT-0034: UI 术语可配置化
+## FEAT-0034: UI术语可配置化
 
 ## Objective
 
@@ -39,3 +39,7 @@ uid: fd8604
 - [x] **Frontend (Context)**: 创建 `TermContext` (React Context)，全局分发术语定义。
 - [x] **Frontend (UI)**: 替换所有硬编码的文本（如 `status === 'open'` 显示为 `dictionary.status_open`）。
 - [x] **Docs**: 编写关于如何定制领域术语的用户文档示例。
+
+## Review Comments
+
+- [x] Self-Review

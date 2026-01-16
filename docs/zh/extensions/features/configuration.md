@@ -1,0 +1,17 @@
+# 配置与依赖
+
+## 5.1 扩展配置
+
+-   **`monoco.webUrl`**
+    -   **类型**: String
+    -   **默认值**: `http://127.0.0.1:8642`
+    -   **作用**: 定义外部 Web UI 的访问地址。
+
+## 5.2 外部依赖
+
+-   **Monoco CLI**
+    -   **用途**: 核心业务逻辑执行（Lint, Update, Index）。
+    -   **要求**: 必须在系统 PATH 中可访问。
+
+-   **Node.js Runtime**
+    -   **用途**: 运行 Language Server。
