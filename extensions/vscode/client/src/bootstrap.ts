@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
+import * as os from "os";
+import * as path from "path";
 
 // Export system wrapper for testing
 export const sys = {
@@ -9,8 +11,20 @@ export const sys = {
 export async function checkAndBootstrap() {
   // 1. Check if monoco is already available
   // Use --help because older versions of monoco (typer default) don't support --version
-  if (await isCommandAvailable("monoco", "--help")) {
+  const config = vscode.workspace.getConfiguration("monoco");
+  const executable = config.get<string>("executablePath") || "monoco";
+  
+  if (await isCommandAvailable(executable, "--help")) {
     return;
+  }
+
+  // If default "monoco" failed, try ~/.local/bin/monoco (uv tool default)
+  if (executable === "monoco") {
+      const home = os.homedir();
+      const uvPath = path.join(home, ".local", "bin", "monoco");
+      if (await isCommandAvailable(uvPath, "--help")) {
+          return;
+      }
   }
 
   // 2. Monoco not found. Check if uv is available.

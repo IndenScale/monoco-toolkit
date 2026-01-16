@@ -5,8 +5,8 @@ type: feature
 status: closed
 stage: done
 title: One-click Install Script
-created_at: '2026-01-13T13:42:00'
-opened_at: '2026-01-13T13:42:00'
+created_at: '2026-01-13T13:31:33'
+opened_at: '2026-01-13T13:31:33'
 updated_at: '2026-01-13T13:31:33'
 closed_at: '2026-01-13T13:31:33'
 parent: EPIC-0008
@@ -24,11 +24,15 @@ Provide a simple shell script to automate the setup of the Monoco Toolkit develo
 
 ## Acceptance Criteria
 
-- [ ] `scripts/install.sh` exists.
-- [ ] Script handles venv creation/activation.
-- [ ] Script installs the package in editable mode.
+- [x] `scripts/install.sh` exists.
+- [x] Script handles venv creation/activation.
+- [x] Script installs the package in editable mode.
 
 ## Technical Tasks
 
-- [ ] Write `scripts/install.sh`.
-- [ ] Make script executable.
+- [x] Write `scripts/install.sh`.
+- [x] Make script executable.
+
+## Review Comments
+
+- [x] Self-Review

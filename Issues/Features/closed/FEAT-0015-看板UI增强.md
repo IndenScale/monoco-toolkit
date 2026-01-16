@@ -5,7 +5,7 @@ status: closed
 stage: done
 title: 看板 UI 增强 (Kanban UI Enhancements)
 created_at: '2026-01-11T12:02:00.818615'
-opened_at: '2026-01-11T12:02:00.818600'
+opened_at: '2026-01-11T12:02:00.818615'
 updated_at: '2026-01-11T13:20:50.734671'
 closed_at: '2026-01-11T13:20:50.734702'
 solution: implemented
@@ -16,7 +16,7 @@ parent: EPIC-0003
 uid: 78a1a1
 ---
 
-## FEAT-0015: 看板 UI 增强
+## FEAT-0015: 看板 UI 增强 (Kanban UI Enhancements)
 
 ## 目标 (Objective)
 
@@ -40,3 +40,7 @@ uid: 78a1a1
 - [x] **实现模态框**: 使用 Blueprint `Dialog` 创建 `IssueDetailModal.tsx`。
 - [x] **Markdown 渲染**: 集成 `react-markdown` 或类似库以在模态框中渲染 Issue 正文。
 - [x] **编辑器 UI**: 为“编辑”模式添加简单的 textarea/编辑器视图。
+
+## Review Comments
+
+- [x] Self-Review

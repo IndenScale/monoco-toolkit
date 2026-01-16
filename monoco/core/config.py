@@ -10,10 +10,7 @@ import asyncio
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# Import AgentIntegration for type hints
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from monoco.core.integrations import AgentIntegration
+from monoco.core.integrations import AgentIntegration
 
 logger = logging.getLogger("monoco.core.config")
 
@@ -55,7 +52,7 @@ class AgentConfig(BaseModel):
     targets: Optional[list[str]] = Field(default=None, description="Specific target files to inject into (e.g. .cursorrules)")
     framework: Optional[str] = Field(default=None, description="Manually specified agent framework (cursor, windsurf, etc.)")
     includes: Optional[list[str]] = Field(default=None, description="List of specific features to include in injection")
-    integrations: Optional[Dict[str, Any]] = Field(
+    integrations: Optional[Dict[str, "AgentIntegration"]] = Field(
         default=None, 
         description="Custom agent framework integrations (overrides defaults from monoco.core.integrations)"
     )
@@ -84,9 +81,13 @@ class MonocoConfig(BaseModel):
         return base
 
     @classmethod
-    def load(cls, project_root: Optional[str] = None) -> "MonocoConfig":
+    def load(cls, project_root: Optional[str] = None, require_project: bool = False) -> "MonocoConfig":
         """
         Load configuration from multiple sources.
+        
+        Args:
+            project_root: Explicit root path. If None, uses CWD.
+            require_project: If True, raises error if .monoco directory is missing.
         """
         # 1. Start with empty dict (will use defaults via Pydantic)
         config_data = {}
@@ -96,12 +97,13 @@ class MonocoConfig(BaseModel):
         
         # Determine project path
         cwd = Path(project_root) if project_root else Path.cwd()
-        proj_path_hidden = cwd / ".monoco" / "config.yaml"
+        # FIX-0009: strict separation of workspace and project config
+        workspace_config_path = cwd / ".monoco" / "workspace.yaml"
+        project_config_path = cwd / ".monoco" / "project.yaml"
         
-        # [Legacy] Check for monoco.yaml and warn
-        proj_path_legacy = cwd / "monoco.yaml"
-        if proj_path_legacy.exists():
-            logger.warning(f"Legacy configuration found: {proj_path_legacy}. Please move it to .monoco/config.yaml")
+        # Strict Workspace Check
+        if require_project and not (cwd / ".monoco").exists():
+            raise FileNotFoundError(f"Monoco workspace not found in {cwd}. (No .monoco directory)")
 
         # 3. Load User Config
         if home_path.exists():
@@ -114,13 +116,35 @@ class MonocoConfig(BaseModel):
                 # We don't want to crash on config load fail, implementing simple warning equivalent
                 pass
 
-        # 4. Load Project Config (Only .monoco/config.yaml)
-        if proj_path_hidden.exists():
+        # 4. Load Project/Workspace Config
+        
+        # 4a. Load workspace.yaml (Global Environment)
+        if workspace_config_path.exists():
             try:
-                with open(proj_path_hidden, "r") as f:
-                    proj_config = yaml.safe_load(f)
-                    if proj_config:
-                        cls._deep_merge(config_data, proj_config)
+                with open(workspace_config_path, "r") as f:
+                    ws_config = yaml.safe_load(f)
+                    if ws_config:
+                        # workspace.yaml contains core, paths, i18n, ui, telemetry, agent
+                        cls._deep_merge(config_data, ws_config)
+            except Exception:
+                pass
+
+        # 4b. Load project.yaml (Identity)
+        if project_config_path.exists():
+            try:
+                with open(project_config_path, "r") as f:
+                    pj_config = yaml.safe_load(f)
+                    if pj_config:
+                        # project.yaml contains 'project' fields directly? or under 'project' key?
+                        # Design decision: project.yaml should be clean, e.g. "name: foo".
+                        # But to simplify merging, let's check if it has a 'project' key or is flat.
+                        if "project" in pj_config:
+                            cls._deep_merge(config_data, pj_config)
+                        else:
+                            # Assume flat structure mapping to 'project' section
+                            if "project" not in config_data:
+                                config_data["project"] = {}
+                            cls._deep_merge(config_data["project"], pj_config)
             except Exception:
                 pass
 
@@ -130,10 +154,12 @@ class MonocoConfig(BaseModel):
 # Global singleton
 _settings = None
 
-def get_config(project_root: Optional[str] = None) -> MonocoConfig:
+def get_config(project_root: Optional[str] = None, require_project: bool = False) -> MonocoConfig:
     global _settings
-    if _settings is None or project_root is not None:
-        _settings = MonocoConfig.load(project_root)
+    # If explicit root provided, always reload.
+    # If require_project is True, we must reload to ensure validation happens (in case a previous loose load occurred).
+    if _settings is None or project_root is not None or require_project:
+        _settings = MonocoConfig.load(project_root, require_project=require_project)
     return _settings
 
 class ConfigScope(str, Enum):

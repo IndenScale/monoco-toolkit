@@ -14,7 +14,7 @@ stage: doing
 uid: f49381
 ---
 
-## EPIC-0001: Monoco 生态内核构建 (Kernel Construction)
+## EPIC-0001: EPIC-0001: Monoco 生态内核构建 (Kernel Construction)
 
 ## 目标 (Objective)
 

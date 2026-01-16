@@ -62,56 +62,45 @@ class AgentStateManager:
         return self.refresh()
 
     def refresh(self) -> AgentState:
-        """Run the diagnostic script and update state file."""
+        """Run diagnostics on all integrations and update state."""
         logger.info("Refreshing agent state...")
         
-        # Locate the shell script
-        # Assuming monoco is installed as a package, we need to find where the script lives.
-        # For dev environment: Toolkit/scripts/check_agents.sh
-        # For production: It might need to be packaged or generated.
+        from monoco.core.integrations import get_all_integrations
+        from monoco.core.config import get_config
         
-        # Current strategy: Look in known relative locations
-        script_path = self._find_script()
-        if not script_path:
-            raise FileNotFoundError("Could not find check_agents.sh script")
-
-        try:
-            # Ensure the directory exists
-            self.state_path.parent.mkdir(parents=True, exist_ok=True)
+        # Load config to get possible overrides
+        # Determine root (hacky for now, should be passed)
+        root = Path.cwd()
+        config = get_config(str(root))
+        
+        integrations = get_all_integrations(config_overrides=config.agent.integrations, enabled_only=True)
+        
+        providers = {}
+        for key, integration in integrations.items():
+            if not integration.bin_name:
+                continue # Skip integrations that don't have a binary component
             
-            subprocess.run(
-                [str(script_path), str(self.state_path)], 
-                check=True, 
-                capture_output=True,
-                text=True
+            health = integration.check_health()
+            providers[key] = AgentProviderState(
+                available=health.available,
+                path=health.path,
+                error=health.error,
+                latency_ms=health.latency_ms
             )
             
-            # Reload to get the object
-            state = self.load()
-            if not state:
-                raise ValueError("Script ran but state file is invalid or empty")
+        state = AgentState(
+            last_checked=datetime.now(timezone.utc),
+            providers=providers
+        )
+        
+        # Save state
+        self.state_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.state_path, "w") as f:
+            yaml.dump(state.model_dump(mode='json'), f)
             
-            self._state = state
-            return state
-            
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Agent check script failed: {e.stderr}")
-            raise RuntimeError(f"Agent check failed: {e.stderr}") from e
+        self._state = state
+        return state
 
     def _find_script(self) -> Optional[Path]:
-        """Find the check_agents.sh script."""
-        # Check dev path relative to this file
-        # this file: monoco/core/agent/state.py
-        # root: monoco/../../
-        
-        current_file = Path(__file__).resolve()
-        
-        # Strategy 1: Development logic (Toolkit/scripts/check_agents.sh)
-        dev_path = current_file.parents[3] / "scripts" / "check_agents.sh"
-        if dev_path.exists():
-            return dev_path
-            
-        # Strategy 2: If installed in site-packages, maybe we package scripts nearby?
-        # TODO: Define packaging strategy for scripts
-        
+        """[Deprecated] No longer used."""
         return None

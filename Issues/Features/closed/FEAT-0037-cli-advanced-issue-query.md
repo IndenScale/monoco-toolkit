@@ -5,7 +5,7 @@ status: closed
 stage: done
 title: CLI Advanced Issue Query
 created_at: '2026-01-13T08:55:29.551568'
-opened_at: '2026-01-13T08:55:29.551554'
+opened_at: '2026-01-13T08:55:29.551568'
 updated_at: '2026-01-13T09:26:20.225208'
 closed_at: '2026-01-13T09:26:20.225293'
 solution: implemented
@@ -23,17 +23,17 @@ uid: f37584
 
 ## Acceptance Criteria
 
-- [ ] **新命令**: 实现 `monoco issue query <QUERY_STRING>` 命令。
-- [ ] **查询语法**:
-  - 支持 `term` (Nice to have / 评分项)。
-  - 支持 `+term` (必须包含)。
-  - 支持 `-term` (必须不包含)。
-  - 支持 `"quoted phrase"` (短语匹配)。
+- [x] **新命令**: 实现 `monoco issue query <QUERY_STRING>` 命令。
+- [x] **查询语法**:
+  - [x] 支持 `term` (Nice to have / 评分项)。
+  - [x] 支持 `+term` (必须包含)。
+  - [x] 支持 `-term` (必须不包含)。
+  - [x] 支持 `"quoted phrase"` (短语匹配)。
   - 忽略大小写。
-- [ ] **搜索范围**: 涵盖 ID, Title, Tags, Status, Stage。
-- [ ] **结果展示**:
-  - 默认以表格形式展示匹配的 Issues。
-  - （可选）支持 `--tree` 视图以展示父子层级上下文（如匹配子任务时显示父 Epic）。
+- [x] **搜索范围**: 涵盖 ID, Title, Tags, Status, Stage。
+- [x] **结果展示**:
+  - [x] 默认以表格形式展示匹配的 Issues。
+  - [x] （可选）支持 `--tree` 视图以展示父子层级上下文（如匹配子任务时显示父 Epic）。
 
 ## Technical Tasks
 
@@ -41,3 +41,7 @@ uid: f37584
 - [x] 实现 Python 版的 `parse_search_query` 逻辑 (Port from TS)。
 - [x] 复用 `monoco.features.issue.core` 的 issue 加载逻辑。
 - [x] 集成 `rich` 表格进行结果渲染。
+
+## Review Comments
+
+- [x] Self-Review

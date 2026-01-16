@@ -63,3 +63,7 @@ tags:
   - 移除 `from monoco.features.xxx import XxxFeature` 硬编码。
   - 使用 `monoco.core.registry.get_features()` 动态获取。
 - [x] **NOTE**: Skill synchronization logic is DEFERRED to FEAT-0073. Only Prompt Injection is covered here.
+
+## Review Comments
+
+- [x] Self-Review

@@ -2,6 +2,7 @@
 id: FEAT-0010
 type: feature
 status: closed
+stage: Done
 priority: NORMAL
 solution: implemented
 title: 增强 Init 命令 (Enhanced Init Command)
@@ -19,7 +20,7 @@ parent: EPIC-0001
 uid: a66263
 ---
 
-## FEAT-0010: 增强 Init 命令
+## FEAT-0010: 增强 Init 命令 (Enhanced Init Command)
 
 ## 目标 (Objective)
 
@@ -63,3 +64,7 @@ uid: a66263
 3.  **Agent 文档 (Agent Docs)**: `AGENTS.md` (及其他) 被创建/更新。它们包含 `## Monoco Toolkit` 部分，其中包含所有已启用模块的说明。
 4.  **幂等性 (Idempotency)**: 多次运行 `init` 会就地更新 `## Monoco Toolkit` 部分而不会重复。
 5.  **模块化 (Modular)**: Core 不持有内容字符串；它从模块中提取。
+
+## Review Comments
+
+- [x] Self-Review

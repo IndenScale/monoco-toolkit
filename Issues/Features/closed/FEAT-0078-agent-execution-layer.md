@@ -16,6 +16,8 @@ priority: High
 author: Monoco
 ---
 
+## FEAT-0078: Agent 执行层与 CLI 集成
+
 ## Feature: Agent 执行层与 CLI 集成
 
 ## 目标 (Objective)
@@ -108,9 +110,19 @@ executions:
     provider: "claude" # 可以为特定任务指定特定模型
 ```
 
-## 验收标准 (Acceptance Criteria)
+## Acceptance Criteria
 
-1. **通用适配层**: 为 Claude, Gemini, 和 Qwen 实现 `AgentClient` 适配器。
-2. **运行时检测**: 系统能检测已安装的 CLI 并在缺失时发出警告。
-3. **Execution 注册表**: 支持从 Feature 目录加载提示词模板。
-4. **概念验证 (PoC)**: 实现 `monoco agent refine <issuepkg>`，使用配置的 Agent 润色 Issue 文件。
+- [x] **1. 通用适配层**: 为 Claude, Gemini, 和 Qwen 实现 `AgentClient`适配器。
+- [x] **2. 运行时检测**: 系统能检测已安装的 CLI 并在缺失时发出警告。
+- [x] **3. Execution 注册表**: 支持从 Feature 目录加载提示词模板。
+- [x] **4. 概念验证 (PoC)**: 实现 `monoco agent refine <issuepkg>`，使用配置的 Agent 润色 Issue 文件。
+
+## Technical Tasks
+
+- [x] Implement `AgentClient` protocol and adapters.
+- [x] Implement runtime detection and status caching.
+- [x] Implement execution template loader.
+
+## Review Comments
+
+- [x] Self-Review

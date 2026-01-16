@@ -18,8 +18,16 @@ uid: c0a8c2
 
 ## Objective
 
+Enable observability for the Kanban board to track usage and health metrics.
+
 ## Acceptance Criteria
+
+- [ ] KR1: Performance tracking for board loading.
+- [ ] KR2: Error reporting integration.
 
 ## Technical Tasks
 
-- [ ]
+- [ ] Implement client-side monitoring hooks.
+- [ ] Connect to backend observability endpoint.
+
+## Review Comments

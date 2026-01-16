@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Monoco 看板 Web 应用 (Monoco Kanban Web App)
 created_at: '2026-01-11T10:35:29.959257'
-opened_at: '2026-01-11T10:35:29.959240'
+opened_at: '2026-01-11T10:35:29.959257'
 updated_at: '2026-01-11T10:35:29.959259'
 dependencies:
 - EPIC-0002
@@ -78,26 +78,14 @@ uid: b7c0c7
   - **动画 (Animations)**: 页面切换、数据加载的平滑过渡。
   - **暗色模式 (Dark Mode)**: 深度优化的暗色模式（当前已是暗色，需优化对比度）。
 
-## 依赖与阻塞 (Dependencies & Blocking)
+## Acceptance Criteria
 
-1. **项目抽象 (Project Abstraction) (Completed)**: 是一切的基础，已完成。
-2. **后端统计 API (Backend Stats API)**: 阻塞 `FEAT-01 (Dashboard)` 的完整实现。
-3. **组件分析服务 (Component Analysis Service)**: 阻塞 `FEAT-03 (Components)`。
+- [ ] Global Dashboard implemented.
+- [ ] Engineering View implemented.
 
-## 路线图 (Roadmap)
+## Technical Tasks
 
-1. **阶段 1: 基础 (Foundation) (Current)**
+- [ ] Setup Next.js project.
+- [ ] Integrate with Daemon API.
 
-   - 项目上下文实现 (Done).
-   - 修复断链 (`/issues`, `/components`).
-   - 立即实现 **FEAT-02 (工程视图)**，提供看板之外的可行替代方案。
-
-2. **阶段 2: 洞察 (Insights)**
-
-   - 实现后端统计 API。
-   - 构建 **FEAT-01 (仪表盘)**。
-
-3. **阶段 3: 高级 (Advanced)**
-   - 研究组件分析。
-   - 实现 **FEAT-03**。
-```
+## Review Comments```

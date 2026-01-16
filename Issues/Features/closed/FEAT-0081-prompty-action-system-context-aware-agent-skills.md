@@ -40,9 +40,13 @@ tags: []
 
 ## 技术任务 (Technical Tasks)
 
-- [ ] **[Core]** 实现 `monoco.core.agent.prompty.PromptyAction` 模型与解析器。
-- [ ] **[Core]** 实现 `ActionRegistry` 支持多路径扫描（$HOME 与 Project）。
-- [ ] **[Core]** 实现上下文匹配逻辑 (Context Matcher)，支持对 IssueMetadata 字段进行评估。
-- [ ] **[CLI]** 升级 `monoco agent list --json`，支持通过 `--context` 传入 JSON 元数据进行动态过滤。
-- [ ] **[LSP/Extension]** 在请求 Actions 时提取当前 Markdown 的 Frontmatter 并作为上下文发送。
-- [ ] **[UI]** 适配新的动作展示逻辑，确保 Sidebar/Hover/CodeLens 同步更新。
+- [x] **[Core]** 实现 `monoco.core.agent.prompty.PromptyAction` 模型与解析器。
+- [x] **[Core]** 实现 `ActionRegistry` 支持多路径扫描（$HOME 与 Project）。
+- [x] **[Core]** 实现上下文匹配逻辑 (Context Matcher)，支持对 IssueMetadata 字段进行评估。
+- [x] **[CLI]** 升级 `monoco agent list --json`，支持通过 `--context` 传入 JSON 元数据进行动态过滤。
+- [x] **[LSP/Extension]** 在请求 Actions 时提取当前 Markdown 的 Frontmatter 并作为上下文发送。
+- [x] **[UI]** 适配新的动作展示逻辑，确保 Sidebar/Hover/CodeLens 同步更新。
+
+## Review Comments
+
+- [x] Self-Review

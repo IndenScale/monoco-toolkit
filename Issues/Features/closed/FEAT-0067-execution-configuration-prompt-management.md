@@ -52,3 +52,7 @@ tags: []
 - [x] 实现 IPC 处理器 `FETCH_EXECUTION_PROFILES` 和 `OPEN_FILE`。
 - [x] 在 UI 中添加“执行”选项卡并渲染 Profile 列表。
 - [x] 启用“点击编辑”功能。
+
+## Review Comments
+
+- [x] Self-Review

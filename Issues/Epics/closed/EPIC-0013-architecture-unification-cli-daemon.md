@@ -3,6 +3,7 @@ id: EPIC-0013
 uid: e13a2d
 type: epic
 status: closed
+stage: Done
 progress: 2/2
 title: "Architecture Unification: CLI & Daemon"
 created_at: "2026-01-15T16:45:00"
@@ -12,7 +13,7 @@ closed_at: "2026-01-15T18:30:00"
 solution: implemented
 ---
 
-## EPIC-0013: 架构统一：CLI 与 Daemon 的物理行为对齐
+## EPIC-0013: Architecture Unification: CLI & Daemon
 
 ## 目标 (Objective)
 
@@ -54,3 +55,7 @@ solution: implemented
 - [x] `monoco.yaml` (legacy) 兼容逻辑彻底移除，统一使用 `.monoco/` 目录。
 - [x] 插件侧 `IssueParser.ts` 文件被物理删除。
 - [x] 代码中不再存在硬编码的生命周期状态环。
+
+## Review Comments
+
+- [x] Self-Review
