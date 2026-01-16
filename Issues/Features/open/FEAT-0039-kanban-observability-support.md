@@ -3,7 +3,7 @@ id: FEAT-0039
 type: feature
 status: open
 stage: draft
-title: Kanban Observability Support
+title: 看板可观测性支持
 created_at: '2026-01-13T10:55:57'
 opened_at: '2026-01-13T10:55:57'
 updated_at: '2026-01-13T10:55:57'
@@ -14,20 +14,20 @@ tags: []
 uid: c0a8c2
 ---
 
-## FEAT-0039: Kanban Observability Support
+## FEAT-0039: 看板可观测性支持
 
-## Objective
+## 目标
 
-Enable observability for the Kanban board to track usage and health metrics.
+为看板启用可观测性以跟踪使用情况和健康指标。
 
-## Acceptance Criteria
+## 验收标准
 
-- [ ] KR1: Performance tracking for board loading.
-- [ ] KR2: Error reporting integration.
+- [ ] KR1：看板加载的性能跟踪。
+- [ ] KR2：错误报告集成。
 
-## Technical Tasks
+## 技术任务
 
-- [ ] Implement client-side monitoring hooks.
-- [ ] Connect to backend observability endpoint.
+- [ ] 实现客户端监控钩子。
+- [ ] 连接到后端可观测性端点。
 
 ## Review Comments

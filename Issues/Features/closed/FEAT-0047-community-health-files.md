@@ -4,7 +4,7 @@ uid: fe10ab
 type: feature
 status: closed
 stage: done
-title: Community Health Files
+title: 社区健康文件
 created_at: '2026-01-13T13:26:36'
 opened_at: '2026-01-13T13:26:36'
 updated_at: '2026-01-13T13:27:54'
@@ -16,24 +16,24 @@ related: []
 tags: []
 ---
 
-## FEAT-0047: Community Health Files
+## FEAT-0047: 社区健康文件
 
-## Objective
+## 目标
 
-Add standard open-source community health files to the project root to ensure legal compliance and guide contributors.
+向项目根目录添加标准的开源社区健康文件，以确保法律合规性并指导贡献者。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] `LICENSE` file (MIT) exists in root.
-- [x] `CONTRIBUTING.md` exists in root with clear guidelines.
-- [x] `CODE_OF_CONDUCT.md` exists in root (Contributor Covenant).
+- [x] `LICENSE` 文件（MIT）存在于根目录。
+- [x] `CONTRIBUTING.md` 存在于根目录并具有明确的指导方针。
+- [x] `CODE_OF_CONDUCT.md` 存在于根目录（贡献者公约）。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Create `LICENSE` file.
-- [x] Create `CONTRIBUTING.md`.
-- [x] Create `CODE_OF_CONDUCT.md`.
+- [x] 创建 `LICENSE` 文件。
+- [x] 创建 `CONTRIBUTING.md`。
+- [x] 创建 `CODE_OF_CONDUCT.md`。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review

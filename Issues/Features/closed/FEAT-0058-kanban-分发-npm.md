@@ -18,18 +18,18 @@ tags: []
 
 ## FEAT-0058: Kanban 分发 - npm
 
-## Objective
+## 目标
 
-Ensure that the Kanban board can be distributed as an npm package.
+确保看板可以作为 npm 包进行分发。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] Kanban board successfully published to npm.
+- [x] 看板成功发布到 npm。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Configure npm publication workflow.
+- [x] 配置 npm 发布工作流程。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review

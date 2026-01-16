@@ -23,7 +23,6 @@ class PathsConfig(BaseModel):
 
 class CoreConfig(BaseModel):
     """Core system configuration."""
-    editor: str = Field(default_factory=lambda: os.getenv("EDITOR", "vim"), description="Preferred text editor")
     log_level: str = Field(default="INFO", description="Logging verbosity")
     author: Optional[str] = Field(default=None, description="Default author for new artifacts")
 
@@ -165,14 +164,31 @@ def get_config(project_root: Optional[str] = None, require_project: bool = False
 class ConfigScope(str, Enum):
     GLOBAL = "global"
     PROJECT = "project"
+    WORKSPACE = "workspace"
 
 def get_config_path(scope: ConfigScope, project_root: Optional[str] = None) -> Path:
     """Get the path to the configuration file for a given scope."""
     if scope == ConfigScope.GLOBAL:
         return Path.home() / ".monoco" / "config.yaml"
-    else:
+    elif scope == ConfigScope.WORKSPACE:
         cwd = Path(project_root) if project_root else Path.cwd()
-        return cwd / ".monoco" / "config.yaml"
+        return cwd / ".monoco" / "workspace.yaml"
+    else:
+        # ConfigScope.PROJECT
+        cwd = Path(project_root) if project_root else Path.cwd()
+        return cwd / ".monoco" / "project.yaml"
+
+def find_monoco_root(start_path: Optional[Path] = None) -> Path:
+    """Recursively find the .monoco directory upwards."""
+    current = (start_path or Path.cwd()).resolve()
+    # Check if we are inside a .monoco folder (unlikely but possible)
+    if current.name == ".monoco":
+        return current.parent
+        
+    for parent in [current] + list(current.parents):
+        if (parent / ".monoco").exists():
+            return parent
+    return current
 
 def load_raw_config(scope: ConfigScope, project_root: Optional[str] = None) -> Dict[str, Any]:
     """Load raw configuration dictionary from a specific scope."""

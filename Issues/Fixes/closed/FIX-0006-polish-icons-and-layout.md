@@ -4,7 +4,7 @@ uid: a7357f
 type: fix
 status: closed
 stage: done
-title: Polish Icons and Layout
+title: 优化图标和布局
 created_at: '2026-01-14T16:47:25'
 opened_at: '2026-01-14T16:47:25'
 updated_at: '2026-01-14T16:47:34'
@@ -16,20 +16,20 @@ related: []
 tags: []
 ---
 
-## FIX-0006: Polish Icons and Layout
+## FIX-0006: 优化图标和布局
 
-## Objective
+## 目标
 
-Polish the icons and layout of the Kanban board for a more professional look.
+优化看板的图标和布局，使其看起来更专业。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] Icons are consistent and layout is improved.
+- [x] 图标保持一致且布局得到改善。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Update icons and adjust CSS layout.
+- [x] 更新图标并调整 CSS 布局。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review

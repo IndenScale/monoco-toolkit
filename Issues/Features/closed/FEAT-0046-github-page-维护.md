@@ -18,22 +18,22 @@ tags: []
 
 ## FEAT-0046: GitHub Page 维护
 
-## Objective
+## 目标
 
-Maintain the project's GitHub Pages to provide documentation, guides, and a portal for the Monoco ecosystem.
+维护项目的 GitHub Pages 以提供文档、指南和 Monoco 生态系统的入口。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] Visit `monoco.io` (or GitHub Pages domain) to view the latest documentation.
-- [x] Integration of the one-click installation script guide for the Toolkit.
-- [x] Inclusion of links to the Kanban board demo.
+- [x] 访问 `monoco.io`（或 GitHub Pages 域）查看最新文档。
+- [x] 集成工具包的一键安装脚本指南。
+- [x] 包含看板演示的链接。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Configure GitHub Actions for automated build and deployment of the documentation system.
-- [x] Design a responsive landing page for the product.
-- [x] Integrate SEO optimization and analytics monitoring.
+- [x] 配置 GitHub Actions 以自动构建和部署文档系统。
+- [x] 设计产品的响应式登录页面。
+- [x] 集成 SEO 优化和分析监控。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review
