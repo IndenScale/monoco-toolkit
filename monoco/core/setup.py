@@ -162,7 +162,6 @@ def init_cli(
             user_config = {
                 "core": {
                     "author": author,
-                    # Editor is handled by env/config defaults, no need to prompt
                 },
                 "telemetry": {
                     "enabled": telemetry

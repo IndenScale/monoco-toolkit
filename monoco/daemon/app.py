@@ -9,7 +9,6 @@ from typing import Optional, List, Dict
 from monoco.daemon.services import Broadcaster, ProjectManager
 from monoco.core.git import GitMonitor
 from monoco.core.config import get_config, ConfigMonitor, ConfigScope, get_config_path
-from fastapi import FastAPI, Request, HTTPException, Query
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +28,7 @@ Monoco Daemon Process
 # Service Instances
 broadcaster = Broadcaster()
 git_monitor: GitMonitor | None = None
-config_monitor: ConfigMonitor | None = None
+config_monitors: List[ConfigMonitor] = []
 project_manager: ProjectManager | None = None
 
 @asynccontextmanager
@@ -37,7 +36,7 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Monoco Daemon services...")
     
-    global project_manager, git_monitor, config_monitor
+    global project_manager, git_monitor, config_monitors
     # Use MONOCO_SERVER_ROOT if set, otherwise CWD
     env_root = os.getenv("MONOCO_SERVER_ROOT")
     workspace_root = Path(env_root) if env_root else Path.cwd()
@@ -50,32 +49,39 @@ async def lifespan(app: FastAPI):
             "hash": new_hash
         })
     
-    async def on_config_change():
-        logger.info("Config file changed, broadcasting update...")
+    async def on_config_change(path: str):
+        logger.info(f"Config file changed: {path}, broadcasting update...")
         await broadcaster.broadcast("CONFIG_UPDATED", {
             "scope": "workspace",
-            "path": str(workspace_root / ".monoco" / "config.yaml")
+            "path": path
         })
 
     git_monitor = GitMonitor(workspace_root, on_git_change)
     
-    config_path = get_config_path(ConfigScope.PROJECT, workspace_root)
-    config_monitor = ConfigMonitor(config_path, on_config_change)
+    project_config_path = get_config_path(ConfigScope.PROJECT, str(workspace_root))
+    workspace_config_path = get_config_path(ConfigScope.WORKSPACE, str(workspace_root))
+    
+    config_monitors = [
+        ConfigMonitor(project_config_path, lambda: on_config_change(str(project_config_path))),
+        ConfigMonitor(workspace_config_path, lambda: on_config_change(str(workspace_config_path)))
+    ]
     
     await project_manager.start_all()
     git_task = asyncio.create_task(git_monitor.start())
-    config_task = asyncio.create_task(config_monitor.start())
+    config_tasks = [asyncio.create_task(m.start()) for m in config_monitors]
     
     yield
     # Shutdown
     logger.info("Shutting down Monoco Daemon services...")
     if git_monitor:
         git_monitor.stop()
-    if config_monitor:
-        config_monitor.stop()
+    for m in config_monitors:
+        m.stop()
     if project_manager:
         project_manager.stop_all()
-    await asyncio.gather(git_task, config_task)
+    
+    await git_task
+    await asyncio.gather(*config_tasks)
     
 app = FastAPI(
     title="Monoco Daemon",

@@ -1,0 +1,6 @@
+i18n:
+  source_lang: zh
+  target_langs:
+  - en
+telemetry:
+  enabled: null

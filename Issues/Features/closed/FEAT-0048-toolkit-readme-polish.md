@@ -4,7 +4,7 @@ uid: 23f1a2
 type: feature
 status: closed
 stage: done
-title: Toolkit Readme Polish
+title: 工具包自述文件完善
 created_at: '2026-01-13T13:28:54'
 opened_at: '2026-01-13T13:28:54'
 updated_at: '2026-01-13T13:28:54'
@@ -16,26 +16,26 @@ related: []
 tags: []
 ---
 
-## FEAT-0048: Toolkit Readme Polish
+## FEAT-0048: 工具包自述文件完善
 
-## Objective
+## 目标
 
-Transform the root `README.md` into a professional, welcoming landing page for the Monoco Toolkit, suitable for public release.
+将根目录的 `README.md` 转变为专业的、欢迎的 Monoco 工具包登录页面，适合公开发布。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] Clear Value Proposition ("Why Monoco?").
-- [x] Key Features list.
-- [x] Installation instructions (Dev & User).
-- [x] Links to Community Health files (Contributing, Code of Conduct).
-- [x] License information.
+- [x] 明确的价值主张（"为什么选择 Monoco？"）。
+- [x] 关键功能列表。
+- [x] 安装说明（开发人员和用户）。
+- [x] 链接到社区健康文件（贡献指南、行为准则）。
+- [x] 许可证信息。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Rewrite `README.md` structure.
-- [x] Add "Features" section.
-- [x] Add "Contributing" and "License" sections.
+- [x] 重写 `README.md` 结构。
+- [x] 添加"功能"部分。
+- [x] 添加"贡献"和"许可证"部分。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review

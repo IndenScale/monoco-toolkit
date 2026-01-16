@@ -1,7 +1,7 @@
 {
   "name": "monoco-vscode",
   "displayName": "Monoco",
-  "description": "Monoco VS Code Cockpit Integration",
+  "description": "Native Kanban & Agent Management for Monoco. Manage tasks, visualize workflows, and orchestrate AI agents directly in VS Code.",
   "version": "0.2.4",
   "publisher": "indenscale",
   "repository": {
@@ -18,7 +18,23 @@
     "vscode": "^1.90.0"
   },
   "categories": [
-    "Other"
+    "Productivity",
+    "Visualization",
+    "Project Management"
+  ],
+  "keywords": [
+    "monoco",
+    "kanban",
+    "project management",
+    "issue tracking",
+    "agent",
+    "ai",
+    "workflow",
+    "productivity",
+    "visualization",
+    "todo",
+    "markdown",
+    "lsp"
   ],
   "icon": "media/icon.png",
   "activationEvents": [

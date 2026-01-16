@@ -4,7 +4,7 @@ uid: d856b0
 type: feature
 status: closed
 stage: done
-title: Smart Parent Selection
+title: 智能父级选择
 created_at: '2026-01-14T16:51:26'
 opened_at: '2026-01-14T16:51:26'
 updated_at: '2026-01-14T16:51:31'
@@ -16,20 +16,20 @@ related: []
 tags: []
 ---
 
-## FEAT-0064: Smart Parent Selection
+## FEAT-0064: 智能父级选择
 
-## Objective
+## 目标
 
-Implement a smart parent selection mechanism for issues within the VS Code extension.
+在 VS Code 扩展中实现问题的智能父级选择机制。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] Smart parent selection implemented and functional.
+- [x] 智能父级选择已实现并可正常工作。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Develop logic for smart parent suggestions based on context.
+- [x] 开发基于上下文的智能父级建议逻辑。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review
