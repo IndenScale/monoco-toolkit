@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Monoco VS Code Cockpit Integration",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "publisher": "indenscale",
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
         {
           "id": "monoco-kanban",
           "type": "webview",
-          "name": "Monoco",
+          "name": "Issues",
           "icon": "media/icon.svg"
         },
         {
@@ -64,14 +64,44 @@
         "command": "monoco.runAction",
         "title": "Run Action",
         "icon": "$(play)"
+      },
+      {
+        "command": "monoco.createIssue",
+        "title": "New Issue",
+        "icon": "$(plus)"
+      },
+      {
+        "command": "monoco.openSettings",
+        "title": "Settings",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "monoco.openWebUI",
+        "title": "Open Web UI",
+        "icon": "$(browser)"
       }
     ],
     "menus": {
       "view/title": [
         {
+          "command": "monoco.createIssue",
+          "when": "view == monoco-kanban",
+          "group": "navigation@1"
+        },
+        {
           "command": "monoco.refreshEntry",
           "when": "view == monoco-kanban",
-          "group": "navigation"
+          "group": "navigation@2"
+        },
+        {
+          "command": "monoco.openWebUI",
+          "when": "view == monoco-kanban",
+          "group": "navigation@3"
+        },
+        {
+          "command": "monoco.openSettings",
+          "when": "view == monoco-kanban",
+          "group": "navigation@4"
         },
         {
           "command": "monoco.refreshEntry",
