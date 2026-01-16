@@ -4,7 +4,7 @@ uid: 8abbe4
 type: feature
 status: closed
 stage: done
-title: Security Cleanup
+title: 安全清理
 created_at: '2026-01-13T13:29:03'
 opened_at: '2026-01-13T13:29:03'
 updated_at: '2026-01-13T13:30:00'
@@ -15,20 +15,20 @@ related: []
 tags: []
 ---
 
-## FEAT-0049: Security Cleanup
+## FEAT-0049: 安全清理
 
-## Objective
+## 目标
 
-Perform a security audit and cleanup of the codebase to remove sensitive information.
+对代码库进行安全审计和清理，以删除敏感信息。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] No sensitive information found in the codebase.
+- [x] 代码库中未发现敏感信息。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Scan codebase for secrets and API keys.
+- [x] 扫描代码库中的密钥和 API 密钥。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review

@@ -31,8 +31,8 @@ def run_git_command(cmd: List[str], cwd: Path) -> bool:
 
 def get_config_file_path(root: Path) -> Path:
     """Determine the config file to update."""
-    # Standard: .monoco/config.yaml
-    hidden = root / ".monoco" / "config.yaml"
+    # Standard: .monoco/project.yaml
+    hidden = root / ".monoco" / "project.yaml"
     
     # Ensure parent exists
     hidden.parent.mkdir(exist_ok=True)

@@ -4,7 +4,7 @@ uid: ee962c
 type: chore
 status: closed
 stage: done
-title: Refactor Config Loading for Unified Context
+title: 重构配置加载以统一上下文
 created_at: '2026-01-15T12:55:25'
 opened_at: '2026-01-15T12:55:25'
 updated_at: '2026-01-15T13:06:28'
@@ -15,42 +15,42 @@ related: []
 tags: []
 ---
 
-## CHORE-0003: Refactor Config Loading for Unified Context
+## CHORE-0003: 重构配置加载以统一上下文
 
-## Context
+## 上下文
 
-Currently, the system supports both `monoco.yaml` (in file root) and `.monoco/config.yaml`.
-This dual support creates ambiguity and maintenance overhead.
-**Decision**: We will standardize on using the **`.monoco/` directory** as the sole indicator of a Monoco context.
+目前，系统同时支持 `monoco.yaml`（在文件根目录）和 `.monoco/config.yaml`。
+这种双重支持造成了歧义和维护开销。
+**决定**：我们将标准化使用 **`.monoco/` 目录** 作为 Monoco 上下文的唯一标识符。
 
-## Objective
+## 目标
 
-Remove all dependencies on `monoco.yaml` from the codebase.
-Configuration must reside in `.monoco/config.yaml`.
+从代码库中移除对 `monoco.yaml` 的所有依赖。
+配置必须驻留在 `.monoco/config.yaml` 中。
 
-## Parent
+## 父级
 
 EPIC-0013
 
-## Technical Tasks
+## 技术任务
 
-- [x] **Update Config Loader**: Modify `monoco.core.config.py` to stop looking for `monoco.yaml`.
-- [x] **Update Workspace Scanner**: Modify `monoco.core.workspace.py` (and any `ProjectManager` logic) to identify projects solely by the existence of a `.monoco/` directory.
-- [x] **Migration Utility (Optional)**: Add a logic snippet to warn users if `monoco.yaml` is found and suggest moving it.
+- [x] **更新配置加载器**：修改 `monoco.core.config.py` 以停止查找 `monoco.yaml`。
+- [x] **更新工作区扫描器**：修改 `monoco.core.workspace.py`（以及任何 `ProjectManager` 逻辑）仅通过 `.monoco/` 目录的存在来识别项目。
+- [x] **迁移工具（可选）**：添加逻辑片段，如果找到 `monoco.yaml` 则警告用户并建议移动它。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] `monoco.core.config.get_config` is marked as legacy/deprecated or strictly scoped to CWD only.
-- [x] `ProjectManager` can load Project A and Project B, and `ProjectContext(A).config` is different from `ProjectContext(B).config`.
-- [x] `monoco serve` starts up correctly.
+- [x] `monoco.core.config.get_config` 被标记为旧版/已弃用或严格限制在当前工作目录范围内。
+- [x] `ProjectManager` 可以加载项目 A 和项目 B，且 `ProjectContext(A).config` 与 `ProjectContext(B).config` 不同。
+- [x] `monoco serve` 正确启动。
 
-## Solution
+## 解决方案
 
-Refactored configuration loading to standardize on `.monoco/config.yaml`. Removed all dependencies on `monoco.yaml`.
-Migrated existing `monoco.yaml` files in the repository to their respective `.monoco/` directories.
-Added a legacy warning in `monoco.core.config.py` for users still using `monoco.yaml`.
-Updated `core.workspace.is_project_root` to identify projects solely by the existence of a `.monoco/` directory.
+重构了配置加载以标准化为 `.monoco/config.yaml`。移除了对 `monoco.yaml` 的所有依赖。
+将存储库中现有的 `monoco.yaml` 文件迁移到其各自的 `.monoco/` 目录中。
+在 `monoco.core.config.py` 中为仍在使用 `monoco.yaml` 的用户添加了旧版警告。
+更新了 `core.workspace.is_project_root` 以仅通过 `.monoco/` 目录的存在来识别项目。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review

@@ -4,7 +4,7 @@ uid: 6c4546
 type: fix
 status: closed
 stage: done
-title: Fix Add Button Event Propagation
+title: 修复添加按钮事件传播
 created_at: '2026-01-14T16:53:55'
 opened_at: '2026-01-14T16:53:55'
 updated_at: '2026-01-14T16:54:00'
@@ -16,20 +16,20 @@ related: []
 tags: []
 ---
 
-## FIX-0007: Fix Add Button Event Propagation
+## FIX-0007: 修复添加按钮事件传播
 
-## Objective
+## 目标
 
-Fix an issue where event propagation was not being correctly handled for the "Add" button, leading to unintended side effects.
+修复"添加"按钮的事件传播未被正确处理的问题，导致意外的副作用。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] Event propagation is correctly stopped for the "Add" button.
+- [x] "添加"按钮的事件传播被正确阻止。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Add `event.stopPropagation()` to the button click handler.
+- [x] 在按钮点击处理程序中添加 `event.stopPropagation()`。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review

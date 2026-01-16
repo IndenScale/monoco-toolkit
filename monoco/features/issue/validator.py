@@ -4,6 +4,8 @@ from typing import List, Set, Optional, Dict
 from pathlib import Path
 
 from monoco.core.lsp import Diagnostic, DiagnosticSeverity, Range, Position
+from monoco.core.config import get_config
+from monoco.features.i18n.core import detect_language
 from .models import IssueMetadata, IssueStatus, IssueStage, IssueType
 
 class IssueValidator:
@@ -39,6 +41,27 @@ class IssueValidator:
         # 7. Checkbox Syntax
         diagnostics.extend(self._validate_checkbox_logic(content))
         
+        # 8. Language Consistency
+        diagnostics.extend(self._validate_language_consistency(meta, content))
+
+        return diagnostics
+
+    def _validate_language_consistency(self, meta: IssueMetadata, content: str) -> List[Diagnostic]:
+        diagnostics = []
+        try:
+            config = get_config()
+            source_lang = config.i18n.source_lang
+            
+            # Check for language mismatch (specifically zh vs en)
+            if source_lang.lower() == 'zh':
+                detected = detect_language(content)
+                if detected == 'en':
+                     diagnostics.append(self._create_diagnostic(
+                         "Language Mismatch: Project source language is 'zh' but content appears to be 'en'.",
+                         DiagnosticSeverity.Warning
+                     ))
+        except Exception:
+            pass
         return diagnostics
 
     def _create_diagnostic(self, message: str, severity: DiagnosticSeverity, line: int = 0) -> Diagnostic:

@@ -4,7 +4,8 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 
-from monoco.core.config import get_config
+from typing import Optional
+from monoco.core.config import get_config, find_monoco_root
 from . import core
 
 app = typer.Typer(help="Management tools for Documentation Internationalization (i18n).")
@@ -14,6 +15,8 @@ console = Console()
 def scan(
     root: str = typer.Option(None, "--root", help="Target root directory to scan. Defaults to the project root."),
     limit: int = typer.Option(10, "--limit", help="Maximum number of missing files to display. Use 0 for unlimited."),
+    check_issues: bool = typer.Option(False, "--check-issues", help="Include Issues directory in the scan."),
+    check_source_lang: bool = typer.Option(False, "--check-source-lang", help="Verify if source files content matches source language (heuristic)."),
 ):
     """
     Scan the project for internationalization (i18n) status.
@@ -25,29 +28,50 @@ def scan(
 
     Returns a report of files missing translations in the checking target languages.
     """
-    config = get_config()
-    target_root = Path(root).resolve() if root else Path(config.paths.root)
+    if root:
+        target_root = Path(root).resolve()
+    else:
+        target_root = find_monoco_root(Path.cwd())
+
+    # Load config with correct root
+    config = get_config(project_root=str(target_root))
     target_langs = config.i18n.target_langs
+    source_lang = config.i18n.source_lang
     
     console.print(f"Scanning i18n coverage in [bold cyan]{target_root}[/bold cyan]...")
-    console.print(f"Target Languages: [bold yellow]{', '.join(target_langs)}[/bold yellow] (Source: {config.i18n.source_lang})")
+    console.print(f"Target Languages: [bold yellow]{', '.join(target_langs)}[/bold yellow] (Source: {source_lang})")
     
-    all_files = core.discover_markdown_files(target_root)
+    all_files = core.discover_markdown_files(target_root, include_issues=check_issues)
     
     source_files = [f for f in all_files if not core.is_translation_file(f, target_langs)]
     
     # Store missing results: { file_path: [missing_langs] }
     missing_map = {}
+    # Store lang mismatch results: [file_path]
+    lang_mismatch_files = []
+
     total_checks = len(source_files) * len(target_langs)
     found_count = 0
     
     for f in source_files:
-        missing_langs = core.check_translation_exists(f, target_root, target_langs)
+        # Check translation existence
+        missing_langs = core.check_translation_exists(f, target_root, target_langs, source_lang)
         if missing_langs:
             missing_map[f] = missing_langs
             found_count += (len(target_langs) - len(missing_langs))
         else:
             found_count += len(target_langs)
+            
+        # Check source content language if enabled
+        if check_source_lang:
+            if not core.is_content_source_language(f, source_lang):
+                # Try to detect actual language for better error message
+                try:
+                    content = f.read_text(encoding="utf-8")
+                    detected = core.detect_language(content)
+                except:
+                    detected = "unknown"
+                lang_mismatch_files.append((f, detected))
             
     # Reporting
     coverage = (found_count / total_checks * 100) if total_checks > 0 else 100
@@ -77,7 +101,7 @@ def scan(
         rel_path = f.relative_to(target_root)
         expected_paths = []
         for lang in langs:
-            target = core.get_target_translation_path(f, target_root, lang)
+            target = core.get_target_translation_path(f, target_root, lang, source_lang)
             expected_paths.append(str(target.relative_to(target_root)))
             
         table.add_row(
@@ -88,6 +112,21 @@ def scan(
         
     console.print(table)
     
+    # Show Language Mismatch Warnings
+    if lang_mismatch_files:
+        console.print("\n")
+        mismatch_table = Table(title=f"Source Language Mismatch (Expected: {source_lang})", box=None)
+        mismatch_table.add_column("File", style="yellow")
+        mismatch_table.add_column("Detected", style="red")
+        
+        limit_mismatch = 10
+        for f, detected in lang_mismatch_files[:limit_mismatch]:
+             mismatch_table.add_row(str(f.relative_to(target_root)), detected)
+             
+        console.print(mismatch_table)
+        if len(lang_mismatch_files) > limit_mismatch:
+             console.print(f"[dim]... and {len(lang_mismatch_files) - limit_mismatch} more.[/dim]")
+
     # Show hint if output was truncated
     if display_limit < total_missing_files:
         console.print(f"\n[dim]💡 Tip: Use [bold]--limit 0[/bold] to show all {total_missing_files} missing files.[/dim]\n")
@@ -111,11 +150,14 @@ def scan(
     if total_missing_files > 0:
         summary_lines.append(f"  - Partial Missing: {partial_missing}")
         summary_lines.append(f"  - Complete Missing: {complete_missing}")
+        
+    if lang_mismatch_files:
+        summary_lines.append(f"Language Mismatches: {len(lang_mismatch_files)}")
     
     summary_lines.append(f"Coverage: [{status_color}]{coverage:.1f}%[/{status_color}]")
     
     summary = "\n".join(summary_lines)
     console.print(Panel(summary, title="I18N STATUS", expand=False))
 
-    if missing_map:
+    if missing_map or lang_mismatch_files:
         raise typer.Exit(code=1)

@@ -17,18 +17,18 @@ uid: 38f911
 
 ## FIX-0004: 修复Issue文件名生成不支持中文的问题
 
-## Objective
+## 目标
 
-Ensure that issue file names correctly support Chinese characters during generation.
+确保在生成过程中问题文件名能正确支持中文字符。
 
-## Acceptance Criteria
+## 验收标准
 
-- [x] Issue filenames can include Chinese characters without errors.
+- [x] 问题文件名可以包含中文字符而不出错。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Implement Chinese character support in filename generation.
+- [x] 在文件名生成中实现中文字符支持。
 
 ## Review Comments
 
-- [x] Self-Review
+- [x] Self review

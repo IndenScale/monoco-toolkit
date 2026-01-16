@@ -3,7 +3,7 @@ id: FEAT-0040
 type: feature
 status: open
 stage: draft
-title: Toolkit Observability Hooks
+title: 工具包可观测性钩子
 created_at: '2026-01-13T10:55:57'
 opened_at: '2026-01-13T10:55:57'
 updated_at: '2026-01-13T10:55:57'
@@ -14,20 +14,20 @@ tags: []
 uid: acb705
 ---
 
-## FEAT-0040: Toolkit Observability Hooks
+## FEAT-0040: 工具包可观测性钩子
 
-## Objective
+## 目标
 
-Implement observability hooks in the Toolkit to allow for system-wide monitoring.
+在工具包中实现可观测性钩子以允许全系统监控。
 
-## Acceptance Criteria
+## 验收标准
 
-- [ ] KR1: Hooks for core CLI commands.
-- [ ] KR2: Exporting metrics in a standard format.
+- [ ] KR1：核心 CLI 命令的钩子。
+- [ ] KR2：以标准格式导出指标。
 
-## Technical Tasks
+## 技术任务
 
-- [ ] Add instrumentation to `monoco.core`.
-- [ ] Implement a basic metrics exporter.
+- [ ] 向 `monoco.core` 添加检测。
+- [ ] 实现基本指标导出器。
 
 ## Review Comments

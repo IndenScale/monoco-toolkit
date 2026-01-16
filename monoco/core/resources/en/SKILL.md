@@ -52,7 +52,7 @@ Configuration is stored in YAML format at:
 
 Key configuration sections:
 
-- `core`: Editor, log level, author
+- `core`: Log level, author
 - `paths`: Directory paths (issues, spikes, specs)
 - `project`: Project metadata, spike repos, workspace members
 - `i18n`: Internationalization settings
