@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Native Kanban & Agent Management for Monoco. Manage tasks, visualize workflows, and orchestrate AI agents directly in VS Code.",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "publisher": "indenscale",
   "repository": {
     "type": "git",
@@ -18,9 +18,8 @@
     "vscode": "^1.90.0"
   },
   "categories": [
-    "Productivity",
     "Visualization",
-    "Project Management"
+    "Other"
   ],
   "keywords": [
     "monoco",
@@ -38,7 +37,9 @@
   ],
   "icon": "media/icon.png",
   "activationEvents": [
-    "onLanguage:markdown"
+    "onLanguage:markdown",
+    "workspaceContains:.monoco/project.yaml",
+    "workspaceContains:Issues"
   ],
   "main": "./client/out/extension.js",
   "contributes": {
