@@ -1,6 +1,8 @@
 import * as path from "path";
 import * as fs from "fs";
 import * as vscode from "vscode";
+import { exec } from "child_process";
+import { promisify } from "util";
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -20,16 +22,90 @@ import { IssueHoverProvider } from "./providers/IssueHoverProvider";
 import { IssueCodeLensProvider } from "./providers/IssueCodeLensProvider";
 import { IssueFieldControlProvider } from "./providers/IssueFieldControlProvider";
 
+const execAsync = promisify(exec);
+
 let client: LanguageClient;
+let outputChannel: vscode.OutputChannel;
+
+async function checkDependencies() {
+  outputChannel.appendLine("Checking dependencies...");
+
+  try {
+    // Check if uv is available
+    const uvCheck = await execAsync("uv --version");
+    outputChannel.appendLine(`✓ uv version: ${uvCheck.stdout.trim()}`);
+  } catch (error) {
+    outputChannel.appendLine("✗ uv is not available");
+
+    // Show notification to guide user to install uv
+    const installOption = "Install uv";
+    const option = await vscode.window.showErrorMessage(
+      "uv is not installed or not in PATH. Would you like to install it?",
+      installOption
+    );
+
+    if (option === installOption) {
+      // Open installation guide in browser
+      await vscode.env.openExternal(vscode.Uri.parse("https://docs.astral.sh/uv/getting-started/installation/"));
+    }
+  }
+
+  try {
+    // Check if monoco is available via uv run tool by attempting to run it
+    const versionResult = await execAsync("uv tool run --from monoco-toolkit monoco --version");
+    outputChannel.appendLine(`✓ monoco version: ${versionResult.stdout.trim()}`);
+  } catch (error) {
+    outputChannel.appendLine("✗ monoco is not available via uv run tool");
+
+    // Attempt to install monoco automatically
+    const installOption = "Install monoco";
+    const manualOption = "Manual Install";
+    const option = await vscode.window.showErrorMessage(
+      "monoco is not installed via uv. Would you like to install it automatically or view manual installation?",
+      installOption,
+      manualOption
+    );
+
+    if (option === installOption) {
+      try {
+        outputChannel.appendLine("Installing monoco via 'uv tool install monoco-toolkit'...");
+        await execAsync("uv tool install monoco-toolkit --force");
+        outputChannel.appendLine("✓ monoco installed successfully via uv tool");
+
+        // Verify installation after installing
+        const verifyResult = await execAsync("uv tool run --from monoco-toolkit monoco --version");
+        outputChannel.appendLine(`✓ Verified monoco version: ${verifyResult.stdout.trim()}`);
+      } catch (installError) {
+        outputChannel.appendLine(`✗ Failed to install monoco: ${installError}`);
+        vscode.window.showErrorMessage(`Failed to install monoco: ${installError}`);
+      }
+    } else if (option === manualOption) {
+      // Open installation guide in browser
+      await vscode.env.openExternal(vscode.Uri.parse("https://github.com/IndenScale/Monoco"));
+    }
+  }
+}
 
 export async function activate(context: vscode.ExtensionContext) {
-  console.log('Congratulations, your extension "monoco-vscode" is now active!');
+  outputChannel = vscode.window.createOutputChannel("Monoco");
+  outputChannel.appendLine('Monoco extension activated!');
 
   // Initialize Agent State Service
   new AgentStateService(context);
 
   // Bootstrap default actions
   await bootstrapActions();
+
+  // Check dependencies and show diagnostics
+  await checkDependencies();
+
+  // Register command to manually check dependencies
+  context.subscriptions.push(
+    vscode.commands.registerCommand("monoco.checkDependencies", async () => {
+      outputChannel.show(); // Show the output channel when command is run
+      await checkDependencies();
+    })
+  );
 
   // 1. Start Language Server
   // The server is implemented in node
