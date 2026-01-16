@@ -4,8 +4,9 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 
-from typing import Optional
+from typing import Optional, Annotated
 from monoco.core.config import get_config, find_monoco_root
+from monoco.core.output import AgentOutput, OutputManager
 from . import core
 
 app = typer.Typer(help="Management tools for Documentation Internationalization (i18n).")
@@ -17,6 +18,7 @@ def scan(
     limit: int = typer.Option(10, "--limit", help="Maximum number of missing files to display. Use 0 for unlimited."),
     check_issues: bool = typer.Option(False, "--check-issues", help="Include Issues directory in the scan."),
     check_source_lang: bool = typer.Option(False, "--check-source-lang", help="Verify if source files content matches source language (heuristic)."),
+    json: AgentOutput = False,
 ):
     """
     Scan the project for internationalization (i18n) status.
@@ -38,8 +40,9 @@ def scan(
     target_langs = config.i18n.target_langs
     source_lang = config.i18n.source_lang
     
-    console.print(f"Scanning i18n coverage in [bold cyan]{target_root}[/bold cyan]...")
-    console.print(f"Target Languages: [bold yellow]{', '.join(target_langs)}[/bold yellow] (Source: {source_lang})")
+    if not OutputManager.is_agent_mode():
+        console.print(f"Scanning i18n coverage in [bold cyan]{target_root}[/bold cyan]...")
+        console.print(f"Target Languages: [bold yellow]{', '.join(target_langs)}[/bold yellow] (Source: {source_lang})")
     
     all_files = core.discover_markdown_files(target_root, include_issues=check_issues)
     
@@ -78,7 +81,41 @@ def scan(
     
     # Sort missing_map by file path for stable output
     sorted_missing = sorted(missing_map.items(), key=lambda x: str(x[0]))
-    
+
+    if OutputManager.is_agent_mode():
+        # JSON Output
+        report = {
+            "root": str(target_root),
+            "source_lang": source_lang,
+            "target_langs": target_langs,
+            "stats": {
+                "total_source_files": len(source_files),
+                "total_checks": total_checks,
+                "found_translations": found_count,
+                "coverage_percent": round(coverage, 2),
+                "missing_files_count": len(sorted_missing),
+                "mismatch_files_count": len(lang_mismatch_files)
+            },
+            "missing_files": [
+                {
+                    "file": str(f.relative_to(target_root)),
+                    "missing_langs": langs,
+                    "expected_paths": [
+                        str(core.get_target_translation_path(f, target_root, l, source_lang).relative_to(target_root))
+                        for l in langs
+                    ]
+                }
+                for f, langs in sorted_missing
+            ],
+            "language_mismatches": [
+                {"file": str(f.relative_to(target_root)), "detected": detected}
+                for f, detected in lang_mismatch_files
+            ]
+        }
+        OutputManager.print(report)
+        return
+
+    # Human Output
     # Apply limit
     total_missing_files = len(sorted_missing)
     display_limit = limit if limit > 0 else total_missing_files

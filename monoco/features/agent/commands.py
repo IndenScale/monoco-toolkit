@@ -1,8 +1,8 @@
 
 import typer
-from typing import Optional
+from typing import Optional, Annotated
 from pathlib import Path
-from monoco.core.output import print_output, print_error
+from monoco.core.output import print_output, print_error, AgentOutput, OutputManager
 from monoco.core.agent.adapters import get_agent_client
 from monoco.core.agent.state import AgentStateManager
 from monoco.core.agent.action import ActionRegistry, ActionContext
@@ -19,6 +19,7 @@ def run_command(
     target: Optional[str] = typer.Argument(None, help="Target file argument for the task"),
     provider: Optional[str] = typer.Option(None, "--using", "-u", help="Override agent provider"),
     instruction: Optional[str] = typer.Option(None, "--instruction", "-i", help="Additional instruction for the agent"),
+    json: AgentOutput = False,
 ):
     """
     Execute a prompt or a named task using an Agent CLI.
@@ -39,7 +40,8 @@ def run_command(
     
     if action:
         # It IS an action
-        print(f"Running action: {action.name}")
+        if not OutputManager.is_agent_mode():
+            print(f"Running action: {action.name}")
         
         # Simple template substitution
         final_prompt = action.template
@@ -72,7 +74,8 @@ def run_command(
     # 3. State Check
     state = state_manager.load()
     if not state or state.is_stale:
-        print("Agent state stale or missing, refreshing...")
+        if not OutputManager.is_agent_mode():
+            print("Agent state stale or missing, refreshing...")
         state = state_manager.refresh()
     
     if prov_name not in state.providers:
@@ -87,7 +90,11 @@ def run_command(
     try:
         client = get_agent_client(prov_name)
         result = asyncio.run(client.execute(final_prompt, context_files=context_files))
-        print(result)
+        
+        if OutputManager.is_agent_mode():
+            OutputManager.print({"result": result, "provider": prov_name})
+        else:
+            print(result)
         
     except Exception as e:
         print_error(f"Execution failed: {e}")
@@ -95,7 +102,7 @@ def run_command(
 
 @app.command()
 def list(
-    json: bool = typer.Option(False, "--json", help="Output in JSON format"),
+    json: AgentOutput = False,
     context: Optional[str] = typer.Option(None, "--context", help="Context for filtering (JSON string)")
 ):
     """List available actions."""
@@ -111,29 +118,28 @@ def list(
             print_error(f"Invalid context JSON: {e}")
 
     actions = registry.list_available(action_context)
-    if json:
-        print(j.dumps([a.dict() for a in actions], indent=2))
-    else:
-        print_output(actions, title="Available Actions")
+    # OutputManager handles list of Pydantic models automatically for both JSON and Table
+    print_output(actions, title="Available Actions")
 
 @app.command()
 def status(
-    json: bool = typer.Option(False, "--json", help="Output in JSON format"),
+    json: AgentOutput = False,
     force: bool = typer.Option(False, "--force", "-f", help="Force refresh of agent state")
 ):
     """View status of Agent Providers."""
     state_manager = AgentStateManager()
     state = state_manager.get_or_refresh(force=force)
     
-    if json:
-        import json as j
+    if OutputManager.is_agent_mode():
         # Convert datetime to ISO string for JSON serialization
         data = state.dict()
         data["last_checked"] = data["last_checked"].isoformat()
-        print(j.dumps(data, indent=2))
+        OutputManager.print(data)
     else:
         # Standard output using existing print_output or custom formatting
         from monoco.core.output import Table
+        from rich import print as rprint
+        
         table = Table(title=f"Agent Status (Last Checked: {state.last_checked.strftime('%Y-%m-%d %H:%M:%S')})")
         table.add_column("Provider")
         table.add_column("Available")
@@ -147,7 +153,7 @@ def status(
                 p_state.path or "-",
                 p_state.error or "-"
             )
-        print_output(table)
+        rprint(table)
 
 @app.command()
 def doctor(
