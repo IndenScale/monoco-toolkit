@@ -2,12 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - "mkdocs.yml"
-      - "Kanban/docs/**"
+    tags: ["v*"]
   pull_request:
     branches: ["main"]
     paths-ignore:
