@@ -20,6 +20,8 @@ owner: Backend Engineer
 uid: '143695'
 ---
 
+## FEAT-0056: Implement monoco-pty Service via WebSockets
+
 # Feature: Implement monoco-pty Service
 
 ## Context
@@ -59,16 +61,20 @@ uid: '143695'
 
 ## Tasks
 
-- [ ] **Core**: 创建 `monoco/features/pty/` 目录结构。
-- [ ] **Server**: 实现 `monoco pty` CLI 命令与 FastAPI App 初始化。
-- [ ] **Logic**: 实现 `PTYManager` 类，负责 spawn shell 和 IO forwarding。
-- [ ] **API**: 实现 WebSocket 路由与双向数据管道 (Input -> Stdin, Stdout -> Output)。
-- [ ] **Context**: 实现环境变量注入逻辑 (`env` param -> `subprocess.Popen(env=...)`)。
-- [ ] **Test**: 编写简单的 HTML/JS Client 验证连通性。
+- [x] **Core**: 创建 `monoco/features/pty/` 目录结构。
+- [x] **Server**: 实现 `monoco pty` CLI 命令与 FastAPI App 初始化。
+- [x] **Logic**: 实现 `PTYManager` 类，负责 spawn shell 和 IO forwarding。
+- [x] **API**: 实现 WebSocket 路由与双向数据管道 (Input -> Stdin, Stdout -> Output)。
+- [x] **Context**: 实现环境变量注入逻辑 (`env` param -> `subprocess.Popen(env=...)`)。
+- [x] **Test**: 编写简单的 HTML/JS Client 验证连通性。
 
 ## Acceptance Criteria
 
-- [ ] 运行 `monoco pty` 后，可以通过 WebSocket 客户端连接并获得交互式 Shell。
-- [ ] 支持同时打开多个独立的 Shell Session。
-- [ ] 传递 `env={"TEST": "1"}` 时，在该 Shell 中执行 `echo $TEST` 输出 `1`。
-- [ ] 进程崩溃或退出时，WebSocket 连接正常关闭。
+- [x] 运行 `monoco pty` 后，可以通过 WebSocket 客户端连接并获得交互式 Shell。
+- [x] 支持同时打开多个独立的 Shell Session。
+- [x] 传递 `env={"TEST": "1"}` 时，在该 Shell 中执行 `echo $TEST` 输出 `1`。
+- [x] 进程崩溃或退出时，WebSocket 连接正常关闭。
+
+## Review Comments
+
+- [x] Self-Review

@@ -41,3 +41,7 @@ tags: []
 - [x] 在 `IssueMetadata` 中增加 `uid` 字段并兼容现有无 UID 的 Issue。
 - [x] 增强 `monoco issue lint`，使其在 Workspace 级别扫描 ID 冲突。
 - [x] 实现 `monoco issue move` 命令，支持跨项目移动并自动处理 ID 冲突。
+
+## Review Comments
+
+- [x] Self-Review

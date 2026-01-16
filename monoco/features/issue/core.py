@@ -6,7 +6,9 @@ from typing import List, Dict, Optional, Tuple, Any, Set, Set
 from datetime import datetime
 from .models import IssueMetadata, IssueType, IssueStatus, IssueSolution, IssueStage, IssueDetail, IsolationType, IssueIsolation, IssueID, current_time, generate_uid
 from monoco.core import git
-from monoco.core.config import get_config
+from monoco.core.config import get_config, MonocoConfig
+from monoco.core.lsp import DiagnosticSeverity
+from .validator import IssueValidator
 
 PREFIX_MAP = {
     IssueType.EPIC: "EPIC",
@@ -16,6 +18,27 @@ PREFIX_MAP = {
 }
 
 REVERSE_PREFIX_MAP = {v: k for k, v in PREFIX_MAP.items()}
+
+def enforce_lifecycle_policy(meta: IssueMetadata) -> None:
+    """
+    Apply business rules to ensure IssueMetadata consistency.
+    Should be called during Create or Update (but NOT during Read/Lint).
+    """
+    if meta.status == IssueStatus.BACKLOG:
+        meta.stage = IssueStage.FREEZED
+    
+    elif meta.status == IssueStatus.CLOSED:
+        # Enforce stage=done for closed issues
+        if meta.stage != IssueStage.DONE:
+            meta.stage = IssueStage.DONE
+        # Auto-fill closed_at if missing
+        if not meta.closed_at:
+            meta.closed_at = current_time()
+    
+    elif meta.status == IssueStatus.OPEN:
+        # Ensure valid stage for open status
+        if meta.stage is None:
+            meta.stage = IssueStage.DRAFT
 
 def _get_slug(title: str) -> str:
     slug = title.lower()
@@ -145,8 +168,10 @@ def create_issue_file(
         tags=tags,
         opened_at=current_time() if status == IssueStatus.OPEN else None
     )
-
     
+    # Enforce lifecycle policies (defaults, auto-corrections)
+    enforce_lifecycle_policy(metadata)
+
     yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
     slug = _get_slug(title)
     filename = f"{issue_id}-{slug}.md"
@@ -206,13 +231,17 @@ def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
     parsed = IssueID(issue_id)
 
     if not parsed.is_local:
+        if not parsed.namespace:
+            return None
+
         # Resolve Workspace
-        # Assumption: issues_root is direct child of project_root. 
-        # This is a weak assumption but fits current architecture.
+        # Traverse up from issues_root to find a config that defines the namespace
         project_root = issues_root.parent
-        conf = get_config(str(project_root))
         
+        # Try current root first
+        conf = MonocoConfig.load(str(project_root))
         member_rel_path = conf.project.members.get(parsed.namespace)
+        
         if not member_rel_path:
             return None
             
@@ -248,7 +277,9 @@ def update_issue(
     status: Optional[IssueStatus] = None, 
     stage: Optional[IssueStage] = None, 
     solution: Optional[IssueSolution] = None,
+    title: Optional[str] = None,
     parent: Optional[str] = None,
+    sprint: Optional[str] = None,
     dependencies: Optional[List[str]] = None,
     related: Optional[List[str]] = None,
     tags: Optional[List[str]] = None
@@ -297,9 +328,7 @@ def update_issue(
          raise ValueError(f"Lifecycle Policy: Cannot submit Backlog issue directly. Run `monoco issue pull {issue_id}` first.")
 
     if target_status == IssueStatus.CLOSED:
-        if not effective_solution:
-            raise ValueError(f"Closing an issue requires a solution. Please provide --solution or edit the file metadata.")
-            
+        # Validator will check solution presence
         current_data_stage = data.get('stage')
         
         # Policy: IMPLEMENTED requires REVIEW stage
@@ -345,11 +374,17 @@ def update_issue(
     if solution:
         data['solution'] = solution.value
     
+    if title:
+        data['title'] = title
+
     if parent is not None:
         if parent == "":
             data.pop('parent', None)  # Remove parent field
         else:
             data['parent'] = parent
+
+    if sprint is not None:
+        data['sprint'] = sprint
     
     if dependencies is not None:
         data['dependencies'] = dependencies
@@ -374,9 +409,24 @@ def update_issue(
     # Touch updated_at
     data['updated_at'] = current_time()
     
-    # Re-hydrate through Model to trigger Logic (Stage, ClosedAt defaults)
+    # Re-hydrate through Model
     try:
         updated_meta = IssueMetadata(**data)
+        
+        # Enforce lifecycle policies (defaults, auto-corrections)
+        # This ensures that when we update, we also fix invalid states (like Closed but not Done)
+        enforce_lifecycle_policy(updated_meta)
+
+        # Delegate to IssueValidator for static state validation
+        # We need to construct the full content to validate body-dependent rules (like checkboxes)
+        # Note: 'body' here is the OLD body. We assume update_issue doesn't change body.
+        # If body is invalid (unchecked boxes) and we move to DONE, this MUST fail.
+        validator = IssueValidator(issues_root)
+        diagnostics = validator.validate(updated_meta, body)
+        errors = [d for d in diagnostics if d.severity == DiagnosticSeverity.Error]
+        if errors:
+             raise ValueError(f"Validation Failed: {errors[0].message}")
+
     except Exception as e:
         raise ValueError(f"Failed to validate updated metadata: {e}")
         
@@ -434,6 +484,8 @@ def start_issue_isolation(issues_root: Path, issue_id: str, mode: IsolationType,
         raise FileNotFoundError(f"Issue {issue_id} not found.")
 
     issue = parse_issue(path)
+    if not issue:
+        raise ValueError(f"Could not parse metadata for issue {issue_id}")
     
     # Idempotency / Conflict Check
     if issue.isolation:
@@ -509,6 +561,9 @@ def prune_issue_resources(issues_root: Path, issue_id: str, force: bool, project
         raise FileNotFoundError(f"Issue {issue_id} not found.")
         
     issue = parse_issue(path)
+    if not issue:
+        raise ValueError(f"Could not parse metadata for issue {issue_id}")
+        
     deleted_items = []
 
     if not issue.isolation:
@@ -800,7 +855,10 @@ def generate_delivery_report(issues_root: Path, issue_id: str, project_root: Pat
     commits = git.search_commits_by_message(project_root, f"Ref: {issue_id}")
     
     if not commits:
-        return parse_issue(path)
+        meta = parse_issue(path)
+        if not meta:
+            raise ValueError(f"Could not parse metadata for issue {issue_id}")
+        return meta
         
     # 2. Aggregate Data
     all_files = set()
@@ -856,7 +914,10 @@ def generate_delivery_report(issues_root: Path, issue_id: str, project_root: Pat
     # We can add it to 'extra' or extend the model later.
     # For now, just persisting the text is enough for FEAT-0002.
     
-    return parse_issue(path)
+    meta = parse_issue(path)
+    if not meta:
+         raise ValueError(f"Could not parse metadata for issue {issue_id}")
+    return meta
 
 def get_children(issues_root: Path, parent_id: str) -> List[IssueMetadata]:
     """Find all direct children of an issue."""
@@ -1174,7 +1235,7 @@ def move_issue(
     # 5. Update content if ID changed
     if new_id != old_id:
         # Update frontmatter
-        content = issue.raw_content
+        content = issue.raw_content or ""
         match = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
         if match:
             yaml_str = match.group(1)
@@ -1190,9 +1251,9 @@ def move_issue(
             
             new_content = f"---\n{new_yaml}---{body}"
         else:
-            new_content = issue.raw_content
+            new_content = issue.raw_content or ""
     else:
-        new_content = issue.raw_content
+        new_content = issue.raw_content or ""
     
     # 6. Write to target
     target_path.write_text(new_content)
@@ -1202,4 +1263,7 @@ def move_issue(
     
     # 8. Return updated metadata
     final_meta = parse_issue(target_path)
+    if not final_meta:
+        raise ValueError(f"Failed to parse moved issue at {target_path}")
+        
     return final_meta, target_path

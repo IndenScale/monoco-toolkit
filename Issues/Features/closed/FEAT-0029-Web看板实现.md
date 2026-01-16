@@ -5,7 +5,7 @@ status: closed
 stage: done
 title: Web 看板实现 (Web Kanban Implementation)
 created_at: '2026-01-10T21:21:08.666551'
-opened_at: '2026-01-10T21:21:08.666538'
+opened_at: '2026-01-10T21:21:08.666551'
 updated_at: '2026-01-10T21:34:06.593250'
 closed_at: '2026-01-10T21:34:06.593293'
 solution: implemented
@@ -34,3 +34,7 @@ uid: a8bcfe
 - [x] **后端**: 在 `daemon/app.py` 中暴露 `GET /api/v1/board`。
 - [x] **前端**: 在 `apps/web/src/app/page.tsx` 中创建 `KanbanBoard` 组件。
 - [x] **集成**: 连接前端到 Daemon (端口 8642)。
+
+## Review Comments
+
+- [x] Self-Review

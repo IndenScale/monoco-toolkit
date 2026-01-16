@@ -1,68 +1,27 @@
-from typing import List, Optional, Tuple, Set
+from typing import List, Optional, Set, Tuple
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 import typer
+import re
 
 from . import core
-from .models import IssueStatus, IssueStage
+from .validator import IssueValidator
+from monoco.core.lsp import Diagnostic, DiagnosticSeverity
 
 console = Console()
 
-
-def validate_issue(path: Path, meta: core.IssueMetadata, all_issue_ids: Set[str] = set(), issues_root: Optional[Path] = None) -> List[str]:
+def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnostic]:
     """
-    Validate a single issue's integrity.
+    Verify the integrity of the Issues directory using LSP Validator.
     """
-    errors = []
+    diagnostics = []
+    validator = IssueValidator(issues_root)
     
-    # A. Directory/Status Consistency
-    expected_status = meta.status.value
-    path_parts = path.parts
-    # We might be validating a temp file, so we skip path check if it's not in the tree?
-    # Or strict check? For "Safe Edit", the file might be in a temp dir. 
-    # So we probably only care about content/metadata integrity.
-    
-    # But wait, if we overwrite the file, it MUST be valid.
-    # Let's assume the validation is about the content itself (metadata logic).
-    
-    # B. Solution Compliance
-    if meta.status == IssueStatus.CLOSED and not meta.solution:
-        errors.append(f"[red]Solution Missing:[/red] {meta.id} is closed but has no [dim]solution[/dim] field.")
-        
-    # C. Link Integrity
-    if meta.parent:
-        if all_issue_ids and meta.parent not in all_issue_ids:
-             # Check workspace (fallback)
-             found = False
-             if issues_root:
-                 if core.find_issue_path(issues_root, meta.parent):
-                     found = True
-             
-             if not found:
-                 errors.append(f"[red]Broken Link:[/red] {meta.id} refers to non-existent parent [bold]{meta.parent}[/bold].")
-
-    # D. Lifecycle Guard (Backlog)
-    if meta.status == IssueStatus.BACKLOG and meta.stage != IssueStage.FREEZED:
-        errors.append(f"[red]Lifecycle Error:[/red] {meta.id} is backlog but stage is not [bold]freezed[/bold] (found: {meta.stage}).")
-
-    return errors
-
-def check_integrity(issues_root: Path, recursive: bool = False) -> List[str]:
-    """
-    Verify the integrity of the Issues directory.
-    Returns a list of error messages.
-    
-    If recursive=True, performs workspace-level validation including:
-    - Cross-project ID collision detection
-    - Cross-project UID collision detection
-    """
-    errors = []
-    all_issue_ids = set()  # For parent reference validation (includes namespaced IDs)
-    id_to_projects = {}  # local_id -> [(project_name, meta, file)]
-    all_uids = {}  # uid -> (project, issue_id)
+    all_issue_ids = set()
     all_issues = []
     
+    # 1. Collection Phase (Build Index)
     # Helper to collect issues from a project
     def collect_project_issues(project_issues_root: Path, project_name: str = "local"):
         project_issues = []
@@ -81,92 +40,232 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[str]:
                         local_id = meta.id
                         full_id = f"{project_name}::{local_id}" if project_name != "local" else local_id
                         
-                        # Track ID occurrences per project
-                        if local_id not in id_to_projects:
-                            id_to_projects[local_id] = []
-                        id_to_projects[local_id].append((project_name, meta, f))
-                        
-                        # Add IDs for reference validation
-                        all_issue_ids.add(local_id)  # Local ID
+                        all_issue_ids.add(local_id)
                         if project_name != "local":
-                            all_issue_ids.add(full_id)  # Namespaced ID
+                            all_issue_ids.add(full_id)
                         
-                        # Check UID collision (if UID exists)
-                        if meta.uid:
-                            if meta.uid in all_uids:
-                                existing_project, existing_id = all_uids[meta.uid]
-                                errors.append(
-                                    f"[red]UID Collision:[/red] UID {meta.uid} is duplicated.\n"
-                                    f"  - {existing_project}::{existing_id}\n"
-                                    f"  - {project_name}::{local_id}"
-                                )
-                            else:
-                                all_uids[meta.uid] = (project_name, local_id)
-                        
-                        project_issues.append((f, meta, project_name))
+                        project_issues.append((f, meta))
         return project_issues
 
-    # 1. Collect local issues
     all_issues.extend(collect_project_issues(issues_root, "local"))
-
-    # 2. If recursive, collect workspace member issues
+    
     if recursive:
         try:
             from monoco.core.config import get_config
             project_root = issues_root.parent
             conf = get_config(str(project_root))
-            
             for member_name, rel_path in conf.project.members.items():
                 member_root = (project_root / rel_path).resolve()
                 member_issues_dir = member_root / "Issues"
-                
                 if member_issues_dir.exists():
-                    all_issues.extend(collect_project_issues(member_issues_dir, member_name))
-        except Exception as e:
-            # Fail gracefully if workspace config is missing
+                    collect_project_issues(member_issues_dir, member_name)
+        except Exception:
             pass
 
-    # 3. Check for ID collisions within same project
-    for local_id, occurrences in id_to_projects.items():
-        # Group by project
-        projects_with_id = {}
-        for project_name, meta, f in occurrences:
-            if project_name not in projects_with_id:
-                projects_with_id[project_name] = []
-            projects_with_id[project_name].append((meta, f))
+    # 2. Validation Phase
+    for path, meta in all_issues:
+        content = path.read_text() # Re-read content for validation
         
-        # Check for duplicates within same project
-        for project_name, metas in projects_with_id.items():
-            if len(metas) > 1:
-                # Same ID appears multiple times in same project - this is an error
-                error_msg = f"[red]ID Collision:[/red] {local_id} appears {len(metas)} times in project '{project_name}':\n"
-                for idx, (meta, f) in enumerate(metas, 1):
-                    error_msg += f"  {idx}. uid: {meta.uid or 'N/A'} | created: {meta.created_at} | stage: {meta.stage} | status: {meta.status.value}\n"
-                error_msg += f"  [yellow]→ Action:[/yellow] Remove duplicate or use 'monoco issue move --to <target> --renumber' to resolve."
-                errors.append(error_msg)
-
-    # 4. Validation
-    for path, meta, project_name in all_issues:
-        # A. Directory/Status Consistency (Only check this for files in the tree)
-        expected_status = meta.status.value
-        path_parts = path.parts
-        if expected_status not in path_parts:
-             errors.append(f"[yellow]Placement Error:[/yellow] {meta.id} has status [cyan]{expected_status}[/cyan] but is not under a [dim]{expected_status}/[/dim] directory.")
+        # A. Run Core Validator
+        file_diagnostics = validator.validate(meta, content, all_issue_ids)
         
-        # Reuse common logic
-        errors.extend(validate_issue(path, meta, all_issue_ids, issues_root))
+        # Add context to diagnostics (Path)
+        for d in file_diagnostics:
+             d.source = f"{meta.id}" # Use ID as source context
+             d.data = {'path': path} # Attach path for potential fixers
+             diagnostics.append(d)
+             
+    return diagnostics
 
-    return errors
 
-
-def run_lint(issues_root: Path, recursive: bool = False):
-    errors = check_integrity(issues_root, recursive)
+def run_lint(issues_root: Path, recursive: bool = False, fix: bool = False, format: str = "table", file_path: Optional[str] = None):
+    """
+    Run lint with optional auto-fix and format selection.
     
-    if not errors:
+    Args:
+        issues_root: Root directory of issues
+        recursive: Recursively scan workspace members
+        fix: Apply auto-fixes
+        format: Output format (table, json)
+        file_path: Optional path to a single file to validate (LSP mode)
+    """
+    # Single-file mode (for LSP integration)
+    if file_path:
+        file = Path(file_path).resolve()
+        if not file.exists():
+            console.print(f"[red]Error:[/red] File not found: {file_path}")
+            raise typer.Exit(code=1)
+        
+        # Parse and validate single file
+        try:
+            meta = core.parse_issue(file)
+            if not meta:
+                console.print(f"[red]Error:[/red] Failed to parse issue metadata from {file_path}")
+                raise typer.Exit(code=1)
+            
+            content = file.read_text()
+            validator = IssueValidator(issues_root)
+            
+            # For single-file mode, we need to build a minimal index
+            # We'll scan the entire workspace to get all issue IDs for reference validation
+            all_issue_ids = set()
+            for subdir in ["Epics", "Features", "Chores", "Fixes"]:
+                d = issues_root / subdir
+                if d.exists():
+                    for status in ["open", "closed", "backlog"]:
+                        status_dir = d / status
+                        if status_dir.exists():
+                            for f in status_dir.rglob("*.md"):
+                                try:
+                                    m = core.parse_issue(f)
+                                    if m:
+                                        all_issue_ids.add(m.id)
+                                except Exception:
+                                    pass
+            
+            diagnostics = validator.validate(meta, content, all_issue_ids)
+            
+            # Add context
+            for d in diagnostics:
+                d.source = meta.id
+                d.data = {'path': file}
+                
+        except Exception as e:
+            console.print(f"[red]Error:[/red] Validation failed: {e}")
+            raise typer.Exit(code=1)
+    else:
+        # Full workspace scan mode
+        diagnostics = check_integrity(issues_root, recursive)
+    
+    # Filter only Warnings and Errors
+    issues = [d for d in diagnostics if d.severity <= DiagnosticSeverity.Warning]
+    
+    if fix:
+        fixed_count = 0
+        console.print("[dim]Attempting auto-fixes...[/dim]")
+        
+        # We must track processed paths to avoid redundant writes if multiple errors exist
+        processed_paths = set()
+        
+        for d in issues:
+            path = d.data.get('path')
+            if not path: continue
+            
+            # Read fresh content iteration
+            pass
+
+        # Group diagnostics by file path
+        from collections import defaultdict
+        file_diags = defaultdict(list)
+        for d in issues:
+            if d.data.get('path'):
+                file_diags[d.data['path']].append(d)
+        
+        for path, diags in file_diags.items():
+            try:
+                content = path.read_text()
+                new_content = content
+                has_changes = False
+                
+                # Parse meta once for the file
+                try:
+                    meta = core.parse_issue(path)
+                except Exception:
+                    console.print(f"[yellow]Skipping fix for {path.name}: Cannot parse metadata[/yellow]")
+                    continue
+
+                # Apply fixes for this file
+                for d in diags:
+                    if "Structure Error" in d.message:
+                        expected_header = f"## {meta.id}: {meta.title}"
+                        
+                        # Check if strictly present
+                        if expected_header in new_content:
+                            continue
+                            
+                        # Strategy: Look for existing heading with same ID to replace
+                        # Matches: "## ID..." or "## ID ..."
+                        # Regex: ^##\s+ID\b.*$
+                        # We use meta.id which is safe.
+                        heading_regex = re.compile(rf"^##\s+{re.escape(meta.id)}.*$", re.MULTILINE)
+                        
+                        match_existing = heading_regex.search(new_content)
+                        
+                        if match_existing:
+                            # Replace existing incorrect heading
+                            # We use sub to replace just the first occurrence
+                            new_content = heading_regex.sub(expected_header, new_content, count=1)
+                            has_changes = True
+                        else:
+                            # Insert after frontmatter
+                            fm_match = re.search(r"^---(.*?)---", new_content, re.DOTALL | re.MULTILINE)
+                            if fm_match:
+                                end_pos = fm_match.end()
+                                header_block = f"\n\n{expected_header}\n"
+                                new_content = new_content[:end_pos] + header_block + new_content[end_pos:].lstrip()
+                                has_changes = True
+
+                    if "Review Requirement: Missing '## Review Comments' section" in d.message:
+                         if "## Review Comments" not in new_content:
+                             new_content = new_content.rstrip() + "\n\n## Review Comments\n\n- [ ] Self-Review\n"
+                             has_changes = True
+
+                if has_changes:
+                    path.write_text(new_content)
+                    fixed_count += 1
+                    console.print(f"[dim]Fixed: {path.name}[/dim]")
+            except Exception as e:
+                console.print(f"[red]Failed to fix {path.name}: {e}[/red]")
+
+        console.print(f"[green]Applied auto-fixes to {fixed_count} files.[/green]")
+        
+        # Re-run validation to verify
+        if file_path:
+            # Re-validate single file
+            file = Path(file_path).resolve()
+            meta = core.parse_issue(file)
+            content = file.read_text()
+            validator = IssueValidator(issues_root)
+            diagnostics = validator.validate(meta, content, all_issue_ids)
+            for d in diagnostics:
+                d.source = meta.id
+                d.data = {'path': file}
+        else:
+            diagnostics = check_integrity(issues_root, recursive)
+        issues = [d for d in diagnostics if d.severity <= DiagnosticSeverity.Warning]
+
+    # Output formatting
+    if format == "json":
+        import json
+        from pydantic import RootModel
+        # Use RootModel to export a list of models
+        print(RootModel(issues).model_dump_json(indent=2))
+        if any(d.severity == DiagnosticSeverity.Error for d in issues):
+            raise typer.Exit(code=1)
+        return
+
+    if not issues:
         console.print("[green]✔[/green] Issue integrity check passed. No integrity errors found.")
     else:
-        table = Table(title="Issue Integrity Issues", show_header=False, border_style="red")
-        for err in errors:
-            table.add_row(err)
+        table = Table(title="Issue Integrity Report", show_header=True, header_style="bold magenta", border_style="red")
+        table.add_column("Issue", style="cyan")
+        table.add_column("Severity", justify="center")
+        table.add_column("Line", justify="right", style="dim")
+        table.add_column("Message")
+        
+        for d in issues:
+            sev_style = "red" if d.severity == DiagnosticSeverity.Error else "yellow"
+            sev_label = "ERROR" if d.severity == DiagnosticSeverity.Error else "WARN"
+            line_str = str(d.range.start.line + 1) if d.range else "-"
+            table.add_row(
+                d.source or "Unknown",
+                f"[{sev_style}]{sev_label}[/{sev_style}]",
+                line_str,
+                d.message
+            )
+            
         console.print(table)
-        raise typer.Exit(code=1)
+        
+        if any(d.severity == DiagnosticSeverity.Error for d in issues):
+            raise typer.Exit(code=1)
+

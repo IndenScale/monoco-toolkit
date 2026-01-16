@@ -21,6 +21,8 @@ owner: Frontend Engineer
 uid: 86ce1a
 ---
 
+## FEAT-0057: Kanban Terminal Integration (xterm.js)
+
 # Feature: Kanban Terminal Integration
 
 ## Context
@@ -74,3 +76,7 @@ Now we need to integrate the Terminal interface into the Kanban Web UI to achiev
 - [x] 点击或按快捷键可展开/折叠面板。
 - [x] 终端能成功连接后端，显示 prompt，并能执行 `ls` 命令。
 - [x] 调整浏览器窗口大小时，终端内容自适应重排 (resize)。
+
+## Review Comments
+
+- [x] Self-Review

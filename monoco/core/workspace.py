@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import List, Optional, Dict
 from pydantic import BaseModel, Field, ConfigDict
@@ -26,7 +27,7 @@ def is_project_root(path: Path) -> bool:
     """
     Check if a directory serves as a Monoco project root.
     Criteria:
-    - has .monoco/ directory (which should contain config.yaml)
+    - has .monoco/ directory (which should contain project.yaml)
     """
     if not path.is_dir():
         return False
@@ -66,15 +67,20 @@ def find_projects(workspace_root: Path) -> List[MonocoProject]:
     if root_project:
         projects.append(root_project)
     
-    # 2. Check first-level subdirectories
-    for item in workspace_root.iterdir():
-        if item.is_dir() and not item.name.startswith('.'):
-            # Avoid re-adding root if it was already added (unlikely due to iterdir)
-            if item == workspace_root: continue
+    # 2. Recursive Scan
+    for root, dirs, files in os.walk(workspace_root):
+        # Skip hidden directories and node_modules
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d != 'node_modules' and d != 'venv']
+        
+        for d in dirs:
+            project_path = Path(root) / d
+            # Avoid re-adding root if it was somehow added (unlikely here)
+            if project_path == workspace_root: continue
             
-            p = load_project(item)
-            if p:
-                projects.append(p)
+            if is_project_root(project_path):
+                p = load_project(project_path)
+                if p:
+                    projects.append(p)
                 
     return projects
 

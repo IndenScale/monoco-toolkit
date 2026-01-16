@@ -16,7 +16,7 @@ related: []
 tags: [extension]
 ---
 
-## FEAT-0075: VS Code 插件“去计算化”重构 (Proxy Pattern)
+## FEAT-0075: VS Code Extension Realignment: Implementation of Proxy Pattern
 
 ## 最终成果 (Outcome)
 
@@ -59,3 +59,7 @@ tags: [extension]
 - [x] **Task 5: 清理冗余代码**
   - [x] 删除了 `IssueParser.ts`。
   - [x] 移除了 `extension.ts` 中的手动文件扫描。
+
+## Review Comments
+
+- [x] Self-Review

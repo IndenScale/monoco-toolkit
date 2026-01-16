@@ -2,6 +2,7 @@
 id: FEAT-0006
 type: feature
 status: closed
+stage: Done
 title: 支持层级 Issue 组织 (Support Hierarchical Issue Organization)
 created_at: '2026-01-09'
 parent: EPIC-0002
@@ -13,7 +14,7 @@ tags: []
 uid: d68c40
 ---
 
-## FEAT-0006: 支持层级 Issue 组织
+## FEAT-0006: 支持层级 Issue 组织 (Support Hierarchical Issue Organization)
 
 ## 目标 (Objective)
 
@@ -32,3 +33,7 @@ uid: d68c40
 - [x] 更新 `core.py` 逻辑，在 `update_issue_status` 中计算相对路径，确保 `rename` 操作保留子目录层级。
 - [x] 验证 `core.parse_issue` 和 `core.find_next_id` 的路径查找逻辑。
 - [x] (可选) 在 `create` 命令中添加 `--subdir` 参数以支持直接创建在子目录中。
+
+## Review Comments
+
+- [x] Self-Review

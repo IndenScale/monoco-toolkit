@@ -2,6 +2,7 @@
 id: FEAT-0008
 type: feature
 status: closed
+stage: Done
 title: 建立 Issue 系统使用文档体系 (Establish Issue Docs)
 created_at: '2026-01-09'
 dependencies: []
@@ -15,7 +16,7 @@ parent: EPIC-0002
 uid: 3a2bc7
 ---
 
-## FEAT-0008: 建立 Issue 系统使用文档体系
+## FEAT-0008: 建立 Issue 系统使用文档体系 (Establish Issue Docs)
 
 ## 目标 (Objective)
 
@@ -42,3 +43,7 @@ Issue System 功能日益完善（包含 Create, Open, Close, Backlog, Scope, Li
 - [x] **翻译英文手册**: 将中文手册翻译为英文，确保术语准确（如 Epic, Feature, Chore）。
 - [x] **更新索引**: 在 `README.md` 或顶层索引中添加指向该文档的链接。
 - [x] **验证**: 使用 `monoco i18n scan` 验证文档的多语言覆盖率（如果适用）。
+
+## Review Comments
+
+- [x] Self-Review

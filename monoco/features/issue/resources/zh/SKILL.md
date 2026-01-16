@@ -38,7 +38,7 @@ Monoco 不仅仅复刻 Jira，而是基于 **"思维模式 (Mindset)"** 重新�
 - **Focus**: "How" (为了支撑系统运转，必须做什么)。
 - **Prefix**: `CHORE-`
 
-_(取代了 Task 概念)_
+> 注：取代了传统的 Task 概念。
 
 #### 🐞 FIX (修复)
 
@@ -47,7 +47,7 @@ _(取代了 Task 概念)_
 - **Focus**: "Fix" (恢复原状)。
 - **Prefix**: `FIX-`
 
-_(取代了 Bug 概念)_
+> 注：取代了传统的 Bug 概念。
 
 ---
 
@@ -82,4 +82,33 @@ _(取代了 Bug 概念)_
 
 5. **Modification**: `monoco issue start/submit/delete <id>`
 
-6. **Commit**: `monoco issue commit` (Atomic commit for issue files)
+6. **Commit**: `monoco issue commit` (原子化提交 Issue 文件)
+7. **Validation**: `monoco issue lint` (强制执行合规性检查)
+
+## 合规与结构校验 (Validation Rules)
+
+为了确保数据严谨性，所有 Issue Ticket 必须遵循以下强制规则：
+
+### 1. 结构一致性 (Structural Consistency)
+
+- 必须包含一个二级标题 (`##`)，内容必须与 Front Matter 中的 ID 和 Title 严格匹配。
+- 格式：`## {ID}: {Title}`
+- 示例：`## FEAT-0082: Issue Ticket Validator`
+
+### 2. 内容完整性 (Content Completeness)
+
+- **Checkbox 数量**: 每个 Ticket 必须包含至少 2 个 Checkbox（通常代表 AC 和 Tasks）。
+- **评审记录**: 当 `stage` 为 `review` 或 `done` 时，必须包含 `## Review Comments` 标题且内容不能为空。
+
+### 3. Checkbox 语法与层级 (Checkbox Matrix)
+
+- 仅限使用: `- [ ]`, `- [x]`, `- [-]`, `- [/]`。
+- **层级继承**: 若存在嵌套 Checkbox，父项状态必须正确反映子项的聚合结果（例如：任一子项为 `[/]` 则父项必为 `[/]`；子项全选则父项为 `[x]`）。
+
+### 4. 状态矩阵 (State Matrix)
+
+`status` (物理存放目录) 与 `stage` (Front Matter 字段) 必须兼容：
+
+- **open**: Draft, Doing, Review, Done
+- **backlog**: Draft, Doing, Review
+- **closed**: Done

@@ -70,6 +70,13 @@ def test_feature_0012_workflow(issues_root):
     # 5. Test Lifecycle: Submit (Doing -> Review)
     # ------------------------------------------------
     print("\n[Test] Submitting Issue...")
+    
+    # Complete tasks to satisfy validator
+    content = f_path.read_text()
+    new_content = content.replace("- [ ]", "- [x]")
+    new_content += "\n\n## Review Comments\n\n- [x] Self-Review\n"
+    f_path.write_text(new_content)
+    
     core.update_issue(issues_root, fid, stage=IssueStage.REVIEW)
     
     meta = core.parse_issue(f_path)

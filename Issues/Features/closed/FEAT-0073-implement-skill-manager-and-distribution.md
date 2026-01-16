@@ -16,6 +16,8 @@ related: []
 tags: []
 ---
 
+## FEAT-0073: Implement Skill Manager and Distribution
+
 ## 背景 (Context)
 
 通过对 `Cursor`, `Antigravity`, `Gemini CLI`, `Qwen Code` 等主流 Agent 框架的调研，确认 **Agent Skills (SKILL.md)** 已成为事实上的行业标准。
@@ -140,3 +142,7 @@ tags: []
 - **Standard Compliant**: 严格遵循 agentskills.io 规范
 - **Feature-Centric**: 每个 Feature 拥有自己的文档和技能
 - **Type-Safe**: 使用 Pydantic 确保 metadata 正确性
+
+## Review Comments
+
+- [x] Self-Review

@@ -18,8 +18,16 @@ uid: acb705
 
 ## Objective
 
+Implement observability hooks in the Toolkit to allow for system-wide monitoring.
+
 ## Acceptance Criteria
+
+- [ ] KR1: Hooks for core CLI commands.
+- [ ] KR2: Exporting metrics in a standard format.
 
 ## Technical Tasks
 
-- [ ]
+- [ ] Add instrumentation to `monoco.core`.
+- [ ] Implement a basic metrics exporter.
+
+## Review Comments

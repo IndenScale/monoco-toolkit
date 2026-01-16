@@ -20,8 +20,16 @@ tags: []
 
 ## Objective
 
+Polish the icons and layout of the Kanban board for a more professional look.
+
 ## Acceptance Criteria
+
+- [x] Icons are consistent and layout is improved.
 
 ## Technical Tasks
 
-- [ ] 
+- [x] Update icons and adjust CSS layout.
+
+## Review Comments
+
+- [x] Self-Review

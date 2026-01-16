@@ -147,22 +147,9 @@ class IssueMetadata(BaseModel):
         # status: backlog -> stage: freezed
         # status: closed -> stage: done
         # status: open -> stage: draft | doing | review | done (default draft)
-
-        if self.status == IssueStatus.BACKLOG:
-            self.stage = IssueStage.FREEZED
         
-        elif self.status == IssueStatus.CLOSED:
-            # Enforce stage=done for closed issues
-            if self.stage != IssueStage.DONE:
-                self.stage = IssueStage.DONE
-            # Auto-fill closed_at if missing
-            if not self.closed_at:
-                self.closed_at = current_time()
-        
-        elif self.status == IssueStatus.OPEN:
-            # Ensure valid stage for open status
-            if self.stage is None:
-                self.stage = IssueStage.DRAFT
+        # NOTE: We do NOT auto-correct state here anymore to allow Linter to detect inconsistencies.
+        # Auto-correction should be applied explicitly by 'create' or 'update' commands via core logic.
         
         return self
 
