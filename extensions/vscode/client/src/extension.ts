@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as fs from "fs";
 import * as vscode from "vscode";
 import {
   LanguageClient,
@@ -17,6 +18,7 @@ import {
 } from "./views/ActionsTreeProvider";
 import { IssueHoverProvider } from "./providers/IssueHoverProvider";
 import { IssueCodeLensProvider } from "./providers/IssueCodeLensProvider";
+import { IssueFieldControlProvider } from "./providers/IssueFieldControlProvider";
 
 let client: LanguageClient;
 
@@ -89,6 +91,31 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("monoco.createIssue", () => {
+      kanbanProvider.showCreateView();
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("monoco.openSettings", () => {
+      vscode.commands.executeCommand(
+        "workbench.action.openSettings",
+        "@ext:indenscale.monoco-vscode"
+      );
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("monoco.openWebUI", () => {
+      const config = vscode.workspace.getConfiguration("monoco");
+      const webUrl = config.get("webUrl") as string;
+      if (webUrl) {
+        vscode.env.openExternal(vscode.Uri.parse(webUrl));
+      }
+    })
+  );
+
   // Check dependencies and bootstrap if needed
   checkAndBootstrap();
 
@@ -116,6 +143,72 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       { scheme: "file", language: "markdown" },
       new IssueCodeLensProvider()
+    )
+  );
+
+  // Register Field Control Provider (Status/Stage)
+  const issueFieldControl = new IssueFieldControlProvider();
+  context.subscriptions.push(
+    vscode.languages.registerDocumentLinkProvider(
+      { scheme: "file", language: "markdown" },
+      issueFieldControl
+    )
+  );
+
+  // Register Toggle Commands
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "monoco.toggleStatus",
+      async (filePath: string, line: number) => {
+        const doc = await vscode.workspace.openTextDocument(filePath);
+        const lineText = doc.lineAt(line).text;
+        const match = lineText.match(/^status:\s*(\w+)/);
+        if (match) {
+          const current = match[1];
+          const next = issueFieldControl.getNextValue(
+            current,
+            issueFieldControl.getEnumList("status")
+          );
+
+          const start = lineText.indexOf(current);
+          const end = start + current.length;
+          const range = new vscode.Range(line, start, line, end);
+
+          const edit = new vscode.WorkspaceEdit();
+          edit.replace(doc.uri, range, next);
+          if (await vscode.workspace.applyEdit(edit)) {
+            await doc.save();
+          }
+        }
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "monoco.toggleStage",
+      async (filePath: string, line: number) => {
+        const doc = await vscode.workspace.openTextDocument(filePath);
+        const lineText = doc.lineAt(line).text;
+        const match = lineText.match(/^stage:\s*(\w+)/);
+        if (match) {
+          const current = match[1];
+          const next = issueFieldControl.getNextValue(
+            current,
+            issueFieldControl.getEnumList("stage")
+          );
+
+          const start = lineText.indexOf(current);
+          const end = start + current.length;
+          const range = new vscode.Range(line, start, line, end);
+
+          const edit = new vscode.WorkspaceEdit();
+          edit.replace(doc.uri, range, next);
+          if (await vscode.workspace.applyEdit(edit)) {
+            await doc.save();
+          }
+        }
+      }
     )
   );
 
@@ -278,28 +371,18 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
             const issues: any[] = await client.sendRequest(
               "monoco/getAllIssues"
             );
-            // Compute Projects
-            const projectSet = new Set<string>();
-            issues.forEach((i) => {
-              if (i.project_id) projectSet.add(i.project_id);
-            });
-            const projects = Array.from(projectSet).map((id) => ({
-              id,
-              name: id,
-            })); // Metadata?
-
-            // Actually use VS Code Memento
-            const memento =
-              (vscode.workspace
-                .getConfiguration("monoco")
-                .get("workspaceState") as any) || {};
+            const metadata: any = await client.sendRequest(
+              "monoco/getMetadata"
+            );
 
             this.view?.webview.postMessage({
               type: "DATA_UPDATED",
               payload: {
                 issues,
-                projects,
-                workspaceState: memento,
+                projects: metadata.projects,
+                workspaceState: {
+                  last_active_project_id: metadata.last_active_project_id,
+                },
               },
             });
           } catch (e) {
@@ -308,11 +391,29 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "SAVE_STATE": {
-          // We use globalState or WorkspaceConfiguration?
-          // "workspace/state" endpoint was persistent.
-          // Let's use workspaceState Memento ? MonocoKanbanProvider doesn't have access to context?
-          // Passing context to constructor might be needed.
-          // For now, ignore persistence or use a simple file?
+          if (data.key === "last_active_project_id") {
+            const wsFolder = vscode.workspace.workspaceFolders?.[0];
+            if (wsFolder) {
+              const statePath = path.join(
+                wsFolder.uri.fsPath,
+                ".monoco",
+                "state.json"
+              );
+              try {
+                let current = {};
+                if (fs.existsSync(statePath)) {
+                  current = JSON.parse(fs.readFileSync(statePath, "utf-8"));
+                }
+                const updated = {
+                  ...current,
+                  last_active_project_id: data.value,
+                };
+                fs.writeFileSync(statePath, JSON.stringify(updated, null, 2));
+              } catch (e) {
+                console.error("Failed to save state.json", e);
+              }
+            }
+          }
           break;
         }
         case "UPDATE_ISSUE": {
@@ -491,6 +592,12 @@ parent: "${parent || ""}"
   public refresh() {
     if (this.view) {
       this.view.webview.postMessage({ type: "REFRESH" });
+    }
+  }
+
+  public showCreateView() {
+    if (this.view) {
+      this.view.webview.postMessage({ type: "SHOW_CREATE_VIEW" });
     }
   }
 }

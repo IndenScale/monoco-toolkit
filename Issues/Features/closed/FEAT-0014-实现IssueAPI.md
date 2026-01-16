@@ -5,7 +5,7 @@ status: closed
 stage: done
 title: 实现 Issue 管理 API (Implement Issue API)
 created_at: '2026-01-11T11:44:10.963729'
-opened_at: '2026-01-11T11:44:10.963716'
+opened_at: '2026-01-11T11:44:10.963729'
 updated_at: '2026-01-11T11:54:37.517210'
 closed_at: '2026-01-11T11:54:37.517239'
 solution: implemented
@@ -16,7 +16,7 @@ parent: EPIC-0003
 uid: 395c35
 ---
 
-## FEAT-0014: 实现 Issue 管理 API
+## FEAT-0014: 实现 Issue 管理 API (Implement Issue API)
 
 ## 目标 (Objective)
 
@@ -37,3 +37,7 @@ uid: 395c35
 - [x] **定义 API 模型**: 在 `monoco.daemon.models` 中为 `CreateIssueRequest`, `UpdateIssueRequest`, 和 `IssueResponse` 创建 Pydantic 模型。
 - [x] **实现端点**: 在 `monoco.daemon.app` 中添加 `POST`, `GET`, `PATCH`, `DELETE` 路由。
 - [x] **添加测试**: 编写 `pytest` 测试用例以验证 API 端点和核心逻辑更改。
+
+## Review Comments
+
+- [x] Self-Review

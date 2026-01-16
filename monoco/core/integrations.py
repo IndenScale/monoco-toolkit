@@ -22,13 +22,58 @@ class AgentIntegration(BaseModel):
         name: Human-readable name of the framework
         system_prompt_file: Path to the system prompt/rules file relative to project root
         skill_root_dir: Path to the skills directory relative to project root
+        bin_name: Optional name of the binary to check for (e.g., 'cursor', 'gemini')
+        version_cmd: Optional command to check version (e.g., '--version')
         enabled: Whether this integration is active (default: True)
     """
     key: str = Field(..., description="Unique framework identifier")
     name: str = Field(..., description="Human-readable framework name")
     system_prompt_file: str = Field(..., description="Path to system prompt file (relative to project root)")
     skill_root_dir: str = Field(..., description="Path to skills directory (relative to project root)")
+    bin_name: Optional[str] = Field(None, description="Binary name to check for availability")
+    version_cmd: Optional[str] = Field(None, description="Command to check version")
     enabled: bool = Field(default=True, description="Whether this integration is active")
+
+    def check_health(self) -> "AgentProviderHealth":
+        """
+        Check health of this integration.
+        """
+        import shutil
+        import subprocess
+        import time
+
+        if not self.bin_name:
+            return AgentProviderHealth(available=True) # If no binary required, assume ok
+
+        bin_path = shutil.which(self.bin_name)
+        if not bin_path:
+            return AgentProviderHealth(available=False, error=f"Binary '{self.bin_name}' not found in PATH")
+
+        if not self.version_cmd:
+             return AgentProviderHealth(available=True, path=bin_path)
+
+        start_time = time.time()
+        try:
+            # We use a shortcut to check version cmd
+            # Some tools might need e.g. 'cursor --version'
+            subprocess.run(
+                [self.bin_name] + self.version_cmd.split(),
+                check=True,
+                capture_output=True,
+                timeout=5
+            )
+            latency = int((time.time() - start_time) * 1000)
+            return AgentProviderHealth(available=True, path=bin_path, latency_ms=latency)
+        except Exception as e:
+            return AgentProviderHealth(available=False, path=bin_path, error=str(e))
+
+
+class AgentProviderHealth(BaseModel):
+    """Health check result for an agent provider."""
+    available: bool
+    path: Optional[str] = None
+    error: Optional[str] = None
+    latency_ms: Optional[int] = None
 
 
 # Default Integration Registry
@@ -38,24 +83,32 @@ DEFAULT_INTEGRATIONS: Dict[str, AgentIntegration] = {
         name="Cursor",
         system_prompt_file=".cursorrules",
         skill_root_dir=".cursor/skills/",
+        bin_name="cursor",
+        version_cmd="--version",
     ),
     "claude": AgentIntegration(
         key="claude",
         name="Claude Code",
         system_prompt_file="CLAUDE.md",
         skill_root_dir=".claude/skills/",
+        bin_name="claude",
+        version_cmd="--version",
     ),
     "gemini": AgentIntegration(
         key="gemini",
         name="Gemini CLI",
         system_prompt_file="GEMINI.md",
         skill_root_dir=".gemini/skills/",
+        bin_name="gemini",
+        version_cmd="--version",
     ),
     "qwen": AgentIntegration(
         key="qwen",
         name="Qwen Code",
         system_prompt_file="QWEN.md",
         skill_root_dir=".qwen/skills/",
+        bin_name="qwen",
+        version_cmd="--version",
     ),
     "agent": AgentIntegration(
         key="agent",

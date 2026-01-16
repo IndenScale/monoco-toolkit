@@ -35,3 +35,7 @@ Optimize the toolkit extension UI for a better user experience, focusing on aest
 - [x] Implement multi-view architecture (Home, Create, Settings) in `index.html` and `main.js`.
 - [x] Implement native HTML forms for Issue Creation and Settings.
 - [x] Update extension host (`extension.ts`) to support `OPEN_URL` message.
+
+## Review Comments
+
+- [x] Self-Review

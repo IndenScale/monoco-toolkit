@@ -2,6 +2,7 @@ import os
 import subprocess
 import yaml
 from pathlib import Path
+from typing import Optional
 import typer
 from rich.console import Console
 from monoco.core.output import print_output
@@ -107,12 +108,18 @@ def ask_with_selection(message: str, default: str) -> str:
 def init_cli(
     ctx: typer.Context, 
     global_only: bool = typer.Option(False, "--global", help="Only configure global user settings"),
-    project_only: bool = typer.Option(False, "--project", help="Only configure current project")
+    project_only: bool = typer.Option(False, "--project", help="Only configure current project"),
+    # Non-interactive arguments
+    name: Optional[str] = typer.Option(None, "--name", "-n", help="Project Name"),
+    key: Optional[str] = typer.Option(None, "--key", "-k", help="Project Key"),
+    author: Optional[str] = typer.Option(None, "--author", "-a", help="Author Name"),
+    telemetry: Optional[bool] = typer.Option(None, "--telemetry/--no-telemetry", help="Enable/Disable telemetry")
 ):
     """
     Initialize Monoco configuration (Global and/or Project).
     """
-    from rich.prompt import Confirm
+    # Force non-interactive for now as requested
+    interactive = False
     
     home_dir = Path.home() / ".monoco"
     global_config_path = home_dir / "config.yaml"
@@ -126,9 +133,31 @@ def init_cli(
             home_dir.mkdir(parents=True, exist_ok=True)
             
             default_author = get_git_user() or os.getenv("USER", "developer")
-            author = ask_with_selection("Your Name (for issue tracking)", default_author)
             
-            telemetry_enabled = Confirm.ask("Enable anonymous telemetry to help improve Monoco?", default=True)
+            if author is None:
+                if interactive:
+                    author = ask_with_selection("Your Name (for issue tracking)", default_author)
+                else:
+                    # Fallback or Error? 
+                    # For global author, we can use default if not provided, or error?
+                    # User said "Directly error saying what field is missing"
+                    # But author has a reasonable default. Let's try to use default if available, else error.
+                    if not default_author:
+                         console.print("[red]Error:[/red] Missing required field: --author")
+                         raise typer.Exit(code=1)
+                    author = default_author
+
+            if telemetry is None:
+                if interactive:
+                    from rich.prompt import Confirm
+                    telemetry = Confirm.ask("Enable anonymous telemetry to help improve Monoco?", default=True)
+                else:
+                    # Default to True or False? Let's default to False for non-interactive safety or True?
+                    # Usually explicit is better. Let's assume False if not specified in non-interactive.
+                    # Or maybe we just skip it if not provided?
+                    # Let's check user intent: "Report what field is missing".
+                    # Telemetry is optional. Let's set it to False if missing.
+                    telemetry = False
 
             user_config = {
                 "core": {
@@ -136,7 +165,7 @@ def init_cli(
                     # Editor is handled by env/config defaults, no need to prompt
                 },
                 "telemetry": {
-                    "enabled": telemetry_enabled
+                    "enabled": telemetry
                 }
             }
             
@@ -151,30 +180,60 @@ def init_cli(
     # --- 2. Project Configuration ---
     cwd = Path.cwd()
     project_config_dir = cwd / ".monoco"
-    project_config_path = project_config_dir / "config.yaml"
+    workspace_config_path = project_config_dir / "workspace.yaml"
+    project_config_path = project_config_dir / "project.yaml"
     
     # Check if we should init project
-    if project_config_path.exists():
-        if not Confirm.ask(f"Project config already exists at [dim]{project_config_path}[/dim]. Overwrite?"):
-            console.print("[yellow]Skipping project initialization.[/yellow]")
-            return
+    if workspace_config_path.exists() or project_config_path.exists():
+        if interactive:
+            from rich.prompt import Confirm
+            if not Confirm.ask(f"Project/Workspace config already exists in [dim]{project_config_dir}[/dim]. Overwrite?"):
+                console.print("[yellow]Skipping project initialization.[/yellow]")
+                return
+        else:
+             console.print(f"[yellow]Project/Workspace config already exists in {project_config_dir}. Use manual edit or delete it to re-init.[/yellow]")
+             return
 
     console.rule("[bold blue]Project Setup[/bold blue]")
     
     default_name = cwd.name
-    project_name = ask_with_selection("Project Name", default_name)
+    
+    if name is None:
+        if interactive:
+            name = ask_with_selection("Project Name", default_name)
+        else:
+            console.print("[red]Error:[/red] Missing required field: --name")
+            raise typer.Exit(code=1)
+            
+    project_name = name
     
     default_key = generate_key(project_name)
-    project_key = ask_with_selection("Project Key (prefix for issues)", default_key)
+    
+    if key is None:
+        if interactive:
+            key = ask_with_selection("Project Key (prefix for issues)", default_key)
+        else:
+            console.print("[red]Error:[/red] Missing required field: --key")
+            raise typer.Exit(code=1)
+            
+    project_key = key
 
     
     project_config_dir.mkdir(exist_ok=True)
     
+    # 2a. Create project.yaml (Identity)
     project_config = {
         "project": {
             "name": project_name,
             "key": project_key
-        },
+        }
+    }
+    
+    with open(project_config_path, "w") as f:
+        yaml.dump(project_config, f, default_flow_style=False)
+
+    # 2b. Create workspace.yaml (Environment)
+    workspace_config = {
         "paths": {
             "issues": "Issues",
             "spikes": ".references",
@@ -182,120 +241,24 @@ def init_cli(
         }
     }
     
-    with open(project_config_path, "w") as f:
-        yaml.dump(project_config, f, default_flow_style=False)
+    with open(workspace_config_path, "w") as f:
+        yaml.dump(workspace_config, f, default_flow_style=False)
 
-    # 2b. Generate Config Template
-    template_path = project_config_dir / "config_template.yaml"
-    template_content = """# Monoco Configuration Template
-# This file serves as a reference for all available configuration options.
-# Rename this file to config.yaml to use it.
-
-core:
-  # Default author for new artifacts (e.g. issues)
-  # author: "Developer Name"
-  
-  # Logging verbosity (DEBUG, INFO, WARNING, ERROR)
-  # log_level: "INFO"
-  
-  # Preferred text editor
-  # editor: "vim"
-
-project:
-  # The display name of the project
-  name: "My Project"
-  
-  # The prefix used for issue IDs (e.g. MON-001)
-  key: "MON"
-  
-  # Managed external research repositories (name -> url)
-  # spike_repos:
-  #   react: "https://github.com/facebook/react"
-
-paths:
-  # Directory for tracking issues
-  issues: "Issues"
-  
-  # Directory for specifications/documents
-  specs: "SPECS"
-  
-  # Directory for research references (spikes)
-  spikes: ".references"
-
-i18n:
-  # Source language code
-  source_lang: "en"
-  
-  # Target language codes for translation
-  target_langs: 
-    - "zh"
-
-ui:
-  # Custom Domain Terminology Mapping
-  # Use this to rename core concepts in the UI without changing internal logic.
-  dictionary:
-    # Entities
-    epic: "Saga"
-    feature: "Story"
-    chore: "Task"
-    fix: "Bug"
+    # 2c. Generate Config Template (Optional - might need update)
+    # For now, let's skip template generation or update it later. 
+    # Or generate a workspace_template.yaml
     
-    # Statuses
-    todo: "Pending"
-    doing: "In Progress"
-    review: "QA"
-    done: "Released"
-"""
-    with open(template_path, "w") as f:
-        f.write(template_content)
+    console.print(f"[green]✓ Project initialized in {cwd}[/green]")
+    console.print(f"[dim]  - Identity: .monoco/project.yaml[/dim]")
+    console.print(f"[dim]  - Environment: .monoco/workspace.yaml[/dim]")
 
-    # 3. Scaffold Directories & Modules
+    # Check for issue feature init (this logic was implicit in caller?)
+    # No, init_cli is the main logic.
     
-    # 3. Scaffold Directories & Modules
+    # Initialize basic directories
+    (cwd / "Issues").mkdir(exist_ok=True)
+    (cwd / ".references").mkdir(exist_ok=True)
     
-    from monoco.core.registry import FeatureRegistry
-    from monoco.features.issue.adapter import IssueFeature
-    from monoco.features.spike.adapter import SpikeFeature
-    from monoco.features.i18n.adapter import I18nFeature
-    
-    registry = FeatureRegistry()
-    registry.register(IssueFeature())
-    registry.register(SpikeFeature())
-    registry.register(I18nFeature())
-    
-    # Initialize all features
-    for feature in registry.get_features():
-        try:
-             feature.initialize(cwd, project_config)
-             console.print(f"  [dim]Initialized feature: {feature.name}[/dim]")
-        except Exception as e:
-             console.print(f"  [red]Failed to initialize {feature.name}: {e}[/red]")
-             
-    # Trigger initial sync to set up Agent Environment
-    from monoco.core.sync import sync_command
-    # We call sync command logic directly or simulate it? 
-    # Just invoke the collection logic via sync normally would be best, 
-    # but sync_command is a click command wrapper.
-    # For now let's just initialize the physical structures. 
-    # The 'skills.init' call in old code did more than just init structure, 
-    # it wrote SKILL.md files. 
-    # In V2, we rely on 'monoco sync' to do that injection.
-    # So we should prompt user to run sync or do it automatically.
-    
-    # Let's run a sync
-    console.print("[bold blue]Setting up Agent Environment...[/bold blue]")
-    try:
-        # We need to reuse logic from sync.py
-        # Simplest is to run the sync workflow here manually/programmatically
-        # But for now, let's keep it clean and just say:
-        pass
-    except Exception:
-        pass
-
-    console.print(f"[green]✓ Project config initialized at {project_config_path}[/green]")
-    console.print(f"[green]✓ Config template generated at {template_path}[/green]")
-
-
-
-    console.print(f"[green]Access configured! issues will be created as {project_key}-XXX[/green]")
+    console.print("\n[bold green]✓ Monoco Project Initialized![/bold green]")
+    console.print(f"Access configured! issues will be created as [bold]{project_key}-XXX[/bold]")
 

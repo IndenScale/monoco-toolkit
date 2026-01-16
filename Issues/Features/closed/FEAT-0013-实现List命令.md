@@ -18,7 +18,7 @@ parent: EPIC-0002
 uid: a295cf
 ---
 
-## FEAT-0013: 实现 monoco issue list 命令
+## FEAT-0013: 实现 monoco issue list 命令 (Implement List Command)
 
 ## 目标 (Objective)
 
@@ -40,3 +40,7 @@ uid: a295cf
 - [x] 在 `monoco/features/issue/commands.py` 中实现 `list` 命令。
 - [x] 在 `list_issues` 中添加筛选逻辑或在命令中进行后处理。
 - [x] 更新文档。
+
+## Review Comments
+
+- [x] Self-Review

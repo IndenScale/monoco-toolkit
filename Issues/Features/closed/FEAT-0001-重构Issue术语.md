@@ -2,6 +2,7 @@
 id: FEAT-0001
 type: feature
 status: closed
+stage: Done
 title: 重构 Issue 术语为原生代理语义 (Refactor Issue Terminology)
 created_at: 2026-01-09
 solution: implemented
@@ -14,7 +15,7 @@ parent: EPIC-0003
 uid: '063766'
 ---
 
-## FEAT-0001: 重构 Issue 术语为原生代理语义
+## FEAT-0001: 重构 Issue 术语为原生代理语义 (Refactor Issue Terminology)
 
 ## 目标 (Objective)
 
@@ -53,3 +54,7 @@ uid: '063766'
   - [x] 批量更新引用：更新双括号链接 `[[FEAT-xx]]` -> `[[FEAT-xx]]`。
 - [x] **文档**
   - [x] 重写 `Toolkit/skills/issues-management/SKILL.md` 以反映新本体论。
+
+## Review Comments
+
+- [x] Self-Review

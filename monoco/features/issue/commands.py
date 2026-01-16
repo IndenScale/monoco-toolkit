@@ -68,6 +68,42 @@ def create(
         console.print(f"[red]✘ Error:[/red] {str(e)}")
         raise typer.Exit(code=1)
 
+@app.command("update")
+def update(
+    issue_id: str = typer.Argument(..., help="Issue ID to update"),
+    title: Optional[str] = typer.Option(None, "--title", "-t", help="New title"),
+    status: Optional[IssueStatus] = typer.Option(None, "--status", help="New status"),
+    stage: Optional[IssueStage] = typer.Option(None, "--stage", help="New stage"),
+    parent: Optional[str] = typer.Option(None, "--parent", "-p", help="Parent Issue ID"),
+    sprint: Optional[str] = typer.Option(None, "--sprint", help="Sprint ID"),
+    dependencies: Optional[List[str]] = typer.Option(None, "--dependency", "-d", help="Issue dependency ID(s)"),
+    related: Optional[List[str]] = typer.Option(None, "--related", "-r", help="Related Issue ID(s)"),
+    tags: Optional[List[str]] = typer.Option(None, "--tag", help="Tags"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+):
+    """Update an existing issue."""
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+    
+    try:
+        core.update_issue(
+            issues_root, 
+            issue_id, 
+            status=status, 
+            stage=stage,
+            title=title,
+            parent=parent,
+            sprint=sprint,
+            dependencies=dependencies, 
+            related=related, 
+            tags=tags
+        )
+        
+        console.print(f"[green]✔[/green] Updated [bold]{issue_id}[/bold].")
+    except Exception as e:
+        console.print(f"[red]✘ Error:[/red] {str(e)}")
+        raise typer.Exit(code=1)
+
 @app.command("open")
 def move_open(
     issue_id: str = typer.Argument(..., help="Issue ID to open"),
@@ -173,6 +209,14 @@ def move_close(
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     project_root = _resolve_project_root(config)
+    
+    # Pre-flight check for interactive guidance (Requirement FEAT-0082 #6)
+    if solution is None:
+        valid_solutions = [e.value for e in IssueSolution]
+        console.print(f"[red]✘ Error:[/red] Closing an issue requires a solution.")
+        console.print(f"Please specify one of: [bold]{', '.join(valid_solutions)}[/bold]")
+        raise typer.Exit(code=1)
+
     try:
         core.update_issue(issues_root, issue_id, status=IssueStatus.CLOSED, solution=solution)
         console.print(f"[dim]✔[/dim] Issue [bold]{issue_id}[/bold] closed.")
@@ -515,13 +559,16 @@ def scope(
 @app.command("lint")
 def lint(
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursively scan subdirectories"),
+    fix: bool = typer.Option(False, "--fix", help="Attempt to automatically fix issues (e.g. missing headings)"),
+    format: str = typer.Option("table", "--format", "-f", help="Output format (table, json)"),
+    file: Optional[str] = typer.Option(None, "--file", help="Validate a single file instead of scanning the entire workspace"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
 ):
     """Verify the integrity of the Issues directory (declarative check)."""
     from . import linter
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
-    linter.run_lint(issues_root, recursive=recursive)
+    linter.run_lint(issues_root, recursive=recursive, fix=fix, format=format, file_path=file)
 
 def _resolve_issues_root(config, cli_root: Optional[str]) -> Path:
     """

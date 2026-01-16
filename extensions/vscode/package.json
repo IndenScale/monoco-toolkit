@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Monoco VS Code Cockpit Integration",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "publisher": "indenscale",
   "repository": {
     "type": "git",
@@ -124,6 +124,11 @@
           "type": "string",
           "default": "http://127.0.0.1:8642",
           "description": "URL for Monoco Web UI"
+        },
+        "monoco.executablePath": {
+          "type": "string",
+          "default": "monoco",
+          "description": "Path to the monoco executable. If not set, it will attempt to find 'monoco' in the system PATH."
         }
       }
     }

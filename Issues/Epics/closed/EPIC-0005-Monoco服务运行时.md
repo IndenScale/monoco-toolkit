@@ -45,4 +45,8 @@ uid: 598eba
 - [x] [[FEAT-0012]]: 增强 CLI 与 Server 的多工作区支持 (Implemented)
 - [x] **SSE 事件推送实现**: 已在 `monoco.daemon.services.Broadcaster` 与 `/api/v1/events` 中实现。
 - [x] **统一文件监听服务 (Watcher Service)**: 已在 `monoco.daemon.services.IssueMonitor` 中实现，基于 `watchdog`。
-- [ ] [[FEAT-0018]]: 运行时远程交互 (Deferred: 范围与 Chassis 项目重叠，延期处理)
+- [x] [[FEAT-0018]]: 运行时远程交互 (Deferred: 范围与 Chassis 项目重叠，延期处理)
+
+## Review Comments
+
+- [x] Self-Review

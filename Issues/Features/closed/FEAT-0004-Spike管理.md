@@ -2,7 +2,7 @@
 id: FEAT-0004
 type: feature
 status: closed
-stage: done
+stage: Done
 title: '特性: 仓库管理 (Spike) (Repo Management - Spike)'
 created_at: '2026-01-08T00:00:00'
 opened_at: '2026-01-11T23:48:45.930778'
@@ -20,7 +20,7 @@ tags:
 uid: bc3287
 ---
 
-## FEAT-0004: 特性: 仓库管理 (Spike)
+## FEAT-0004: 特性: 仓库管理 (Spike) (Repo Management - Spike)
 
 ## 目标 (Objective)
 
@@ -60,3 +60,8 @@ uid: bc3287
 - `Toolkit/monoco/features/issue/commands.py`
 - `Toolkit/monoco/features/issue/core.py`
 - `Toolkit/monoco/features/issue/models.py`
+
+## Review Comments
+
+- [x] Self-Review
+

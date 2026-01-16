@@ -38,3 +38,7 @@ files_count: 0
 - [x] 实现并文档化一键安装脚本 (Installer)。
 - [x] 审核并清理仓库中的敏感信息或无效的测试数据。
 - [x] 为核心模块 (Toolkit, Typedown) 编写入门教程。
+
+## Review Comments
+
+- [x] Self-Review

@@ -3,6 +3,7 @@ parent: EPIC-0001
 id: FEAT-0002
 type: feature
 status: closed
+stage: Done
 title: Toolkit 核心基础设施 (Toolkit Core Infrastructure)
 created_at: 2026-01-08
 solution: implemented
@@ -13,7 +14,7 @@ tags:
 uid: 3f44cf
 ---
 
-## FEAT-0002: Toolkit 核心基础设施
+## FEAT-0002: Toolkit 核心基础设施 (Toolkit Core Infrastructure)
 
 ## 目标 (Objective)
 
@@ -33,3 +34,7 @@ uid: 3f44cf
 - [x] 实现 `monoco.core.output.print_output(data, format=...)`。
 - [x] 设置正确的 `setup.py` / `pyproject.toml` entry_points。
 - [x] 使用 Pydantic 和 PyYAML 实现 `monoco.core.config`。
+
+## Review Comments
+
+- [x] Self-Review

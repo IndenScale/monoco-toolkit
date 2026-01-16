@@ -5,7 +5,7 @@ status: closed
 stage: done
 title: 安全 Issue 编辑 (Safe Issue Editing)
 created_at: '2026-01-11T12:02:01.293307'
-opened_at: '2026-01-11T12:02:01.293293'
+opened_at: '2026-01-11T12:02:01.293307'
 updated_at: '2026-01-11T13:20:52.819608'
 closed_at: '2026-01-11T13:20:52.819640'
 solution: implemented
@@ -16,7 +16,7 @@ parent: EPIC-0003
 uid: 88a412
 ---
 
-## FEAT-0016: 安全 Issue 编辑
+## FEAT-0016: 安全 Issue 编辑 (Safe Issue Editing)
 
 ## 目标 (Objective)
 
@@ -40,3 +40,7 @@ uid: 88a412
 - [x] **API 端点**: 在 Daemon 中实现内容更新端点。
 - [x] **验证器集成**: 重用 CLI 中现有的 lint 逻辑。
 - [x] **前端连线**: 将 FEAT-0015 UI 连接到此 API。
+
+## Review Comments
+
+- [x] Self-Review

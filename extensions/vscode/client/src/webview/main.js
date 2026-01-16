@@ -73,10 +73,6 @@ const els = {
 
 // Initialization
 document.addEventListener("DOMContentLoaded", async () => {
-  // Init Toolbar Icons
-  els.btnWeb.innerHTML = ICONS.WEB;
-  els.btnSettings.innerHTML = ICONS.SETTINGS;
-  els.btnAddEpic.innerHTML = ICONS.PLUS;
   els.btnBackCreate.innerHTML = ICONS.BACK;
   els.btnBackSettings.innerHTML = ICONS.BACK;
 
@@ -106,9 +102,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const message = event.data;
     if (message.type === "REFRESH") refreshAll();
 
-    // NEW: Handle Data Update from Extension
     if (message.type === "DATA_UPDATED") {
       handleDataUpdate(message.payload);
+    }
+
+    if (message.type === "SHOW_CREATE_VIEW") {
+      openCreateFlow("feature");
     }
 
     if (message.type === "EXECUTION_PROFILES") {
@@ -152,17 +151,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderTree();
   });
 
-  // Navigation
-  els.btnWeb?.addEventListener("click", () => {
-    vscode.postMessage({ type: "OPEN_URL", url: state.settings.webUrl });
-  });
-
-  els.btnSettings?.addEventListener("click", () => {
-    if (els.settingWebUrl) els.settingWebUrl.value = state.settings.webUrl;
-    showView("view-settings");
-  });
-
-  els.btnAddEpic?.addEventListener("click", () => openCreateFlow("epic"));
   els.addEpicZone?.addEventListener("click", () => openCreateFlow("epic"));
 
   els.btnBackCreate?.addEventListener("click", () => showView("view-home"));
@@ -257,13 +245,12 @@ function handleDataUpdate(payload) {
   ) {
     targetId = state.workspaceState.last_active_project_id;
   }
-  if (!targetId && state.projects.length > 0) {
-    targetId = state.projects[0].id;
-  }
 
-  if (targetId) {
+  if (targetId && targetId !== "all") {
     els.projectSelector.value = targetId;
     state.selectedProjectId = targetId;
+  } else {
+    state.selectedProjectId = "all";
   }
 
   renderTree();
@@ -282,8 +269,15 @@ async function setActiveProject(projectId) {
 
 function renderProjectSelector() {
   const current = els.projectSelector.value;
-  els.projectSelector.innerHTML = "";
+  els.projectSelector.innerHTML = '<option value="all">All Projects</option>';
+  
+  // Use a Set to track unique project IDs
+  const seenProjects = new Set();
+  
   state.projects.forEach((p) => {
+    if (seenProjects.has(p.id)) return;
+    seenProjects.add(p.id);
+
     const opt = document.createElement("option");
     opt.value = p.id;
     opt.textContent = p.name || p.id; // Fallback

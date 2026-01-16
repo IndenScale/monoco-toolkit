@@ -37,3 +37,7 @@ files_count: 0
 - [x] 构建 Kanban 的 GitHub Action 发布流水线 (FEAT-0058)。
 - [x] 集成代码质量检查 (Lint, Type Check, Pytest) 到 CI。
 - [x] 优化缓存策略，减少 CI 运行时间。
+
+## Review Comments
+
+- [x] Self-Review

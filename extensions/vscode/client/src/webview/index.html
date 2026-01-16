@@ -10,17 +10,6 @@
       <!-- CONFIG_INJECTION -->
       <!-- Main Home View -->
       <div id="view-home" class="view active">
-        <div class="toolbar">
-           <div class="search-wrapper">
-               <input type="text" id="search-input" placeholder="Search..." />
-           </div>
-           <div class="actions">
-               <button id="btn-web" class="icon-btn" title="Open Web UI"></button>
-               <button id="btn-settings" class="icon-btn" title="Settings"></button>
-               <button id="btn-add-epic" class="icon-btn" title="New Epic"></button>
-           </div>
-        </div>
- 
         <div class="project-bar">
           <div class="project-selector-wrapper">
             <select id="project-selector" class="project-selector">
@@ -28,6 +17,10 @@
             </select>
             <span class="selector-icon">▼</span>
           </div>
+        </div>
+
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="Search..." />
         </div>
  
         <div id="issue-tree" class="issue-tree">

@@ -36,20 +36,24 @@ tags:
 
 ## 验收标准 (Acceptance Criteria)
 
-- [ ] **Feature Protocol**: 所有的 Feature (Issue/Spike/Config) 都必须通过标准 Protocol 暴露 Prompt。
-- [ ] **Sync Command**: `monoco sync` 能够正确生成或更新 `GEMINI.md` 等文件。
-- [ ] **Idempotency**: 多次运行 sync，文件内容应当保持稳定，不会产生重复段落。
-- [ ] **Managed Block**: 仅修改 `# Monoco Toolkit` 及其子标题下的内容，不触碰用户手写的其他段落。
-- [ ] **Multi-Target**: 一次 sync 可以同时更新多个 Agent 配置文件（如同时存在 CLAUDE.md 和 GEMINI.md 时）。
+- [x] **Feature Protocol**: 所有的 Feature (Issue/Spike/Config) 都必须通过 standard Protocol 暴露 Prompt。
+- [x] **Sync Command**: `monoco sync` 能够正确生成或更新 `GEMINI.md` 等文件。
+- [x] **Idempotency**: 多次运行 sync，文件内容应当保持稳定，不会产生重复段落。
+- [x] **Managed Block**: 仅修改 `# Monoco Toolkit` 及其子标题下的内容，不触碰用户手写的其他段落。
+- [x] **Multi-Target**: 一次 sync 可以同时更新多个 Agent 配置文件（如同时存在 CLAUDE.md 和 GEMINI.md 时）。
 
 ## 技术任务 (Technical Tasks)
 
-- [ ] **Core**: 定义 `MonocoFeature` Protocol (Python Abstract Base Class)，包含 `integrate() -> IntegrationData`。
-- [ ] **Core**: 实现 `FeatureRegistry`，动态加载 core features。
-- [ ] **Sync Engine**: 实现 `PromptInjector` 类。
-  - 支持 Markdown AST 解析或 Regex 匹配。
-  - 实现 "Find or Create Section" 逻辑（H3 `### Monoco Toolkit`）。
-  - 实现子段落（H4）的排序与拼接。
-- [ ] **CLI**: 实现 `monoco sync` 命令。
-  - 参数: `--targets` (default: auto detect), `--path` (default: cwd).
-- [ ] **Adapters**: 为现有的 `issue`, `spike`, `config` 模块实现 `integrate()` 接口，暴露其 System Prompts。
+- [x] **Core**: 定义 `MonocoFeature` Protocol (Python Abstract Base Class)，包含 `integrate() -> IntegrationData`。
+- [x] **Core**: 实现 `FeatureRegistry`，动态加载 core features。
+- [x] **Sync Engine**: 实现 `PromptInjector` 类。
+  - [x] 支持 Markdown AST 解析或 Regex 匹配。
+  - [x] 实现 "Find or Create Section" 逻辑（H3 `### Monoco Toolkit`）。
+  - [x] 实现子段落（H4）的排序与拼接。
+- [x] **CLI**: 实现 `monoco sync` 命令。
+  - [x] 参数: `--targets` (default: auto detect), `--path` (default: cwd).
+- [x] **Adapters**: 为现有的 `issue`, `spike`, `config` 模块实现 `integrate()` 接口，暴露其 System Prompts。
+
+## Review Comments
+
+- [x] Self-Review

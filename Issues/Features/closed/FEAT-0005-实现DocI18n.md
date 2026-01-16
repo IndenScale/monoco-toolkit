@@ -2,6 +2,7 @@
 id: FEAT-0005
 type: feature
 status: closed
+stage: Done
 title: 实现 i18n 扫描能力 (Implement i18n scan)
 created_at: '2026-01-08'
 solution: implemented
@@ -10,7 +11,7 @@ tags: []
 uid: baf2ce
 ---
 
-## FEAT-0005: 实现 i18n 扫描能力
+## FEAT-0005: 实现 i18n 扫描能力 (Implement i18n scan)
 
 ## 目标 (Objective)
 
@@ -34,3 +35,7 @@ uid: baf2ce
   - [x] 实现 Suffix 模式与 Subdir 模式检测逻辑。
 - [x] **CLI Integration**: 注册 `monoco i18n scan` 命令。
 - [x] **Reporting**: 实现符合 Monoco 标准的 i18n 状态输出。
+
+## Review Comments
+
+- [x] Self-Review

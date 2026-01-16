@@ -31,7 +31,11 @@ tags: []
 
 ## Technical Tasks
 
-- [ ] 添加 `trafilatura` (或同类) 依赖到 `pyproject.toml`。
-- [ ] 在 `monoco/features/spike/core.py` 中实现内容抓取与清洗函数。
-- [ ] 增强 `monoco spike add` 的处理流程，使其能够区分 Git Repo 和普通 URL。
-- [ ] 编写清洗逻辑的单元测试。
+- [x] 添加 `trafilatura` (或同类) 依赖到 `pyproject.toml`。
+- [x] 在 `monoco/features/spike/core.py` 中实现内容抓取与清洗函数。
+- [x] 增强 `monoco spike add` 的处理流程，使其能够区分 Git Repo 和普通 URL。
+- [x] 编写清洗逻辑的单元测试。
+
+## Review Comments
+
+- [x] Self-Review

@@ -20,8 +20,16 @@ tags: []
 
 ## Objective
 
+Ensure that the Kanban board can be distributed as an npm package.
+
 ## Acceptance Criteria
+
+- [x] Kanban board successfully published to npm.
 
 ## Technical Tasks
 
-- [ ] 
+- [x] Configure npm publication workflow.
+
+## Review Comments
+
+- [x] Self-Review

@@ -15,6 +15,8 @@ related: []
 tags: []
 ---
 
+## FEAT-0074: Core Integration Registry
+
 ## 背景 (Context)
 
 随着 Monoco 支持的 Agent 框架日益增多（Cursor, Claude, Gemini, Qwen, Antigravity），各框架的配置文件路径（如 `.cursorrules`, `GEMINI.md`）和技能目录路径（如 `.cursor/skills`, `.gemini/skills`）目前在代码中处于硬编码或分散状态，缺乏统一管理。
@@ -100,3 +102,7 @@ tags: []
 - **类型安全**: 使用 Pydantic 确保配置结构正确
 - **向后兼容**: 保留现有 `sync.py` 逻辑,仅标记为 Deprecated
 - **可扩展性**: 轻松添加新框架或自定义集成
+
+## Review Comments
+
+- [x] Self-Review

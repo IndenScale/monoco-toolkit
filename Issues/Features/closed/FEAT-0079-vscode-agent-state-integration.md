@@ -16,6 +16,8 @@ priority: Medium
 author: Monoco
 ---
 
+## FEAT-0079: VS Code 扩展与 Agent 状态的集成
+
 # Feature: VS Code 扩展与 Agent 状态的集成
 
 ## 目标 (Objective)
@@ -72,8 +74,18 @@ class AgentStateService {
 如果用户尝试运行 Agent 命令但 `agentAvailable` 为 false，显示 toast 提示：
 "Agent 环境未就绪。请在终端运行 `monoco doctor`。"
 
-## 验收标准 (Acceptance Criteria)
+## Acceptance Criteria
 
-1. 扩展在启动时读取 `~/.monoco/agent_state.yaml`。
-2. 扩展正确设置 `monoco:agentAvailable` context key。
-3. 如果 YAML 文件发生变化（例如用户运行了 `monoco doctor`），扩展自动更新状态。
+- [x] 扩展在启动时读取 `~/.monoco/agent_state.yaml`。
+- [x] 扩展正确设置 `monoco:agentAvailable` context key。
+- [x] 如果 YAML 文件发生变化（例如用户运行了 `monoco doctor`），扩展自动更新状态。
+
+## Technical Tasks
+
+- [x] Implement `AgentStateService` in VS Code extension.
+- [x] Set context keys for agent availability.
+- [x] Implement file watcher for `agent_state.yaml`.
+
+## Review Comments
+
+- [x] Self-Review
