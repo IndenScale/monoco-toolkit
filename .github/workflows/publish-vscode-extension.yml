@@ -8,7 +8,6 @@ on:
       - "v*"
     paths:
       - "extensions/vscode/**"
-      - ".github/workflows/publish-vscode-extension.yml"
   pull_request:
     paths:
       - "extensions/vscode/**"
