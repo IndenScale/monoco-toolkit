@@ -165,13 +165,17 @@ export class IssueTree {
           )
             .toString()
             .toLowerCase();
-          if (p !== selectedProjectId.toLowerCase()) return false;
+          if (p !== selectedProjectId.toLowerCase()) {
+            return false;
+          }
         }
 
         // 2. Status (Open, Backlog, Closed)
         const currentStatus = (issue.status || "open").toLowerCase();
         if (fStatus && fStatus.length > 0) {
-          if (!fStatus.includes(currentStatus)) return false;
+          if (!fStatus.includes(currentStatus)) {
+            return false;
+          }
         }
 
         // 3. Stage (Draft, Ready, Doing, Review, Done)
@@ -180,16 +184,24 @@ export class IssueTree {
           // Handling alias "doing" vs "in_progress" if necessary, but assuming UI sends matching values
           // or we normalize here.
           let checkStage = currentStage;
-          if (checkStage === "in_progress") checkStage = "doing";
+          if (checkStage === "in_progress") {
+            checkStage = "doing";
+          }
 
           // Also user might select 'doing' but legacy data implies in_progress.
           // Let's assume strict match for now, or normalize.
           // Let's normalize issue stage to matches UI expectations:
           if (currentStage === "in_progress") {
-            if (!fStage.includes("doing") && !fStage.includes("in_progress"))
+            if (
+              !fStatus.includes("doing") &&
+              !fStatus.includes("in_progress")
+            ) {
               return false;
+            }
           } else {
-            if (!fStage.includes(currentStage)) return false;
+            if (!fStage.includes(currentStage)) {
+              return false;
+            }
           }
         }
 
@@ -201,12 +213,16 @@ export class IssueTree {
           // Exclude
           if (fTags.exclude && fTags.exclude.length > 0) {
             const hasExcluded = tags.some((tag) => fTags.exclude.includes(tag));
-            if (hasExcluded) return false;
+            if (hasExcluded) {
+              return false;
+            }
           }
           // Include (OR logic)
           if (fTags.include && fTags.include.length > 0) {
             const hasIncluded = tags.some((tag) => fTags.include.includes(tag));
-            if (!hasIncluded) return false;
+            if (!hasIncluded) {
+              return false;
+            }
           }
         }
 
@@ -378,11 +394,17 @@ export class IssueTree {
     let primaryStatus = "draft";
     const s = (issue.stage || issue.status || "draft").toLowerCase();
 
-    if (s.includes("doing") || s.includes("progress")) primaryStatus = "doing";
-    else if (s.includes("review")) primaryStatus = "review";
-    else if (s.includes("done")) primaryStatus = "done";
-    else if (s.includes("closed")) primaryStatus = "closed";
-    else primaryStatus = "draft";
+    if (s.includes("doing") || s.includes("progress")) {
+      primaryStatus = "doing";
+    } else if (s.includes("review")) {
+      primaryStatus = "review";
+    } else if (s.includes("done")) {
+      primaryStatus = "done";
+    } else if (s.includes("closed")) {
+      primaryStatus = "closed";
+    } else {
+      primaryStatus = "draft";
+    }
 
     children.forEach((c) => {
       const cs = (c.stage || c.status || "draft").toLowerCase();
@@ -400,9 +422,15 @@ export class IssueTree {
 
     // Status color mapping
     const getStatusColor = (status: string) => {
-      if (status === "done" || status === "closed") return "var(--status-done)";
-      if (status === "review") return "var(--status-review)";
-      if (status === "doing") return "var(--status-doing)";
+      if (status === "done" || status === "closed") {
+        return "var(--status-done)";
+      }
+      if (status === "review") {
+        return "var(--status-review)";
+      }
+      if (status === "doing") {
+        return "var(--status-doing)";
+      }
       return "var(--status-todo)"; // draft
     };
     const statusColor = getStatusColor(primaryStatus);
@@ -475,16 +503,28 @@ export class IssueTree {
     let primaryStatus = "draft";
     const s = (issue.stage || issue.status || "draft").toLowerCase();
 
-    if (s.includes("doing") || s.includes("progress")) primaryStatus = "doing";
-    else if (s.includes("review")) primaryStatus = "review";
-    else if (s.includes("done")) primaryStatus = "done";
-    else if (s.includes("closed")) primaryStatus = "closed";
-    else primaryStatus = "draft";
+    if (s.includes("doing") || s.includes("progress")) {
+      primaryStatus = "doing";
+    } else if (s.includes("review")) {
+      primaryStatus = "review";
+    } else if (s.includes("done")) {
+      primaryStatus = "done";
+    } else if (s.includes("closed")) {
+      primaryStatus = "closed";
+    } else {
+      primaryStatus = "draft";
+    }
 
     const getStatusColor = (status: string) => {
-      if (status === "done" || status === "closed") return "var(--status-done)";
-      if (status === "review") return "var(--status-review)";
-      if (status === "doing") return "var(--status-doing)";
+      if (status === "done" || status === "closed") {
+        return "var(--status-done)";
+      }
+      if (status === "review") {
+        return "var(--status-review)";
+      }
+      if (status === "doing") {
+        return "var(--status-doing)";
+      }
       return "var(--status-todo)"; // draft
     };
     const statusColor = getStatusColor(primaryStatus);
