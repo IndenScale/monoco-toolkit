@@ -155,8 +155,8 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -b shared/tsconfig.json && tsc -b client/tsconfig.json && tsc -b server/tsconfig.json && node client/scripts/resolve-aliases.js && node client/scripts/build-webview.js && npm run copy-assets && npm run copy-server-assets",
-    "copy-assets": "cp client/src/webview/index.html client/out/webview/ && cp client/src/webview/style.css client/out/webview/",
-    "copy-server-assets": "mkdir -p server/out/schema && cp server/src/schema/* server/out/schema/",
+    "copy-assets": "node scripts/copy-assets.js",
+    "copy-server-assets": "node scripts/copy-server-assets.js",
     "watch": "tsc -b client/tsconfig.json -w",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint client/src --ext ts",
