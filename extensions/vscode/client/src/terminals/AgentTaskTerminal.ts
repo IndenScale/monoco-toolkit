@@ -73,7 +73,9 @@ export class AgentTaskTerminal implements vscode.Pseudoterminal {
   }
 
   close(): void {
-    if (this.isClosed) return;
+    if (this.isClosed) {
+      return;
+    }
     this.isClosed = true;
     if (this.process) {
       this.process.kill();

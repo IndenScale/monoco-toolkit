@@ -1,4 +1,6 @@
+from typing import Optional
 from .models import Transition
+
 from .machine import StateMachine
 from .config import DEFAULT_ISSUE_CONFIG
 from monoco.core.config import get_config

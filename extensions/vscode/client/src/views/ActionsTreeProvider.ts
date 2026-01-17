@@ -47,7 +47,9 @@ export class ActionsTreeProvider implements vscode.TreeDataProvider<vscode.TreeI
 
     if (element.label === "Providers") {
       const state = this.agentStateService.getState();
-      if (!state) return Promise.resolve([]);
+      if (!state) {
+        return Promise.resolve([]);
+      }
 
       const providers = state.providers || {};
       return Promise.resolve(
