@@ -10,7 +10,7 @@ import {
   TransportKind,
 } from "vscode-languageclient/node";
 
-import { checkAndBootstrap } from "./bootstrap";
+import { checkAndBootstrap, getBundledBinaryPath } from "./bootstrap";
 import { AgentStateService } from "./services/AgentStateService";
 import { ActionService } from "./services/ActionService";
 import { bootstrapActions } from "./services/ActionBootstrap";
@@ -21,6 +21,35 @@ import {
 import { IssueHoverProvider } from "./providers/IssueHoverProvider";
 import { IssueCodeLensProvider } from "./providers/IssueCodeLensProvider";
 import { IssueFieldControlProvider } from "./providers/IssueFieldControlProvider";
+import { parseFrontmatter } from "./utils/frontmatter";
+
+async function runMonoco(args: string[], cwd?: string): Promise<string> {
+  const config = vscode.workspace.getConfiguration("monoco");
+  let executable = config.get<string>("executablePath") || "monoco";
+
+  // If executable is just "monoco", we might need to rely on PATH or uv
+  // For now, trust the configuration or PATH.
+
+  // Escape args
+  const escapedArgs = args.map((a) => {
+    if (/^[\w\d\-_]+$/.test(a)) {
+      return a;
+    }
+    return `"${a.replace(/"/g, '\\"')}"`;
+  });
+
+  const cmd = `${executable} ${escapedArgs.join(" ")}`;
+  const workspaceRoot =
+    cwd || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+
+  if (!workspaceRoot) {
+    throw new Error("No workspace root found");
+  }
+
+  // Use execAsync from existing promisify
+  const result = await execAsync(cmd, { cwd: workspaceRoot });
+  return result.stdout.trim();
+}
 
 const execAsync = promisify(exec);
 
@@ -46,14 +75,22 @@ async function checkDependencies() {
 
     if (option === installOption) {
       // Open installation guide in browser
-      await vscode.env.openExternal(vscode.Uri.parse("https://docs.astral.sh/uv/getting-started/installation/"));
+      await vscode.env.openExternal(
+        vscode.Uri.parse(
+          "https://docs.astral.sh/uv/getting-started/installation/"
+        )
+      );
     }
   }
 
   try {
     // Check if monoco is available via uv run tool by attempting to run it
-    const versionResult = await execAsync("uv tool run --from monoco-toolkit monoco --version");
-    outputChannel.appendLine(`✓ monoco version: ${versionResult.stdout.trim()}`);
+    const versionResult = await execAsync(
+      "uv tool run --from monoco-toolkit monoco --version"
+    );
+    outputChannel.appendLine(
+      `✓ monoco version: ${versionResult.stdout.trim()}`
+    );
   } catch (error) {
     outputChannel.appendLine("✗ monoco is not available via uv run tool");
 
@@ -68,27 +105,37 @@ async function checkDependencies() {
 
     if (option === installOption) {
       try {
-        outputChannel.appendLine("Installing monoco via 'uv tool install monoco-toolkit'...");
+        outputChannel.appendLine(
+          "Installing monoco via 'uv tool install monoco-toolkit'..."
+        );
         await execAsync("uv tool install monoco-toolkit --force");
         outputChannel.appendLine("✓ monoco installed successfully via uv tool");
 
         // Verify installation after installing
-        const verifyResult = await execAsync("uv tool run --from monoco-toolkit monoco --version");
-        outputChannel.appendLine(`✓ Verified monoco version: ${verifyResult.stdout.trim()}`);
+        const verifyResult = await execAsync(
+          "uv tool run --from monoco-toolkit monoco --version"
+        );
+        outputChannel.appendLine(
+          `✓ Verified monoco version: ${verifyResult.stdout.trim()}`
+        );
       } catch (installError) {
         outputChannel.appendLine(`✗ Failed to install monoco: ${installError}`);
-        vscode.window.showErrorMessage(`Failed to install monoco: ${installError}`);
+        vscode.window.showErrorMessage(
+          `Failed to install monoco: ${installError}`
+        );
       }
     } else if (option === manualOption) {
       // Open installation guide in browser
-      await vscode.env.openExternal(vscode.Uri.parse("https://github.com/IndenScale/Monoco"));
+      await vscode.env.openExternal(
+        vscode.Uri.parse("https://github.com/IndenScale/Monoco")
+      );
     }
   }
 }
 
 export async function activate(context: vscode.ExtensionContext) {
   outputChannel = vscode.window.createOutputChannel("Monoco");
-  outputChannel.appendLine('Monoco extension activated!');
+  outputChannel.appendLine("Monoco extension activated!");
 
   // Initialize Agent State Service
   new AgentStateService(context);
@@ -115,11 +162,24 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // If the extension is launched in debug mode then the debug server options are used
   // Otherwise the run options are used
+
+  // Check for bundled binary
+  const bundledPath = getBundledBinaryPath(context);
+  const env = { ...process.env };
+  if (fs.existsSync(bundledPath)) {
+    env["MONOCO_BUNDLED_PATH"] = bundledPath;
+  }
+
   const serverOptions: ServerOptions = {
-    run: { module: serverModule, transport: TransportKind.ipc },
+    run: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+      options: { env },
+    },
     debug: {
       module: serverModule,
       transport: TransportKind.ipc,
+      options: { env },
     },
   };
 
@@ -193,7 +253,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Check dependencies and bootstrap if needed
-  checkAndBootstrap();
+  checkAndBootstrap(context);
 
   // Try to start daemon on activation
   // Daemon Auto-start removed for Pure LSP Architecture
@@ -235,26 +295,31 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "monoco.toggleStatus",
-      async (filePath: string, line: number) => {
+      async (filePath: string, _line: number) => {
         const doc = await vscode.workspace.openTextDocument(filePath);
-        const lineText = doc.lineAt(line).text;
-        const match = lineText.match(/^status:\s*(\w+)/);
-        if (match) {
-          const current = match[1];
-          const next = issueFieldControl.getNextValue(
-            current,
-            issueFieldControl.getEnumList("status")
+        const text = doc.getText();
+        const meta = parseFrontmatter(text);
+
+        if (!meta.id || !meta.status) {
+          vscode.window.showErrorMessage("Could not parse Issue ID or Status.");
+          return;
+        }
+
+        const current = meta.status;
+        const next = issueFieldControl.getNextValue(
+          current,
+          issueFieldControl.getEnumList("status")
+        );
+
+        try {
+          await runMonoco(["issue", "update", meta.id, "--status", next]);
+          // No need to manually edit file, the file watcher (LSP) will update diagnostics
+          // But VS Code editor won't update automatically unless file changes on disk.
+          // CLI updates the file, so VS Code should reload it automatically.
+        } catch (e: any) {
+          vscode.window.showErrorMessage(
+            `Failed to update status: ${e.message}`
           );
-
-          const start = lineText.indexOf(current);
-          const end = start + current.length;
-          const range = new vscode.Range(line, start, line, end);
-
-          const edit = new vscode.WorkspaceEdit();
-          edit.replace(doc.uri, range, next);
-          if (await vscode.workspace.applyEdit(edit)) {
-            await doc.save();
-          }
         }
       }
     )
@@ -263,26 +328,28 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "monoco.toggleStage",
-      async (filePath: string, line: number) => {
+      async (filePath: string, _line: number) => {
         const doc = await vscode.workspace.openTextDocument(filePath);
-        const lineText = doc.lineAt(line).text;
-        const match = lineText.match(/^stage:\s*(\w+)/);
-        if (match) {
-          const current = match[1];
-          const next = issueFieldControl.getNextValue(
-            current,
-            issueFieldControl.getEnumList("stage")
+        const text = doc.getText();
+        const meta = parseFrontmatter(text);
+
+        if (!meta.id || !meta.stage) {
+          vscode.window.showErrorMessage("Could not parse Issue ID or Stage.");
+          return;
+        }
+
+        const current = meta.stage;
+        const next = issueFieldControl.getNextValue(
+          current,
+          issueFieldControl.getEnumList("stage")
+        );
+
+        try {
+          await runMonoco(["issue", "update", meta.id, "--stage", next]);
+        } catch (e: any) {
+          vscode.window.showErrorMessage(
+            `Failed to update stage: ${e.message}`
           );
-
-          const start = lineText.indexOf(current);
-          const end = start + current.length;
-          const range = new vscode.Range(line, start, line, end);
-
-          const edit = new vscode.WorkspaceEdit();
-          edit.replace(doc.uri, range, next);
-          if (await vscode.workspace.applyEdit(edit)) {
-            await doc.save();
-          }
         }
       }
     )
@@ -502,47 +569,36 @@ class MonocoKanbanProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "CREATE_ISSUE": {
-          // Generate File
-          const { title, type, parent, projectId } = data.value;
-          const id = `${type.toUpperCase()}-${Math.floor(
-            Math.random() * 1000
-          )}`; // Simple ID gen
-          const filename = `${id}-${title
-            .toLowerCase()
-            .replace(/\s+/g, "-")}.md`;
-          // Determine path: defaults to Issues/{Type}s/open/
-          // We need to know where the project root is.
-          // We can ask LSP for workspace root or use vscode.workspace.rootPath
-          const wsFolder = vscode.workspace.workspaceFolders?.[0];
-          if (wsFolder) {
-            const content = `---
-id: "${id}"
-type: "${type}"
-status: "open"
-title: "${title}"
-project_id: "${projectId}"
-parent: "${parent || ""}"
----
+          const { title, type, parent } = data.value;
+          const args = ["issue", "create", type, "--title", title, "--json"];
+          if (parent) {
+            args.push("--parent", parent);
+          }
 
-# ${title}
-`;
-            const folder = type === "feature" ? "Features" : "Issues"; // Simple mapping
-            const uri = vscode.Uri.joinPath(
-              wsFolder.uri,
-              "Issues",
-              folder,
-              "open",
-              filename
-            );
-            try {
-              await vscode.workspace.fs.writeFile(
-                uri,
-                new TextEncoder().encode(content)
-              );
-              // Refresh will happen automatically via Watcher
-            } catch (e) {
-              vscode.window.showErrorMessage("Failed to create file: " + e);
+          try {
+            // We use the workspace root. CLI handles Subproject resolution if configured.
+            const output = await runMonoco(args);
+            const result = JSON.parse(output);
+
+            // Prefer absolute path from issue object, fallback to relative path
+            let filePath = result.issue?.path || result.path;
+
+            if (filePath) {
+              const wsFolder = vscode.workspace.workspaceFolders?.[0];
+              if (wsFolder) {
+                const uri = path.isAbsolute(filePath)
+                  ? vscode.Uri.file(filePath)
+                  : vscode.Uri.joinPath(wsFolder.uri, filePath);
+
+                const doc = await vscode.workspace.openTextDocument(uri);
+                await vscode.window.showTextDocument(doc, { preview: true });
+              }
             }
+          } catch (e: any) {
+            vscode.window.showErrorMessage(
+              "Failed to create issue: " + e.message
+            );
+            console.error(e);
           }
           break;
         }
