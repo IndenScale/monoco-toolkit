@@ -28,7 +28,7 @@ files_count: 0
 - [ ] **代理栏 UI**：在 VS Code 中有一个专用视图来列出配置文件。
 - [ ] **执行**：单击配置文件会在 VS Code 终端中触发相应的命令。
 
-## 技术任务
+## Technical Tasks
 
 - [x] **LSP 服务器**：实现 `monoco/getExecutionProfiles` 请求处理程序。
 - [ ] **VS Code 客户端**：实现 `AgentSidebarProvider` 来渲染配置文件列表。

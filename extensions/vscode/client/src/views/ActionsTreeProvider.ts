@@ -1,9 +1,8 @@
 import * as vscode from "vscode";
 import { ActionService, AgentAction } from "../services/ActionService";
+import { AgentStateService } from "../services/AgentStateService";
 
-export class ActionsTreeProvider
-  implements vscode.TreeDataProvider<vscode.TreeItem>
-{
+export class ActionsTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<
     vscode.TreeItem | undefined | void
   > = new vscode.EventEmitter<vscode.TreeItem | undefined | void>();
@@ -11,9 +10,12 @@ export class ActionsTreeProvider
     vscode.TreeItem | undefined | void
   > = this._onDidChangeTreeData.event;
 
-  constructor(private actionService: ActionService) {
+  constructor(
+    private actionService: ActionService,
+    private agentStateService: AgentStateService,
+  ) {
     this.actionService.onDidChangeActions(() => this.refresh());
-    this.actionService.onDidChangeProviders(() => this.refresh());
+    this.agentStateService.onDidChangeState(() => this.refresh());
   }
 
   refresh(): void {
@@ -29,11 +31,11 @@ export class ActionsTreeProvider
       return Promise.resolve([
         new vscode.TreeItem(
           "Actions",
-          vscode.TreeItemCollapsibleState.Expanded
+          vscode.TreeItemCollapsibleState.Expanded,
         ),
         new vscode.TreeItem(
           "Providers",
-          vscode.TreeItemCollapsibleState.Expanded
+          vscode.TreeItemCollapsibleState.Expanded,
         ),
       ]);
     }
@@ -44,11 +46,14 @@ export class ActionsTreeProvider
     }
 
     if (element.label === "Providers") {
-      const providers = this.actionService.getProviders();
+      const state = this.agentStateService.getState();
+      if (!state) return Promise.resolve([]);
+
+      const providers = state.providers || {};
       return Promise.resolve(
         Object.entries(providers).map(
-          ([name, state]) => new ProviderTreeItem(name, state)
-        )
+          ([name, pState]) => new ProviderTreeItem(name, pState),
+        ),
       );
     }
 
@@ -72,7 +77,10 @@ export class ActionTreeItem extends vscode.TreeItem {
 }
 
 export class ProviderTreeItem extends vscode.TreeItem {
-  constructor(public readonly name: string, public readonly state: any) {
+  constructor(
+    public readonly name: string,
+    public readonly state: any,
+  ) {
     super(name, vscode.TreeItemCollapsibleState.None);
     this.description = state.available ? "Active" : "Inactive";
     this.tooltip =
@@ -80,7 +88,7 @@ export class ProviderTreeItem extends vscode.TreeItem {
       (state.available ? `Path: ${state.path}` : "Provider not found");
     this.iconPath = new vscode.ThemeIcon(
       state.available ? "check" : "error",
-      new vscode.ThemeColor(state.available ? "charts.green" : "charts.red")
+      new vscode.ThemeColor(state.available ? "charts.green" : "charts.red"),
     );
     this.contextValue = "provider";
   }

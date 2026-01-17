@@ -5,9 +5,9 @@ type: fix
 status: open
 stage: draft
 title: Centralize workspace resolution in CLI to fix subdirectory context issues
-created_at: '2026-01-16T12:01:06'
-opened_at: '2026-01-16T12:01:06'
-updated_at: '2026-01-16T12:01:06'
+created_at: "2026-01-16T12:01:06"
+opened_at: "2026-01-16T12:01:06"
+updated_at: "2026-01-16T12:01:06"
 dependencies: []
 related: []
 tags: []
@@ -20,10 +20,11 @@ tags: []
 `monoco` CLI 之前允许在任意目录执行并试图（或计划）进行模糊的上下文推断，这导致了不确定性和错误。为了保证系统的严谨性，我们需要实施严格的工作区边界控制。
 
 目标是：
-1.  **禁止模糊推断**：`monoco` 命令必须在明确的 Monoco Workspace 根目录下执行，或者通过参数明确指定根目录。严禁在非 Workspace 目录下通过递归查找来猜测上下文。
+
+1.  **禁止模糊推断**: `monoco` 命令必须在明确的 Monoco Workspace 根目录下执行，或者通过参数明确指定根目录。严禁在非 Workspace 目录下通过递归查找来猜测上下文。
 2.  **强制参数化**：如果操作针对特定 Project，必须显式提供 Project ID 或 Project Dir。
 3.  **依赖 .monoco**：除 `init` 外的所有命令，必须在包含 `.monoco` 目录的 Workspace 根路径下执行（或通过 `--root` 指定）。这是识别 Workspace 的唯一依据。
-4.  **扩展规范化**：VS Code 扩展等外部调用者必须在调用 CLI 时显式传递 `--root` 或相关上下文参数，而不是依赖 CLI 的隐式行为。
+4.  **扩展规范化**: VS Code 扩展等外部调用者必须在调用 CLI 时显式传递 `--root` 或相关上下文参数，而不是依赖 CLI 的隐式行为。
 
 ## Acceptance Criteria
 

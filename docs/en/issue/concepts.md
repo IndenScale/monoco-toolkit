@@ -1,112 +1,68 @@
 # Monoco Issue Core Concepts
 
-This document defines the semantic model of Monoco Issue System, including Issue taxonomy, state machine, and relationships.
+This document defines the semantic model and architectural design of the Monoco Issue System.
 
-## 1. Taxonomy
+The Monoco Issue System is more than just a task list; it is a synthesis of a **Universal Atom** and a **Configurable State Machine**, designed to provide a unified collaboration interface for both human engineers and AI agents.
 
-Monoco defines work units based on "Mindset" rather than pure user narrative.
+## 1. Architecture
 
-### 1.1 Strategy Layer
+### 1.1 Universal Atom
 
-#### 🏆 EPIC
+In Monoco, all units of work—whether grand Epics, specific Features, or trivial Chores—are treated as isomorphic **Issues**.
 
-- **Prefix**: `EPIC-`
-- **Mindset**: Architect
-- **Definition**: Grand goal spanning multiple cycles, acting as a "Container of Vision". Usually contains multiple Features.
-- **Output**: Defines system boundaries and core values.
+- **Physical Layer**: Each Issue is a standard Markdown file containing YAML Frontmatter (metadata) and a Body.
+- **Persistence**: All state changes map directly to the file system, eliminating dependence on external databases. This makes Git the **Single Source of Truth (SSOT)**.
 
-### 1.2 Value Layer
+### 1.2 Two-Layer State Machine
 
-#### ✨ FEATURE
+Monoco employs a unique two-layer state machine to manage the lifecycle, balancing the stability of physical storage with the flexibility of logical flow.
 
-- **Prefix**: `FEAT-`
-- **Mindset**: Product Owner / Principal Engineer
-- **Definition**: Concrete, functional unit in the system. Represents **Value Delivery**.
-- **Atomicity Principle**: Feature = Design + Dev + Test + Doc + i18n. They are an indivisible whole.
-- **Note**: This concept replaces traditional "Story".
+#### Status (Physical)
 
-### 1.3 Execution Layer
+Determines the **physical location** and **visibility** of the Issue in the file system.
 
-#### 🧹 CHORE
+- **Open**: Active. Located in `Types/open/`.
+- **Closed**: Finalized. Located in `Types/closed/`.
+- **Backlog**: Frozen. Located in `Types/backlog/`.
 
-- **Prefix**: `CHORE-`
-- **Mindset**: Builder / Maintainer
-- **Definition**: Engineering maintenance, refactoring, or upgrade. **Does not directly produce** user functional value, but is crucial for system health.
-- **Scenario**: Architecture upgrade, CI/CD fix, dependency update.
-- **Note**: This concept replaces traditional "Task".
+#### Stage (Logical)
 
-#### 🐛 FIX
+Determines the **execution progress** of the Issue while in the Open status. Stage transitions occur entirely in memory and do not involve file movement.
 
-- **Prefix**: `FIX-`
-- **Mindset**: Debugger
-- **Definition**: Correction of deviation between "Expectation" and "Reality".
-- **Note**: This concept replaces traditional "Bug".
+- _Default_: Draft, Doing, Review, Done, Freezed (Configurable).
 
----
+## 2. Core Model
 
-## 2. State Machine
+### 2.1 Taxonomy -> Configurable
 
-Monoco uses a **Two-Layer State Machine** to manage lifecycle: **Status** (Physical State) and **Stage** (Logical Stage).
+While Monoco provides a default set of mindset-based categories (Epic/Feature/Chore/Fix), this is completely **configurable**. You can define your own types:
 
-### 2.1 Status (Physical)
+- **Name**: Internal identifier (e.g., `story`)
+- **Label**: Display name (e.g., `User Story`)
+- **Prefix**: ID prefix (e.g., `STORY`)
+- **Folder**: Storage directory (e.g., `Stories`)
 
-Determines Issue's **Visibility** and **Storage Location**.
+### 2.2 Workflows -> Configurable
 
-- **Backlog**:
-  - **Meaning**: Ideas not yet scheduled or temporarily shelved.
-  - **Location**: `Issues/*/backlog/`
-  - **Stage**: Locked as `Freezed` until Pulled.
+All state transitions are defined by a set of explicit rules. A Transition includes:
 
-- **Open**:
-  - **Meaning**: Tasks in progress or planned for near future.
-  - **Location**: `Issues/*/open/`
-  - **Stage**: Can transition (Todo -> Doing -> Review).
+- **Trigger**: Source state (From Status/Stage)
+- **Action**: Action name (e.g., `submit`)
+- **Effect**: Target state (To Status/Stage)
+- **Side Effect**: Triggered CLI command (e.g., run Agent)
 
-- **Closed**:
-  - **Meaning**: Lifecycle ended.
-  - **Location**: `Issues/*/closed/`
-  - **Stage**: Forced to `Done`.
+This design allows you to attach various automation logic to the state machine, such as "Automatically run AI Code Review Agent when entering the Review stage."
 
-### 2.2 Stage (Logical)
+## 3. Topology
 
-Describes **Execution Progress** of Issue in `Open` status.
+Issues are connected via three strong reference types, forming the project's knowledge graph.
 
-- **Todo**: Scheduled, waiting to start.
-- **Doing**: In progress. Coding or designing. Usually corresponds to a Git branch or Worktree.
-- **Review**: Under review. Code committed, waiting for merge or acceptance.
-- **Done**: Completed. Achieved only when Issue is closed.
+| Type           | Semantics            | Direction     | Constraint                          |
+| :------------- | :------------------- | :------------ | :---------------------------------- |
+| **Parent**     | Hierarchy/Ownership  | Many-to-One   | Child must be within Parent context |
+| **Dependency** | Blocker/Precondition | Any           | A cannot close until B is closed    |
+| **Related**    | Reference/Context    | Bidirectional | No strong constraints               |
 
----
+### Workspace Referencing
 
-## 3. Topology (Relationships)
-
-Issues are connected via three types of relationships, forming the project's knowledge graph.
-
-### 3.1 Relationship Types
-
-#### Parent
-
-- **Semantics**: Hierarchy / Belonging.
-- **Direction**: Many-to-One.
-- **Typical Scenario**: Feature belongs to Epic; Chore belongs to Epic.
-- **Constraint**: No circular reference supported.
-
-#### Dependency
-
-- **Semantics**: Blocking / Precondition.
-- **Direction**: A depends on B (B block A).
-- **Constraint**: A can only be closed after B is closed.
-
-#### Related
-
-- **Semantics**: Reference / Context.
-- **Direction**: Bi-directional weak association.
-- **Typical Scenario**: Reference related Issues to provide background info.
-
-### 3.2 Workspace Referencing
-
-Supports Workspace-level issue tracking. Use namespace syntax to reference Issues in other projects.
-
-- **Syntax**: `project_name::ISSUE-ID`
-- **Example**: `monoco::EPIC-001`
-- **Requirement**: Must configure `members` in `.monoco/config.yaml`.
+Supports referencing Issues from other projects within the same Workspace: `project_name::ISSUE-ID` (e.g., `backend::API-102`).

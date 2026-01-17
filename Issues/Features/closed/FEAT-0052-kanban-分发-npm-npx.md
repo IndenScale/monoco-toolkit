@@ -2,12 +2,13 @@
 id: FEAT-0052
 uid: af6399
 type: feature
-status: open
-stage: in_progress
+status: closed
+stage: submitted
 title: Kanban 分发 - NPM/NPX
 created_at: "2026-01-13T14:49:04"
 opened_at: "2026-01-13T14:49:04"
-updated_at: "2026-01-13T14:55:00"
+updated_at: "2026-01-17T00:00:00"
+closed_at: "2026-01-17T00:00:00"
 parent: EPIC-0009
 dependencies: []
 related: []
@@ -33,4 +34,4 @@ tags: []
 - [x] 编写轻量级 CLI 启动器 (使用 `sirv` 或 `express` 配合 `open`)。
 - [x] 创建 `.github/workflows/publish-npm.yml` 工作流并配置 NPM_TOKEN。
 - [x] 更新主项目文档，增加 `npx` 使用说明。
-- [ ] 验证发布流程：创建 v0.1.0-npm 测试版本。
+- [x] 验证发布流程：创建 v0.1.0-npm 测试版本。

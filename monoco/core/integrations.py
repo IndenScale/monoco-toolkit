@@ -110,6 +110,14 @@ DEFAULT_INTEGRATIONS: Dict[str, AgentIntegration] = {
         bin_name="qwen",
         version_cmd="--version",
     ),
+    "kimi": AgentIntegration(
+        key="kimi",
+        name="Kimi CLI",
+        system_prompt_file="KIMI.md",
+        skill_root_dir=".kimi/skills/",
+        bin_name="kimi",
+        version_cmd="--version",
+    ),
     "agent": AgentIntegration(
         key="agent",
         name="Antigravity",

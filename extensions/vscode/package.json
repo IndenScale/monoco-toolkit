@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Native Kanban & Agent Management for Monoco. Manage tasks, visualize workflows, and orchestrate AI agents directly in VS Code.",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "publisher": "indenscale",
   "repository": {
     "type": "git",
@@ -41,46 +41,17 @@
     "workspaceContains:.monoco/project.yaml",
     "workspaceContains:Issues"
   ],
-  "main": "./client/out/extension.js",
+  "main": "./client/out/client/src/extension.js",
   "contributes": {
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "monoco-cockpit",
-          "title": "Monoco",
-          "icon": "media/icon.svg"
-        }
-      ]
-    },
-    "views": {
-      "monoco-cockpit": [
-        {
-          "id": "monoco-kanban",
-          "type": "webview",
-          "name": "Issues",
-          "icon": "media/icon.svg"
-        },
-        {
-          "id": "monoco-executions",
-          "name": "Actions",
-          "icon": "media/icon.svg"
-        }
-      ]
-    },
     "commands": [
       {
-        "command": "monoco.openKanban",
-        "title": "Monoco: Open Kanban"
+        "command": "monoco.helloWorld",
+        "title": "Monoco: Hello World"
       },
       {
-        "command": "monoco.refreshEntry",
-        "title": "Refresh",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "monoco.runAction",
-        "title": "Run Action",
-        "icon": "$(play)"
+        "command": "monoco.openBoard",
+        "title": "Monoco: Open Kanban Board",
+        "icon": "$(layout-sidebar-left)"
       },
       {
         "command": "monoco.createIssue",
@@ -90,75 +61,101 @@
       {
         "command": "monoco.openSettings",
         "title": "Settings",
-        "icon": "$(settings-gear)"
+        "icon": "$(gear)"
       },
       {
-        "command": "monoco.openWebUI",
-        "title": "Open Web UI",
-        "icon": "$(browser)"
+        "command": "monoco.refreshEntry",
+        "title": "Refresh",
+        "icon": "$(refresh)"
       },
       {
-        "command": "monoco.checkDependencies",
-        "title": "Check Dependencies",
-        "icon": "$(info)"
+        "command": "monoco.bootstrap",
+        "title": "Monoco: Install/Update Toolkit"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "monoco-explorer",
+          "title": "Monoco",
+          "icon": "./media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "monoco-explorer": [
+        {
+          "type": "webview",
+          "id": "monoco.kanbanView",
+          "name": "Project Board"
+        }
+      ]
+    },
     "menus": {
       "view/title": [
         {
           "command": "monoco.createIssue",
-          "when": "view == monoco-kanban",
+          "when": "view == monoco.kanbanView",
           "group": "navigation@1"
         },
         {
-          "command": "monoco.refreshEntry",
-          "when": "view == monoco-kanban",
+          "command": "monoco.openSettings",
+          "when": "view == monoco.kanbanView",
           "group": "navigation@2"
         },
         {
-          "command": "monoco.openWebUI",
-          "when": "view == monoco-kanban",
-          "group": "navigation@3"
-        },
-        {
-          "command": "monoco.openSettings",
-          "when": "view == monoco-kanban",
-          "group": "navigation@4"
-        },
-        {
           "command": "monoco.refreshEntry",
-          "when": "view == monoco-executions",
-          "group": "navigation"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "monoco.runAction",
-          "when": "view == monoco-executions && viewItem == action",
-          "group": "inline"
+          "when": "view == monoco.kanbanView",
+          "group": "navigation@3"
         }
       ]
     },
     "configuration": {
       "title": "Monoco",
       "properties": {
-        "monoco.webUrl": {
-          "type": "string",
-          "default": "http://127.0.0.1:8642",
-          "description": "URL for Monoco Web UI"
-        },
         "monoco.executablePath": {
           "type": "string",
-          "default": "monoco",
-          "description": "Path to the monoco executable. If not set, it will attempt to find 'monoco' in the system PATH."
+          "description": "Path to the Monoco CLI executable.",
+          "scope": "machine-overridable",
+          "default": "monoco"
+        },
+        "monoco.webUrl": {
+          "type": "string",
+          "description": "URL of the Monoco Web UI (Cockpit).",
+          "default": "http://127.0.0.1:8642"
+        },
+        "monoco.debug": {
+          "type": "boolean",
+          "description": "Enable debug logging.",
+          "default": false
         }
       }
-    }
+    },
+    "languages": [
+      {
+        "id": "monoco-issue",
+        "extensions": [
+          ".md"
+        ],
+        "filenamePatterns": [
+          "issues/*.md",
+          "**/Issues/**/*.md"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "monoco-issue",
+        "scopeName": "source.monoco-issue",
+        "path": "./syntaxes/monoco-issue.tmLanguage.json"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -b client/tsconfig.json && tsc -b server/tsconfig.json && npm run copy-assets && npm run copy-server-assets",
-    "copy-assets": "mkdir -p client/out/webview && cp client/src/webview/* client/out/webview/",
+    "compile": "tsc -b shared/tsconfig.json && tsc -b client/tsconfig.json && tsc -b server/tsconfig.json && node client/scripts/resolve-aliases.js && node client/scripts/build-webview.js && npm run copy-assets && npm run copy-server-assets",
+    "copy-assets": "cp client/src/webview/index.html client/out/webview/ && cp client/src/webview/style.css client/out/webview/",
     "copy-server-assets": "mkdir -p server/out/schema && cp server/src/schema/* server/out/schema/",
     "watch": "tsc -b client/tsconfig.json -w",
     "pretest": "npm run compile && npm run lint",

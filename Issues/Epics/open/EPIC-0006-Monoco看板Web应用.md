@@ -51,32 +51,6 @@ uid: b7c0c7
   - **键盘快捷键 (Keyboard Shortcuts)**: 纯键盘操作支持。
 - **依赖 (Dependencies)**: 现有 Issue API 已支持，需前端实现。
 
-### [[FEAT-0021]]: 架构/组件视图 (Architecture/Components View) - `/components`
-
-- **状态 (Status)**: Conceptual
-- **描述 (Description)**: 可视化展示项目的模块/组件结构。
-- **关键组件 (Key Components)**:
-  - **依赖图 (Dependency Graph)**: 组件依赖关系图。
-  - **文件资源管理器 (File Explorer)**: 关联代码文件与 Issue。
-- **依赖 (Dependencies)**: 需要后端提供文件/模块分析能力 (复杂度: 高)。
-
-### [[FEAT-0022]]: 增强上下文管理 (Enhanced Context Management)
-
-- **状态 (Status)**: In Progress (基础已完成)
-- **描述 (Description)**: 完善多项目切换体验。
-- **项目 (Items)**:
-  - 项目选择器 UI (Done).
-  - 项目特定设置 (Pending).
-  - 最近项目历史 (Pending).
-  - 面包屑导航 (Pending).
-
-### [[FEAT-0023]]: 高级 UX 打磨 (Premium UX Polish)
-
-- **状态 (Status)**: Ongoing
-- **项目 (Items)**:
-  - **玻璃拟态 (Glassmorphism)**: 统一磨砂玻璃质感。
-  - **动画 (Animations)**: 页面切换、数据加载的平滑过渡。
-  - **暗色模式 (Dark Mode)**: 深度优化的暗色模式（当前已是暗色，需优化对比度）。
 
 ## Acceptance Criteria
 

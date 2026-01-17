@@ -2,139 +2,139 @@
 
 Monoco Issue System 是一个基于 **"Agent-Native Semantics"** (智能体原生语义) 构建的项目管理工具。
 
-本文档专注于 **CLI 操作指南**。关于 Issue 的分类、状态机和引用关系的详细定义，请参阅 **[核心概念 (Core Concepts)](concepts.md)**。
+本文档专注于 **CLI 操作指南**。关于核心概念与架构，请参阅 **[核心概念 (Core Concepts)](concepts.md)**。关于配置自定义，请参阅 **[配置指南 (Configuration)](configuration.md)**。
 
 ---
 
-## 1. 命令行参考 (Command Reference)
-
-Monoco Issue System 强烈推荐使用 CLI 工具来管理 Issue，以确保元数据与文件系统的同步。
+## 1. 基础操作
 
 ### 1.1 创建 (Create)
-
-创建新的 Issue。会自动分配下一个可用的 ID。
 
 ```bash
 monoco issue create <type> --title "标题" [options]
 ```
 
 - **参数**:
-  - `<type>`: `epic`, `feature`, `chore`, `fix`
-  - `--title, -t`: Issue 的标题。
-  - `--parent, -p`: 父级 Issue ID。
-  - `--dependency, -d`: 依赖的 Issue ID。
-  - `--related, -r`: 关联的 Issue ID。
-  - `--backlog`: 直接创建在 Backlog 状态。
-  - `--subdir, -s`: 指定子目录（用于组织结构，例如 `Backend/Auth`）。
+  - `<type>`: `epic`, `feature`, `chore`, `fix` (或自定义类型)
+  - `--title, -t`: 标题
+  - `--parent, -p`: 父级 ID (e.g. EPIC-001)
+  - `--backlog`: 直接创建在 Backlog
+  - `--subdir, -s`: 指定子目录
 
-**示例**:
-
-```bash
-monoco issue create feature --title "实现用户登录" --parent EPIC-001
-# 跨项目创建
-monoco issue create feature --title "..." --parent monoco::EPIC-001
-```
-
-### 1.2 状态流转 (Transition)
-
-#### 开启 & 搁置 (Open & Backlog)
-
-```bash
-# 激活 Issue (Status -> Open, Stage -> Todo)
-monoco issue open <issue_id>
-
-# 搁置 Issue (Status -> Backlog, Stage -> Freezed)
-monoco issue backlog <issue_id>
-```
-
-#### 生命周期 (Lifecycle)
-
-Issue 在 `Open` 状态下的推进：
-
-```bash
-# 开始工作 (Stage -> Doing)
-monoco issue start <issue_id>
-
-# 提交评审 (Stage -> Review)
-monoco issue submit <issue_id>
-```
-
-#### 关闭 (Close)
-
-完成或关闭 Issue。**注意**: 若 Solution 为 `implemented`，Issue 必须先处于 `Review` 阶段。
-
-```bash
-monoco issue close <issue_id> [--solution <type>]
-```
-
-- **--solution 可选值**: `implemented` (默认), `cancelled`, `wontfix`, `duplicate`.
-
-### 1.3 提交代码 (Commit)
-
-原子化提交 Issue 变更。此命令会自动进行 Lint 检查，并仅允许提交 `Issues/` 目录下的变更（除非使用 `--detached`）。
-
-```bash
-monoco issue commit [-m "message"]
-```
-
-### 1.4 查看与可视化 (Visualization)
-
-#### 范围树 (Scope)
-
-查看树状 Issue 结构。
-
-```bash
-monoco issue scope [options]
-```
-
-- **--all, -a**: 显示所有（含 Closed/Backlog）。
-- **--workspace, -w**: **聚合显示 Workspace 成员项目的 Issue**。
-- **--recursive, -r**: 递归扫描子目录。
+### 1.2 查看 (View)
 
 #### 列表视图 (List)
 
 ```bash
-monoco issue list [options]
+monoco issue list [-s open] [-t feature]
 ```
 
-- **--status, -s**: 筛选状态。
-- **--type, -t**: 筛选类型。
-- **--stage**: 筛选阶段。
-- **--workspace, -w**: 包含 Workspace 成员项目。
+#### 看板视图 (Board)
 
-### 1.5 查询与筛选 (Query)
-
-使用高级语法进行检索。详细语法请见 [查询语法规范](query_syntax.md)。
+在终端中渲染 Kanban 看板，直观展示当前各阶段的任务。
 
 ```bash
-monoco issue query "bug -ui"
+monoco issue board
 ```
 
-### 1.6 维护 (Maintenance)
+#### 层级视图 (Scope)
 
-- **Lint**: 验证 `Issues/` 目录完整性。`monoco issue lint`
-- **Delete**: 物理删除。`monoco issue delete <issue_id>`
+查看 Issue 的树状归属关系。
+
+```bash
+monoco issue scope [--sprint SPRINT-ID] [--all]
+```
+
+#### 检查详情 (Inspect)
+
+查看 Issue 的元数据、可执行动作及 AST 结构。
+
+```bash
+monoco issue inspect <ID>
+```
 
 ---
 
-## 2. 最佳实践 (Best Practices)
+## 2. 生命周期管理 (Workflow)
 
-### 2.1 目录结构
+Monoco 的生命周期通过 **Transitions** (流转) 驱动。
 
-Issue 系统采用 **"Type-first, Status-second"** (类型优先，状态次之) 的分层存储策略：
+### 2.1 开始工作 (Start)
 
-```text
-Issues/
-├── Epics/
-│   ├── open/
-│   └── closed/
-├── Features/
-│   ├── open/
-│   └── ...
+将 Issue 从 `Draft` 移至 `Doing`。支持同时建立物理隔离环境。
+
+```bash
+# 基本启动
+monoco issue start FEAT-101
+
+# 启动并创建 Git 分支 (自动切换)
+monoco issue start FEAT-101 --branch
+
+# 启动并创建 Git Worktree (推荐用于并行开发)
+monoco issue start FEAT-101 --worktree
 ```
 
-### 2.2 核心原则
+### 2.2 提交与评审 (Submit & Review)
 
-1. **优先使用 CLI**: 避免手动移动文件，防止元数据不同步。
-2. **强制校验**: 手动编辑后务必运行 `monoco issue lint`。
-3. **原子性交付**: Feature 是最小交付单元，内部 Task 使用 Checklist (`- [ ]`) 管理，切勿拆分文件。
+```bash
+# 提交评审 (Doing -> Review)
+monoco issue submit FEAT-101
+
+# 提交并清理资源 (删除分支/Worktree)
+monoco issue submit FEAT-101 --prune
+```
+
+### 2.3 关闭 (Close)
+
+```bash
+monoco issue close FEAT-101 --solution implemented
+```
+
+- **Solutions**: `implemented`, `wontfix`, `cancelled`, `duplicate` (可配置)
+
+### 2.4 积压与恢复 (Backlog Operations)
+
+```bash
+# 推入积压 (Status: Open -> Backlog)
+monoco issue backlog push FEAT-101
+
+# 恢复开发 (Status: Backlog -> Open)
+monoco issue backlog pull FEAT-101
+```
+
+---
+
+## 3. 代码提交集成 (Atomic Commit)
+
+Monoco 提供了 `commit` 命令来确保提交与 Issue 的关联性。
+
+```bash
+# 关联提交 (会自动在 Commit Msg 添加 Ref: ID)
+monoco issue commit -m "实现核心逻辑" -i FEAT-101
+
+# 自动推断 (如果暂存区变更仅涉及该 Issue 文件)
+monoco issue commit -m "更新验收标准" -i FEAT-101
+
+# 游离提交 (即不关联 Issue，需显式声明)
+monoco issue commit -m "临时修复" --detached
+```
+
+---
+
+## 4. 维护与排错
+
+### Lint 检查
+
+验证 `Issues/` 目录的完整性（死链、格式错误等）。
+
+```bash
+monoco issue lint [--fix]
+```
+
+### 物理移动
+
+将 Issue 移动到另一个项目（保留历史，分配新 ID）。
+
+```bash
+monoco issue move FEAT-101 --to ../OtherProject
+```

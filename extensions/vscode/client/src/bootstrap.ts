@@ -1,7 +1,10 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
-import * as os from "os";
 import * as path from "path";
+import {
+  resolveMonocoExecutable as sharedResolveMonocoExecutable,
+  isCommandAvailable as sharedIsCommandAvailable,
+} from "../../shared/utils";
 
 // Export system wrapper for testing
 export const sys = {
@@ -14,31 +17,31 @@ export function getBundledBinaryPath(context: vscode.ExtensionContext): string {
   return context.asAbsolutePath(path.join("bin", binaryName));
 }
 
-export async function checkAndBootstrap(context: vscode.ExtensionContext) {
-  // 1. Check if monoco is already available
-  // Use --help because older versions of monoco (typer default) don't support --version
+/**
+ * Resolve Monoco executable path
+ * Uses shared resolver with VSCode-specific configuration
+ */
+export async function resolveMonocoExecutable(
+  context?: vscode.ExtensionContext
+): Promise<string> {
   const config = vscode.workspace.getConfiguration("monoco");
-  const executable = config.get<string>("executablePath") || "monoco";
-  
-  // 0. Check bundled binary first (if configured executable is default "monoco")
-  if (executable === "monoco") {
-      const bundledPath = getBundledBinaryPath(context);
-      if (await isCommandAvailable(bundledPath, "--help")) {
-          return;
-      }
-  }
+  const configuredPath = config.get<string>("executablePath") || "monoco";
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  const bundledPath = context ? getBundledBinaryPath(context) : undefined;
+
+  return sharedResolveMonocoExecutable({
+    workspaceRoot,
+    configuredPath,
+    bundledPath,
+  });
+}
+
+export async function checkAndBootstrap(context: vscode.ExtensionContext) {
+  // 1. Check if monoco is already available (including dev version)
+  const executable = await resolveMonocoExecutable(context);
 
   if (await isCommandAvailable(executable, "--help")) {
     return;
-  }
-
-  // If default "monoco" failed, try ~/.local/bin/monoco (uv tool default)
-  if (executable === "monoco") {
-      const home = os.homedir();
-      const uvPath = path.join(home, ".local", "bin", "monoco");
-      if (await isCommandAvailable(uvPath, "--help")) {
-          return;
-      }
   }
 
   // 2. Monoco not found. Check if uv is available.
@@ -67,23 +70,15 @@ export async function checkAndBootstrap(context: vscode.ExtensionContext) {
   }
 }
 
+/**
+ * Check if a command is available
+ * Wrapper around shared utility with VSCode-specific exec function
+ */
 async function isCommandAvailable(
   cmd: string,
   flag: string = "--version"
 ): Promise<boolean> {
-  return new Promise((resolve) => {
-    // use 'command -v' on unix, 'where' on windows, or just run --version
-    // --version is safest for most CLIs
-    sys.exec(`${cmd} ${flag}`, (err) => {
-      if (err) {
-        console.log(
-          `[Monoco] Command check failed for '${cmd}': ${err.message}`
-        );
-        console.log(`[Monoco] PATH: ${process.env.PATH}`);
-      }
-      resolve(!err);
-    });
-  });
+  return sharedIsCommandAvailable(cmd, flag, sys.exec);
 }
 
 async function installMonocoToolkit() {
