@@ -167,20 +167,5 @@ app.add_typer(agent_cmd.app, name="agent", help="Delegate tasks to Agent CLIs")
 from monoco.daemon.commands import serve
 app.command(name="serve")(serve)
 
-@app.command()
-def pty(
-    host: str = "127.0.0.1",
-    port: int = 3124,
-    cwd: Optional[str] = None
-):
-    """
-    Start the Monoco PTY Daemon (WebSocket).
-    """
-    from monoco.features.pty.server import run_pty_server
-    from pathlib import Path
-    
-    path = Path(cwd) if cwd else None
-    run_pty_server(host, port, path)
-
 if __name__ == "__main__":
     app()

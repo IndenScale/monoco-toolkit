@@ -21,7 +21,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-import { TerminalPanel } from "@/components/terminal/TerminalPanel";
 import {
   Tooltip,
   TooltipContent,
@@ -153,7 +152,6 @@ export default function LayoutShell({ children }: LayoutShellProps) {
 
           <div className="relative z-0 flex-1 w-full overflow-hidden">
             {children}
-            <TerminalPanel />
           </div>
 
           <ActivityDrawer isOpen={isActivityOpen} onClose={closeActivity} />

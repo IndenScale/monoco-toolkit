@@ -63,8 +63,15 @@ class OutputManager:
             print(json.dumps([item.model_dump(mode='json', exclude_none=True) for item in data], separators=(',', ':')))
         else:
             # Fallback for dicts/lists/primitives
+            def _encoder(obj):
+                if isinstance(obj, BaseModel):
+                    return obj.model_dump(mode='json', exclude_none=True)
+                if hasattr(obj, 'value'): # Enum support
+                     return obj.value
+                return str(obj)
+
             try:
-                print(json.dumps(data, separators=(',', ':'), default=str))
+                print(json.dumps(data, separators=(',', ':'), default=_encoder))
             except TypeError:
                 print(str(data))
 
