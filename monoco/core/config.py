@@ -1,7 +1,7 @@
 import os
 import yaml
 from pathlib import Path
-from typing import Optional, Dict, Any, Callable, Awaitable
+from typing import Optional, Dict, Any, Callable, Awaitable, List
 from enum import Enum
 from pydantic import BaseModel, Field
 
@@ -56,6 +56,67 @@ class AgentConfig(BaseModel):
         description="Custom agent framework integrations (overrides defaults from monoco.core.integrations)"
     )
 
+class IssueTypeConfig(BaseModel):
+    name: str
+    label: str
+    prefix: str
+    folder: str
+    description: Optional[str] = None
+
+class TransitionConfig(BaseModel):
+    name: str
+    label: str
+    icon: Optional[str] = None
+    from_status: Optional[str] = None
+    from_stage: Optional[str] = None
+    to_status: str
+    to_stage: Optional[str] = None
+    required_solution: Optional[str] = None
+    description: str = ""
+    command_template: Optional[str] = None
+
+class IssueSchemaConfig(BaseModel):
+    types: List[IssueTypeConfig] = Field(default_factory=list)
+    statuses: List[str] = Field(default_factory=list)
+    stages: List[str] = Field(default_factory=list)
+    solutions: List[str] = Field(default_factory=list)
+    workflows: List[TransitionConfig] = Field(default_factory=list)
+
+    def merge(self, other: "IssueSchemaConfig") -> "IssueSchemaConfig":
+        if not other:
+            return self
+        
+        # Types: merge by name
+        if other.types:
+            type_map = {t.name: t for t in self.types}
+            for ot in other.types:
+                type_map[ot.name] = ot
+            self.types = list(type_map.values())
+        
+        # Statuses: replace if provided
+        if other.statuses:
+            self.statuses = other.statuses
+        
+        # Stages: replace if provided
+        if other.stages:
+            self.stages = other.stages
+            
+        # Solutions: replace if provided
+        if other.solutions:
+            self.solutions = other.solutions
+            
+        # Workflows (Transitions): merge by name
+        if other.workflows:
+            wf_map = {w.name: w for w in self.workflows}
+            for ow in other.workflows:
+                wf_map[ow.name] = ow
+            self.workflows = list(wf_map.values())
+                
+        return self
+
+class StateMachineConfig(BaseModel):
+    transitions: List[TransitionConfig]
+
 class MonocoConfig(BaseModel):
     """
     Main Configuration Schema.
@@ -68,6 +129,7 @@ class MonocoConfig(BaseModel):
     ui: UIConfig = Field(default_factory=UIConfig)
     telemetry: TelemetryConfig = Field(default_factory=TelemetryConfig)
     agent: AgentConfig = Field(default_factory=AgentConfig)
+    issue: IssueSchemaConfig = Field(default_factory=IssueSchemaConfig)
 
     @staticmethod
     def _deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
