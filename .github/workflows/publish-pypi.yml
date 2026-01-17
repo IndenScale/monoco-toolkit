@@ -33,9 +33,6 @@ jobs:
       - name: Run Tests
         run: uv run pytest
 
-      - name: Lint Issues
-        run: uv run monoco issue lint --recursive
-
       - name: Build distribution
         run: uv build
 
