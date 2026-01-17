@@ -622,6 +622,57 @@ def scope(
 
     console.print(Panel(tree, expand=False))
 
+@app.command("inspect")
+def inspect(
+    target: str = typer.Argument(..., help="Issue ID or File Path"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    ast: bool = typer.Option(False, "--ast", help="Output JSON AST structure for debugging"),
+    json: AgentOutput = False,
+):
+    """
+    Inspect a specific issue and return its metadata (including actions).
+    """
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+    
+    # Try as Path
+    target_path = Path(target)
+    if target_path.exists() and target_path.is_file():
+        path = target_path
+    else:
+        # Try as ID
+        # Search path logic is needed? Or core.find_issue_path
+        path = core.find_issue_path(issues_root, target)
+        if not path:
+             OutputManager.error(f"Issue or file {target} not found.")
+             raise typer.Exit(code=1)
+    
+    # AST Debug Mode
+    if ast:
+        from .domain.parser import MarkdownParser
+        content = path.read_text()
+        try:
+            domain_issue = MarkdownParser.parse(content, path=str(path))
+            print(domain_issue.model_dump_json(indent=2))
+        except Exception as e:
+            OutputManager.error(f"Failed to parse AST: {e}")
+            raise typer.Exit(code=1)
+        return
+
+    # Normal Mode
+    meta = core.parse_issue(path)
+        
+    if not meta:
+         OutputManager.error(f"Could not parse issue {target}.")
+         raise typer.Exit(code=1)
+
+    # In JSON mode (AgentOutput), we might want to return rich data
+    if OutputManager.is_agent_mode():
+        OutputManager.print(meta)
+    else:
+        # For human, print yaml-like or table
+        console.print(meta)
+
 @app.command("lint")
 def lint(
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursively scan subdirectories"),
