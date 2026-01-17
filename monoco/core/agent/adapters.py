@@ -21,6 +21,16 @@ class BaseCLIClient:
 
     def _build_prompt(self, prompt: str, context_files: List[Path]) -> str:
         """Concatenate prompt and context files."""
+        # Inject Language Rule
+        try:
+            from monoco.core.config import get_config
+            settings = get_config()
+            lang = settings.i18n.source_lang
+            if lang:
+                 prompt = f"{prompt}\n\n[SYSTEM: LANGUAGE CONSTRAINT]\nThe project source language is '{lang}'. You MUST use '{lang}' for all thinking and reporting unless explicitly instructed otherwise."
+        except Exception:
+            pass
+
         full_prompt = [prompt]
         if context_files:
             full_prompt.append("\n\n--- CONTEXT FILES ---")

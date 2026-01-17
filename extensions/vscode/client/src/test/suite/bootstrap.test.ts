@@ -11,6 +11,7 @@ suite("Bootstrap Test Suite", () => {
   let createTerminalStub: sinon.SinonStub;
   let terminalSendTextSpy: sinon.SinonSpy;
   let terminalShowSpy: sinon.SinonSpy;
+  let mockContext: vscode.ExtensionContext;
 
   setup(() => {
     sandbox = sinon.createSandbox();
@@ -18,6 +19,10 @@ suite("Bootstrap Test Suite", () => {
     showWarnStub = sandbox.stub(vscode.window, "showWarningMessage");
     // Stub the wrapper, not the native cp module
     execStub = sandbox.stub(bootstrap.sys, "exec");
+
+    mockContext = {
+      asAbsolutePath: (relativePath: string) => `/mock/path/${relativePath}`,
+    } as unknown as vscode.ExtensionContext;
 
     const terminalMock = {
       name: "Monoco Installer",
@@ -46,24 +51,41 @@ suite("Bootstrap Test Suite", () => {
 
   test("Do nothing if monoco is already installed", async () => {
     // monoco --version calls back with null error (success)
-    execStub.withArgs("monoco --version").yields(null);
+    execStub.withArgs("monoco --help").yields(null);
+    execStub.withArgs("monoco --version").yields(null); // Backwards compat in test
 
-    await bootstrap.checkAndBootstrap();
+    await bootstrap.checkAndBootstrap(mockContext);
+
+    assert.strictEqual(showInfoStub.called, false);
+    assert.strictEqual(showWarnStub.called, false);
+  });
+
+  test("Do nothing if bundled binary is available", async () => {
+    // Bundled binary check succeeds
+    execStub.withArgs("/mock/path/bin/monoco --help").yields(null);
+    
+    // System monoco fails
+    execStub.withArgs("monoco --help").yields(new Error("not found"));
+
+    await bootstrap.checkAndBootstrap(mockContext);
 
     assert.strictEqual(showInfoStub.called, false);
     assert.strictEqual(showWarnStub.called, false);
   });
 
   test("Prompt install if monoco missing but uv present", async () => {
+    // Bundled binary check fails
+    execStub.withArgs("/mock/path/bin/monoco --help").yields(new Error("not found"));
+
     // monoco missing
-    execStub.withArgs("monoco --version").yields(new Error("not found"));
+    execStub.withArgs("monoco --help").yields(new Error("not found"));
     // uv present
     execStub.withArgs("uv --version").yields(null);
 
     // User accepts
     showInfoStub.resolves("Install");
 
-    await bootstrap.checkAndBootstrap();
+    await bootstrap.checkAndBootstrap(mockContext);
 
     assert.strictEqual(showInfoStub.called, true);
     assert.strictEqual(createTerminalStub.called, true);
@@ -76,15 +98,18 @@ suite("Bootstrap Test Suite", () => {
   });
 
   test("Prompt full install if monoco and uv missing", async () => {
+    // Bundled binary check fails
+    execStub.withArgs("/mock/path/bin/monoco --help").yields(new Error("not found"));
+
     // monoco missing
-    execStub.withArgs("monoco --version").yields(new Error("not found"));
+    execStub.withArgs("monoco --help").yields(new Error("not found"));
     // uv missing
     execStub.withArgs("uv --version").yields(new Error("not found"));
 
     // User accepts
     showWarnStub.resolves("Install All");
 
-    await bootstrap.checkAndBootstrap();
+    await bootstrap.checkAndBootstrap(mockContext);
 
     assert.strictEqual(showWarnStub.called, true);
     assert.strictEqual(createTerminalStub.called, true);
@@ -114,7 +139,7 @@ suite("Bootstrap Test Suite", () => {
 
     showInfoStub.resolves("Cancel");
 
-    await bootstrap.checkAndBootstrap();
+    await bootstrap.checkAndBootstrap(mockContext);
 
     assert.strictEqual(createTerminalStub.called, false);
   });

@@ -8,12 +8,26 @@ export const sys = {
   exec: cp.exec,
 };
 
-export async function checkAndBootstrap() {
+export function getBundledBinaryPath(context: vscode.ExtensionContext): string {
+  const isWindows = process.platform === "win32";
+  const binaryName = isWindows ? "monoco.exe" : "monoco";
+  return context.asAbsolutePath(path.join("bin", binaryName));
+}
+
+export async function checkAndBootstrap(context: vscode.ExtensionContext) {
   // 1. Check if monoco is already available
   // Use --help because older versions of monoco (typer default) don't support --version
   const config = vscode.workspace.getConfiguration("monoco");
   const executable = config.get<string>("executablePath") || "monoco";
   
+  // 0. Check bundled binary first (if configured executable is default "monoco")
+  if (executable === "monoco") {
+      const bundledPath = getBundledBinaryPath(context);
+      if (await isCommandAvailable(bundledPath, "--help")) {
+          return;
+      }
+  }
+
   if (await isCommandAvailable(executable, "--help")) {
     return;
   }
