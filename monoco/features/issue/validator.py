@@ -173,7 +173,7 @@ class IssueValidator:
                  # Or just a general error.
                  diagnostics.append(self._create_diagnostic(
                      "State Requirement (DOING+): Must define 'Technical Tasks' (at least 1 checkbox).",
-                     DiagnosticSeverity.Error
+                     DiagnosticSeverity.Warning
                  ))
 
         # 3. Logic: REVIEW -> Tasks must be Completed ([x]) or Cancelled ([~], [+])
