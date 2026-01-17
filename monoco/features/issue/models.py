@@ -78,16 +78,16 @@ class IsolationType(str, Enum):
     WORKTREE = "worktree"
 
 class IssueIsolation(BaseModel):
-    type: IsolationType
+    type: str
     ref: str  # Git branch name
     path: Optional[str] = None  # Worktree path (relative to repo root or absolute)
     created_at: datetime = Field(default_factory=current_time)
 
 class IssueAction(BaseModel):
     label: str
-    target_status: Optional[IssueStatus] = None
-    target_stage: Optional[IssueStage] = None
-    target_solution: Optional[IssueSolution] = None
+    target_status: Optional[str] = None
+    target_stage: Optional[str] = None
+    target_solution: Optional[str] = None
     icon: Optional[str] = None
     
     # Generic execution extensions
@@ -99,9 +99,9 @@ class IssueMetadata(BaseModel):
     
     id: str
     uid: Optional[str] = None  # Global unique identifier for cross-project identity
-    type: IssueType
-    status: IssueStatus = IssueStatus.OPEN
-    stage: Optional[IssueStage] = None
+    type: str
+    status: str = "open"
+    stage: Optional[str] = None
     title: str
     
     # Time Anchors
@@ -112,7 +112,7 @@ class IssueMetadata(BaseModel):
 
     parent: Optional[str] = None
     sprint: Optional[str] = None
-    solution: Optional[IssueSolution] = None
+    solution: Optional[str] = None
     isolation: Optional[IssueIsolation] = None
     dependencies: List[str] = []
     related: List[str] = []

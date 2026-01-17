@@ -13,15 +13,23 @@
   --text-secondary: var(--vscode-descriptionForeground);
   --text-active: var(--vscode-list-activeSelectionForeground);
   --border-color: var(--vscode-tree-indentGuidesStroke);
+  --input-bg: var(--vscode-input-background);
+  --input-fg: var(--vscode-input-foreground);
+  --input-border: var(--vscode-input-border);
+  --button-bg: var(--vscode-button-background);
+  --button-fg: var(--vscode-button-foreground);
+  --button-hover-bg: var(--vscode-button-hoverBackground);
+  --panel-border: var(--vscode-panel-border);
 
   /* Status Colors */
   --status-todo: var(--vscode-descriptionForeground);
-  --status-doing: #3b82f6; /* Blue */
-  --status-review: #a855f7; /* Purple */
-  --status-done: #22c55e; /* Green */
+  --status-doing: #0478d4;
+  --status-review: #a855f7;
+  --status-done: #388a34;
 
   /* Type Colors (Keep subtle) */
   --color-epic: #a855f7;
+  --color-arch: #f97316; /* Orange */
   --color-feature: #3b82f6;
   --color-chore: #94a3b8;
   --color-fix: #ef4444;
@@ -35,6 +43,7 @@
   );
   --font-size: 13px;
   --line-height: 22px; /* Standard VS Code Tree Item Height */
+  --text-disabled: var(--vscode-disabledForeground, rgba(128, 128, 128, 0.5));
 }
 
 /* Reset & Base */
@@ -216,12 +225,15 @@ body {
 }
 
 .issue-item .icon {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   margin-right: 6px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: 14px; /* Emoji size */
+  line-height: 1;
 }
 
 .card-content {
@@ -329,6 +341,9 @@ body {
 .type-epic {
   color: var(--color-epic);
 }
+.type-arch {
+  color: var(--color-arch);
+}
 .type-feature {
   color: var(--color-feature);
 }
@@ -342,63 +357,73 @@ body {
   color: var(--color-chore);
 }
 
-/* Search Bar */
-.search-bar {
-  padding: 4px 10px;
+/* Header Toolbar (Actions) */
+.header-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Right align actions */
+  padding: 4px 8px 0 8px; /* Top padding, no bottom padding */
   background-color: var(--bg-app);
-}
-
-#search-input {
-  width: 100%;
-  background-color: var(--vscode-input-background);
-  color: var(--vscode-input-foreground);
-  border: 1px solid var(--vscode-input-border, transparent);
-  padding: 4px 6px;
-  border-radius: 2px;
-  font-family: inherit;
-  font-size: 12px;
-  outline: none;
+  height: 28px;
   box-sizing: border-box;
 }
 
-#search-input:focus {
-  border-color: var(--vscode-focusBorder);
+.header-spacer {
+  flex: 1;
 }
 
+/* Filter Bar (Search) */
+.filter-bar {
+  padding: 4px 8px 8px 8px; /* Bottom padding */
+  background-color: var(--bg-app);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+/* Native-like Icon Buttons */
 .actions {
   display: flex;
   align-items: center;
   gap: 2px;
-  flex-shrink: 0;
 }
 
 .icon-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-primary); /* Icons usually inherit foreground */
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  width: 28px;
-  height: 28px;
+  padding: 3px;
+  border-radius: 5px; /* VS Code rounded style */
+  width: 24px; /* Standard toolbar size */
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.1s, background-color 0.1s;
+  transition: background-color 0.1s;
+}
+
+.icon-btn:hover {
+  background-color: var(
+    --vscode-toolbar-hoverBackground,
+    rgba(90, 93, 94, 0.31)
+  );
+}
+
+.icon-btn:active {
+  background-color: var(
+    --vscode-toolbar-activeBackground,
+    rgba(90, 93, 94, 0.31)
+  );
 }
 
 .icon-btn svg {
   width: 16px;
   height: 16px;
-  /* Monoline style: stroke usually, but if using fill="currentColor" icons, keep fill.
-     If using stroke icons, set fill="none" stroke="currentColor".
-     We will assume filled icons or stroke icons defined in JS.
-  */
-}
-
-.icon-btn:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
+  fill: currentColor; /* Ensure SVG uses text color */
 }
 
 /* Modifying Tree Group to support Header Button */
@@ -432,23 +457,41 @@ body {
   color: var(--text-primary);
 }
 
-/* Bottom Add Zone */
-.add-epic-zone {
-  margin: 10px;
-  border: 1px dashed var(--border-color);
-  border-radius: 4px;
-  padding: 8px;
-  text-align: center;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 11px;
-  transition: all 0.2s;
+.add-feature-btn .icon {
+  width: 12px;
+  height: 12px;
 }
 
-.add-epic-zone:hover {
-  border-color: var(--text-secondary);
+/* Actions Container */
+.action-group {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.action-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.action-btn:hover {
   background-color: var(--bg-hover);
   color: var(--text-primary);
+}
+
+/* Status Dot Indicator */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-left: 4px;
+  margin-right: 0px;
+  opacity: 0.8;
 }
 
 /* Draggable Visuals */
@@ -546,100 +589,6 @@ body {
   margin-top: 8px;
 }
 
-/* Hover Widget */
-.hover-widget {
-  position: fixed;
-  z-index: 10000;
-  background-color: var(--vscode-editorHoverWidget-background);
-  color: var(--vscode-editorHoverWidget-foreground);
-  border: 1px solid var(--vscode-editorHoverWidget-border);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  border-radius: 3px;
-  padding: 10px;
-  width: auto;
-  max-width: 300px;
-  min-width: 200px;
-  pointer-events: none;
-  font-size: 12px;
-  line-height: 1.4;
-  opacity: 0;
-  transition: opacity 0.1s ease-in-out;
-  display: flex;
-  flex-direction: column;
-}
-
-.hover-widget.visible {
-  opacity: 1;
-}
-
-.hover-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--vscode-editorHoverWidget-border);
-}
-
-.hover-type-icon {
-  margin-right: 8px;
-  display: flex;
-  align-items: center;
-  transform: scale(0.9);
-}
-
-.hover-title-group {
-  flex: 1;
-  min-width: 0;
-}
-
-.hover-title {
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-  color: var(--vscode-editorHoverWidget-foreground);
-  margin-bottom: 2px;
-}
-
-.hover-id {
-  font-family: var(--vscode-editor-font-family, monospace);
-  font-size: 10px;
-  color: var(--text-secondary);
-  opacity: 0.8;
-}
-
-.hover-status-badge {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 10px;
-  text-transform: uppercase;
-  font-weight: 600;
-  margin-left: 8px;
-  background-color: var(--bg-hover);
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-
-.hover-body {
-  color: var(--text-secondary);
-  font-size: 12px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 6;
-  line-clamp: 6;
-  -webkit-box-orient: vertical;
-  white-space: pre-wrap;
-}
-
-.hover-footer {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--vscode-editorHoverWidget-border);
-  display: flex;
-  gap: 8px;
-}
-
 /* Settings Tabs */
 .settings-tabs {
   display: flex;
@@ -647,101 +596,611 @@ body {
   height: 100%;
 }
 
+/* Search Wrapper tweaks */
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 2px;
+}
+
+.search-input {
+  /* Use standard VS Code input vars */
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  padding: 4px 24px 4px 6px; /* Right padding for toggle */
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  height: 26px; /* Slightly taller for comfort */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.search-input::placeholder {
+  color: var(--vscode-input-placeholderForeground);
+}
+
+.search-input:focus {
+  border-color: var(--vscode-focusBorder);
+}
+
+/* Icon Toggle inside Input */
+.icon-toggle {
+  position: absolute;
+  right: 4px;
+  top: 3px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 3px;
+  color: var(--text-secondary);
+}
+
+.icon-toggle:hover {
+  background-color: var(
+    --vscode-toolbar-hoverBackground,
+    rgba(90, 93, 94, 0.31)
+  );
+  color: var(--text-primary);
+}
+
+.icon-toggle.active {
+  color: var(--text-primary);
+  /* Optional active background or just color change */
+}
+
+/* Filter Container */
+.filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-left: 2px;
+}
+
+/* Filter Inputs */
+.filter-input {
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  padding: 4px 6px;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 12px;
+  height: 24px;
+  box-sizing: border-box;
+  width: 100%;
+  outline: none;
+}
+
+.filter-input:focus {
+  border-color: var(--vscode-focusBorder);
+}
+
+.filter-input::placeholder {
+  color: var(--vscode-input-placeholderForeground, rgba(128, 128, 128, 0.7));
+  font-style: italic;
+}
+
+/* Status Toggles (Row of Pills) */
+.status-toggles {
+  display: flex;
+  gap: 4px;
+}
+
+.status-toggle,
+.stage-toggle {
+  flex: 1;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 0;
+  border-radius: 2px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.1s;
+}
+
+.status-toggle:hover,
+.stage-toggle:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.status-toggle.active,
+.stage-toggle.active {
+  color: var(--vscode-button-foreground);
+  background-color: var(--vscode-button-background);
+  border-color: var(--vscode-button-background);
+}
+
+/* Specific colors for status when active? Or keep generic 'primary' look for cleanliness?
+   Let's keep generic 'primary' button look for active state to be safe with themes.
+*/
+
+/* -----------------------------------------------------------
+   Split View Layout (Issues vs Settings)
+   ----------------------------------------------------------- */
+
+.primary-views {
+  flex: 1;
+  overflow: hidden; /* Prevent scrolling propagation */
+  display: flex;
+  flex-direction: column;
+  transition:
+    flex-grow 0.3s ease-out,
+    min-height 0.3s ease-out;
+  min-height: 0;
+}
+
+.primary-views.collapsed {
+  flex: 0;
+  min-height: 0; /* Allows it to shrink completely if needed */
+}
+
+.filters-view,
+.settings-view {
+  background-color: var(--bg-app);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+
+  /* Default: Collapsed state (Header only) */
+  height: 28px;
+  overflow: hidden;
+  transition:
+    flex-grow 0.3s ease-out,
+    height 0.3s ease-out;
+}
+
+.filters-view.expanded,
+.settings-view.expanded {
+  flex: 1; /* Take available space */
+  height: auto; /* Allow flex to dictate height */
+}
+
+/* Header Config */
+.filters-header,
+.settings-header {
+  display: flex;
+  align-items: center;
+  height: 28px; /* Fixed header height */
+  padding: 0 10px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  /* Prevent shrinking */
+  flex-shrink: 0;
+}
+
+.filters-header:hover,
+.settings-header:hover {
+  background-color: var(--bg-hover);
+}
+
+.filters-header .chevron-icon,
+.settings-header .chevron-icon {
+  margin-right: 6px;
+  font-size: 10px; /* Small triangle */
+  transition: transform 0.3s ease;
+  color: var(--text-secondary);
+}
+
+.filters-view.expanded .chevron-icon,
+.settings-view.expanded .chevron-icon {
+  transform: rotate(90deg);
+}
+
+.filters-content-wrapper,
+.settings-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
+  pointer-events: none; /* Prevent clicks when collapsed/hidden */
+}
+
+.filters-view.expanded .filters-content-wrapper,
+.settings-view.expanded .settings-content-wrapper {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Tabs */
 .tab-header {
   display: flex;
-  border-bottom: 1px solid var(--border-color);
   background-color: var(--bg-app);
+  padding: 0 8px;
+  gap: 2px;
+  border-bottom: 1px solid var(--panel-border);
 }
 
 .tab-btn {
-  flex: 1;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
   color: var(--text-secondary);
-  padding: 8px;
-  cursor: pointer;
+  padding: 6px 12px;
   font-size: 12px;
-  font-weight: 500;
-  transition: all 0.2s;
+  font-weight: 400;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition:
+    color 0.1s,
+    border-color 0.1s;
+  letter-spacing: 0.2px;
+  margin-bottom: -1px; /* Align with border */
 }
 
 .tab-btn:hover {
   color: var(--text-primary);
-  background-color: var(--bg-hover);
 }
 
 .tab-btn.active {
   color: var(--text-primary);
-  border-bottom-color: var(--vscode-focusBorder);
+  border-bottom-color: var(
+    --vscode-settings-headerForeground,
+    var(--text-primary)
+  );
+  font-weight: 500;
 }
 
 .tab-content {
   display: none;
   flex: 1;
   overflow-y: auto;
+  padding: 16px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .tab-content.active {
   display: block;
 }
 
-/* Execution List */
-.hint {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 0;
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.execution-list {
+/* Form Styling */
+.form-container {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
 }
 
-.execution-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 10px;
-  background-color: var(--vscode-list-hoverBackground);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.1s, border-color 0.1s;
+/* Row layout for label + input */
+.form-group.row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
-.execution-item:hover {
-  border-color: var(--vscode-focusBorder);
-  transform: translateX(2px);
-}
-
-.exec-icon {
-  margin-right: 10px;
-  color: var(--text-secondary);
-}
-
-.exec-info {
-  flex: 1;
-}
-
-.exec-name {
-  font-size: 13px;
+.settings-section-title {
+  font-size: 11px;
   font-weight: 600;
-  color: var(--text-primary);
-  text-transform: capitalize;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin: 16px 0 8px 0;
+  letter-spacing: 0.5px;
 }
 
-.exec-source {
-  font-size: 10px;
+.settings-section-title:first-child {
+  margin-top: 0;
+}
+
+.settings-divider {
+  height: 1px;
+  background-color: var(--panel-border);
+  margin: 4px 0;
+  opacity: 0.5;
+}
+
+/* Removed duplicate row style */
+
+.form-group.row label {
+  display: inline-block !important;
+  margin-bottom: 0 !important;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.form-group.row .form-input {
+  width: 140px !important; /* Fixed width for selectors in row mode */
+  flex: 0 0 auto !important;
+}
+
+.form-group.row input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.form-input {
+  background-color: var(--input-bg);
+  color: var(--input-fg);
+  border: 1px solid var(--input-border);
+  padding: 4px 8px;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  height: 26px;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--vscode-focusBorder);
+}
+
+/* Custom Select Styling */
+select.form-input {
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="rgba(128,128,128,0.8)" d="M2 4.5L6 8.5L10 4.5H2Z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+  cursor: pointer;
+}
+
+.form-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
   margin-top: 2px;
 }
 
-.loading {
-  text-align: center;
+.form-actions {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--panel-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primary-btn {
+  background-color: var(--button-bg);
+  color: var(--button-fg);
+  border: none;
+  padding: 6px 14px;
+  border-radius: 2px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 400;
+  transition: background-color 0.2s;
+}
+
+.primary-btn:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.secondary-btn {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--button-bg);
+  padding: 5px 13px;
+  border-radius: 2px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.command-box {
+  background-color: var(--vscode-textCodeBlock-background);
+  padding: 8px;
+  border-radius: 3px;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 11px;
+  margin-top: 4px;
+  position: relative;
+  border: 1px solid var(--panel-border);
+}
+
+.copy-icon {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.checkbox-container input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--vscode-checkbox-border);
+  background: var(--vscode-checkbox-background);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.checkbox-container input:checked {
+  background: var(--vscode-checkbox-selectBackground);
+}
+
+.checkbox-container input:checked::after {
+  content: "✔";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  color: var(--vscode-checkbox-selectForeground);
+}
+
+.command-box:active {
+  transform: scale(0.98);
+  transition: transform 0.1s;
+}
+
+.command-box code {
+  user-select: all;
+}
+/* -----------------------------------------------------------
+   Row Layout (Unified for Groups & Items)
+   ----------------------------------------------------------- */
+
+/* Ensure the row content fills height and aligns center */
+.tree-group-header,
+.issue-item {
+  display: flex;
+  align-items: center;
+  /* line-height 22px is standard, but use height to enforce layout */
+  height: 22px;
+  /* Padding handles indentation visualization, but content box needs to be robust */
+  box-sizing: border-box;
+}
+
+/* The inner container for Flex layout */
+.card-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Contain children */
+  box-sizing: border-box;
+}
+
+/* LEFT SIDE: Icon + ID + Title */
+/* Must shrink if needed, but grow to push right side */
+.card-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0; /* CRITICAL: Enables truncation in flex container */
+  margin-right: 6px; /* Space between title and status dot */
+  height: 100%;
+}
+
+/* Icons */
+.card-left .chevron,
+.card-left .icon {
+  flex-shrink: 0; /* Never shrink icons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Text Content */
+.card-left .title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Font Inherit from VS Code */
+  font-family: inherit;
+  font-size: 13px;
+  line-height: normal;
+  color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+}
+
+/* ID Label Style (Hidden) */
+.node-label {
+  display: none; /* Hide Issue ID */
+}
+
+/* RIGHT SIDE: Badge + Status + Add Button */
+/* Must NOT shrink, stays anchored right */
+.card-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  gap: 6px; /* Space between status dot and button */
+  height: 100%;
+  padding-right: 0px; /* No padding */
+}
+
+/* Override existing loose selectors if necessary */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.item-add-btn {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
   color: var(--text-secondary);
-  padding: 20px;
-  font-style: italic;
+  cursor: pointer;
+  opacity: 0; /* Hidden by default */
+  transition:
+    opacity 0.1s,
+    background-color 0.1s;
+}
+
+.item-add-btn svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.item-add-btn:hover {
+  background-color: var(--vscode-list-hoverBackground);
+  color: var(--text-primary);
+}
+
+.tree-group-header:hover .item-add-btn,
+.issue-item:hover .item-add-btn {
+  opacity: 1;
+}
+
+/* Status Colors refinement */
+.status-dot.draft {
+  background-color: var(--vscode-descriptionForeground);
+  opacity: 0.5;
+}
+.status-dot.doing {
+  background-color: #3b82f6;
+}
+.status-dot.review {
+  background-color: #a855f7;
+}
+.status-dot.done {
+  background-color: #22c55e;
+}
+.status-dot.closed {
+  background-color: var(--vscode-disabledForeground);
 }

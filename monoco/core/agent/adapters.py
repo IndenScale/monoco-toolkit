@@ -103,10 +103,23 @@ class QwenClient(BaseCLIClient, AgentClient):
         return await self._run_command([self._executable, full_prompt])
 
 
+class KimiClient(BaseCLIClient, AgentClient):
+    """Adapter for Moonshot Kimi CLI."""
+    
+    def __init__(self):
+        super().__init__("kimi")
+
+    async def execute(self, prompt: str, context_files: List[Path] = []) -> str:
+        full_prompt = self._build_prompt(prompt, context_files)
+        # Usage: kimi "prompt"
+        return await self._run_command([self._executable, full_prompt])
+
+
 _ADAPTERS = {
     "gemini": GeminiClient,
     "claude": ClaudeClient,
-    "qwen": QwenClient
+    "qwen": QwenClient,
+    "kimi": KimiClient
 }
 
 def get_agent_client(name: str) -> AgentClient:

@@ -5,11 +5,13 @@ type: epic
 status: closed
 stage: done
 title: 支持跨领域迁移与可配置化 Issue 系统
-created_at: 2026-01-17 07:55:00
-opened_at: 2026-01-17 07:55:00
-updated_at: 2026-01-17 09:25:00
-closed_at: 2026-01-17 09:25:00
+created_at: '2026-01-17T07:55:00'
+opened_at: '2026-01-17T07:55:00'
+updated_at: '2026-01-17T09:26:04'
+closed_at: '2026-01-17T09:25:00'
 solution: implemented
+dependencies: []
+related: []
 tags: []
 path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Epics/closed/EPIC-0015-support-cross-domain-migration-configurable-issue-.md
 progress: 3/3
@@ -38,3 +40,15 @@ files_count: 35
 - [x] **配置加载器**: 实现 Schema Loader，用于读取和校验自定义工作流配置。
 - [x] **动态状态机**: 实现可配置的 State Machine Engine，替代 `core.py` 中的 `if-else` 跳转逻辑。
 - [x] **重构 Validator**: 基于新的领域模型重构校验逻辑。
+
+## Review Comments
+
+- [x] Self-Review
+
+## Delivery
+<!-- Monoco Auto Generated -->
+**Commits (1)**:
+- `ad26e9d` epic: close 15 (configurable issue)
+
+**Touched Files (1)**:
+- `Issues/Epics/open/EPIC-0015-support-cross-domain-migration-configurable-issue-.md`

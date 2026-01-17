@@ -258,6 +258,14 @@ def init_cli(
     (cwd / "Issues").mkdir(exist_ok=True)
     (cwd / ".references").mkdir(exist_ok=True)
     
+    # Initialize Agent Resources
+    try:
+        from monoco.features.agent.core import init_agent_resources
+        init_agent_resources(cwd)
+        console.print(f"[dim]  - Agent Resources: .monoco/actions/*.prompty[/dim]")
+    except Exception as e:
+        console.print(f"[yellow]Warning: Failed to init agent resources: {e}[/yellow]")
+
     console.print("\n[bold green]✓ Monoco Project Initialized![/bold green]")
     console.print(f"Access configured! issues will be created as [bold]{project_key}-XXX[/bold]")
 

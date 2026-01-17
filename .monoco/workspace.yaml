@@ -1,6 +1,190 @@
 i18n:
   source_lang: zh
   target_langs:
-  - en
+    - en
 telemetry:
   enabled: null
+
+issue:
+  types:
+    - name: epic
+      label: Epic
+      prefix: EPIC
+      folder: Epics
+      description: Large strategic initiative
+    - name: feature
+      label: Feature
+      prefix: FEAT
+      folder: Features
+      description: Value delivery atom
+    - name: chore
+      label: Chore
+      prefix: CHORE
+      folder: Chores
+      description: Engineering maintenance task
+    - name: fix
+      label: Bug Fix
+      prefix: FIX
+      folder: Fixes
+      description: Defect resolution
+    - name: story
+      label: User Story
+      prefix: STORY
+      folder: Stories
+      description: User-centric requirement
+    - name: arch
+      label: Architecture Decision
+      prefix: ARCH
+      folder: Arch
+      description: Architecture Decision Record (ADR)
+
+  statuses:
+    - open
+    - closed
+    - backlog
+
+  stages:
+    - draft
+    - doing
+    - review
+    - done
+    - freezed
+
+  solutions:
+    - implemented
+    - cancelled
+    - wontfix
+    - duplicate
+
+  workflows:
+    # --- Universal Agent Actions ---
+    - name: investigate
+      label: Investigate
+      icon: "$(telescope)"
+      to_status: open
+      command_template: "monoco agent run investigate"
+      description: "Run agent investigation"
+
+    # --- Open -> Open (Stage Transitions) ---
+    - name: start
+      label: Start
+      icon: "$(play)"
+      from_status: open
+      from_stage: draft
+      to_status: open
+      to_stage: doing
+      command_template: "monoco issue start {id}"
+      description: "Start working on the issue"
+
+    - name: develop
+      label: Develop
+      icon: "$(tools)"
+      from_status: open
+      from_stage: doing
+      to_status: open
+      to_stage: doing
+      command_template: "monoco agent run develop"
+      description: "Run agent development"
+
+    - name: stop
+      label: Stop
+      icon: "$(stop)"
+      from_status: open
+      from_stage: doing
+      to_status: open
+      to_stage: draft
+      command_template: "monoco issue stop {id}"
+      description: "Stop working and return to draft"
+
+    - name: submit
+      label: Submit
+      icon: "$(check)"
+      from_status: open
+      from_stage: doing
+      to_status: open
+      to_stage: review
+      command_template: "monoco issue submit {id}"
+      description: "Submit for review"
+
+    - name: reject
+      label: Reject
+      icon: "$(error)"
+      from_status: open
+      from_stage: review
+      to_status: open
+      to_stage: doing
+      command_template: "monoco issue update {id} --stage doing"
+      description: "Reject review and return to doing"
+
+    # --- Open -> Closed Transitions ---
+    - name: accept
+      label: Accept
+      icon: "$(pass-filled)"
+      from_status: open
+      from_stage: review
+      to_status: closed
+      to_stage: done
+      required_solution: implemented
+      command_template: "monoco issue close {id} --solution implemented"
+      description: "Accept and close issue"
+
+    - name: close_done
+      label: Close
+      icon: "$(close)"
+      from_status: open
+      from_stage: done
+      to_status: closed
+      to_stage: done
+      required_solution: implemented
+      command_template: "monoco issue close {id} --solution implemented"
+      description: "Close completed issue"
+
+    - name: cancel
+      label: Cancel
+      icon: "$(trash)"
+      from_status: open
+      to_status: closed
+      to_stage: done
+      required_solution: cancelled
+      command_template: "monoco issue cancel {id}"
+      description: "Cancel the issue"
+
+    - name: wontfix
+      label: Won't Fix
+      icon: "$(circle-slash)"
+      from_status: open
+      to_status: closed
+      to_stage: done
+      required_solution: wontfix
+      command_template: "monoco issue close {id} --solution wontfix"
+      description: "Mark as won't fix"
+
+    # --- Backlog Transitions ---
+    - name: pull
+      label: Pull
+      icon: "$(arrow-up)"
+      from_status: backlog
+      to_status: open
+      to_stage: draft
+      command_template: "monoco issue backlog pull {id}"
+      description: "Restore issue from backlog"
+
+    - name: cancel_backlog
+      label: Cancel
+      icon: "$(trash)"
+      from_status: backlog
+      to_status: closed
+      to_stage: done
+      required_solution: cancelled
+      command_template: "monoco issue cancel {id}"
+      description: "Cancel backlog issue"
+
+    # --- Closed Transitions ---
+    - name: reopen
+      label: Reopen
+      icon: "$(refresh)"
+      from_status: closed
+      to_status: open
+      to_stage: draft
+      command_template: "monoco issue open {id}"
+      description: "Reopen a closed issue"

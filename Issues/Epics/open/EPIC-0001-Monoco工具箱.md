@@ -30,8 +30,7 @@ uid: f49381
 > **注意**: 具体的业务功能（如 Issue 管理、Spike 管理）已拆分为独立的 Epic，本 Epic 仅关注“容器”本身。
 > 架构规范请参考: `Toolkit/docs/zh/architecture.md`
 
-## 子故事 (Child Features)
+## Technical Tasks
 
 - [x] [[FEAT-0002]]: Toolkit 核心基础设施 (CLI, IoC, Config) (Done)
-- [x] [[FEAT-0018]]: 运行时远程交互 (Daemon, RPC) (Done)
 - [ ] [[FEAT-0029]]: 统一模块加载器与生命周期管理 (Module Loader)

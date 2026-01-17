@@ -1,0 +1,14 @@
+---
+name: refine
+description: 细化需求，将 Draft 转化为可执行的 Plan。
+provider: chat
+---
+You are a Product Owner / Systems Analyst.
+Refine the following Draft Issue into a concrete Technical Plan:
+
+{{file}}
+
+# Instructions
+1.  **Clarify Objective**: Ensure the goal is specific and standard.
+2.  **Expand Criteria**: Add detailed Acceptance Criteria.
+3.  **Breakdown Tasks**: List concrete Technical Tasks.

@@ -1,114 +1,68 @@
 # Monoco Issue 核心概念
 
-本文档定义了 Monoco Issue System 的语义模型，包括 Issue 的分类、状态机以及引用关系。
+本文档定义了 Monoco Issue System 的语义模型与架构设计。
 
-## 1. 分类体系 (Taxonomy)
+Monoco Issue System 不仅仅是一个任务列表，而是一个 **通用原子 (Universal Atom)** 和 **可配置状态机 (Configurable State Machine)** 的结合体，旨在为人类工程师和 AI 智能体提供统一的协作界面。
 
-Monoco 基于“思维模式”(Mindset) 而非单纯的用户叙事来定义工作单元。
+## 1. 架构哲学 (Architecture)
 
-### 1.1 战略层 (Strategy)
+### 1.1 通用原子 (Universal Atom)
 
-#### 🏆 EPIC (史诗)
+在 Monoco 中，所有的工作单元——无论是宏大的史诗 (Epic)、具体的特性 (Feature)，还是琐碎的杂务 (Chore)——都被视为同构的 **Issue**。
 
-- **前缀**: `EPIC-`
-- **思维模式**: 架构师 (Architect)
-- **定义**: 跨越多个周期的宏大目标，是“愿景的容器”。通常包含多个 Feature。
-- **产出**: 定义系统的边界与核心价值。
+- **物理层**: 每一个 Issue 都是一个标准的 Markdown 文件，包含 YAML Frontmatter (元数据) 和 Body (内容)。
+- **持久化**: 所有状态变更直接映射到文件系统，无需依赖外部数据库。这使得 Git 成为唯一的真理来源 (Single Source of Truth, SSOT)。
 
-### 1.2 价值层 (Value)
+### 1.2 双层状态机 (Two-Layer State Machine)
 
-#### ✨ FEATURE (特性)
+Monoco 使用一种独特的双层状态机来管理 Issue 的生命周期，以平衡物理存储的稳定性和逻辑流转的灵活性。
 
-- **前缀**: `FEAT-`
-- **思维模式**: Product Owner / 首席工程师
-- **定义**: 系统中具体的、功能性的单元。代表 **价值交付**。
-- **原子性原则**: Feature = Design + Dev + Test + Doc + i18n。它们是一个不可分割的整体。
-- **注意**: 此概念替代了传统的 "Story"。
+#### 物理状态 (Status)
 
-### 1.3 执行层 (Execution)
+决定 Issue 在文件系统中的**物理位置**和**可见性**。
 
-#### 🧹 CHORE (杂务)
+- **Open**: 活跃状态。文件位于 `Types/open/`。
+- **Closed**: 终结状态。文件位于 `Types/closed/`。
+- **Backlog**: 冻结状态。文件位于 `Types/backlog/`。
 
-- **前缀**: `CHORE-`
-- **思维模式**: 构建者 (Builder) / 维护者 (Maintainer)
-- **定义**: 工程维护、重构或升级。**不直接产生**用户功能价值，但对系统健康至关重要。
-- **场景**: 架构升级、CI/CD 修复、依赖更新。
-- **注意**: 此概念替代了传统的 "Task"。
+#### 逻辑阶段 (Stage)
 
-#### 🐛 FIX (修复)
+决定 Issue 在 Open 状态下的**执行进度**。Stage 的流转完全在内存中进行，不涉及文件移动。
 
-- **前缀**: `FIX-`
-- **思维模式**: 调试者 (Debugger)
-- **定义**: 修正“预期”与“现实”之间的偏差。
-- **注意**: 此概念替代了传统的 "Bug"。
+- _Default_: Draft, Doing, Review, Done, Freezed (可配置)
 
----
+## 2. 核心模型 (Core Model)
 
-## 2. 状态机 (State Machine)
+### 2.1 分类体系 (Taxonomy) -> 可配置
 
-Monoco 使用 **双层状态机** (Two-Layer State Machine) 来管理生命周期：**Status** (物理状态) 和 **Stage** (逻辑阶段)。
+虽然 Monoco 默认提供了一套基于“思维模式”的分类（Epic/Feature/Chore/Fix），但这完全是**可配置**的。你可以定义自己的类型：
 
-### 2.1 物理状态 (Status)
+- **Name**: 内部标识符 (e.g., `story`)
+- **Label**: 显示名称 (e.g., `User Story`)
+- **Prefix**: ID 前缀 (e.g., `STORY`)
+- **Folder**: 存储目录 (e.g., `Stories`)
 
-决定 Issue 的**可见性**和**存储位置**。
+### 2.2 工作流 (Workflows) -> 可配置
 
-- **Backlog (搁置)**:
+所有的状态转移 (Transition) 均由一组明确的规则定义。一个 Transition 包含：
 
-  - **含义**: 尚未排期或暂时搁置的想法。
-  - **位置**: `Issues/*/backlog/`
-  - **Stage**: 直至被 Pull 前，Stage 锁定为 `Freezed`。
+- **Trigger**: 起始状态 (From Status/Stage)
+- **Action**: 动作名称 (e.g., `submit`)
+- **Effect**: 目标状态 (To Status/Stage)
+- **Side Effect**: 触发的 CLI 命令 (e.g., 自动运行 Agent)
 
-- **Open (开启)**:
+这种设计允许你在这个状态机上挂载各种自动化逻辑，例如“当进入 Review 阶段时，自动运行 AI Code Review Agent”。
 
-  - **含义**: 正在进行或计划近期执行的任务。
-  - **位置**: `Issues/*/open/`
-  - **Stage**: 可以流转 (Todo -> Doing -> Review)。
+## 3. 引用拓扑 (Topology)
 
-- **Closed (关闭)**:
-  - **含义**: 生命周期结束。
-  - **位置**: `Issues/*/closed/`
-  - **Stage**: 强制为 `Done`。
+Issue 之间通过三种强类型的引用关系连接，构成项目的知识图谱。
 
-### 2.2 逻辑阶段 (Stage)
+| 关系类型       | 语义        | 方向   | 约束                   |
+| :------------- | :---------- | :----- | :--------------------- |
+| **Parent**     | 归属/层级   | 多对一 | 子项必须在父项上下文内 |
+| **Dependency** | 阻塞/前置   | 任意   | B 未关闭前，A 无法关闭 |
+| **Related**    | 参考/上下文 | 双向   | 无强约束               |
 
-描述 Issue 在 `Open` 状态下的**执行进度**。
+### 跨项目引用 (Workspace Referencing)
 
-- **Todo**: 待办。已排期，等待开始。
-- **Doing**: 进行中。正在编写代码或设计。通常对应一个 Git 分支或 Worktree。
-- **Review**: 评审中。代码已提交，等待合并或验收。
-- **Done**: 已完成。仅在 Issue 关闭时达成。
-
----
-
-## 3. 引用关系 (Topology)
-
-Issue 之间通过三种引用关系连接，构成项目的知识图谱。
-
-### 3.1 引用类型架构
-
-#### Parent (父子关系)
-
-- **语义**: 层级 / 归属。
-- **方向**: 多对一 (Many-to-One)。
-- **典型场景**: Feature 归属于 Epic; Chore 归属于 Epic。
-- **限制**: 不支持循环引用。
-
-#### Dependency (依赖关系)
-
-- **语义**: 阻塞 / 前置条件。
-- **方向**: A depends on B (B block A)。
-- **限制**: 只有当 B 关闭后，A 才能关闭。
-
-#### Related (关联关系)
-
-- **语义**: 参考 / 上下文。
-- **方向**: 双向弱关联。
-- **典型场景**: 引用相关的 Issue 以提供背景信息。
-
-### 3.2 跨项目引用 (Workspace Referencing)
-
-支持 Workspace 级的问题追踪。使用命名空间语法引用其他项目的 Issue。
-
-- **语法**: `project_name::ISSUE-ID`
-- **示例**: `monoco::EPIC-001`
-- **要求**: 需在 `.monoco/config.yaml` 中配置 `members`。
+支持引用同一 Workspace 下其他项目的 Issue： `project_name::ISSUE-ID` (e.g., `backend::API-102`)。

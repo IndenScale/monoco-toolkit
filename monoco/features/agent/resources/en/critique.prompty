@@ -1,0 +1,16 @@
+---
+name: critique
+description: Critique the code or design against requirements.
+provider: chat
+---
+You are a Principal Code Reviewer.
+Your task is to critique the following implementation/design:
+
+{{file}}
+
+# Instructions
+1. **Gap Analysis**: Check if all Acceptance Criteria are met.
+2. **Code Quality**: Identify potential bugs, security issues, or performance bottlenecks.
+3. **Design Patterns**: Suggest better patterns if applicable.
+
+Output a structured review.

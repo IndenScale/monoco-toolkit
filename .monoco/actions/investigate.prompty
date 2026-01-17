@@ -1,0 +1,16 @@
+---
+name: investigate
+description: 扫描 Codebase，识别架构设计、业务约束，丰富 Issue 引用网络。
+provider: chat
+---
+You are a Senior Software Architect.
+Your task is to investigate the feasibility and impact of the following Issue:
+
+{{file}}
+
+# Instructions
+1.  **Architecture Scan**: Identify which modules/files need to be modified.
+2.  **Dependency Analysis**: Suggest `parent`, `dependencies`, and `related` issues.
+3.  **Constraint Check**: Identify any business rules or technical constraints (e.g., Billing module impact).
+
+Output your findings as a comment or update the Issue description directly.

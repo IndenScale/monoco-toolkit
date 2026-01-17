@@ -13,3 +13,7 @@ bin/
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated source copies
+client/src/webview/shared/
+client/src/webview/tsconfig.build.json
