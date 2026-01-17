@@ -6,7 +6,9 @@ from pathlib import Path
 from monoco.core.lsp import Diagnostic, DiagnosticSeverity, Range, Position
 from monoco.core.config import get_config
 from monoco.features.i18n.core import detect_language
-from .models import IssueMetadata, IssueStatus, IssueStage, IssueType
+from .models import IssueMetadata, IssueType
+from .domain.parser import MarkdownParser
+from .domain.models import ContentBlock
 
 class IssueValidator:
     """
@@ -20,14 +22,41 @@ class IssueValidator:
     def validate(self, meta: IssueMetadata, content: str, all_issue_ids: Set[str] = set()) -> List[Diagnostic]:
         diagnostics = []
         
+        # Parse Content into Blocks (Domain Layer)
+        # Handle case where content might be just body (from update_issue) or full file
+        if content.startswith("---"):
+            try:
+                issue_domain = MarkdownParser.parse(content)
+                blocks = issue_domain.body.blocks
+                has_frontmatter = True
+            except Exception:
+                # Fallback if parser fails (e.g. invalid YAML)
+                # We continue with empty blocks or try partial parsing?
+                # For now, let's try to parse blocks ignoring FM
+                lines = content.splitlines()
+                # Find end of FM
+                start_line = 0
+                if lines[0].strip() == "---":
+                    for i in range(1, len(lines)):
+                        if lines[i].strip() == "---":
+                            start_line = i + 1
+                            break
+                blocks = MarkdownParser._parse_blocks(lines[start_line:], start_line_offset=start_line)
+                has_frontmatter = True
+        else:
+            # Assume content is just body
+            lines = content.splitlines()
+            blocks = MarkdownParser._parse_blocks(lines, start_line_offset=0)
+            has_frontmatter = False
+
         # 1. State Matrix Validation
         diagnostics.extend(self._validate_state_matrix(meta, content))
         
-        # 2. Content Completeness (Checkbox check)
-        diagnostics.extend(self._validate_content_completeness(meta, content))
+        # 2. State Requirements (Strict Verification)
+        diagnostics.extend(self._validate_state_requirements(meta, blocks))
         
-        # 3. Structure Consistency (Headings)
-        diagnostics.extend(self._validate_structure(meta, content))
+        # 3. Structure Consistency (Headings) - Using Blocks
+        diagnostics.extend(self._validate_structure_blocks(meta, blocks))
         
         # 4. Lifecycle/Integrity (Solution, etc.)
         diagnostics.extend(self._validate_integrity(meta, content))
@@ -38,8 +67,8 @@ class IssueValidator:
         # 6. Time Consistency
         diagnostics.extend(self._validate_time_consistency(meta, content))
 
-        # 7. Checkbox Syntax
-        diagnostics.extend(self._validate_checkbox_logic(content))
+        # 7. Checkbox Syntax - Using Blocks
+        diagnostics.extend(self._validate_checkbox_logic_blocks(blocks))
         
         # 8. Language Consistency
         diagnostics.extend(self._validate_language_consistency(meta, content))
@@ -97,56 +126,102 @@ class IssueValidator:
         diagnostics = []
         
         # Check based on parsed metadata (now that auto-correction is disabled)
-        if meta.status == IssueStatus.CLOSED and meta.stage != IssueStage.DONE:
+        if meta.status == "closed" and meta.stage != "done":
             line = self._get_field_line(content, "status")
             diagnostics.append(self._create_diagnostic(
-                f"State Mismatch: Closed issues must be in 'Done' stage (found: {meta.stage.value if meta.stage else 'None'})", 
+                f"State Mismatch: Closed issues must be in 'Done' stage (found: {meta.stage if meta.stage else 'None'})", 
                 DiagnosticSeverity.Error,
                 line=line
             ))
         
-        if meta.status == IssueStatus.BACKLOG and meta.stage != IssueStage.FREEZED:
+        if meta.status == "backlog" and meta.stage != "freezed":
             line = self._get_field_line(content, "status")
             diagnostics.append(self._create_diagnostic(
-                f"State Mismatch: Backlog issues must be in 'Freezed' stage (found: {meta.stage.value if meta.stage else 'None'})", 
+                f"State Mismatch: Backlog issues must be in 'Freezed' stage (found: {meta.stage if meta.stage else 'None'})", 
                 DiagnosticSeverity.Error,
                 line=line
             ))
 
         return diagnostics
 
-    def _validate_content_completeness(self, meta: IssueMetadata, content: str) -> List[Diagnostic]:
+    def _validate_state_requirements(self, meta: IssueMetadata, blocks: List[ContentBlock]) -> List[Diagnostic]:
         diagnostics = []
-        # Checkbox regex: - [ ] or - [x] or - [-] or - [/]
-        checkboxes = re.findall(r"-\s*\[([ x\-/])\]", content)
         
-        if len(checkboxes) < 2:
-            diagnostics.append(self._create_diagnostic(
-                "Content Incomplete: Ticket must contain at least 2 checkboxes (AC & Tasks).",
-                DiagnosticSeverity.Warning
-            ))
-            
-        if meta.stage in [IssueStage.REVIEW, IssueStage.DONE]:
-            # No empty checkboxes allowed
-            if ' ' in checkboxes:
-                # Find the first occurrence line
-                lines = content.split('\n')
-                first_line = 0
-                for i, line in enumerate(lines):
-                    if re.search(r"-\s*\[ \]", line):
-                        first_line = i
-                        break
-                        
-                diagnostics.append(self._create_diagnostic(
-                    f"Incomplete Tasks: Issue in {meta.stage} cannot have unchecked boxes.",
-                    DiagnosticSeverity.Error,
-                    line=first_line
-                ))
+        # 1. Map Blocks to Sections
+        sections = {"tasks": [], "ac": [], "review": []}
+        current_section = None
+        
+        for block in blocks:
+            if block.type == "heading":
+                title = block.content.strip().lower()
+                if "technical tasks" in title:
+                    current_section = "tasks"
+                elif "acceptance criteria" in title:
+                    current_section = "ac"
+                elif "review comments" in title:
+                    current_section = "review"
+                else:
+                    current_section = None
+            elif block.type == "task_item":
+                if current_section and current_section in sections:
+                    sections[current_section].append(block)
+
+        # 2. Logic: DOING -> Must have defined tasks
+        if meta.stage in ["doing", "review", "done"]:
+             if not sections["tasks"]:
+                 # We can't strictly point to a line if section missing, but we can point to top/bottom
+                 # Or just a general error.
+                 diagnostics.append(self._create_diagnostic(
+                     "State Requirement (DOING+): Must define 'Technical Tasks' (at least 1 checkbox).",
+                     DiagnosticSeverity.Error
+                 ))
+
+        # 3. Logic: REVIEW -> Tasks must be Completed ([x]) or Cancelled ([~], [+])
+        # No [ ] (ToDo) or [-]/[/] (Doing) allowed.
+        if meta.stage in ["review", "done"]:
+            for block in sections["tasks"]:
+                 content = block.content.strip()
+                 # Check for explicit illegal states
+                 if re.search(r"-\s*\[\s+\]", content):
+                      diagnostics.append(self._create_diagnostic(
+                          f"State Requirement ({meta.stage.upper()}): Technical Tasks must be resolved. Found Todo [ ]: '{content}'",
+                          DiagnosticSeverity.Error,
+                          line=block.line_start
+                      ))
+                 elif re.search(r"-\s*\[[-\/]]", content):
+                      diagnostics.append(self._create_diagnostic(
+                          f"State Requirement ({meta.stage.upper()}): Technical Tasks must be finished (not Doing). Found Doing [-]: '{content}'",
+                          DiagnosticSeverity.Error,
+                          line=block.line_start
+                      ))
+
+        # 4. Logic: DONE -> AC must be Verified ([x])
+        if meta.stage == "done":
+             for block in sections["ac"]:
+                 content = block.content.strip()
+                 if not re.search(r"-\s*\[[xX]\]", content):
+                      diagnostics.append(self._create_diagnostic(
+                          f"State Requirement (DONE): Acceptance Criteria must be passed ([x]). Found: '{content}'",
+                          DiagnosticSeverity.Error,
+                          line=block.line_start
+                      ))
+             
+             # 5. Logic: DONE -> Review Checkboxes (if any) must be Resolved ([x] or [~])
+             for block in sections["review"]:
+                 content = block.content.strip()
+                 # Must be [x], [X], [~], [+]
+                 # Therefore [ ], [-], [/] are invalid blocking states
+                 if re.search(r"-\s*\[[\s\-\/]\]", content):
+                      diagnostics.append(self._create_diagnostic(
+                          f"State Requirement (DONE): Actionable Review Comments must be resolved ([x] or [~]). Found: '{content}'",
+                          DiagnosticSeverity.Error,
+                          line=block.line_start
+                      ))
+                      
         return diagnostics
 
-    def _validate_structure(self, meta: IssueMetadata, content: str) -> List[Diagnostic]:
+    def _validate_structure_blocks(self, meta: IssueMetadata, blocks: List[ContentBlock]) -> List[Diagnostic]:
         diagnostics = []
-        lines = content.split('\n')
         
         # 1. Heading check: ## {issue-id}: {issue-title}
         expected_header = f"## {meta.id}: {meta.title}"
@@ -156,19 +231,25 @@ class IssueValidator:
         review_header_found = False
         review_content_found = False
         
-        for i, line in enumerate(lines):
-            line_stripped = line.strip()
-            if line_stripped == expected_header:
-                header_found = True
-            
-            if line_stripped == "## Review Comments":
-                review_header_found = True
-                # Check near lines for content
-                # This is a naive check (next line is not empty)
-                if i + 1 < len(lines) and lines[i+1].strip():
-                     review_content_found = True
-                elif i + 2 < len(lines) and lines[i+2].strip():
-                     review_content_found = True
+        review_header_index = -1
+        
+        for i, block in enumerate(blocks):
+            if block.type == 'heading':
+                stripped = block.content.strip()
+                if stripped == expected_header:
+                    header_found = True
+                
+                if stripped == "## Review Comments":
+                    review_header_found = True
+                    review_header_index = i
+        
+        # Check content after review header
+        if review_header_found:
+            # Check if there are blocks after review_header_index that are NOT empty
+            for j in range(review_header_index + 1, len(blocks)):
+                if blocks[j].type != 'empty':
+                    review_content_found = True
+                    break
 
         if not header_found:
              diagnostics.append(self._create_diagnostic(
@@ -176,7 +257,7 @@ class IssueValidator:
                  DiagnosticSeverity.Warning
              ))
              
-        if meta.stage in [IssueStage.REVIEW, IssueStage.DONE]:
+        if meta.stage in ["review", "done"]:
             if not review_header_found:
                 diagnostics.append(self._create_diagnostic(
                     "Review Requirement: Missing '## Review Comments' section.",
@@ -191,7 +272,7 @@ class IssueValidator:
 
     def _validate_integrity(self, meta: IssueMetadata, content: str) -> List[Diagnostic]:
         diagnostics = []
-        if meta.status == IssueStatus.CLOSED and not meta.solution:
+        if meta.status == "closed" and not meta.solution:
             line = self._get_field_line(content, "status")
             diagnostics.append(self._create_diagnostic(
                 f"Data Integrity: Closed issue {meta.id} missing 'solution' field.",
@@ -221,6 +302,42 @@ class IssueValidator:
                     DiagnosticSeverity.Error,
                     line=line
                  ))
+                 
+        # Body Reference Check
+        # Regex for generic issue ID: (EPIC|FEAT|CHORE|FIX)-\d{4}
+        # We scan line by line to get line numbers
+        lines = content.split('\n')
+        # Skip frontmatter for body check to avoid double counting (handled above)
+        in_fm = False
+        fm_end = 0
+        for i, line in enumerate(lines):
+            if line.strip() == '---':
+                if not in_fm: in_fm = True
+                else: 
+                    fm_end = i
+                    break
+        
+        for i, line in enumerate(lines):
+            if i <= fm_end: continue # Skip frontmatter
+            
+            # Find all matches
+            matches = re.finditer(r"\b((?:EPIC|FEAT|CHORE|FIX)-\d{4})\b", line)
+            for match in matches:
+                ref_id = match.group(1)
+                if ref_id != meta.id and ref_id not in all_ids:
+                     # Check if it's a namespaced ID? The regex only catches local IDs.
+                     # If users use MON::FEAT-0001, the regex might catch FEAT-0001.
+                     # But all_ids contains full IDs (potentially namespaced).
+                     # Simple logic: if ref_id isn't in all_ids, check if any id ENDS with ref_id
+                     
+                     found_namespaced = any(known.endswith(f"::{ref_id}") for known in all_ids)
+                     
+                     if not found_namespaced:
+                        diagnostics.append(self._create_diagnostic(
+                            f"Broken Reference: Issue '{ref_id}' not found.",
+                            DiagnosticSeverity.Warning,
+                            line=i
+                        ))
         return diagnostics
 
     def _validate_time_consistency(self, meta: IssueMetadata, content: str) -> List[Diagnostic]:
@@ -249,21 +366,20 @@ class IssueValidator:
 
         return diagnostics
 
-    def _validate_checkbox_logic(self, content: str) -> List[Diagnostic]:
+    def _validate_checkbox_logic_blocks(self, blocks: List[ContentBlock]) -> List[Diagnostic]:
         diagnostics = []
-        lines = content.split('\n')
         
-        for i, line in enumerate(lines):
-            stripped = line.lstrip()
-            
-            # Syntax Check: - [?]
-            if stripped.startswith("- ["):
-                match = re.match(r"- \[([ x\-/])\]", stripped)
+        for block in blocks:
+            if block.type == 'task_item':
+                content = block.content.strip()
+                # Syntax Check: - [?]
+                # Added supported chars: /, ~, +
+                match = re.match(r"- \[([ x\-/~+])\]", content)
                 if not match:
                     # Check for Common errors
-                    if re.match(r"- \[.{2,}\]", stripped): # [xx] or [  ]
-                         diagnostics.append(self._create_diagnostic("Invalid Checkbox: Use single character [ ], [x], [-], [/]", DiagnosticSeverity.Error, i))
-                    elif re.match(r"- \[([^ x\-/])\]", stripped): # [v], [o]
-                         diagnostics.append(self._create_diagnostic("Invalid Checkbox Status: Use [ ], [x], [-], [/]", DiagnosticSeverity.Error, i))
+                    if re.match(r"- \[.{2,}\]", content): # [xx] or [  ]
+                         diagnostics.append(self._create_diagnostic("Invalid Checkbox: Use single character [ ], [x], [-], [/]", DiagnosticSeverity.Error, block.line_start))
+                    elif re.match(r"- \[([^ x\-/~+])\]", content): # [v], [o]
+                         diagnostics.append(self._create_diagnostic("Invalid Checkbox Status: Use [ ], [x], [/], [~]", DiagnosticSeverity.Error, block.line_start))
         
         return diagnostics

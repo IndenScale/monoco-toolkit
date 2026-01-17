@@ -10,28 +10,34 @@ let state = {
   workspaceState: {},
   searchQuery: "",
   settings: {
-    // API Base removed, pure LSP now
+    apiBase: "http://127.0.0.1:8642/api/v1",
     webUrl: "http://127.0.0.1:8642",
   },
 };
 
-// Icons (Abstract Monoline SVGs)
 const ICONS = {
-  EPIC: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2" /><path d="M5 8h6M8 5v6" /></svg>`,
-  FEATURE: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6" /><path d="M8 5v6" /></svg>`,
-  BUG: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v4m-3 1l-2-2m10 2l2-2m-9 5h8m-8 3l-1 2m7-2l1 2M8 14a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" /></svg>`,
-  CHORE: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3l10 10M13 3L3 13" /></svg>`,
-  CHEVRON: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3l5 5-5 5" /></svg>`,
-  WEB: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6"/><path d="M2.5 8h11M8 2.5a12.9 12.9 0 0 0 0 11 12.9 12.9 0 0 0 0-11z"/></svg>`,
-  SETTINGS: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8.5 1.5a.5.5 0 0 0-1 0l-.25 1.5a5.5 5.5 0 0 0-1.7.7l-1.4-.6a.5.5 0 0 0-.6.2l-1 1.7a.5.5 0 0 0 .1.6l1.2 1a5.5 5.5 0 0 0 0 1.8l-1.2 1a.5.5 0 0 0-.1.6l1 1.7a.5.5 0 0 0 .6.2l1.4-.6a5.5 5.5 0 0 0 1.7.7l.25 1.5a.5.5 0 0 0 1 0l.25-1.5a5.5 5.5 0 0 0 1.7-.7l1.4.6a.5.5 0 0 0 .6-.2l1-1.7a.5.5 0 0 0-.1-.6l-1.2-1a5.5 5.5 0 0 0 0-1.8l1.2-1a.5.5 0 0 0 .1-.6l-1-1.7a.5.5 0 0 0-.6-.2l-1.4.6a5.5 5.5 0 0 0-1.7-.7L8.5 1.5z"/><circle cx="8" cy="8" r="2.5"/></svg>`,
-  PLUS: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3v10M3 8h10"/></svg>`,
-  BACK: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M10 13L5 8l5-5"/></svg>`,
-  EXECUTION: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 3l10 5-10 5V3z"/></svg>`,
+  EPIC: `<svg class="icon"><use href="#icon-epic"/></svg>`,
+  FEATURE: `<svg class="icon"><use href="#icon-feature"/></svg>`,
+  BUG: `<svg class="icon"><use href="#icon-bug"/></svg>`,
+  CHORE: `<svg class="icon"><use href="#icon-chore"/></svg>`,
+  CHEVRON: `<svg class="icon"><use href="#icon-chevron"/></svg>`,
+  WEB: `<svg class="icon"><use href="#icon-web"/></svg>`,
+  SETTINGS: `<svg class="icon"><use href="#icon-settings"/></svg>`,
+  PLUS: `<svg class="icon"><use href="#icon-plus"/></svg>`,
+  BACK: `<svg class="icon"><use href="#icon-back"/></svg>`,
+  EXECUTION: `<svg class="icon"><use href="#icon-execution"/></svg>`,
+  ARCH: `<svg class="icon"><use href="#icon-arch"/></svg>`,
 };
 
+/**
+ * Get SVG icon for a given issue type.
+ * @param {string} type
+ * @returns {string} The SVG string.
+ */
 function getIcon(type) {
   const t = (type || "").toUpperCase();
   if (t === "EPIC") return ICONS.EPIC;
+  if (t === "ARCH") return ICONS.ARCH;
   if (t === "FEATURE") return ICONS.FEATURE;
   if (t === "BUG") return ICONS.BUG;
   if (t === "CHORE") return ICONS.CHORE;
@@ -44,10 +50,7 @@ const els = {
   projectSelector: document.getElementById("project-selector"),
   issueTree: document.getElementById("issue-tree"),
   searchInput: document.getElementById("search-input"),
-  // Toolbar
-  btnWeb: document.getElementById("btn-web"),
-  btnSettings: document.getElementById("btn-settings"),
-  btnAddEpic: document.getElementById("btn-add-epic"),
+  // Toolbar removals
   // Views
   viewHome: document.getElementById("view-home"),
   viewCreate: document.getElementById("view-create"),
@@ -62,21 +65,22 @@ const els = {
   createProject: document.getElementById("create-project"),
   btnSubmitCreate: document.getElementById("btn-submit-create"),
   // Settings Form
+  settingApiBase: document.getElementById("setting-api-base"),
   settingWebUrl: document.getElementById("setting-web-url"),
   btnSaveSettings: document.getElementById("btn-save-settings"),
   // Tabs
-  settingsTabs: document.querySelectorAll(".settings-tabs .tab-btn"),
   executionList: document.getElementById("execution-list"),
-  // Other
-  addEpicZone: document.getElementById("add-epic-zone"),
+  // Other removals
 };
 
 // Initialization
 document.addEventListener("DOMContentLoaded", async () => {
-  els.btnBackCreate.innerHTML = ICONS.BACK;
-  els.btnBackSettings.innerHTML = ICONS.BACK;
-
-  initHoverWidget();
+  // Init Toolbar Icons
+  if (els.btnWeb) els.btnWeb.innerHTML = ICONS.WEB;
+  if (els.btnSettings) els.btnSettings.innerHTML = ICONS.SETTINGS;
+  if (els.btnAddEpic) els.btnAddEpic.innerHTML = ICONS.PLUS;
+  if (els.btnBackCreate) els.btnBackCreate.innerHTML = ICONS.BACK;
+  if (els.btnBackSettings) els.btnBackSettings.innerHTML = ICONS.BACK;
 
   // Restore State
   const previousState = vscode.getState();
@@ -91,53 +95,62 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Config Injection
+  // Config Injection (Overrides saved settings if provided by extension)
   if (window.monocoConfig) {
+    state.settings.apiBase =
+      window.monocoConfig.apiBase || state.settings.apiBase;
     state.settings.webUrl = window.monocoConfig.webUrl || state.settings.webUrl;
-    // apiBase is gone
   }
 
   // Event Listeners
   window.addEventListener("message", async (event) => {
     const message = event.data;
-    if (message.type === "REFRESH") refreshAll();
+    console.log("[Webview] Received message:", message.type, message);
 
+    if (message.type === "REFRESH") refreshAll();
     if (message.type === "DATA_UPDATED") {
       handleDataUpdate(message.payload);
     }
-
-    if (message.type === "SHOW_CREATE_VIEW") {
-      openCreateFlow("feature");
-    }
-
     if (message.type === "EXECUTION_PROFILES") {
       renderExecutionProfiles(message.value);
     }
   });
 
-  // Tap switching
-  els.settingsTabs.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      // Deactivate all
-      els.settingsTabs.forEach((b) => b.classList.remove("active"));
-      document
-        .querySelectorAll(".tab-content")
-        .forEach((c) => c.classList.remove("active"));
+  function handleDataUpdate(payload) {
+    console.log("[Webview] DATA_UPDATED payload received:", payload);
+    console.log("[Webview] Payload issues count:", payload?.issues?.length);
+    console.log("[Webview] Payload projects count:", payload?.projects?.length);
 
-      // Activate Clicked
-      btn.classList.add("active");
-      const targetId = btn.getAttribute("data-tab");
-      document.getElementById(targetId).classList.add("active");
+    state.issues = payload.issues || [];
+    state.projects = payload.projects || [];
 
-      // Logic
-      if (targetId === "tab-execution") {
-        vscode.postMessage({
-          type: "FETCH_EXECUTION_PROFILES",
-          projectId: state.selectedProjectId,
-        });
-      }
-    });
-  });
+    if (state.issues.length > 0) {
+      console.log("[Webview] First issue sample:", state.issues[0]);
+    } else {
+      console.warn("[Webview] No issues in payload!");
+    }
+
+    if (payload.workspaceState) {
+      state.workspaceState = payload.workspaceState;
+    }
+
+    if (!state.selectedProjectId || state.selectedProjectId === "all") {
+      state.selectedProjectId =
+        state.workspaceState.last_active_project_id || "all";
+    }
+
+    console.log("[Webview] Targeting project:", state.selectedProjectId);
+    console.log(
+      "[Webview] About to render with",
+      state.issues.length,
+      "issues",
+    );
+    renderProjectSelector();
+    renderTree();
+    console.log("[Webview] Render complete");
+  }
+
+  // Tab switching removal
 
   // ... (Rest of event listeners logic)
 
@@ -147,11 +160,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   els.searchInput?.addEventListener("input", (e) => {
     state.searchQuery = e.target.value.toLowerCase();
-    savePersistentState();
+    saveLocalState();
     renderTree();
   });
 
-  els.addEpicZone?.addEventListener("click", () => openCreateFlow("epic"));
+  // Navigation removals
 
   els.btnBackCreate?.addEventListener("click", () => showView("view-home"));
   els.btnBackSettings?.addEventListener("click", () => showView("view-home"));
@@ -161,11 +174,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     await performCreateIssueFromForm();
   });
 
-  // Drag & Drop for Create Parent (Same as before)
+  // Drag & Drop for Create Parent
   if (els.createParent) {
-    // ... [Previous Drag logic, omitted for brevity, it relies on DOM only] ...
-    // Note: I will copy it if I write full file, but I am overwriting.
-    // I need to include it.
     els.createParent.addEventListener("dragover", (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = "copy";
@@ -182,6 +192,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
           const droppedIssue = JSON.parse(raw);
           if (droppedIssue && droppedIssue.id) {
+            // Add option if missing
             let optionExists = false;
             for (let opt of els.createParent.options) {
               if (opt.value === droppedIssue.id) {
@@ -205,16 +216,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   els.btnSaveSettings?.addEventListener("click", () => {
+    state.settings.apiBase = els.settingApiBase.value.trim();
     state.settings.webUrl = els.settingWebUrl.value.trim();
-    savePersistentState();
-    showView("view-home");
+    saveLocalState();
+    refreshAll(); // Reload with new API
+
+    // Collapse settings view
+    els.viewSettings.classList.remove("expanded");
+    document.getElementById("primary-views").classList.remove("collapsed");
   });
 
+  // Settings Bottom Sheet Toggle
+  const settingsToggle = document.getElementById("settings-toggle-btn");
+  if (settingsToggle) {
+    settingsToggle.addEventListener("click", () => {
+      const isExpanded = els.viewSettings.classList.toggle("expanded");
+      const primary = document.getElementById("primary-views");
+
+      if (isExpanded) {
+        primary.classList.add("collapsed");
+      } else {
+        primary.classList.remove("collapsed");
+      }
+    });
+  }
+
   // Initial Load
-  refreshAll();
-  // Polling? LSP handles push updates, so we don't strictly need polling.
-  // But maybe a backup sync every 30s.
-  setInterval(refreshAll, 30000);
+  await refreshAll();
+  setInterval(refreshAll, 10000);
 });
 
 function showView(viewId) {
@@ -224,41 +253,13 @@ function showView(viewId) {
   document.getElementById(viewId).classList.add("active");
 }
 
-function refreshAll() {
+async function refreshAll() {
+  console.log("[Webview] Sending GET_LOCAL_DATA request to extension");
   vscode.postMessage({ type: "GET_LOCAL_DATA" });
-}
-
-function handleDataUpdate(payload) {
-  // Payload: { issues: [], projects: [], workspaceState: {} }
-  state.issues = payload.issues || [];
-  state.projects = payload.projects || [];
-  state.workspaceState = payload.workspaceState || {};
-
-  // Sync Selector
-  renderProjectSelector();
-
-  // Sync Active Project
-  let targetId = els.projectSelector.value;
-  if (
-    (!targetId || targetId === "all") &&
-    state.workspaceState.last_active_project_id
-  ) {
-    targetId = state.workspaceState.last_active_project_id;
-  }
-
-  if (targetId && targetId !== "all") {
-    els.projectSelector.value = targetId;
-    state.selectedProjectId = targetId;
-  } else {
-    state.selectedProjectId = "all";
-  }
-
-  renderTree();
 }
 
 async function setActiveProject(projectId) {
   state.selectedProjectId = projectId;
-  // Persist via Extension
   vscode.postMessage({
     type: "SAVE_STATE",
     key: "last_active_project_id",
@@ -267,28 +268,39 @@ async function setActiveProject(projectId) {
   renderTree();
 }
 
-function renderProjectSelector() {
-  const current = els.projectSelector.value;
-  els.projectSelector.innerHTML = '<option value="all">All Projects</option>';
-  
-  // Use a Set to track unique project IDs
-  const seenProjects = new Set();
-  
-  state.projects.forEach((p) => {
-    if (seenProjects.has(p.id)) return;
-    seenProjects.add(p.id);
+async function fetchIssues(projectId) {
+  // Now handled by extension pushing DATA_UPDATED
+  refreshAll();
+}
 
+function renderProjectSelector() {
+  const current = state.selectedProjectId || "all";
+  els.projectSelector.innerHTML = '<option value="all">All Projects</option>';
+
+  (state.projects || []).forEach((p) => {
     const opt = document.createElement("option");
     opt.value = p.id;
-    opt.textContent = p.name || p.id; // Fallback
-    if (
-      p.id === current ||
-      p.id === state.workspaceState.last_active_project_id
-    ) {
-      opt.selected = true;
-    }
+    opt.textContent = p.name || p.id;
     els.projectSelector.appendChild(opt);
   });
+
+  // Check for root issues (issues with no project_id)
+  const hasRootIssues = (state.issues || []).some(
+    (i) => !i.project_id && !i.project && !i.projectId,
+  );
+  if (hasRootIssues) {
+    const opt = document.createElement("option");
+    opt.value = "root";
+    opt.textContent = "Root / Global";
+    els.projectSelector.appendChild(opt);
+  }
+
+  els.projectSelector.value = current;
+}
+
+// Data fetching is now handled by LSP via extension events
+function fetchIssues(projectId) {
+  refreshAll();
 }
 
 // ----------------------------------------------------
@@ -304,55 +316,83 @@ function openCreateFlow(type, parentId = null) {
     return;
   }
 
+  // Pre-fill form
   els.createTitle.value = "";
   els.createType.value = type;
   els.createProject.value = state.selectedProjectId;
 
-  // Populate Parents: Use local state.issues
+  // Prepare Parent Options (Async) - handle parentId selection after load
   populateParentOptions(state.selectedProjectId, parentId);
 
   showView("view-create");
   els.createTitle.focus();
 }
 
-function populateParentOptions(currentProjectId, preselectedId) {
+async function populateParentOptions(currentProjectId, preselectedId) {
   const select = els.createParent;
   select.innerHTML = '<option value="">(None)</option>';
+  select.disabled = true;
 
-  // Epics from current project
-  const currentEpics = state.issues
-    .filter((i) => i.type === "epic" && i.project_id === currentProjectId)
-    .sort((a, b) => a.title.localeCompare(b.title));
+  try {
+    const epics = [];
 
-  // Epics from other projects
-  const otherEpics = state.issues
-    .filter((i) => i.type === "epic" && i.project_id !== currentProjectId)
-    .sort((a, b) => a.title.localeCompare(b.title));
+    // 1. Current Project (Fast)
+    const currentEpics = state.issues
+      .filter((i) => i.type === "epic")
+      .map((e) => ({ ...e, group: "Current Project" }));
+    epics.push(...currentEpics);
 
-  if (currentEpics.length > 0) {
-    const g = document.createElement("optgroup");
-    g.label = "Current Project";
-    currentEpics.forEach((e) => {
-      const opt = document.createElement("option");
-      opt.value = e.id;
-      opt.textContent = `${e.id}: ${e.title}`;
-      if (e.id === preselectedId) opt.selected = true;
-      g.appendChild(opt);
+    // 2. All Epics/Archs across all known projects
+    const allRoots = state.issues
+      .filter((i) => i.type === "epic" || i.type === "arch")
+      .map((e) => {
+        const p = state.projects.find((proj) => proj.id === e.project_id);
+        return { ...e, group: p ? `Project: ${p.name}` : "Other" };
+      });
+    epics.push(...allRoots);
+
+    // Render
+    const groups = {};
+    epics.forEach((e) => {
+      if (!groups[e.group]) groups[e.group] = [];
+      groups[e.group].push(e);
     });
-    select.appendChild(g);
-  }
 
-  if (otherEpics.length > 0) {
-    const g = document.createElement("optgroup");
-    g.label = "Other Projects";
-    otherEpics.forEach((e) => {
-      const opt = document.createElement("option");
-      opt.value = e.id;
-      opt.textContent = `${e.id}: ${e.title}`;
-      if (e.id === preselectedId) opt.selected = true;
-      g.appendChild(opt);
+    // Sort Groups: Current First
+    const groupNames = Object.keys(groups).sort((a, b) => {
+      if (a === "Current Project") return -1;
+      if (b === "Current Project") return 1;
+      return a.localeCompare(b);
     });
-    select.appendChild(g);
+
+    groupNames.forEach((g) => {
+      const optgroup = document.createElement("optgroup");
+      optgroup.label = g;
+      groups[g].forEach((e) => {
+        const opt = document.createElement("option");
+        opt.value = e.id;
+        opt.textContent = `${e.id}: ${e.title}`;
+        if (e.id === preselectedId) opt.selected = true;
+        optgroup.appendChild(opt);
+      });
+      select.appendChild(optgroup);
+    });
+
+    // If preselected ID was not found (e.g. from different un-fetched project), add it manually
+    if (
+      preselectedId &&
+      !Array.from(select.options).some((o) => o.value === preselectedId)
+    ) {
+      const opt = document.createElement("option");
+      opt.value = preselectedId;
+      opt.textContent = `${preselectedId} (Unknown)`;
+      opt.selected = true;
+      select.appendChild(opt);
+    }
+  } catch (e) {
+    console.warn("Failed to populate parents", e);
+  } finally {
+    select.disabled = false;
   }
 }
 
@@ -368,9 +408,10 @@ async function performCreateIssueFromForm() {
     type: "CREATE_ISSUE",
     value: {
       title,
-      type,
+      type: type.toLowerCase(),
       parent,
-      projectId,
+      project_id: projectId,
+      status: "open",
     },
   });
 
@@ -378,131 +419,102 @@ async function performCreateIssueFromForm() {
 }
 
 async function performIssueAction(issue, action) {
-  // Translate action to changes
-  const changes = {};
-  if (action.target_status) changes.status = action.target_status;
-  if (action.target_stage) changes.stage = action.target_stage;
-  if (action.target_solution) changes.solution = action.target_solution;
-
   vscode.postMessage({
     type: "UPDATE_ISSUE",
     issueId: issue.id,
-    changes: changes,
+    changes: {
+      status: action.target_status || issue.status,
+      stage: action.target_stage || issue.stage,
+      solution: action.target_solution || issue.solution,
+      project_id: state.selectedProjectId,
+    },
   });
 }
 
 // ----------------------------------------------------
-// Helper Functions
+// Rendering Logic
 // ----------------------------------------------------
-
-function savePersistentState() {
-  vscode.setState({
-    expandedIds: Array.from(state.expandedIds),
-    searchQuery: state.searchQuery,
-    settings: state.settings,
-  });
-}
-
-function saveLocalState() {
-  // Alias for compatibility with old code logic calls
-  savePersistentState();
-}
-
-function openFile(issue) {
-  vscode.postMessage({
-    type: "OPEN_ISSUE_FILE",
-    value: { path: issue.filePath },
-  });
-}
-
-function escapeHtml(unsafe) {
-  if (!unsafe) return "";
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-// ----------------------------------------------------
-// Rendering Logic (Tree, Drag, Hover)
-// ----------------------------------------------------
-
-// ... (Reuse renderTree, createEpicNode, createIssueItem, statusWeight from original)
-// To ensure they are present, I need to include them.
 
 function renderTree() {
   els.issueTree.innerHTML = "";
+  const query = state.searchQuery || "";
+  const projectId = state.selectedProjectId;
 
-  // Filter by Project
-  let projectIssues = state.issues;
-  if (state.selectedProjectId && state.selectedProjectId !== "all") {
-    projectIssues = state.issues.filter(
-      (i) => i.project_id === state.selectedProjectId
-    );
+  // 1. Filter by Project
+  let targetIssues = (state.issues || []).filter((i) => i && i.id);
+  if (projectId && projectId !== "all") {
+    if (projectId === "root") {
+      // Filter for issues with NO project id
+      targetIssues = targetIssues.filter(
+        (i) => !i.project_id && !i.project && !i.projectId,
+      );
+    } else {
+      const target = projectId.toLowerCase();
+      targetIssues = targetIssues.filter((i) => {
+        const p = (i.project_id || i.project || i.projectId || i.Project || "")
+          .toString()
+          .toLowerCase();
+        return p === target;
+      });
+    }
   }
 
-  // Filter by Search
-  let displayIssues = projectIssues;
-  if (state.searchQuery) {
-    displayIssues = projectIssues.filter(
-      (i) =>
-        i.title.toLowerCase().includes(state.searchQuery) ||
-        i.id.toLowerCase().includes(state.searchQuery)
-    );
-  }
-
-  if (displayIssues.length === 0) {
-    els.issueTree.innerHTML = `<div class="empty-state"><span>No issues found.</span></div>`;
+  if (targetIssues.length === 0) {
+    els.issueTree.innerHTML = `<div class="empty-state">No issues to display. (Total synced: ${state.issues.length})</div>`;
     return;
   }
 
-  // ... (Same grouping logic as before) ...
-  const allEpics = projectIssues.filter((i) => i.type === "epic");
-  const epicGroups = new Map();
-  allEpics.forEach((e) => epicGroups.set(e.id, []));
-  const orphans = [];
-
-  projectIssues.forEach((issue) => {
-    if (issue.type === "epic") return;
-    if (issue.parent && epicGroups.has(issue.parent)) {
-      epicGroups.get(issue.parent).push(issue);
-    } else {
-      orphans.push(issue);
+  // 2. Build Maps
+  const idMap = new Map(targetIssues.map((i) => [i.id, i]));
+  const childrenMap = new Map();
+  targetIssues.forEach((i) => {
+    const parentId = i.parent || i.Parent;
+    if (parentId) {
+      if (!childrenMap.has(parentId)) childrenMap.set(parentId, []);
+      childrenMap.get(parentId).push(i);
     }
   });
 
-  // Render
   const sortFn = (a, b) => statusWeight(a.status) - statusWeight(b.status);
 
-  allEpics.sort(sortFn).forEach((epic) => {
-    let children = epicGroups.get(epic.id);
-    children.sort(sortFn);
+  function hasMatch(node) {
+    if (!query) return true;
+    const t = (node.title || "").toLowerCase();
+    const id = (node.id || "").toLowerCase();
+    return t.includes(query) || id.includes(query);
+  }
 
-    // Filter children if search query
-    if (state.searchQuery) {
-      const query = state.searchQuery;
-      const matches =
-        children.some((c) => c.title.toLowerCase().includes(query)) ||
-        epic.title.toLowerCase().includes(query);
-      if (!matches) return;
-      // If match, show all or filtered? Usually filtered.
-      // Simplified: show if epic matches OR any child matches.
+  const renderInner = (issue, depth = 0) => {
+    if (query && !hasMatch(issue)) return null;
+    const children = (childrenMap.get(issue.id) || []).sort(sortFn);
+    if (children.length > 0) {
+      return createTreeNode(issue, children, depth, renderInner);
+    } else {
+      return createIssueItem(issue, depth);
     }
+  };
 
-    els.issueTree.appendChild(createEpicNode(epic, children));
+  // 3. Roots Discovery
+  let roots = targetIssues.filter((i) => {
+    const pid = i.parent || i.Parent;
+    return !pid || !idMap.has(pid);
   });
 
-  if (orphans.length > 0) {
-    orphans.sort(sortFn);
-    // Filter orphans
-    if (state.searchQuery) {
-      // ... logic ...
-    }
-    const orphanEpic = { title: "Unassigned Issues", id: "virtual-orphans" };
-    els.issueTree.appendChild(createEpicNode(orphanEpic, orphans, true));
+  const container = document.createDocumentFragment();
+  roots.sort(sortFn).forEach((r) => {
+    const node = renderInner(r);
+    if (node) container.appendChild(node);
+  });
+
+  if (container.children.length === 0 && targetIssues.length > 0) {
+    // If no roots (maybe circular?), just show all as flat
+    targetIssues.forEach((i) => {
+      const node = createIssueItem(i, 0);
+      if (node) container.appendChild(node);
+    });
   }
+
+  els.issueTree.appendChild(container);
 }
 
 function statusWeight(status) {
@@ -510,11 +522,14 @@ function statusWeight(status) {
   return map[status] ?? 99;
 }
 
-function createEpicNode(epic, children, isVirtual = false) {
+function createTreeNode(issue, children, depth = 0, renderInner) {
   const container = document.createElement("div");
   container.className = "tree-group";
+  if (depth > 0) {
+    container.style.paddingLeft = `${depth * 12}px`;
+  }
 
-  const isExpanded = state.expandedIds.has(epic.id) || !!state.searchQuery;
+  const isExpanded = state.expandedIds.has(issue.id) || !!state.searchQuery;
 
   if (!isExpanded) {
     container.classList.add("collapsed");
@@ -524,120 +539,142 @@ function createEpicNode(epic, children, isVirtual = false) {
   const header = document.createElement("div");
   header.className = "tree-group-header";
 
-  // 1. Calculate Stats
+  // 1. Calculate Stats (Only immediate children)
   const stats = { done: 0, review: 0, doing: 0, draft: 0 };
+  let primaryStatus = "draft"; // Derived status for the group itself
+
+  // Logic to determine group status based on children or self
+  // If self has status, use it. If not, maybe infer?
+  // For Epics, usually they have their own status. Let's use issue.status/stage as primary.
+  const s = (issue.stage || issue.status || "draft").toLowerCase();
+
+  if (s.includes("doing") || s.includes("progress")) primaryStatus = "doing";
+  else if (s.includes("review")) primaryStatus = "review";
+  else if (s.includes("done")) primaryStatus = "done";
+  else if (s.includes("closed")) primaryStatus = "closed";
+  else primaryStatus = "draft";
+
   children.forEach((c) => {
-    const s = (c.stage || c.status || "draft").toLowerCase();
-    if (s.includes("done") || s.includes("closed") || s.includes("implemented"))
+    const cs = (c.stage || c.status || "draft").toLowerCase();
+    if (
+      cs.includes("done") ||
+      cs.includes("closed") ||
+      cs.includes("implemented")
+    )
       stats.done++;
-    else if (s.includes("review")) stats.review++;
-    else if (s.includes("doing")) stats.doing++;
+    else if (cs.includes("review")) stats.review++;
+    else if (cs.includes("doing")) stats.doing++;
     else stats.draft++;
   });
 
   const total = children.length;
-
-  // 2. Count Display (Capsule)
-  const countDisplay = total > 99 ? "99+" : total;
-  const countHtml =
-    total > 0 ? `<div class="tree-group-count">${countDisplay}</div>` : "";
-
-  header.innerHTML = `
-    <div class="chevron">${ICONS.CHEVRON}</div>
-    <div class="tree-group-title">${escapeHtml(epic.title)}</div>
-    ${countHtml}
-  `;
-
-  setupHover(header, epic);
-
-  // 3. Progress Bar (The 2px Line)
+  // 3. Progress Bar Logic pre-calculation
+  let barHtml = "";
   if (total > 0) {
     const pDone = (stats.done / total) * 100;
     const pReview = (stats.review / total) * 100;
     const pDoing = (stats.doing / total) * 100;
-    // Todo takes the rest
-
-    // Stack Order: Done (Green) -> Review (Purple) -> Doing (Blue) -> Todo (Transparent/Grey)
-    // We use var colors from CSS.
-    const bar = document.createElement("div");
-    bar.className = "epic-progress-bar";
-
     const stop1 = pDone;
     const stop2 = pDone + pReview;
     const stop3 = pDone + pReview + pDoing;
 
+    // We render the bar as a child of the header container, absolutely positioned at bottom
+    // But we need to inject it into HTML string or append later.
+    // Let's use append later to keep string clean, OR inline styles.
+  }
+
+  const type = (issue.type || "feature").toLowerCase();
+
+  // Unified HTML Structure
+  header.innerHTML = `
+    <div class="card-content">
+       <div class="card-left">
+          <div class="chevron">${ICONS.CHEVRON}</div>
+          <div class="icon type-${type}" style="margin-right: 6px;">${getIcon(issue.type)}</div>
+          <div class="title" title="${escapeHtml(issue.title)}">
+            <span style="color:var(--text-secondary); margin-right:6px; font-family: 'Courier New', monospace; font-size: 11px;">${escapeHtml(issue.id)}</span>
+            ${escapeHtml(issue.title)}
+          </div>
+       </div>
+       <div class="card-right">
+          <!-- Count Badge -->
+          ${total > 0 ? `<div class="tree-group-count">${total > 99 ? "99+" : total}</div>` : ""}
+          <!-- Status Dot -->
+          <div class="status-dot ${primaryStatus}" title="Status: ${s}"></div>
+          <!-- Add Button -->
+          <div class="item-add-btn" title="Add Sub-issue">${ICONS.PLUS}</div>
+       </div>
+    </div>
+  `;
+
+  // Inject Progress Bar (if needed)
+  if (total > 0) {
+    const pDone = (stats.done / total) * 100;
+    const pReview = (stats.review / total) * 100;
+    const pDoing = (stats.doing / total) * 100;
+    const stop1 = pDone;
+    const stop2 = pDone + pReview;
+    const stop3 = pDone + pReview + pDoing;
+
+    const bar = document.createElement("div");
+    bar.className = "epic-progress-bar";
     bar.style.background = `linear-gradient(to right, 
       var(--status-done) 0% ${stop1}%, 
       var(--status-review) ${stop1}% ${stop2}%, 
       var(--status-doing) ${stop2}% ${stop3}%, 
       var(--border-color) ${stop3}% 100%
     )`;
-
     header.appendChild(bar);
   }
 
-  // Add "+" button (Allow for Epics and Unassigned)
-  if (!isVirtual || epic.id === "virtual-orphans") {
-    const addBtn = document.createElement("div");
-    addBtn.className = "add-feature-btn";
-    addBtn.innerHTML = ICONS.PLUS;
-    addBtn.title = "Add Feature";
-    addBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); // Stop collapse
-      const pid = isVirtual ? "" : epic.id;
-      openCreateFlow("feature", pid);
-    });
-    addBtn.addEventListener("dblclick", (e) => {
-      e.stopPropagation(); // Prevent "Open File" on rapid clicks
-    });
-    header.appendChild(addBtn);
-  }
+  // Wire up Add Button
+  const addBtn = header.querySelector(".item-add-btn");
+  addBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openCreateFlow("feature", issue.id);
+  });
 
   const list = document.createElement("div");
   list.className = "tree-group-list";
 
-  children.forEach((child) => list.appendChild(createIssueItem(child)));
-
-  // Interaction
-  header.addEventListener("click", (e) => {
-    // If the click target is the add button, don't collapse/expand
-    if (e.target.closest(".add-feature-btn")) {
-      return;
-    }
-
-    const wasCollapsed = container.classList.contains("collapsed");
-
-    if (wasCollapsed) {
-      container.classList.remove("collapsed");
-      state.expandedIds.add(epic.id);
-    } else {
-      container.classList.add("collapsed");
-      state.expandedIds.delete(epic.id);
-    }
-    savePersistentState();
+  // Recursive call for matching nodes
+  children.forEach((child) => {
+    const childNode = renderInner(child, depth + 1);
+    if (childNode) list.appendChild(childNode);
   });
 
-  if (!isVirtual) {
-    // Enable drag for epic headers
-    header.setAttribute("draggable", "true");
-    header.addEventListener("dragstart", (e) => {
-      // Stop propagation to prevent collapse during drag
-      e.stopPropagation();
-      setupDragData(e, epic);
-    });
+  // Interaction
+  header.addEventListener("click", () => {
+    const wasCollapsed = container.classList.contains("collapsed");
+    if (wasCollapsed) {
+      container.classList.remove("collapsed");
+      state.expandedIds.add(issue.id);
+    } else {
+      container.classList.add("collapsed");
+      state.expandedIds.delete(issue.id);
+    }
+    saveLocalState();
+  });
 
-    header.addEventListener("dblclick", (e) => {
-      e.stopPropagation();
-      openFile(epic);
-    });
-  }
+  header.setAttribute("draggable", "true");
+  header.addEventListener("dragstart", (e) => {
+    e.stopPropagation();
+    setupDragData(e, issue);
+  });
+
+  header.addEventListener("dblclick", (e) => {
+    e.stopPropagation();
+    openFile(issue);
+  });
 
   container.appendChild(header);
   container.appendChild(list);
   return container;
 }
 
-function createIssueItem(issue) {
+// Tree item rendering logic
+
+function createIssueItem(issue, depth = 0) {
   const item = document.createElement("div");
   const isDone =
     issue.stage === "done" ||
@@ -646,14 +683,15 @@ function createIssueItem(issue) {
 
   item.className = `issue-item ${isDone ? "done" : ""}`;
   item.dataset.id = issue.id;
+  if (depth > 0) {
+    item.style.paddingLeft = `${depth * 12 + 28}px`; // 28 is base padding for items
+  }
 
   // Draggable Logic
   item.setAttribute("draggable", "true");
   item.addEventListener("dragstart", (e) => {
     setupDragData(e, issue);
   });
-
-  setupHover(item, issue);
 
   // Status Class Mapping
   let statusClass = "draft";
@@ -665,54 +703,188 @@ function createIssueItem(issue) {
   else if (s.includes("closed")) statusClass = "closed";
   else statusClass = "draft";
 
-  // HTML Construction
+  const type = (issue.type || "feature").toLowerCase();
+
+  // HTML Construction: Left (Info) + Right (Status & Add)
   item.innerHTML = `
     <div class="card-content">
       <div class="card-left">
-        <div class="icon type-${issue.type.toLowerCase()}">${getIcon(
-    issue.type
-  )}</div>
-        <div class="title" title="${escapeHtml(issue.title)}">${escapeHtml(
-    issue.title
-  )}</div>
+        <div class="icon type-${type}">${getIcon(issue.type)}</div>
+        <div class="title" title="${escapeHtml(issue.title)}">
+          <span style="color:var(--text-secondary); margin-right:6px; font-family: 'Courier New', monospace; font-size: 11px;">${escapeHtml(issue.id)}</span>
+          ${escapeHtml(issue.title)}
+        </div>
       </div>
-      <div class="action-group" id="action-group-${issue.id}"></div>
+      <div class="card-right">
+         <div class="status-dot ${statusClass}" title="Status: ${s}"></div>
+         <div class="item-add-btn" title="Add Sub-issue">${ICONS.PLUS}</div>
+      </div>
     </div>
   `;
-  // Render Actions (Buttons on the right)
-  const actionGroup = item.querySelector(`#action-group-${issue.id}`);
-  if (issue.actions && issue.actions.length > 0) {
-    issue.actions.forEach((action) => {
-      const btn = document.createElement("button");
-      btn.className = "action-btn";
-      btn.textContent = action.label;
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        performIssueAction(issue, action);
-      });
-      actionGroup.appendChild(btn);
-    });
-  }
+
+  // Wire up Add Button
+  const addBtn = item.querySelector(".item-add-btn");
+  addBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    // Defaulting to creating a 'task' if it's a leaf node, but 'feature' is safe generic default
+    // or let user choose. Current openCreateFlow sets the type dropdown value.
+    openCreateFlow("feature", issue.id);
+  });
 
   // Event: Click -> Open File
   item.addEventListener("click", (e) => {
     openFile(issue);
   });
+
   return item;
 }
 
-function setupDragData(e, item) {
-  e.dataTransfer.setData("application/monoco-issue", JSON.stringify(item));
+function renderExecutionProfiles(profiles) {
+  if (!els.executionList) return;
+  els.executionList.innerHTML = "";
+
+  if (!profiles || profiles.length === 0) {
+    els.executionList.innerHTML = `<div class="empty-state" style="padding:10px;">No execution configs found.<br/>Checked ~/.monoco/execution and ./.monoco/execution</div>`;
+    return;
+  }
+
+  profiles.forEach((p) => {
+    const item = document.createElement("div");
+    item.className = "execution-item";
+    item.innerHTML = `
+      <div class="exec-icon">${ICONS.EXECUTION}</div>
+      <div class="exec-info">
+        <div class="exec-name">${escapeHtml(p.name)}</div>
+        <div class="exec-source">${p.source} • ${escapeHtml(
+          p.path.split("/").pop(),
+        )}</div>
+      </div>
+      <div class="chevron" style="transform: rotate(-90deg); opacity: 0.5;">${
+        ICONS.CHEVRON
+      }</div>
+    `;
+
+    item.addEventListener("click", () => {
+      vscode.postMessage({ type: "OPEN_FILE", path: p.path });
+    });
+
+    els.executionList.appendChild(item);
+  });
 }
 
-function initHoverWidget() {
-  // ...
+/**
+ * Configure drag and drop data for an issue.
+ * @param {DragEvent} e
+ * @param {any} issue
+ */
+function setupDragData(e, issue) {
+  const root = window.monocoConfig?.rootPath;
+  let fullPath = issue.path;
+
+  if (!fullPath) {
+    // Fallback: no path available, just set plain text ID
+    e.dataTransfer.setData("text/plain", issue.id);
+    return;
+  }
+
+  // Check if path is absolute
+  const isAbsolute = fullPath.startsWith("/") || fullPath.match(/^[a-zA-Z]:/);
+
+  // Resolve relative path if root is available
+  if (root && !isAbsolute) {
+    // Handle path separators
+    const sep = root.includes("\\") ? "\\" : "/";
+
+    // Normalize separators in the relative path
+    const normalizedPath = fullPath.replace(/\\/g, "/");
+
+    // Join paths properly
+    const joinedPath = root + (root.endsWith(sep) ? "" : sep) + normalizedPath;
+
+    // Normalize the result (handle ../ and ./ )
+    fullPath = joinedPath
+      .split("/")
+      .reduce((acc, part) => {
+        if (part === "..") {
+          acc.pop();
+        } else if (part && part !== ".") {
+          acc.push(part);
+        }
+        return acc;
+      }, [])
+      .join("/");
+
+    // Ensure leading slash for Unix paths
+    if (!fullPath.startsWith("/") && !fullPath.match(/^[a-zA-Z]:/)) {
+      fullPath = "/" + fullPath;
+    }
+  }
+
+  // Debug logging
+  console.log(
+    "[Drag] Issue:",
+    issue.id,
+    "Original path:",
+    issue.path,
+    "Resolved:",
+    fullPath,
+  );
+
+  // Construct proper file:// URI with URL encoding
+  // VS Code expects: file:///absolute/path (with URL encoding for special chars)
+  const pathSegments = fullPath.split("/").map((segment) => {
+    return encodeURIComponent(segment);
+  });
+
+  let encodedPath = pathSegments.join("/");
+  let fileUri;
+  if (fullPath.match(/^[a-zA-Z]:/)) {
+    // Windows: file:///C:/path/to/file
+    fileUri = "file:///" + encodedPath;
+  } else {
+    // Unix: file:///path/to/file
+    fileUri = "file://" + encodedPath;
+  }
+
+  console.log("[Drag] File URI:", fileUri);
+
+  // 1. text/uri-list - Primary for opening files
+  e.dataTransfer.setData("text/uri-list", fileUri);
+
+  // 2. text/plain - Fallback
+  e.dataTransfer.setData("text/plain", fullPath);
+
+  // 3. VS Code specific hint
+  e.dataTransfer.setData("application/vnd.code.tree.monoco", fileUri);
+
+  // Also set custom data for our internal drop handling
+  e.dataTransfer.setData("application/monoco-issue", JSON.stringify(issue));
 }
 
-function renderExecutionProfiles() {
-  // ...
+function openFile(issue) {
+  if (!issue.path) {
+    console.warn("No path for issue", issue);
+  }
+  vscode.postMessage({
+    type: "OPEN_ISSUE_FILE",
+    value: { path: issue.path, title: issue.title },
+  });
 }
 
-function setupHover(el, item) {
-  // ...
+function saveLocalState() {
+  vscode.setState({
+    expandedIds: Array.from(state.expandedIds),
+    searchQuery: state.searchQuery,
+    settings: state.settings,
+  });
+}
+
+function escapeHtml(unsafe) {
+  if (!unsafe) return "";
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }

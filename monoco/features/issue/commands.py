@@ -14,16 +14,18 @@ from . import core
 
 app = typer.Typer(help="Agent-Native Issue Management.")
 backlog_app = typer.Typer(help="Manage backlog operations.")
+lsp_app = typer.Typer(help="LSP Server commands.")
 app.add_typer(backlog_app, name="backlog")
+app.add_typer(lsp_app, name="lsp")
 console = Console()
 
 @app.command("create")
 def create(
-    type: IssueType = typer.Argument(..., help="Issue type (epic, feature, chore, fix)"),
+    type: str = typer.Argument(..., help="Issue type (epic, feature, chore, fix, etc.)"),
     title: str = typer.Option(..., "--title", "-t", help="Issue title"),
     parent: Optional[str] = typer.Option(None, "--parent", "-p", help="Parent Issue ID"),
     is_backlog: bool = typer.Option(False, "--backlog", help="Create as backlog item"),
-    stage: Optional[IssueStage] = typer.Option(None, "--stage", help="Issue stage (draft, doing, review)"),
+    stage: Optional[str] = typer.Option(None, "--stage", help="Issue stage"),
     dependencies: List[str] = typer.Option([], "--dependency", "-d", help="Issue dependency ID(s)"),
     related: List[str] = typer.Option([], "--related", "-r", help="Related Issue ID(s)"),
     subdir: Optional[str] = typer.Option(None, "--subdir", "-s", help="Subdirectory for organization (e.g. 'Backend/Auth')"),
@@ -33,9 +35,10 @@ def create(
     json: AgentOutput = False,
 ):
     """Create a new issue."""
+    """Create a new issue."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
-    status = IssueStatus.BACKLOG if is_backlog else IssueStatus.OPEN
+    status = "backlog" if is_backlog else "open"
     
     if parent:
         parent_path = core.find_issue_path(issues_root, parent)
@@ -63,11 +66,15 @@ def create(
         except ValueError:
             rel_path = path
 
-        OutputManager.print({
-            "issue": issue,
-            "path": str(rel_path),
-            "status": "created"
-        })
+        if OutputManager.is_agent_mode():
+            OutputManager.print({
+                "issue": issue,
+                "path": str(rel_path),
+                "status": "created"
+            })
+        else:
+            console.print(f"[green]✔ Created {issue.id} in status {issue.status}.[/green]")
+            console.print(f"Path: {rel_path}")
 
     except ValueError as e:
         OutputManager.error(str(e))
@@ -77,8 +84,8 @@ def create(
 def update(
     issue_id: str = typer.Argument(..., help="Issue ID to update"),
     title: Optional[str] = typer.Option(None, "--title", "-t", help="New title"),
-    status: Optional[IssueStatus] = typer.Option(None, "--status", help="New status"),
-    stage: Optional[IssueStage] = typer.Option(None, "--stage", help="New stage"),
+    status: Optional[str] = typer.Option(None, "--status", help="New status"),
+    stage: Optional[str] = typer.Option(None, "--stage", help="New stage"),
     parent: Optional[str] = typer.Option(None, "--parent", "-p", help="Parent Issue ID"),
     sprint: Optional[str] = typer.Option(None, "--sprint", help="Sprint ID"),
     dependencies: Optional[List[str]] = typer.Option(None, "--dependency", "-d", help="Issue dependency ID(s)"),
@@ -125,7 +132,7 @@ def move_open(
     issues_root = _resolve_issues_root(config, root)
     try:
         # Pull operation: Force stage to TODO
-        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
+        issue = core.update_issue(issues_root, issue_id, status="open", stage="draft")
         OutputManager.print({
             "issue": issue,
             "status": "opened"
@@ -153,13 +160,13 @@ def start(
 
     try:
         # Implicitly ensure status is Open
-        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DOING)
+        issue = core.update_issue(issues_root, issue_id, status="open", stage="doing")
         
         isolation_info = None
 
         if branch:
             try:
-                issue = core.start_issue_isolation(issues_root, issue_id, IsolationType.BRANCH, project_root)
+                issue = core.start_issue_isolation(issues_root, issue_id, "branch", project_root)
                 isolation_info = {"type": "branch", "ref": issue.isolation.ref}
             except Exception as e:
                 OutputManager.error(f"Failed to create branch: {e}")
@@ -167,7 +174,7 @@ def start(
                 
         if worktree:
             try:
-                issue = core.start_issue_isolation(issues_root, issue_id, IsolationType.WORKTREE, project_root)
+                issue = core.start_issue_isolation(issues_root, issue_id, "worktree", project_root)
                 isolation_info = {"type": "worktree", "path": issue.isolation.path, "ref": issue.isolation.ref}
             except Exception as e:
                 OutputManager.error(f"Failed to create worktree: {e}")
@@ -196,7 +203,7 @@ def submit(
     project_root = _resolve_project_root(config)
     try:
         # Implicitly ensure status is Open
-        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.REVIEW)
+        issue = core.update_issue(issues_root, issue_id, status="open", stage="review")
         
         # Delivery Report Generation
         report_status = "skipped"
@@ -228,7 +235,7 @@ def submit(
 @app.command("close")
 def move_close(
     issue_id: str = typer.Argument(..., help="Issue ID to close"),
-    solution: Optional[IssueSolution] = typer.Option(None, "--solution", "-s", help="Solution type"),
+    solution: Optional[str] = typer.Option(None, "--solution", "-s", help="Solution type"),
     prune: bool = typer.Option(False, "--prune", help="Delete branch/worktree after close"),
     force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
@@ -241,12 +248,15 @@ def move_close(
     
     # Pre-flight check for interactive guidance (Requirement FEAT-0082 #6)
     if solution is None:
-        valid_solutions = [e.value for e in IssueSolution]
+        # Resolve options from engine
+        from .engine import get_engine
+        engine = get_engine(str(issues_root.parent))
+        valid_solutions = engine.issue_config.solutions or []
         OutputManager.error(f"Closing an issue requires a solution. Options: {', '.join(valid_solutions)}")
         raise typer.Exit(code=1)
 
     try:
-        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.CLOSED, solution=solution)
+        issue = core.update_issue(issues_root, issue_id, status="closed", solution=solution)
         
         pruned_resources = []
         if prune:
@@ -276,7 +286,7 @@ def push(
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
-        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.BACKLOG)
+        issue = core.update_issue(issues_root, issue_id, status="backlog")
         OutputManager.print({
             "issue": issue,
             "status": "pushed_to_backlog"
@@ -295,7 +305,7 @@ def pull(
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
-        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
+        issue = core.update_issue(issues_root, issue_id, status="open", stage="draft")
         OutputManager.print({
             "issue": issue,
             "status": "pulled_from_backlog"
@@ -314,7 +324,7 @@ def cancel(
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     try:
-        issue = core.update_issue(issues_root, issue_id, status=IssueStatus.CLOSED, solution=IssueSolution.CANCELLED)
+        issue = core.update_issue(issues_root, issue_id, status="closed", solution="cancelled")
         OutputManager.print({
             "issue": issue,
             "status": "cancelled"
@@ -427,10 +437,10 @@ def board(
         issue_list = []
         for issue in sorted(issues, key=lambda x: x.updated_at, reverse=True):
             type_color = {
-                IssueType.FEATURE: "green",
-                IssueType.CHORE: "blue",
-                IssueType.FIX: "red",
-                IssueType.EPIC: "magenta"
+                "feature": "green",
+                "chore": "blue",
+                "fix": "red",
+                "epic": "magenta"
             }.get(issue.type, "white")
             
             issue_list.append(
@@ -458,8 +468,8 @@ def board(
 @app.command("list")
 def list_cmd(
     status: Optional[str] = typer.Option(None, "--status", "-s", help="Filter by status (open, closed, backlog, all)"),
-    type: Optional[IssueType] = typer.Option(None, "--type", "-t", help="Filter by type"),
-    stage: Optional[IssueStage] = typer.Option(None, "--stage", help="Filter by stage"),
+    type: Optional[str] = typer.Option(None, "--type", "-t", help="Filter by type"),
+    stage: Optional[str] = typer.Option(None, "--stage", help="Filter by stage"),
     root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
     workspace: bool = typer.Option(False, "--workspace", "-w", help="Include issues from workspace members"),
     json: AgentOutput = False,
@@ -481,7 +491,7 @@ def list_cmd(
     for i in issues:
         # Status Filter
         if target_status != "all":
-            if i.status.value != target_status:
+            if i.status != target_status:
                 continue
                 
         # Type Filter
@@ -530,13 +540,13 @@ def _render_issues_table(issues: List[IssueMetadata], title: str = "Issues"):
         t_color = type_colors.get(i.type, "white")
         s_color = status_colors.get(i.status, "white")
         
-        stage_str = i.stage.value if i.stage else "-"
+        stage_str = i.stage if i.stage else "-"
         updated_str = i.updated_at.strftime("%Y-%m-%d %H:%M")
         
         table.add_row(
             i.id,
-            f"[{t_color}]{i.type.value}[/{t_color}]",
-            f"[{s_color}]{i.status.value}[/{s_color}]",
+            f"[{t_color}]{i.type}[/{t_color}]",
+            f"[{s_color}]{i.status}[/{s_color}]",
             stage_str,
             i.title,
             updated_str
@@ -605,11 +615,11 @@ def scope(
         return
 
     tree = Tree(f"[bold blue]Monoco Issue Scope[/bold blue]")
-    epics = sorted([i for i in issues if i.type == IssueType.EPIC], key=lambda x: x.id)
-    stories = [i for i in issues if i.type == IssueType.FEATURE]
-    tasks = [i for i in issues if i.type in [IssueType.CHORE, IssueType.FIX]]
+    epics = sorted([i for i in issues if i.type == "epic"], key=lambda x: x.id)
+    stories = [i for i in issues if i.type == "feature"]
+    tasks = [i for i in issues if i.type in ["chore", "fix"]]
 
-    status_map = {IssueStatus.OPEN: "[blue]●[/blue]", IssueStatus.CLOSED: "[green]✔[/green]", IssueStatus.BACKLOG: "[dim]💤[/dim]"}
+    status_map = {"open": "[blue]●[/blue]", "closed": "[green]✔[/green]", "backlog": "[dim]💤[/dim]"}
 
     for epic in epics:
         epic_node = tree.add(f"{status_map[epic.status]} [bold]{epic.id}[/bold]: {epic.title}")
@@ -877,3 +887,40 @@ def commit(
     except Exception as e:
          console.print(f"[red]Git Error:[/red] {e}")
          raise typer.Exit(code=1)
+
+@lsp_app.command("definition")
+def lsp_definition(
+    file: str = typer.Option(..., "--file", "-f", help="Abs path to file"),
+    line: int = typer.Option(..., "--line", "-l", help="0-indexed line number"),
+    character: int = typer.Option(..., "--char", "-c", help="0-indexed character number"),
+):
+    """
+    Handle textDocument/definition request.
+    Output: JSON Location | null
+    """
+    import json
+    from monoco.core.lsp import Position
+    from monoco.features.issue.lsp import DefinitionProvider
+
+    config = get_config()
+    # Workspace Root resolution is key here. 
+    # If we are in a workspace, we want the workspace root, not just issue root.
+    # _resolve_project_root returns the closest project root or monoco root.
+    workspace_root = _resolve_project_root(config)
+    # Search for topmost workspace root to enable cross-project navigation
+    current_best = workspace_root
+    for parent in [workspace_root] + list(workspace_root.parents):
+        if (parent / ".monoco" / "workspace.yaml").exists() or (parent / ".monoco" / "project.yaml").exists():
+            current_best = parent
+    workspace_root = current_best
+    
+    provider = DefinitionProvider(workspace_root)
+    file_path = Path(file)
+    
+    locations = provider.provide_definition(
+        file_path, 
+        Position(line=line, character=character)
+    )
+    
+    # helper to serialize
+    print(json.dumps([l.model_dump(mode='json') for l in locations]))

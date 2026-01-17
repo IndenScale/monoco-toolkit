@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
+import { resolveMonocoExecutable } from "../bootstrap";
+import { AgentTaskTerminal } from "../terminals/AgentTaskTerminal";
 
 export interface AgentAction {
   name: string;
@@ -23,30 +25,12 @@ export interface ActionContext {
   file_path?: string;
 }
 
-export interface ProviderState {
-  available: boolean;
-  path?: string;
-  error?: string;
-  latency_ms?: number;
-}
-
-export interface AgentStatus {
-  last_checked: string;
-  providers: { [name: string]: ProviderState };
-}
-
 export class ActionService {
   private static instance: ActionService;
   private _actions: AgentAction[] = [];
-  private _providers: { [name: string]: ProviderState } = {};
 
   private _onDidChangeActions = new vscode.EventEmitter<AgentAction[]>();
   public readonly onDidChangeActions = this._onDidChangeActions.event;
-
-  private _onDidChangeProviders = new vscode.EventEmitter<{
-    [name: string]: ProviderState;
-  }>();
-  public readonly onDidChangeProviders = this._onDidChangeProviders.event;
 
   private constructor() {
     this.refresh();
@@ -64,10 +48,6 @@ export class ActionService {
     return this._actions;
   }
 
-  public getProviders(): { [name: string]: ProviderState } {
-    return this._providers;
-  }
-
   public async refresh() {
     try {
       const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
@@ -75,7 +55,9 @@ export class ActionService {
         return;
       }
 
-      const cmd = "monoco agent list --json";
+      const executable = await resolveMonocoExecutable();
+      const cmd = `${executable} agent list --json`;
+      console.log(`[Monoco] Executing: ${cmd}`);
 
       cp.exec(cmd, { cwd: rootPath }, (err, stdout, _stderr) => {
         if (err) {
@@ -90,25 +72,24 @@ export class ActionService {
           console.error("Failed to parse monoco agent list output", e);
         }
       });
-
-      this.refreshStatus();
     } catch (e) {
       console.error("Error refreshing actions", e);
     }
   }
 
   public async getAvailableActions(
-    context: ActionContext
+    context: ActionContext,
   ): Promise<AgentAction[]> {
+    const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!rootPath) {
+      return [];
+    }
+
+    const executable = await resolveMonocoExecutable();
+    const contextJson = JSON.stringify(context);
+    const cmd = `${executable} agent list --json --context '${contextJson}'`;
+
     return new Promise((resolve) => {
-      const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-      if (!rootPath) {
-        return resolve([]);
-      }
-
-      const contextJson = JSON.stringify(context);
-      const cmd = `monoco agent list --json --context '${contextJson}'`;
-
       cp.exec(cmd, { cwd: rootPath }, (err, stdout, _stderr) => {
         if (err) {
           console.error("Failed to filter actions:", err);
@@ -125,59 +106,50 @@ export class ActionService {
     });
   }
 
-  public async refreshStatus() {
-    try {
-      const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-      if (!rootPath) {
-        return;
-      }
+  public async getIssueActions(filePath: string): Promise<any[]> {
+    const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!rootPath) {
+      return [];
+    }
 
-      const cmd = "monoco agent status --json";
+    const executable = await resolveMonocoExecutable();
+    const cmd = `${executable} issue inspect "${filePath}" --json`;
+
+    return new Promise((resolve) => {
       cp.exec(cmd, { cwd: rootPath }, (err, stdout, _stderr) => {
         if (err) {
-          console.error("Failed to get agent status:", err);
-          return;
+          return resolve([]);
         }
         try {
-          const status: AgentStatus = JSON.parse(stdout);
-          this._providers = status.providers;
-          this._onDidChangeProviders.fire(this._providers);
+          const meta = JSON.parse(stdout);
+          resolve(meta.actions || []);
         } catch (e) {
-          console.error("Failed to parse monoco agent status output", e);
+          console.error("Failed to parse monoco issue inspect output", e);
+          resolve([]);
         }
       });
-    } catch (e) {
-      console.error("Error refreshing status", e);
-    }
+    });
   }
 
   private setupWatcher() {
-    // Watch for .prompty files in ~/.monoco/actions and project .monoco/actions
-    // For simplicity, we just watch all .prompty in workspace and a general check
     const watcher = vscode.workspace.createFileSystemWatcher(
-      "**/.monoco/actions/*.prompty"
+      "**/.monoco/actions/*.prompty",
     );
     watcher.onDidChange(() => this.refresh());
     watcher.onDidCreate(() => this.refresh());
     watcher.onDidDelete(() => this.refresh());
   }
 
-  public runAction(
+  public async runAction(
     actionName: string,
     targetFile?: string,
-    instruction?: string
+    instruction?: string,
   ) {
-    const terminal = vscode.window.createTerminal(`Agent: ${actionName}`);
+    const pty = new AgentTaskTerminal(actionName, targetFile, instruction);
+    const terminal = vscode.window.createTerminal({
+      name: `Agent: ${actionName}`,
+      pty,
+    });
     terminal.show();
-
-    let cmd = `monoco agent run ${actionName}`;
-    if (targetFile) {
-      cmd += ` "${targetFile}"`;
-    }
-    if (instruction) {
-      cmd += ` --instruction "${instruction}"`;
-    }
-
-    terminal.sendText(cmd);
   }
 }

@@ -1,6 +1,12 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M32 4L4 16V48L32 60L60 48V16L32 4Z" stroke="currentColor" stroke-width="4" fill="none"/>
-<path d="M32 16V48" stroke="currentColor" stroke-width="4"/>
-<path d="M4 16L32 28L60 16" stroke="currentColor" stroke-width="4"/>
-<path d="M4 48L32 36L60 48" stroke="currentColor" stroke-width="4"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <g stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Top Face: Filled (Solid) -->
+    <path d="M8 8.5 L2 5 L8 1.5 L14 5 Z" fill="currentColor" />
+    
+    <!-- Right Face: Border + Semi-Transparent (Glassy) -->
+    <path d="M8 8.5 L14 5 L14 12 L8 15.5 Z" fill="currentColor" fill-opacity="0.3" />
+    
+    <!-- Left Face: Border Only (Colorless) -->
+    <path d="M8 8.5 L2 5 L2 12 L8 15.5 Z" fill="none" />
+  </g>
 </svg>

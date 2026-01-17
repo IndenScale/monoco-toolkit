@@ -5,12 +5,16 @@
     "outDir": "out",
     "lib": ["ES2022", "DOM"],
     "sourceMap": true,
-    "rootDir": "src",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": "src",
+    "paths": {
+      "@shared/*": ["../../shared/*"]
+    }
   },
-  "exclude": ["node_modules", ".vscode-test"]
+  "exclude": ["node_modules", ".vscode-test"],
+  "include": ["src/**/*"]
 }
