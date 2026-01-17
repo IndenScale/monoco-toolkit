@@ -1,12 +1,12 @@
 import os
 import shutil
 import subprocess
-import yaml
+
 from pathlib import Path
 from typing import Dict, Optional, List, Any
 from rich.console import Console
 
-from monoco.core.config import get_config
+from monoco.core.config import get_config, load_raw_config, save_raw_config, ConfigScope
 
 console = Console()
 
@@ -29,26 +29,10 @@ def run_git_command(cmd: List[str], cwd: Path) -> bool:
         console.print("[red]Error:[/red] git command not found.")
         return False
 
-def get_config_file_path(root: Path) -> Path:
-    """Determine the config file to update."""
-    # Standard: .monoco/project.yaml
-    hidden = root / ".monoco" / "project.yaml"
-    
-    # Ensure parent exists
-    hidden.parent.mkdir(exist_ok=True)
-    return hidden
-
 def update_config_repos(root: Path, repo_name: str, repo_url: str, remove: bool = False):
     """Update the repos list in the config file."""
-    config_path = get_config_file_path(root)
-    
-    data = {}
-    if config_path.exists():
-        try:
-            with open(config_path, "r") as f:
-                data = yaml.safe_load(f) or {}
-        except Exception:
-            data = {}
+    # Use core config utils
+    data = load_raw_config(ConfigScope.PROJECT, project_root=str(root))
             
     # Ensure structure exists
     if "project" not in data:
@@ -62,8 +46,7 @@ def update_config_repos(root: Path, repo_name: str, repo_url: str, remove: bool 
     else:
         data["project"]["spike_repos"][repo_name] = repo_url
         
-    with open(config_path, "w") as f:
-        yaml.dump(data, f, sort_keys=False, default_flow_style=False)
+    save_raw_config(ConfigScope.PROJECT, data, project_root=str(root))
 
 def ensure_gitignore(root: Path, target_dir_name: str):
     """Ensure the target directory is in .gitignore."""

@@ -8,8 +8,6 @@ import {
 } from "@monoco-io/kanban-core";
 import { loader } from "@monaco-editor/react";
 import { useEffect } from "react";
-import { TermProvider } from "./contexts/TermContext";
-import { TerminalProvider } from "./contexts/TerminalContext";
 import { LayoutProvider } from "./contexts/LayoutContext";
 import { BridgeProvider } from "./contexts/BridgeContext";
 
@@ -42,12 +40,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useKanbanSync();
 
   return (
-    <TermProvider>
-      <TerminalProvider>
-        <BridgeProvider>
-          <LayoutProvider>{children}</LayoutProvider>
-        </BridgeProvider>
-      </TerminalProvider>
-    </TermProvider>
+    <BridgeProvider>
+      <LayoutProvider>{children}</LayoutProvider>
+    </BridgeProvider>
   );
 }
