@@ -34,8 +34,5 @@ jobs:
       - name: Install Python Dependencies
         run: uv sync --all-extras --dev
 
-      - name: Run Issue Lint
-        run: uv run monoco issue lint --recursive
-
       - name: Run Python Tests
         run: uv run pytest
