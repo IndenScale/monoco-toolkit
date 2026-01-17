@@ -24,6 +24,13 @@ class Range(BaseModel):
     def __repr__(self):
         return f"{self.start.line}:{self.start.character}-{self.end.line}:{self.end.character}"
 
+class Location(BaseModel):
+    """
+    Represents a location inside a resource, such as a line of code inside a text file.
+    """
+    uri: str
+    range: Range
+
 class DiagnosticSeverity(IntEnum):
     Error = 1
     Warning = 2

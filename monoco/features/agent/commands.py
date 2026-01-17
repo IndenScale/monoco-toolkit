@@ -12,6 +12,8 @@ import re
 import json as j
 
 app = typer.Typer()
+action_app = typer.Typer(name="action", help="Manage generic agent actions/prompts.")
+app.add_typer(action_app)
 
 @app.command(name="run")
 def run_command(
@@ -100,8 +102,8 @@ def run_command(
         print_error(f"Execution failed: {e}")
         raise typer.Exit(1)
 
-@app.command()
-def list(
+@action_app.command(name="list")
+def action_list(
     json: AgentOutput = False,
     context: Optional[str] = typer.Option(None, "--context", help="Context for filtering (JSON string)")
 ):
@@ -118,8 +120,58 @@ def list(
             print_error(f"Invalid context JSON: {e}")
 
     actions = registry.list_available(action_context)
+    
+    # Filter by State Machine if context implies an Issue
+    if action_context and (action_context.status or action_context.stage):
+        try:
+            from monoco.features.issue.engine.machine import StateMachine
+            from monoco.features.issue.models import IssueMetadata
+            
+            cfg = settings.issue
+            sm = StateMachine(cfg)
+            
+            # Create a mock metadata for state check
+            mock_meta = IssueMetadata(
+                id="mock-id",
+                title="Mock Issue",
+                type=action_context.type or "feature",
+                status=action_context.status or "open",
+                stage=action_context.stage
+            )
+            
+            allowed_transitions = sm.get_available_transitions(mock_meta)
+            allowed_names = {t.name for t in allowed_transitions}
+            
+            # Identify which actions are actually transitions
+            all_transition_names = {t.name for t in cfg.workflows}
+            
+            filtered_actions = []
+            for action in actions:
+                # If an action is a formal transition, it must be allowed
+                if action.name in all_transition_names:
+                    if action.name in allowed_names:
+                        filtered_actions.append(action)
+                else:
+                    # Generic actions are passed through (already filtered by 'when')
+                    filtered_actions.append(action)
+            
+            actions = filtered_actions
+
+        except Exception:
+            # Fallback if Issue feature is missing or context is invalid
+            pass
+
     # OutputManager handles list of Pydantic models automatically for both JSON and Table
     print_output(actions, title="Available Actions")
+
+@app.command(name="list")
+def list_providers(
+    json: AgentOutput = False,
+    force: bool = typer.Option(False, "--force", "-f", help="Force refresh of agent state")
+):
+    """List available agent providers and their status."""
+    # Reuse status logic
+    status(json=json, force=force)
 
 @app.command()
 def status(
@@ -164,3 +216,22 @@ def doctor(
     """
     from monoco.features.agent.doctor import doctor as doc_impl
     doc_impl(force)
+
+@app.command()
+def init(
+    force: bool = typer.Option(False, "--force", "-f", help="Force overwrite existing resources")
+):
+    """
+    Initialize Agent Resources (prompts) in the current project.
+    """
+    settings = get_config()
+    root = Path(settings.paths.root)
+    
+    from monoco.features.agent.core import init_agent_resources
+    # TODO: Pass force arg when supported by core
+    init_agent_resources(root)
+    
+    if OutputManager.is_agent_mode():
+        OutputManager.print({"status": "initialized"})
+    else:
+        print(f"Agent resources initialized in {root}")

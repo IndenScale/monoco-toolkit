@@ -3,17 +3,17 @@ id: EPIC-0007
 type: epic
 status: closed
 stage: done
-title: 'EPIC-0007: Toolkit 项目独立化 (Toolkit Independence)'
-created_at: '2026-01-12T00:00:00'
-updated_at: '2026-01-15T13:22:40'
-closed_at: '2026-01-15T13:22:40'
+title: "EPIC-0007: Toolkit 项目独立化 (Toolkit Independence)"
+created_at: "2026-01-12T00:00:00"
+updated_at: "2026-01-15T13:22:40"
+closed_at: "2026-01-15T13:22:40"
 solution: implemented
 dependencies: []
 related: []
 tags:
-- architecture
-- devops
-- strategic
+  - architecture
+  - devops
+  - strategic
 progress: 4/4
 files_count: 0
 uid: 3b4179
@@ -33,10 +33,10 @@ Local `Toolkit/` directory has been pruned.
 
 ## 关键交付 (Key Deliverables)
 
-1.  **独立仓库 (Standalone Repository)**: 已创建 `monoco-toolkit`。
-2.  **独立构建流水线 (Independent CI/CD)**: 已建立 CI/Test。
-3.  **回引依赖 (Re-integration)**: Monoco 主仓库已通过 Editable Mode 引用新 Toolkit。
-4.  **清理 (Cleanup)**: Monoco 主仓库已移除 Toolkit 源码。
+1. **独立仓库 (Standalone Repository)**: 已创建 `monoco-toolkit`。
+2. **独立构建流水线 (Independent CI/CD)**: 已建立 CI/Test。
+3. **回引依赖 (Re-integration)**: Monoco 主仓库已通过 Editable Mode 引用新 Toolkit。
+4. **清理 (Cleanup)**: Monoco 主仓库已移除 Toolkit 源码。
 
 ## 执行历史 (Execution History)
 

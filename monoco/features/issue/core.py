@@ -10,14 +10,21 @@ from monoco.core.config import get_config, MonocoConfig
 from monoco.core.lsp import DiagnosticSeverity
 from .validator import IssueValidator
 
-PREFIX_MAP = {
-    IssueType.EPIC: "EPIC",
-    IssueType.FEATURE: "FEAT",
-    IssueType.CHORE: "CHORE",
-    IssueType.FIX: "FIX"
-}
+from .engine import get_engine
 
-REVERSE_PREFIX_MAP = {v: k for k, v in PREFIX_MAP.items()}
+def get_prefix_map(issues_root: Path) -> Dict[str, str]:
+    engine = get_engine(str(issues_root.parent))
+    return engine.get_prefix_map()
+
+def get_reverse_prefix_map(issues_root: Path) -> Dict[str, str]:
+    prefix_map = get_prefix_map(issues_root)
+    return {v: k for k, v in prefix_map.items()}
+
+def get_issue_dir(issue_type: str, issues_root: Path) -> Path:
+    engine = get_engine(str(issues_root.parent))
+    folder_map = engine.get_folder_map()
+    folder = folder_map.get(issue_type, issue_type.capitalize() + "s")
+    return issues_root / folder
 
 def _get_slug(title: str) -> str:
     slug = title.lower()
@@ -30,15 +37,6 @@ def _get_slug(title: str) -> str:
         slug = "issue"
         
     return slug
-
-def get_issue_dir(issue_type: IssueType, issues_root: Path) -> Path:
-    mapping = {
-        IssueType.EPIC: "Epics",
-        IssueType.FEATURE: "Features",
-        IssueType.CHORE: "Chores",
-        IssueType.FIX: "Fixes",
-    }
-    return issues_root / mapping[issue_type]
 
 def parse_issue(file_path: Path) -> Optional[IssueMetadata]:
     if not file_path.suffix == ".md":
@@ -84,8 +82,9 @@ def parse_issue_detail(file_path: Path) -> Optional[IssueDetail]:
     except Exception:
         return None
 
-def find_next_id(issue_type: IssueType, issues_root: Path) -> str:
-    prefix = PREFIX_MAP[issue_type]
+def find_next_id(issue_type: str, issues_root: Path) -> str:
+    prefix_map = get_prefix_map(issues_root)
+    prefix = prefix_map.get(issue_type, "ISSUE")
     pattern = re.compile(rf"{prefix}-(\d+)")
     max_id = 0
     
@@ -126,7 +125,7 @@ def create_issue_file(
 
     issue_id = find_next_id(issue_type, issues_root)
     base_type_dir = get_issue_dir(issue_type, issues_root)
-    target_dir = base_type_dir / status.value
+    target_dir = base_type_dir / status
     
     if subdir:
         target_dir = target_dir / subdir
@@ -152,22 +151,46 @@ def create_issue_file(
     from .engine import get_engine
     get_engine().enforce_policy(metadata)
 
+    # Serialize metadata
     yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
+    
+    # Inject Self-Documenting Hints (Interactive Frontmatter)
+    if "parent:" not in yaml_header:
+        yaml_header += "# parent: <EPIC-ID>   # Optional: Parent Issue ID\n"
+    if "solution:" not in yaml_header:
+        yaml_header += "# solution: null      # Required for Closed state (implemented, cancelled, etc.)\n"
+
     slug = _get_slug(title)
     filename = f"{issue_id}-{slug}.md"
     
+    # Enhanced Template with Instructional Comments
     file_content = f"""---
 {yaml_header}---
 
 ## {issue_id}: {title}
 
 ## Objective
+<!-- Describe the "Why" and "What" clearly. Focus on value. -->
 
 ## Acceptance Criteria
+<!-- Define binary conditions for success. -->
+- [ ] Criteria 1
 
 ## Technical Tasks
+<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
 
-- [ ] 
+<!-- Status Syntax: -->
+<!-- [ ] To Do -->
+<!-- [/] Doing -->
+<!-- [x] Done -->
+<!-- [~] Cancelled -->
+<!-- - [ ] Parent Task -->
+<!--   - [ ] Sub Task -->
+
+- [ ] Task 1
+
+## Review Comments
+<!-- Required for Review/Done stage. Record review feedback here. -->
 """
     file_path = target_dir / filename
     file_path.write_text(file_content)
@@ -238,7 +261,8 @@ def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
     except IndexError:
         return None
         
-    issue_type = REVERSE_PREFIX_MAP.get(prefix)
+    reverse_prefix_map = get_reverse_prefix_map(issues_root)
+    issue_type = reverse_prefix_map.get(prefix)
     if not issue_type:
         return None
         
@@ -329,7 +353,7 @@ def update_issue(
         solution=effective_solution
     )
 
-    if target_status == IssueStatus.CLOSED:
+    if target_status == "closed":
         # Policy: Dependencies must be closed
         dependencies_to_check = dependencies if dependencies is not None else data.get('dependencies', [])
         if dependencies_to_check:
@@ -337,8 +361,8 @@ def update_issue(
                 dep_path = find_issue_path(issues_root, dep_id)
                 if dep_path:
                     dep_meta = parse_issue(dep_path)
-                    if dep_meta and dep_meta.status != IssueStatus.CLOSED:
-                        raise ValueError(f"Dependency Block: Cannot close {issue_id} because dependency {dep_id} is [Status: {dep_meta.status.value}].")
+                    if dep_meta and dep_meta.status != "closed":
+                        raise ValueError(f"Dependency Block: Cannot close {issue_id} because dependency {dep_id} is [Status: {dep_meta.status}].")
     
     # Validate new parent/dependencies/related exist
     if parent is not None and parent != "":
@@ -357,12 +381,12 @@ def update_issue(
             
     # Update Data
     if status:
-        data['status'] = status.value
+        data['status'] = status
 
     if stage:
-        data['stage'] = stage.value
+        data['stage'] = stage
     if solution:
-        data['solution'] = solution.value
+        data['solution'] = solution
     
     if title:
         data['title'] = title
@@ -442,7 +466,8 @@ def update_issue(
     if status and status != current_status:
         # Move file
         prefix = issue_id.split("-")[0].upper()
-        base_type_dir = get_issue_dir(REVERSE_PREFIX_MAP[prefix], issues_root)
+        reverse_prefix_map = get_reverse_prefix_map(issues_root)
+        base_type_dir = get_issue_dir(reverse_prefix_map[prefix], issues_root)
         
         try:
             rel_path = path.relative_to(base_type_dir)
@@ -450,7 +475,7 @@ def update_issue(
         except ValueError:
             structure_path = Path(path.name)
 
-        target_path = base_type_dir / target_status.value / structure_path
+        target_path = base_type_dir / target_status / structure_path
             
         if path != target_path:
             target_path.parent.mkdir(parents=True, exist_ok=True)
@@ -466,7 +491,7 @@ def update_issue(
     updated_meta.actions = get_available_actions(updated_meta)
     return updated_meta
 
-def start_issue_isolation(issues_root: Path, issue_id: str, mode: IsolationType, project_root: Path) -> IssueMetadata:
+def start_issue_isolation(issues_root: Path, issue_id: str, mode: str, project_root: Path) -> IssueMetadata:
     """
     Start physical isolation for an issue (Branch or Worktree).
     """
@@ -494,7 +519,7 @@ def start_issue_isolation(issues_root: Path, issue_id: str, mode: IsolationType,
     
     isolation_meta = None
 
-    if mode == IsolationType.BRANCH:
+    if mode == "branch":
         if not git.branch_exists(project_root, branch_name):
             git.create_branch(project_root, branch_name, checkout=True)
         else:
@@ -504,9 +529,9 @@ def start_issue_isolation(issues_root: Path, issue_id: str, mode: IsolationType,
             if current != branch_name:
                 git.checkout_branch(project_root, branch_name)
         
-        isolation_meta = IssueIsolation(type=IsolationType.BRANCH, ref=branch_name)
+        isolation_meta = IssueIsolation(type="branch", ref=branch_name)
 
-    elif mode == IsolationType.WORKTREE:
+    elif mode == "worktree":
         wt_path = project_root / ".monoco" / "worktrees" / f"{issue_id.lower()}-{slug}"
         
         # Check if worktree exists physically
@@ -517,7 +542,7 @@ def start_issue_isolation(issues_root: Path, issue_id: str, mode: IsolationType,
              wt_path.parent.mkdir(parents=True, exist_ok=True)
              git.worktree_add(project_root, branch_name, wt_path)
              
-        isolation_meta = IssueIsolation(type=IsolationType.WORKTREE, ref=branch_name, path=str(wt_path))
+        isolation_meta = IssueIsolation(type="worktree", ref=branch_name, path=str(wt_path))
     
     # Persist Metadata
     # We load raw, update isolation field, save.
@@ -529,7 +554,7 @@ def start_issue_isolation(issues_root: Path, issue_id: str, mode: IsolationType,
         
         data['isolation'] = isolation_meta.model_dump(mode='json')
         # Also ensure stage is DOING (logic link)
-        data['stage'] = IssueStage.DOING.value
+        data['stage'] = "doing"
         data['updated_at'] = current_time()
 
         new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
@@ -691,7 +716,10 @@ def list_issues(issues_root: Path, recursive_workspace: bool = False) -> List[Is
     List all issues in the project.
     """
     issues = []
-    for issue_type in IssueType:
+    engine = get_engine(str(issues_root.parent))
+    all_types = engine.get_all_types()
+    
+    for issue_type in all_types:
         base_dir = get_issue_dir(issue_type, issues_root)
         for status_dir in ["open", "backlog", "closed"]:
             d = base_dir / status_dir
@@ -730,21 +758,21 @@ def get_board_data(issues_root: Path) -> Dict[str, List[IssueMetadata]]:
     Get open issues grouped by their stage for Kanban view.
     """
     board = {
-        IssueStage.DRAFT.value: [],
-        IssueStage.DOING.value: [],
-        IssueStage.REVIEW.value: [],
-        IssueStage.DONE.value: []
+        "draft": [],
+        "doing": [],
+        "review": [],
+        "done": []
     }
     
     issues = list_issues(issues_root)
     for issue in issues:
-        if issue.status == IssueStatus.OPEN and issue.stage:
-            stage_val = issue.stage.value
+        if issue.status == "open" and issue.stage:
+            stage_val = issue.stage
             if stage_val in board:
                 board[stage_val].append(issue)
-        elif issue.status == IssueStatus.CLOSED:
+        elif issue.status == "closed":
             # Optionally show recently closed items in DONE column
-            board[IssueStage.DONE.value].append(issue)
+            board["done"].append(issue)
             
     return board
 
@@ -754,14 +782,14 @@ def validate_issue_integrity(meta: IssueMetadata, all_issue_ids: Set[str] = set(
     UI-agnostic.
     """
     errors = []
-    if meta.status == IssueStatus.CLOSED and not meta.solution:
+    if meta.status == "closed" and not meta.solution:
         errors.append(f"Solution Missing: {meta.id} is closed but has no solution field.")
             
     if meta.parent:
         if all_issue_ids and meta.parent not in all_issue_ids:
              errors.append(f"Broken Link: {meta.id} refers to non-existent parent {meta.parent}.")
 
-    if meta.status == IssueStatus.BACKLOG and meta.stage != IssueStage.FREEZED:
+    if meta.status == "backlog" and meta.stage != "freezed":
         errors.append(f"Lifecycle Error: {meta.id} is backlog but stage is not freezed (found: {meta.stage}).")
         
     return errors
@@ -806,7 +834,8 @@ def update_issue_content(issues_root: Path, issue_id: str, new_content: str) -> 
         # Reuse logic from update_issue (simplified)
         
         prefix = issue_id.split("-")[0].upper()
-        base_type_dir = get_issue_dir(REVERSE_PREFIX_MAP[prefix], issues_root)
+        reverse_prefix_map = get_reverse_prefix_map(issues_root)
+        base_type_dir = get_issue_dir(reverse_prefix_map[prefix], issues_root)
         
         # Calculate structure path (preserve subdir)
         try:
@@ -819,7 +848,7 @@ def update_issue_content(issues_root: Path, issue_id: str, new_content: str) -> 
             # Fallback if path is weird
             structure_path = Path(path.name)
 
-        target_path = base_type_dir / meta.status.value / structure_path
+        target_path = base_type_dir / meta.status / structure_path
             
         if path != target_path:
             target_path.parent.mkdir(parents=True, exist_ok=True)
@@ -971,9 +1000,9 @@ def check_issue_match(issue: IssueMetadata, explicit_positives: List[str], terms
     searchable_parts = [
         issue.id,
         issue.title,
-        issue.status.value,
-        issue.type.value,
-        str(issue.stage.value) if issue.stage else "",
+        issue.status,
+        issue.type,
+        str(issue.stage) if issue.stage else "",
         *(issue.tags or []),
         *(issue.dependencies or []),
         *(issue.related or []),
@@ -1032,7 +1061,10 @@ def search_issues(issues_root: Path, query: str) -> List[IssueMetadata]:
     # To support deep search (Body), we need to read files.
     # Let's iterate files directly.
     
-    for issue_type in IssueType:
+    engine = get_engine(str(issues_root.parent))
+    all_types = engine.get_all_types()
+    
+    for issue_type in all_types:
         base_dir = get_issue_dir(issue_type, issues_root)
         for status_dir in ["open", "backlog", "closed"]:
             d = base_dir / status_dir
@@ -1080,7 +1112,7 @@ def recalculate_parent(issues_root: Path, parent_id: str):
         return
 
     total = len(children)
-    closed = len([c for c in children if c.status == IssueStatus.CLOSED])
+    closed = len([c for c in children if c.status == "closed"])
     # Progress string: "3/5"
     progress_str = f"{closed}/{total}"
     
@@ -1120,8 +1152,8 @@ def recalculate_parent(issues_root: Path, parent_id: str):
         
         if current_status == "open" and current_stage == "draft":
             # Check if any child is active
-            active_children = [c for c in children if c.status == IssueStatus.OPEN and c.stage != IssueStage.DRAFT]
-            closed_children = [c for c in children if c.status == IssueStatus.CLOSED]
+            active_children = [c for c in children if c.status == "open" and c.stage != "draft"]
+            closed_children = [c for c in children if c.status == "closed"]
             
             if active_children or closed_children:
                 data["stage"] = "doing"
@@ -1203,7 +1235,7 @@ def move_issue(
     
     # 4. Construct target path
     target_type_dir = get_issue_dir(issue.type, target_issues_root)
-    target_status_dir = target_type_dir / issue.status.value
+    target_status_dir = target_type_dir / issue.status
     
     # Preserve subdirectory structure if any
     try:

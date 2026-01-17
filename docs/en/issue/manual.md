@@ -1,209 +1,140 @@
 # Monoco Issue System User Manual
 
-The Monoco Issue System is a project management tool built on **"Agent-Native Semantics."** It treats work units as "Universal Atoms," aiming to reduce the translation overhead between human intent and agent execution.
+The Monoco Issue System is a project management tool built on **"Agent-Native Semantics"**.
 
-This manual details the core concepts, workflow, and command-line usage of the Issue System.
-
-## 1. Core Ontology
-
-Monoco moves away from the traditional "User Narrative" model, defining work units based on "Mindsets" and "Direct Functionality."
-
-### 1.1 Strategy Layer
-
-#### 🏆 EPIC
-
-- **Mindset**: Architect
-- **Definition**: A grand objective spanning multiple cycles. It is a "container for vision."
-- **Output**: Defines the system's boundaries and core value.
-- **Prefix**: `EPIC-`
-
-### 1.2 Value Layer
-
-#### ✨ FEATURE
-
-- **Mindset**: Product Owner / Lead Engineer
-- **Definition**: A concrete functional unit of the system. Represents **Value Delivery**.
-- **Focus**: "What" (What function is being added?).
-- **Atomicity**: Feature = Design + Dev + Test. They are an inseparable whole.
-- **Prefix**: `FEAT-`
-  > _Note: Replaces the "Story" concept._
-
-### 1.3 Execution Layer
-
-#### 🧹 CHORE
-
-- **Mindset**: Builder / Maintainer
-- **Definition**: Engineering maintenance, refactoring, or tooling improvements. These **do not produce** direct user functional value but are strictly necessary for system health.
-- **Scenarios**: Architecture upgrades, writing build scripts, fixing CI/CD pipelines, library updates.
-- **Focus**: "How" (What must be done to support system operation).
-- **Prefix**: `CHORE-`
-  > _Note: Replaces the "Task" concept._
-
-#### 🐛 FIX
-
-- **Mindset**: Debugger
-- **Definition**: A correction of a deviation between expectation and reality.
-- **Focus**: "Repair" (Restore to intended state).
-- **Prefix**: `FIX-`
-  > _Note: Replaces the "Bug" concept._
-
-### Relationship Chain
-
-- **Primary**: `EPIC` (Vision) -> `FEATURE` (Value Delivery)
-- **Secondary**: `CHORE` (Maintenance) - Valid as standalone technical work.
-- **Scope**: Features deliver value; Chores maintain the factory; Fixes repair broken windows.
+This document focuses on the **CLI Usage Guide**. For core concepts and architecture, please refer to **[Core Concepts](concepts.md)**. For custom configuration, refer to **[Configuration Guide](configuration.md)**.
 
 ---
 
-## 2. Command Reference
+## 1. Basic Operations
 
-The Monoco Issue System strongly recommends using CLI tools to manage Issues to ensure synchronization between metadata and the file system.
-
-### 2.1 Create
-
-Create a new Issue. Automatically assigns the next available ID.
+### 1.1 Create
 
 ```bash
 monoco issue create <type> --title "Title" [options]
 ```
 
 - **Arguments**:
-  - `<type>`: `epic`, `feature`, `chore`, `fix`
-  - `--title, -t`: Title of the Issue.
-  - `--parent, -p`: Parent Issue ID (e.g., linking a Feature to an Epic).
-  - `--backlog`: Create directly in Backlog status (default is Open).
-  - `--subdir, -s`: Specify a subdirectory (for organization, e.g., `Backend/Auth`).
+  - `<type>`: `epic`, `feature`, `chore`, `fix` (or custom types)
+  - `--title, -t`: Title
+  - `--parent, -p`: Parent ID (e.g. EPIC-001)
+  - `--backlog`: Create directly in Backlog
+  - `--subdir, -s`: Specify subdirectory
 
-**Example**:
+### 1.2 View
+
+#### List View
 
 ```bash
-monoco issue create feature --title "Implement User Login" --parent EPIC-001
+monoco issue list [-s open] [-t feature]
 ```
 
-### 2.2 Transition
+#### Board View
 
-#### Open
-
-Move an Issue to `open` status.
+Render a Kanban board in the terminal to visualize tasks across stages.
 
 ```bash
-monoco issue open <issue_id>
+monoco issue board
 ```
 
-#### Backlog
+#### Scope View
 
-Move an Issue to `backlog` status.
+View the tree-like hierarchy of Issues.
 
 ```bash
-monoco issue backlog <issue_id>
+monoco issue scope [--sprint SPRINT-ID] [--all]
 ```
 
-#### Close
+#### Inspect
 
-Complete or close an Issue.
-
-```bash
-monoco issue close <issue_id> [--solution <type>]
-```
-
-- **--solution**: Specify the reason for closing. Options:
-  - `implemented` (Default)
-  - `cancelled`
-  - `wontfix`
-  - `duplicate`
-
-#### Cancel
-
-Shortcut command, equivalent to `close --solution cancelled`.
+View metadata, available actions, and AST structure of an Issue.
 
 ```bash
-monoco issue cancel <issue_id>
-```
-
-### 2.3 Scope
-
-View the current project's Issue progress in a tree structure.
-
-```bash
-monoco issue scope [options]
-```
-
-- **--all, -a**: Show all Issues (including Closed and Backlog). Default only shows Open.
-- **--sprint**: Filter by Sprint ID.
-- **--recursive, -r**: Recursively scan subdirectories.
-
-### 2.4 Lifecycle
-
-#### Start
-
-Start working on an Issue.
-
-```bash
-monoco issue start <issue_id>
-```
-
-#### Submit
-
-Submit an Issue for review.
-
-```bash
-monoco issue submit <issue_id>
-```
-
-### 2.5 Maintenance
-
-#### Delete
-
-Physically remove an Issue file. **Warning**: This action is irreversible.
-
-```bash
-monoco issue delete <issue_id>
-```
-
-#### Lint
-
-Verify the integrity of the `Issues/` directory. Checks for ID collisions, file location errors, broken links, etc.
-
-```bash
-monoco issue lint [--recursive]
+monoco issue inspect <ID>
 ```
 
 ---
 
-## 3. Best Practices
+## 2. Lifecycle Management (Workflow)
 
-### 3.1 Directory Structure
+Monoco's lifecycle is driven by **Transitions**.
 
-The Issue System adopts a **"Type-first, Status-second"** hierarchical storage strategy:
+### 2.1 Start
 
-```text
-Issues/
-├── Epics/
-│   ├── open/
-│   └── closed/
-├── Features/
-│   ├── open/
-│   └── ...
-└── ...
+Move Issue from `Draft` to `Doing`. Supports setting up physical isolation environments.
+
+```bash
+# Basic Start
+monoco issue start FEAT-101
+
+# Start and Create Git Branch (Auto-checkout)
+monoco issue start FEAT-101 --branch
+
+# Start and Create Git Worktree (Recommended for parallel dev)
+monoco issue start FEAT-101 --worktree
 ```
 
-### 3.2 Core Principles
+### 2.2 Submit & Review
 
-1. **Prioritize CLI**: Avoid manually moving files to prevent inconsistencies between metadata (Frontmatter) and physical paths.
-2. **Mandatory Validation**: If you manually edit a Markdown file, you **must** run `monoco issue lint` to ensure data integrity.
-3. **Atomicity**: A Feature is the smallest unit of delivery. Do not split a Feature into separate Task files; related Design/Dev/Test tasks should be managed as a Checklist (`- [ ]`) within the Feature itself.
+```bash
+# Submit for Review (Doing -> Review)
+monoco issue submit FEAT-101
 
-### 3.3 Template Specification
+# Submit and Prune Resources (Delete branch/worktree)
+monoco issue submit FEAT-101 --prune
+```
 
-All Issue files must include the following Frontmatter:
+### 2.3 Close
 
-```yaml
+```bash
+monoco issue close FEAT-101 --solution implemented
+```
+
+- **Solutions**: `implemented`, `wontfix`, `cancelled`, `duplicate` (Configurable)
+
+### 2.4 Backlog Operations
+
+```bash
+# Push to Backlog (Status: Open -> Backlog)
+monoco issue backlog push FEAT-101
+
+# Pull from Backlog (Status: Backlog -> Open)
+monoco issue backlog pull FEAT-101
+```
+
 ---
-id: FEAT-0123
-type: feature
-status: open
-title: "Feature Title"
-created_at: YYYY-MM-DD
-tags: [tag1]
+
+## 3. Code Integration (Atomic Commit)
+
+Monoco provides the `commit` command to ensure commits are linked to Issues.
+
+```bash
+# Linked Commit (Auto-appends 'Ref: ID' to msg)
+monoco issue commit -m "Implement core logic" -i FEAT-101
+
+# Auto-infer (If staged changes only involve the Issue file)
+monoco issue commit -m "Update acceptance criteria" -i FEAT-101
+
+# Detached Commit (Explicitly declare no Issue link)
+monoco issue commit -m "Hotfix" --detached
+```
+
 ---
+
+## 4. Maintenance & Debugging
+
+### Lint
+
+Verify integrity of the `Issues/` directory (dead links, format errors, etc.).
+
+```bash
+monoco issue lint [--fix]
+```
+
+### Physical Move
+
+Move an Issue to another project (preserves history, assigns new ID).
+
+```bash
+monoco issue move FEAT-101 --to ../OtherProject
 ```

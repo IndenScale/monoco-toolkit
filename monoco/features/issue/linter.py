@@ -38,27 +38,48 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                     meta = core.parse_issue(f)
                     if meta:
                         local_id = meta.id
-                        full_id = f"{project_name}::{local_id}" if project_name != "local" else local_id
+                        full_id = f"{project_name}::{local_id}"
                         
                         all_issue_ids.add(local_id)
-                        if project_name != "local":
-                            all_issue_ids.add(full_id)
+                        all_issue_ids.add(full_id)
                         
                         project_issues.append((f, meta))
         return project_issues
 
-    all_issues.extend(collect_project_issues(issues_root, "local"))
+    from monoco.core.config import get_config
+    conf = get_config(str(issues_root.parent))
+    
+    # Identify local project name
+    local_project_name = "local"
+    if conf and conf.project and conf.project.name:
+        local_project_name = conf.project.name.lower()
+
+    # Find Topmost Workspace Root
+    workspace_root = issues_root.parent
+    for parent in [workspace_root] + list(workspace_root.parents):
+        if (parent / ".monoco" / "workspace.yaml").exists() or (parent / ".monoco" / "project.yaml").exists():
+            workspace_root = parent
+            
+    # Collect from local issues_root
+    all_issues.extend(collect_project_issues(issues_root, local_project_name))
     
     if recursive:
         try:
-            from monoco.core.config import get_config
-            project_root = issues_root.parent
-            conf = get_config(str(project_root))
-            for member_name, rel_path in conf.project.members.items():
-                member_root = (project_root / rel_path).resolve()
+            # Re-read config from workspace root to get all members
+            ws_conf = get_config(str(workspace_root))
+            
+            # Index Root project if different from current
+            if workspace_root != issues_root.parent:
+                root_issues_dir = workspace_root / "Issues"
+                if root_issues_dir.exists():
+                    all_issues.extend(collect_project_issues(root_issues_dir, ws_conf.project.name.lower()))
+
+            # Index all members
+            for member_name, rel_path in ws_conf.project.members.items():
+                member_root = (workspace_root / rel_path).resolve()
                 member_issues_dir = member_root / "Issues"
-                if member_issues_dir.exists():
-                    collect_project_issues(member_issues_dir, member_name)
+                if member_issues_dir.exists() and member_issues_dir != issues_root:
+                    all_issues.extend(collect_project_issues(member_issues_dir, member_name.lower()))
         except Exception:
             pass
 

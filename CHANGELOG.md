@@ -5,6 +5,16 @@ All notable changes to Monoco Toolkit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2026-01-18
+
+### 🔧 Improvements
+
+- Updated Agent Settings UI with better organization and section headers
+- Improved Agent inheritance logic (Inherit from Default)
+- Fixed Webview initialization and local storage data migration
+- Enhanced Issue Validator with stricter "Technical Tasks" requirements
+- Synced all components (CLI, VS Code Extension, Kanban) to v0.2.6
+
 ## [0.2.0] - 2026-01-16
 
 ### 🎯 Major Features

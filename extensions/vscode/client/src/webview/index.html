@@ -8,104 +8,177 @@
   </head>
   <body>
       <!-- CONFIG_INJECTION -->
-      <!-- Main Home View -->
-      <div id="view-home" class="view active">
-        <div class="project-bar">
-          <div class="project-selector-wrapper">
-            <select id="project-selector" class="project-selector">
-              <option value="all">All Projects</option>
-            </select>
-            <span class="selector-icon">▼</span>
+      <!-- Icon Definitions Removed (Using Emojis) -->
+    <div id="app">
+      <!-- Primary Views Container -->
+      <div id="primary-views" class="primary-views">
+          <!-- Main Home View -->
+          <div id="view-home" class="view active">
+            <!-- Search Bar -->
+            <div class="filter-bar">
+               <div class="search-wrapper">
+                   <input type="text" id="search-input" class="search-input" placeholder="Search..." />
+                   <div id="btn-filter" class="icon-toggle" title="Toggle Filters" >
+                      <!-- Icon Injected JS -->
+                   </div>
+               </div>
+            </div>
+     
+            <div class="project-bar">
+              <div class="project-selector-wrapper">
+                <select id="project-selector" class="project-selector">
+                  <option value="all">All Projects</option>
+                </select>
+                <span class="selector-icon">▼</span>
+              </div>
+            </div>
+     
+            <div id="issue-tree" class="issue-tree">
+              <div class="empty-state">Loading issues...</div>
+            </div>
           </div>
-        </div>
+    
+          <!-- Create Issue View -->
+          <div id="view-create" class="view">
+              <div class="view-header">
+                  <button id="btn-back-create" class="icon-btn back-btn">←</button>
+                  <span class="view-title">New Issue</span>
+              </div>
+              <div class="view-content form-container">
+                  <div class="form-group">
+                      <label>Title</label>
+                      <input type="text" id="create-title" class="form-input" placeholder="e.g. User Login Flow" />
+                  </div>
+                  <div class="form-group row">
+                      <label>Type</label>
+                      <select id="create-type" class="form-input">
+                          <option value="feature">Feature</option>
+                          <option value="bug">Bug</option>
+                          <option value="chore">Chore</option>
+                          <option value="epic">Epic</option>
+                          <option value="arch">Arch</option>
+                      </select>
+                  </div>
+                  <div class="form-group row">
+                      <label>Parent (Optional)</label>
+                      <select id="create-parent" class="form-input">
+                          <option value="">(None)</option>
+                      </select>
+                  </div>
+                  <div class="form-group" style="display:none;"> <!-- Hidden, auto-filled -->
+                      <label>Project</label>
+                      <input type="text" id="create-project" class="form-input" readonly />
+                  </div>
+                  <div class="form-actions">
+                      <button id="btn-submit-create" class="primary-btn">Create</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Filters View (Bottom Sheet) -->
+      <div id="view-filters" class="filters-view">
+          <div class="filters-header" id="filters-toggle-btn">
+              <div class="chevron-icon" id="filters-chevron">▶</div>
+              <span class="view-title">Filters</span>
+          </div>
 
-        <div class="search-bar">
-          <input type="text" id="search-input" placeholder="Search..." />
-        </div>
- 
-        <div id="issue-tree" class="issue-tree">
-          <div class="empty-state">Loading issues...</div>
-        </div>
- 
-        <div id="add-epic-zone" class="add-epic-zone">
-          <span>+ Create New Epic</span>
-        </div>
+          <div class="filters-content-wrapper" id="filter-container">
+            <div class="view-content">
+                  <div class="filter-section">
+                      <div class="filter-label">Status</div>
+                      <div class="status-toggles">
+                          <button class="status-toggle" data-type="status" data-value="open" title="Open">OPEN</button>
+                          <button class="status-toggle" data-type="status" data-value="backlog" title="Backlog">BACKLOG</button>
+                          <button class="status-toggle" data-type="status" data-value="closed" title="Closed">CLOSED</button>
+                      </div>
+                  </div>
+    
+                  <div class="filter-section">
+                      <div class="filter-label">Stage</div>
+                      <div class="status-toggles">
+                          <button class="stage-toggle" data-type="stage" data-value="draft" title="Draft">PLAN</button>
+                          <button class="stage-toggle" data-type="stage" data-value="doing" title="In Progress">DEV</button>
+                          <button class="stage-toggle" data-type="stage" data-value="review" title="Review">REVIEW</button>
+                          <button class="stage-toggle" data-type="stage" data-value="done" title="Done">DONE</button>
+                      </div>
+                  </div>
+                  
+                  <div class="filter-section">
+                      <div class="filter-label">Tags</div>
+                      <div class="form-group">
+                        <input type="text" id="filter-tags-include" class="filter-input" placeholder="Include tags (comma separated)" />
+                      </div>
+                      <div class="form-group">
+                        <input type="text" id="filter-tags-exclude" class="filter-input" placeholder="Exclude tags (comma separated)" />
+                      </div>
+                      <div class="form-group">
+                         <input type="text" id="filter-tags-nice" class="filter-input" placeholder="Nice-to-have tags (boost)" />
+                      </div>
+                  </div>
+            </div>
+          </div>
       </div>
 
-      <!-- Create Issue View -->
-      <div id="view-create" class="view">
-          <div class="view-header">
-              <button id="btn-back-create" class="icon-btn back-btn">←</button>
-              <span class="view-title">New Issue</span>
-          </div>
-          <div class="view-content form-container">
-              <div class="form-group">
-                  <label>Title</label>
-                  <input type="text" id="create-title" class="form-input" placeholder="e.g. User Login Flow" />
-              </div>
-              <div class="form-group">
-                  <label>Type</label>
-                  <select id="create-type" class="form-input">
-                      <option value="feature">Feature</option>
-                      <option value="bug">Bug</option>
-                      <option value="chore">Chore</option>
-                      <option value="epic">Epic</option>
-                  </select>
-              </div>
-              <div class="form-group">
-                  <label>Parent (Optional)</label>
-                  <select id="create-parent" class="form-input">
-                      <option value="">(None)</option>
-                  </select>
-              </div>
-              <div class="form-group" style="display:none;"> <!-- Hidden, auto-filled -->
-                  <label>Project</label>
-                  <input type="text" id="create-project" class="form-input" readonly />
-              </div>
-              <div class="form-actions">
-                  <button id="btn-submit-create" class="primary-btn">Create</button>
-              </div>
-          </div>
-      </div>
-
-      <!-- Settings View -->
-      <div id="view-settings" class="view">
-          <div class="view-header">
-              <button id="btn-back-settings" class="icon-btn back-btn">←</button>
+      <!-- Settings View (Bottom Sheet) -->
+      <div id="view-settings" class="settings-view">
+          <div class="settings-header" id="settings-toggle-btn">
+              <div class="chevron-icon" id="settings-chevron">▶</div>
               <span class="view-title">Settings</span>
           </div>
 
-          <div class="settings-tabs">
-            <div class="tab-header">
-              <button class="tab-btn active" data-tab="tab-general">General</button>
-              <button class="tab-btn" data-tab="tab-execution">Execution</button>
-            </div>
-            
-            <div id="tab-general" class="tab-content active">
-               <div class="view-content form-container">
-                  <div class="form-group">
-                      <label>Web UI URL</label>
-                      <input type="text" id="setting-web-url" class="form-input" placeholder="http://localhost:8642" />
-                  </div>
-                  <div class="form-actions">
-                      <button id="btn-save-settings" class="primary-btn">Save</button>
-                  </div>
-              </div>
-            </div>
-
-            <div id="tab-execution" class="tab-content">
-              <div class="view-content">
-                <p class="hint">Click to edit execution profiles (SOPs).</p>
-                <div id="execution-list" class="execution-list">
-                  <!-- Injected by JS -->
-                  <div class="loading">Loading profiles...</div>
+          <div class="settings-content-wrapper">
+             <div class="tab-header">
+                <button class="tab-btn active" data-tab="tab-general">General</button>
+                <button class="tab-btn" data-tab="tab-agents">Agents</button>
+             </div>
+             
+             <div class="view-content">
+                <!-- General Tab -->
+                <div id="tab-general" class="tab-content active">
+                    <div class="form-container">
+                        <div class="form-group row">
+                            <label title="Show or hide the [FEAT-001] prefix in the sidebar tree.">Display ID</label>
+                            <input type="checkbox" id="setting-display-id" checked />
+                        </div>
+                    </div>
                 </div>
-              </div>
-            </div>
 
+                <!-- Agents Tab -->
+                <div id="tab-agents" class="tab-content">
+                    <div class="form-container">
+                        <h3 class="settings-section-title">Workflow Agents</h3>
+                        <div class="form-group row">
+                            <label title="Fall-back provider for all tasks if not specialized.">Default Agent</label>
+                            <select id="setting-agent-default" class="form-input"></select>
+                        </div>
+                        
+                        <div class="settings-divider"></div>
+                        <h3 class="settings-section-title">Specialized Tasks</h3>
+                        
+                        <div class="form-group row">
+                            <label title="Used for initial research and spike tasks.">Research</label>
+                            <select id="setting-agent-research" class="form-input"></select>
+                        </div>
+                        <div class="form-group row">
+                            <label title="Used for generating code and editing files.">Implementation</label>
+                            <select id="setting-agent-implementation" class="form-input"></select>
+                        </div>
+                        <div class="form-group row">
+                            <label title="Used for checking PRs and code quality.">Review</label>
+                            <select id="setting-agent-review" class="form-input"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button id="btn-save-settings" class="primary-btn">Save Changes</button>
+                </div>
+             </div>
           </div>
       </div>
     </div>
-    <script src="main.js"></script>
+  </div>
+    <script type="module" src="main.js"></script>
   </body>
 </html>

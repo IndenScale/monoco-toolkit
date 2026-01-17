@@ -1,15 +1,39 @@
-from typing import List, Optional
-from .models import StateMachineConfig, Transition
-from ..models import IssueStatus, IssueStage, IssueMetadata, IssueSolution
+from typing import List, Optional, Dict
+from monoco.core.config import IssueSchemaConfig, TransitionConfig
+from ..models import IssueStatus, IssueStage, IssueMetadata, IssueSolution, IssueType
 
 class StateMachine:
-    def __init__(self, config: StateMachineConfig):
-        self.config = config
+    def __init__(self, config: IssueSchemaConfig):
+        self.issue_config = config
+        self.transitions = config.workflows or []
 
-    def can_transition(self, current_status: IssueStatus, current_stage: Optional[IssueStage], 
-                       target_status: IssueStatus, target_stage: Optional[IssueStage]) -> bool:
+    def get_type_config(self, type_name: str):
+        if not self.issue_config.types:
+            return None
+        for t in self.issue_config.types:
+            if t.name == type_name:
+                return t
+        return None
+
+    def get_prefix_map(self) -> Dict[str, str]:
+        if not self.issue_config.types:
+            return {}
+        return {t.name: t.prefix for t in self.issue_config.types}
+
+    def get_folder_map(self) -> Dict[str, str]:
+        if not self.issue_config.types:
+            return {}
+        return {t.name: t.folder for t in self.issue_config.types}
+
+    def get_all_types(self) -> List[str]:
+        if not self.issue_config.types:
+            return []
+        return [t.name for t in self.issue_config.types]
+
+    def can_transition(self, current_status: str, current_stage: Optional[str], 
+                       target_status: str, target_stage: Optional[str]) -> bool:
         """Check if a transition path exists."""
-        for t in self.config.transitions:
+        for t in self.transitions:
             if t.from_status and t.from_status != current_status:
                 continue
             if t.from_stage and t.from_stage != current_stage:
@@ -20,10 +44,10 @@ class StateMachine:
                     return True
         return False
 
-    def get_available_transitions(self, meta: IssueMetadata) -> List[Transition]:
+    def get_available_transitions(self, meta: IssueMetadata) -> List[TransitionConfig]:
         """Get all transitions allowed from the current state of the issue."""
         allowed = []
-        for t in self.config.transitions:
+        for t in self.transitions:
             # Universal actions (no from_status/stage) are always allowed
             if t.from_status is None and t.from_stage is None:
                 allowed.append(t)
@@ -38,18 +62,18 @@ class StateMachine:
                 continue
             
             # Special case for 'Cancel': don't show if already DONE or CLOSED
-            if t.name == "cancel" and meta.stage == IssueStage.DONE:
+            if t.name == "cancel" and meta.stage == "done":
                 continue
 
             allowed.append(t)
         return allowed
 
-    def find_transition(self, from_status: IssueStatus, from_stage: Optional[IssueStage],
-                        to_status: IssueStatus, to_stage: Optional[IssueStage],
-                        solution: Optional[IssueSolution] = None) -> Optional[Transition]:
+    def find_transition(self, from_status: str, from_stage: Optional[str],
+                        to_status: str, to_stage: Optional[str],
+                        solution: Optional[str] = None) -> Optional[TransitionConfig]:
         """Find a specific transition rule."""
         candidates = []
-        for t in self.config.transitions:
+        for t in self.transitions:
             # Skip non-transitions (agent actions with same status/stage)
             if t.from_status is None and t.from_stage is None:
                 continue
@@ -86,9 +110,9 @@ class StateMachine:
         
         return candidates[0]
 
-    def validate_transition(self, from_status: IssueStatus, from_stage: Optional[IssueStage],
-                            to_status: IssueStatus, to_stage: Optional[IssueStage],
-                            solution: Optional[IssueSolution] = None) -> None:
+    def validate_transition(self, from_status: str, from_stage: Optional[str],
+                            to_status: str, to_stage: Optional[str],
+                            solution: Optional[str] = None) -> None:
         """
         Validate if a transition is allowed. Raises ValueError if not.
         """
@@ -98,11 +122,11 @@ class StateMachine:
         transition = self.find_transition(from_status, from_stage, to_status, to_stage, solution)
         
         if not transition:
-            raise ValueError(f"Lifecycle Policy: Transition from {from_status.value}({from_stage.value if from_stage else 'None'}) "
-                             f"to {to_status.value}({to_stage.value if to_stage else 'None'}) is not defined.")
+            raise ValueError(f"Lifecycle Policy: Transition from {from_status}({from_stage if from_stage else 'None'}) "
+                             f"to {to_status}({to_stage if to_stage else 'None'}) is not defined.")
 
         if transition.required_solution and solution != transition.required_solution:
-             raise ValueError(f"Lifecycle Policy: Transition '{transition.label}' requires solution '{transition.required_solution.value}'.")
+             raise ValueError(f"Lifecycle Policy: Transition '{transition.label}' requires solution '{transition.required_solution}'.")
 
     def enforce_policy(self, meta: IssueMetadata) -> None:
         """
@@ -110,15 +134,52 @@ class StateMachine:
         """
         from ..models import current_time
         
-        if meta.status == IssueStatus.BACKLOG:
-            meta.stage = IssueStage.FREEZED
+        if meta.status == "backlog":
+            meta.stage = "freezed"
         
-        elif meta.status == IssueStatus.CLOSED:
-            if meta.stage != IssueStage.DONE:
-                meta.stage = IssueStage.DONE
+        elif meta.status == "closed":
+            if meta.stage != "done":
+                meta.stage = "done"
             if not meta.closed_at:
                 meta.closed_at = current_time()
         
-        elif meta.status == IssueStatus.OPEN:
+        elif meta.status == "open":
             if meta.stage is None:
-                meta.stage = IssueStage.DRAFT
+                meta.stage = "draft"
+
+    def validate_transition(self, from_status: str, from_stage: Optional[str],
+                            to_status: str, to_stage: Optional[str],
+                            solution: Optional[str] = None) -> None:
+        """
+        Validate if a transition is allowed. Raises ValueError if not.
+        """
+        if from_status == to_status and from_stage == to_stage:
+            return # No change is always allowed (unless we want to enforce specific updates)
+
+        transition = self.find_transition(from_status, from_stage, to_status, to_stage, solution)
+        
+        if not transition:
+            raise ValueError(f"Lifecycle Policy: Transition from {from_status}({from_stage if from_stage else 'None'}) "
+                             f"to {to_status}({to_stage if to_stage else 'None'}) is not defined.")
+
+        if transition.required_solution and solution != transition.required_solution:
+             raise ValueError(f"Lifecycle Policy: Transition '{transition.label}' requires solution '{transition.required_solution}'.")
+
+    def enforce_policy(self, meta: IssueMetadata) -> None:
+        """
+        Apply consistency rules to IssueMetadata.
+        """
+        from ..models import current_time
+        
+        if meta.status == "backlog":
+            meta.stage = "freezed"
+        
+        elif meta.status == "closed":
+            if meta.stage != "done":
+                meta.stage = "done"
+            if not meta.closed_at:
+                meta.closed_at = current_time()
+        
+        elif meta.status == "open":
+            if meta.stage is None:
+                meta.stage = "draft"

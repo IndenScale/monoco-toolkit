@@ -1,168 +1,187 @@
-from ..models import IssueStatus, IssueStage, IssueSolution
-from .models import Transition, StateMachineConfig
+from monoco.core.config import IssueSchemaConfig, IssueTypeConfig, TransitionConfig, StateMachineConfig
 
-DEFAULT_CONFIG = StateMachineConfig(
-    transitions=[
+DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
+    types=[
+        IssueTypeConfig(name="epic", label="Epic", prefix="EPIC", folder="Epics"),
+        IssueTypeConfig(name="feature", label="Feature", prefix="FEAT", folder="Features"),
+        IssueTypeConfig(name="chore", label="Chore", prefix="CHORE", folder="Chores"),
+        IssueTypeConfig(name="fix", label="Fix", prefix="FIX", folder="Fixes"),
+    ],
+    statuses=["open", "closed", "backlog"],
+    stages=["draft", "doing", "review", "done", "freezed"],
+    solutions=["implemented", "cancelled", "wontfix", "duplicate"],
+    workflows=[
         # --- UNIVERSAL AGENT ACTIONS ---
-        Transition(
+        TransitionConfig(
             name="investigate",
             label="Investigate",
             icon="$(telescope)",
-            to_status=IssueStatus.OPEN,  # Dummy, doesn't change status
+            to_status="open",  # Dummy, doesn't change status
             command_template="monoco agent run investigate",
             description="Run agent investigation"
         ),
 
         # --- OPEN -> OPEN Transitions (Stage changes) ---
-        Transition(
+        TransitionConfig(
             name="start",
             label="Start",
             icon="$(play)",
-            from_status=IssueStatus.OPEN,
-            from_stage=IssueStage.DRAFT,
-            to_status=IssueStatus.OPEN,
-            to_stage=IssueStage.DOING,
+            from_status="open",
+            from_stage="draft",
+            to_status="open",
+            to_stage="doing",
             command_template="monoco issue start {id}",
             description="Start working on the issue"
         ),
         
-        Transition(
+        TransitionConfig(
             name="develop",
             label="Develop",
             icon="$(tools)",
-            from_status=IssueStatus.OPEN,
-            from_stage=IssueStage.DOING,
-            to_status=IssueStatus.OPEN,
-            to_stage=IssueStage.DOING,
+            from_status="open",
+            from_stage="doing",
+            to_status="open",
+            to_stage="doing",
             command_template="monoco agent run develop",
             description="Run agent development"
         ),
 
-        Transition(
+        TransitionConfig(
             name="stop",
             label="Stop",
             icon="$(stop)",
-            from_status=IssueStatus.OPEN,
-            from_stage=IssueStage.DOING,
-            to_status=IssueStatus.OPEN,
-            to_stage=IssueStage.DRAFT,
-            command_template="monoco issue open {id}",
+            from_status="open",
+            from_stage="doing",
+            to_status="open",
+            to_stage="draft",
+            command_template="monoco issue stop {id}",
             description="Stop working and return to draft"
         ),
-        Transition(
+        TransitionConfig(
             name="submit",
             label="Submit",
             icon="$(check)",
-            from_status=IssueStatus.OPEN,
-            from_stage=IssueStage.DOING,
-            to_status=IssueStatus.OPEN,
-            to_stage=IssueStage.REVIEW,
+            from_status="open",
+            from_stage="doing",
+            to_status="open",
+            to_stage="review",
             command_template="monoco issue submit {id}",
             description="Submit for review"
         ),
-        Transition(
+        TransitionConfig(
             name="reject",
             label="Reject",
             icon="$(error)",
-            from_status=IssueStatus.OPEN,
-            from_stage=IssueStage.REVIEW,
-            to_status=IssueStatus.OPEN,
-            to_stage=IssueStage.DOING,
+            from_status="open",
+            from_stage="review",
+            to_status="open",
+            to_stage="doing",
             command_template="monoco issue update {id} --stage doing",
             description="Reject review and return to doing"
         ),
 
         # --- OPEN -> CLOSED Transitions ---
-        Transition(
+        TransitionConfig(
             name="accept",
             label="Accept",
             icon="$(pass-filled)",
-            from_status=IssueStatus.OPEN,
-            from_stage=IssueStage.REVIEW,
-            to_status=IssueStatus.CLOSED,
-            to_stage=IssueStage.DONE,
-            required_solution=IssueSolution.IMPLEMENTED,
+            from_status="open",
+            from_stage="review",
+            to_status="closed",
+            to_stage="done",
+            required_solution="implemented",
             command_template="monoco issue close {id} --solution implemented",
             description="Accept and close issue"
         ),
-        Transition(
+        TransitionConfig(
             name="close_done",
             label="Close",
             icon="$(close)",
-            from_status=IssueStatus.OPEN,
-            from_stage=IssueStage.DONE,
-            to_status=IssueStatus.CLOSED,
-            to_stage=IssueStage.DONE,
-            required_solution=IssueSolution.IMPLEMENTED,
+            from_status="open",
+            from_stage="done",
+            to_status="closed",
+            to_stage="done",
+            required_solution="implemented",
             command_template="monoco issue close {id} --solution implemented",
             description="Close completed issue"
         ),
-        Transition(
+        TransitionConfig(
             name="cancel",
             label="Cancel",
             icon="$(trash)",
-            from_status=IssueStatus.OPEN,
+            from_status="open",
             # Allowed from any stage except DONE (though core.py had a check for it)
-            to_status=IssueStatus.CLOSED,
-            to_stage=IssueStage.DONE,
-            required_solution=IssueSolution.CANCELLED,
+            to_status="closed",
+            to_stage="done",
+            required_solution="cancelled",
             command_template="monoco issue cancel {id}",
             description="Cancel the issue"
         ),
-        Transition(
+        TransitionConfig(
             name="wontfix",
             label="Won't Fix",
             icon="$(circle-slash)",
-            from_status=IssueStatus.OPEN,
-            to_status=IssueStatus.CLOSED,
-            to_stage=IssueStage.DONE,
-            required_solution=IssueSolution.WONTFIX,
+            from_status="open",
+            to_status="closed",
+            to_stage="done",
+            required_solution="wontfix",
             command_template="monoco issue close {id} --solution wontfix",
             description="Mark as won't fix"
         ),
 
         # --- BACKLOG Transitions ---
-        Transition(
+        TransitionConfig(
+            name="push",
+            label="Push to Backlog",
+            icon="$(archive)",
+            from_status="open",
+            to_status="backlog",
+            to_stage="freezed",
+            command_template="monoco issue backlog push {id}",
+            description="Move issue to backlog"
+        ),
+
+        TransitionConfig(
             name="pull",
             label="Pull",
             icon="$(arrow-up)",
-            from_status=IssueStatus.BACKLOG,
-            to_status=IssueStatus.OPEN,
-            to_stage=IssueStage.DRAFT,
+            from_status="backlog",
+            to_status="open",
+            to_stage="draft",
             command_template="monoco issue backlog pull {id}",
             description="Restore issue from backlog"
         ),
-        Transition(
+        TransitionConfig(
             name="cancel_backlog",
             label="Cancel",
             icon="$(trash)",
-            from_status=IssueStatus.BACKLOG,
-            to_status=IssueStatus.CLOSED,
-            to_stage=IssueStage.DONE,
-            required_solution=IssueSolution.CANCELLED,
+            from_status="backlog",
+            to_status="closed",
+            to_stage="done",
+            required_solution="cancelled",
             command_template="monoco issue cancel {id}",
             description="Cancel backlog issue"
         ),
 
         # --- CLOSED Transitions ---
-        Transition(
+        TransitionConfig(
             name="reopen",
             label="Reopen",
             icon="$(refresh)",
-            from_status=IssueStatus.CLOSED,
-            to_status=IssueStatus.OPEN,
-            to_stage=IssueStage.DRAFT,
+            from_status="closed",
+            to_status="open",
+            to_stage="draft",
             command_template="monoco issue open {id}",
             description="Reopen a closed issue"
         ),
-        Transition(
+        TransitionConfig(
             name="reopen_from_done",
             label="Reopen",
             icon="$(refresh)",
-            from_status=IssueStatus.OPEN,
-            from_stage=IssueStage.DONE,
-            to_status=IssueStatus.OPEN,
-            to_stage=IssueStage.DRAFT,
+            from_status="open",
+            from_stage="done",
+            to_status="open",
+            to_stage="draft",
             command_template="monoco issue open {id}",
             description="Reopen a done issue"
         ),
