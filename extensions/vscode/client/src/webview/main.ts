@@ -22,7 +22,9 @@ function toggleSettings(force?: boolean) {
   const settingsView = document.getElementById("view-settings");
   const primaryViews = document.getElementById("primary-views");
   const chevron = document.getElementById("settings-chevron");
-  if (!settingsView || !primaryViews) return;
+  if (!settingsView || !primaryViews) {
+    return;
+  }
 
   const isCurrentlyExpanded = settingsView.classList.contains("expanded");
   const targetExpanded = force !== undefined ? force : !isCurrentlyExpanded;
@@ -30,11 +32,15 @@ function toggleSettings(force?: boolean) {
   if (targetExpanded) {
     settingsView.classList.add("expanded");
     // primaryViews.classList.add("collapsed"); // Optional: if we want to shrink main view
-    if (chevron) (chevron as HTMLElement).style.transform = "rotate(90deg)";
+    if (chevron) {
+      (chevron as HTMLElement).style.transform = "rotate(90deg)";
+    }
   } else {
     settingsView.classList.remove("expanded");
     // primaryViews.classList.remove("collapsed");
-    if (chevron) (chevron as HTMLElement).style.transform = "rotate(0deg)";
+    if (chevron) {
+      (chevron as HTMLElement).style.transform = "rotate(0deg)";
+    }
   }
 }
 
@@ -42,19 +48,29 @@ function toggleFilters(force?: boolean) {
   const filtersView = document.getElementById("view-filters");
   const chevron = document.getElementById("filters-chevron");
   const btnFilter = document.getElementById("btn-filter");
-  if (!filtersView) return;
+  if (!filtersView) {
+    return;
+  }
 
   const isCurrentlyExpanded = filtersView.classList.contains("expanded");
   const targetExpanded = force !== undefined ? force : !isCurrentlyExpanded;
 
   if (targetExpanded) {
     filtersView.classList.add("expanded");
-    if (chevron) (chevron as HTMLElement).style.transform = "rotate(90deg)";
-    if (btnFilter) btnFilter.classList.add("active");
+    if (chevron) {
+      (chevron as HTMLElement).style.transform = "rotate(90deg)";
+    }
+    if (btnFilter) {
+      btnFilter.classList.add("active");
+    }
   } else {
     filtersView.classList.remove("expanded");
-    if (chevron) (chevron as HTMLElement).style.transform = "rotate(0deg)";
-    if (btnFilter) btnFilter.classList.remove("active");
+    if (chevron) {
+      (chevron as HTMLElement).style.transform = "rotate(0deg)";
+    }
+    if (btnFilter) {
+      btnFilter.classList.remove("active");
+    }
   }
 }
 
@@ -241,7 +257,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       "";
 
     selects.forEach(({ el, isDefault }) => {
-      if (!el) return;
+      if (!el) {
+        return;
+      }
       const currentValue = el.value;
       el.innerHTML = "";
 
@@ -429,9 +447,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     // Tag Inputs
-    if (tagsInclude) tagsInclude.value = (fTags.include || []).join(", ");
-    if (tagsExclude) tagsExclude.value = (fTags.exclude || []).join(", ");
-    if (tagsNice) tagsNice.value = (fTags.nice || []).join(", ");
+    if (tagsInclude) {
+      tagsInclude.value = (fTags.include || []).join(", ");
+    }
+    if (tagsExclude) {
+      tagsExclude.value = (fTags.exclude || []).join(", ");
+    }
+    if (tagsNice) {
+      tagsNice.value = (fTags.nice || []).join(", ");
+    }
   };
 
   // Trigger Filter Update

@@ -88,7 +88,9 @@ export class AgentStateService {
   }
 
   public getAvailableProviders(): string[] {
-    if (!this.state?.providers) return [];
+    if (!this.state?.providers) {
+      return [];
+    }
     return Object.entries(this.state.providers)
       .filter(([_, value]) => value.available)
       .map(([key]) => key);
