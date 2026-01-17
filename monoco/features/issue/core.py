@@ -19,27 +19,6 @@ PREFIX_MAP = {
 
 REVERSE_PREFIX_MAP = {v: k for k, v in PREFIX_MAP.items()}
 
-def enforce_lifecycle_policy(meta: IssueMetadata) -> None:
-    """
-    Apply business rules to ensure IssueMetadata consistency.
-    Should be called during Create or Update (but NOT during Read/Lint).
-    """
-    if meta.status == IssueStatus.BACKLOG:
-        meta.stage = IssueStage.FREEZED
-    
-    elif meta.status == IssueStatus.CLOSED:
-        # Enforce stage=done for closed issues
-        if meta.stage != IssueStage.DONE:
-            meta.stage = IssueStage.DONE
-        # Auto-fill closed_at if missing
-        if not meta.closed_at:
-            meta.closed_at = current_time()
-    
-    elif meta.status == IssueStatus.OPEN:
-        # Ensure valid stage for open status
-        if meta.stage is None:
-            meta.stage = IssueStage.DRAFT
-
 def _get_slug(title: str) -> str:
     slug = title.lower()
     # Replace non-word characters (including punctuation, spaces) with hyphens
@@ -170,7 +149,8 @@ def create_issue_file(
     )
     
     # Enforce lifecycle policies (defaults, auto-corrections)
-    enforce_lifecycle_policy(metadata)
+    from .engine import get_engine
+    get_engine().enforce_policy(metadata)
 
     yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
     slug = _get_slug(title)
@@ -198,32 +178,29 @@ def create_issue_file(
     return metadata, file_path
 def get_available_actions(meta: IssueMetadata) -> List[Any]:
     from .models import IssueAction
+    from .engine import get_engine
+    
+    engine = get_engine()
+    transitions = engine.get_available_transitions(meta)
+    
     actions = []
-
-    if meta.status == IssueStatus.OPEN:
-        # Stage-based movements
-        if meta.stage == IssueStage.DRAFT:
-            actions.append(IssueAction(label="Start", target_status=IssueStatus.OPEN, target_stage=IssueStage.DOING))
-            actions.append(IssueAction(label="Freeze", target_status=IssueStatus.BACKLOG))
-        elif meta.stage == IssueStage.DOING:
-            actions.append(IssueAction(label="Stop", target_status=IssueStatus.OPEN, target_stage=IssueStage.DRAFT))
-            actions.append(IssueAction(label="Submit", target_status=IssueStatus.OPEN, target_stage=IssueStage.REVIEW))
-        elif meta.stage == IssueStage.REVIEW:
-            actions.append(IssueAction(label="Approve", target_status=IssueStatus.CLOSED, target_stage=IssueStage.DONE, target_solution=IssueSolution.IMPLEMENTED))
-            actions.append(IssueAction(label="Reject", target_status=IssueStatus.OPEN, target_stage=IssueStage.DOING))
-        elif meta.stage == IssueStage.DONE:
-            actions.append(IssueAction(label="Reopen", target_status=IssueStatus.OPEN, target_stage=IssueStage.DRAFT))
-            actions.append(IssueAction(label="Close", target_status=IssueStatus.CLOSED, target_stage=IssueStage.DONE, target_solution=IssueSolution.IMPLEMENTED))
+    for t in transitions:
+        command = t.command_template.format(id=meta.id) if t.command_template else ""
         
-        # Generic cancel
-        actions.append(IssueAction(label="Cancel", target_status=IssueStatus.CLOSED, target_stage=IssueStage.DONE, target_solution=IssueSolution.CANCELLED))
-
-    elif meta.status == IssueStatus.BACKLOG:
-        actions.append(IssueAction(label="Pull", target_status=IssueStatus.OPEN, target_stage=IssueStage.DRAFT))
-        actions.append(IssueAction(label="Cancel", target_status=IssueStatus.CLOSED, target_stage=IssueStage.DONE, target_solution=IssueSolution.CANCELLED))
-
-    elif meta.status == IssueStatus.CLOSED:
-        actions.append(IssueAction(label="Reopen", target_status=IssueStatus.OPEN, target_stage=IssueStage.DRAFT))
+        # Determine task if it's an agent action
+        task = None
+        if t.name == "develop":
+            task = "develop"
+        
+        actions.append(IssueAction(
+            label=t.label,
+            icon=t.icon,
+            target_status=t.to_status if t.to_status != meta.status or t.to_stage != meta.stage else None,
+            target_stage=t.to_stage if t.to_stage != meta.stage else None,
+            target_solution=t.required_solution,
+            command=command,
+            task=task
+        ))
 
     return actions
 
@@ -316,30 +293,43 @@ def update_issue(
         current_status = IssueStatus(current_status_str.lower())
     except ValueError:
         current_status = IssueStatus.OPEN
+    
+    current_stage_str = data.get("stage")
+    current_stage = IssueStage(current_stage_str.lower()) if current_stage_str else None
 
     # Logic: Status Update
     target_status = status if status else current_status
     
-    # Validation: For closing
-    effective_solution = solution.value if solution else data.get("solution")
+    # If status is changing, we don't default target_stage to current_stage
+    # because the new status might have different allowed stages.
+    # enforce_policy will handle setting the correct default stage for the new status.
+    if status and status != current_status:
+        target_stage = stage
+    else:
+        target_stage = stage if stage else current_stage
     
-    # Policy: Prevent Backlog -> Review
-    if stage == IssueStage.REVIEW and current_status == IssueStatus.BACKLOG:
-         raise ValueError(f"Lifecycle Policy: Cannot submit Backlog issue directly. Run `monoco issue pull {issue_id}` first.")
+    # Engine Validation
+    from .engine import get_engine
+    engine = get_engine()
+    
+    # Map solution string to enum if present
+    effective_solution = solution
+    if not effective_solution and data.get("solution"):
+        try:
+            effective_solution = IssueSolution(data.get("solution").lower())
+        except ValueError:
+            pass
+
+    # Use engine to validate the transition
+    engine.validate_transition(
+        from_status=current_status,
+        from_stage=current_stage,
+        to_status=target_status,
+        to_stage=target_stage,
+        solution=effective_solution
+    )
 
     if target_status == IssueStatus.CLOSED:
-        # Validator will check solution presence
-        current_data_stage = data.get('stage')
-        
-        # Policy: IMPLEMENTED requires REVIEW stage
-        if effective_solution == IssueSolution.IMPLEMENTED.value:
-            if current_data_stage != IssueStage.REVIEW.value:
-                raise ValueError(f"Lifecycle Policy: 'Implemented' issues must be submitted for review first.\nCurrent stage: {current_data_stage}\nAction: Run `monoco issue submit {issue_id}`.")
-
-     # Policy: No closing from DOING (General Safety)
-        if current_data_stage == IssueStage.DOING.value:
-             raise ValueError("Cannot close issue in progress (Doing). Please review (`monoco issue submit`) or stop (`monoco issue open`) first.")
-             
         # Policy: Dependencies must be closed
         dependencies_to_check = dependencies if dependencies is not None else data.get('dependencies', [])
         if dependencies_to_check:
@@ -415,7 +405,8 @@ def update_issue(
         
         # Enforce lifecycle policies (defaults, auto-corrections)
         # This ensures that when we update, we also fix invalid states (like Closed but not Done)
-        enforce_lifecycle_policy(updated_meta)
+        from .engine import get_engine
+        get_engine().enforce_policy(updated_meta)
 
         # Delegate to IssueValidator for static state validation
         # We need to construct the full content to validate body-dependent rules (like checkboxes)
