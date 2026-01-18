@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const issueTreeContainer = document.getElementById("issue-tree");
   const projectSelectorElement = document.getElementById(
     "project-selector",
-  ) as HTMLSelectElement;
+  ) as HTMLElement;
   const createViewContainer = document.getElementById("view-create");
 
   if (!issueTreeContainer || !projectSelectorElement || !createViewContainer) {
