@@ -5,17 +5,17 @@ type: epic
 status: closed
 stage: done
 title: Agent Environment Integration (Agent Native)
-created_at: '2026-01-15T14:43:34'
-opened_at: '2026-01-15T14:43:34'
-updated_at: '2026-01-15T17:10:50'
-closed_at: '2026-01-15T17:10:50'
+created_at: "2026-01-15T14:43:34"
+opened_at: "2026-01-15T14:43:34"
+updated_at: "2026-01-15T17:10:50"
+closed_at: "2026-01-15T17:10:50"
 solution: implemented
 dependencies: []
 related: []
 tags:
-- agent-native
-- integration
-- dx
+  - agent-native
+  - integration
+  - dx
 progress: 5/5
 files_count: 0
 ---
@@ -24,17 +24,17 @@ files_count: 0
 
 ## 背景 (Context)
 
-当前 Monoco 的 Agent 指引文档（如 `GEMINI.md`）和技能定义（`SKILL.md`）是静态的，依赖开发者手动复制维护。这导致：
+当前 Monoco 的 Agent 指引文档（如 `GEMINI.md`）和技能定义（`SKILL.md`）是静态的，依赖开发者手动复制维护。这导致:
 
-1. **维护成本高**：CLI 更新后，文档未能及时同步。
-2. **SSOT 缺失**：多级目录下的文档版本不一致，误导 Agent。
-3. **DX 割裂**：用户需要手动配置 Cursor Rules 或 VS Code Settings 才能获得最佳 Agent 体验。
+1. **维护成本高**: CLI 更新后，文档未能及时同步。
+2. **SSOT 缺失**: 多级目录下的文档版本不一致，误导 Agent。
+3. **DX 割裂**: 用户需要手动配置 Cursor Rules 或 VS Code Settings 才能获得最佳 Agent 体验。
 
-**核心理念**：如果一个工具要给 AI 使用，它必须具备**自适应环境注入 (Adaptive Environment Injection)** 能力，即主动管理其在 Agent 上下文中的呈现。
+**核心理念**: 如果一个工具要给 AI 使用，它必须具备**自适应环境注入 (Adaptive Environment Injection)** 能力，即主动管理其在 Agent 上下文中的呈现。
 
 ## 目标 (Objective)
 
-将 Monoco 升级为 **Agent Environment Manager (AEM)**，实现“零配置”的 Agent 环境集成：
+将 Monoco 升级为 **Agent Environment Manager (AEM)**，实现“零配置”的 Agent 环境集成:
 
 1. **环境感知 (Discovery)**: 自动识别当前环境使用的 Agent 框架（Cursor, Trae, Antigravity, Claude Code, Gemini CLI, Qwen Code）。
 2. **自动注入 (Auto-Injection)**: 将 Monoco 的核心规则（如 Issue 管理规范）自动注入到用户的 Prompt Context（如 `.cursorrules`）中。
@@ -43,7 +43,7 @@ files_count: 0
 
 ## 策略 (Strategy)
 
-采用 **"可插拔特征架构 (Pluggable Feature Architecture)"** 与 **"反转控制 (IoC)"** 模式：
+采用 **"可插拔特征架构 (Pluggable Feature Architecture)"** 与 **"反转控制 (IoC)"** 模式:
 
 1. **特征协议 (Feature Protocol)**: 定义标准化的 `MonocoFeature` 接口，暴露 `integrate()` (获取 Prompts/Skills) 等钩子。
 2. **核心总线 (Core Bus)**: 核心不再包含硬编码逻辑，而是遍历注册的 Feature 收集即时数据。
@@ -84,7 +84,7 @@ graph TD
 ### 3. 配置系统 (Configuration System)
 
 - **Feature**: 在 `.monoco/config.yaml` 中新增 `agent` 配置段。
-- **Logic**: 支持用户自定义集成参数，例如：
+- **Logic**: 支持用户自定义集成参数，例如:
   - `target`: 指定注入目标文件（如 `.cursorrules` 或 `.windsurfrules`）。
   - `framework`: 显式指定智能体框架类型。
   - `includes`: 允许用户选择性启用特定的 Feature 注入。
@@ -99,22 +99,22 @@ graph TD
 
 - [x] **核心改造 (Core)**: 支持 `sync` 接口（可写入项目或全局配置）与 `uninstall` 接口（删除对应配置）。
 - [x] **功能适配 (Feature)**: 各功能模块（Issue, Spike, I18n）完成改造，对外提供 System Prompts 和 Skills 接口。
-- [x] **配置增强 (Config)**: 配置文件添加“智能体集成”配置项，管理系统提示词路径与集成参数。_(注：配置管理本身的 Agent 适配已从本 Epic 移除，由 EPIC-0013 作为纯 CLI 功能维护)_
+- [x] **配置增强 (Config)**: 配置文件添加“智能体集成”配置项，管理系统提示词路径与集成参数。_(注: 配置管理本身的 Agent 适配已从本 Epic 移除，由 EPIC-0013 作为纯 CLI 功能维护)_
 - [x] **质量保证 (QA)**: 完善测试脚本，确保 `sync`（幂等的安装/更新）正常工作且不破坏用户数据，`uninstall` 清理彻底，且生成内容符合 Markdown Lint 规范。
 
 ## 总结 (Summary)
 
 本 Epic 成功实现了 Monoco 与主流 Agent 环境（Cursor, Claude, Gemini 等）的深度集成。
 
-**核心产出：**
+**核心产出: **
 
 1. **`monoco sync`**: 实现了 System Prompts 的全自动注入和 Skills 的跨框架分发。
 2. **多端适配**: 原生支持 5 类 Agent 框架环境。
 3. **SSOT**: 建立了基于 Feature 驱动的文档与技能分发体系。
 
-**变更说明：**
+**变更说明: **
 
-- **配置管理集成 (De-scoped)**：考虑到安全模型与 KISS 原则，决定不为 Agent 提供配置修改接口。配置管理相关功能收敛至 `EPIC-0013` 并在 CLI 侧完成实现。
+- **配置管理集成 (De-scoped)**: 考虑到安全模型与 KISS 原则，决定不为 Agent 提供配置修改接口。配置管理相关功能收敛至 `EPIC-0013` 并在 CLI 侧完成实现。
 
 ## Review Comments
 

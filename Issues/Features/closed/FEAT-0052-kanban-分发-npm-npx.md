@@ -21,11 +21,11 @@ tags: []
 
 ## Acceptance Criteria
 
-- [ ] **npx 启动**：运行 `npx @monoco-io/kanban` 能够启动一个轻量级 Web 服务并自动打开浏览器。
-- [ ] **静态分发**：NPM 包应包含 `webui` 的预构建静态资源，无需用户本地进行 `next build`。
-- [ ] **后端发现**：能够默认连接到 `http://localhost:3213` (Monoco 默认端口)，并支持通过参数修改。
-- [ ] **自动化发布**：Git Tag (`v*`) 触发自动发布至 NPM Registry。
-- [ ] **版本同步**：NPM 包版本与 Python Toolkit 版本保持一致。
+- [ ] **npx 启动**: 运行 `npx @monoco-io/kanban` 能够启动一个轻量级 Web 服务并自动打开浏览器。
+- [ ] **静态分发**: NPM 包应包含 `webui` 的预构建静态资源，无需用户本地进行 `next build`。
+- [ ] **后端发现**: 能够默认连接到 `http://localhost:3213` (Monoco 默认端口)，并支持通过参数修改。
+- [ ] **自动化发布**: Git Tag (`v*`) 触发自动发布至 NPM Registry。
+- [ ] **版本同步**: NPM 包版本与 Python Toolkit 版本保持一致。
 
 ## Technical Tasks
 
@@ -34,4 +34,4 @@ tags: []
 - [x] 编写轻量级 CLI 启动器 (使用 `sirv` 或 `express` 配合 `open`)。
 - [x] 创建 `.github/workflows/publish-npm.yml` 工作流并配置 NPM_TOKEN。
 - [x] 更新主项目文档，增加 `npx` 使用说明。
-- [x] 验证发布流程：创建 v0.1.0-npm 测试版本。
+- [x] 验证发布流程: 创建 v0.1.0-npm 测试版本。

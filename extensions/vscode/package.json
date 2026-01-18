@@ -71,6 +71,21 @@
       {
         "command": "monoco.bootstrap",
         "title": "Monoco: Install/Update Toolkit"
+      },
+      {
+        "command": "monoco.selectProject",
+        "title": "Select Project",
+        "icon": "$(folder)"
+      },
+      {
+        "command": "monoco.searchIssues",
+        "title": "Search Issues",
+        "icon": "$(search)"
+      },
+      {
+        "command": "monoco.refreshTreeView",
+        "title": "Refresh Issues",
+        "icon": "$(refresh)"
       }
     ],
     "viewsContainers": {
@@ -85,9 +100,31 @@
     "views": {
       "monoco-explorer": [
         {
+          "id": "monoco.issueTreeView",
+          "name": "Issues",
+          "icon": "$(list-unordered)",
+          "when": "config.monoco.useNativeTree != false"
+        },
+        {
+          "type": "webview",
+          "id": "monoco.issueFilterView",
+          "name": "Filters",
+          "icon": "$(filter)",
+          "when": "config.monoco.useNativeTree != false"
+        },
+        {
+          "type": "webview",
+          "id": "monoco.agentView",
+          "name": "Agents",
+          "icon": "$(hubot)",
+          "when": "config.monoco.useNativeTree != false"
+        },
+        {
           "type": "webview",
           "id": "monoco.kanbanView",
-          "name": "Project Board"
+          "name": "Project Board (Legacy)",
+          "icon": "$(layout-kanban)",
+          "when": "config.monoco.useNativeTree == false"
         }
       ]
     },
@@ -95,17 +132,17 @@
       "view/title": [
         {
           "command": "monoco.createIssue",
-          "when": "view == monoco.kanbanView",
+          "when": "view == monoco.kanbanView || view == monoco.issueTreeView",
           "group": "navigation@1"
         },
         {
           "command": "monoco.openSettings",
-          "when": "view == monoco.kanbanView",
+          "when": "view == monoco.kanbanView || view == monoco.issueTreeView",
           "group": "navigation@2"
         },
         {
           "command": "monoco.refreshEntry",
-          "when": "view == monoco.kanbanView",
+          "when": "view == monoco.kanbanView || view == monoco.issueTreeView",
           "group": "navigation@3"
         }
       ]
@@ -128,6 +165,21 @@
           "type": "boolean",
           "description": "Enable debug logging.",
           "default": false
+        },
+        "monoco.useNativeTree": {
+          "type": "boolean",
+          "description": "Use native TreeView instead of Webview for issue list (recommended for better drag & drop support).",
+          "default": true
+        },
+        "monoco.agent.defaultProvider": {
+          "type": "string",
+          "description": "Default AI agent provider.",
+          "default": "gemini"
+        },
+        "monoco.agent.actionProviders": {
+          "type": "object",
+          "description": "Map of action names to agent providers.",
+          "default": {}
         }
       }
     },

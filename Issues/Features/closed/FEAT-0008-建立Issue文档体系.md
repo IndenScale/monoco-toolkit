@@ -4,14 +4,14 @@ type: feature
 status: closed
 stage: Done
 title: 建立 Issue 系统使用文档体系 (Establish Issue Docs)
-created_at: '2026-01-09'
+created_at: "2026-01-09"
 dependencies: []
 related: []
 solution: implemented
 tags:
-- docs
-- i18n
-- issue
+  - docs
+  - i18n
+  - issue
 parent: EPIC-0002
 uid: 3a2bc7
 ---
@@ -29,7 +29,7 @@ Issue System 功能日益完善（包含 Create, Open, Close, Backlog, Scope, Li
 ## 验收标准 (Acceptance Criteria)
 
 1. **文档架构**: 在 `Toolkit/docs` 下建立标准的多语言目录结构（`zh/`, `en/`）。
-2. **核心内容**: 完成 Issue System 的用户手册，包含：
+2. **核心内容**: 完成 Issue System 的用户手册，包含:
    - 快速开始 (Quick Start)
    - 命令详解 (Command Reference)
    - 最佳实践 (Best Practices, 结合 SKILL.md)

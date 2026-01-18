@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: 实现标准化的 monoco config 命令
-created_at: '2026-01-15T14:29:26'
-opened_at: '2026-01-15T14:29:26'
-updated_at: '2026-01-15T14:32:50'
-closed_at: '2026-01-15T14:32:50'
+created_at: "2026-01-15T14:29:26"
+opened_at: "2026-01-15T14:29:26"
+updated_at: "2026-01-15T14:32:50"
+closed_at: "2026-01-15T14:32:50"
 parent: EPIC-0013
 solution: implemented
 dependencies: []
@@ -34,7 +34,7 @@ tags: []
     - 获取特定配置项的值（e.g., `monoco config get project.key`）。
 3.  **`monoco config set <key> <value>`**:
     - 支持修改 **Project Scope** (`./.monoco/config.yaml`) 或 **Global Scope** (`~/.monoco/config.yaml`)。
-    - **关键约束**：写入前必须通过 `MonocoConfig` Pydantic 模型的校验，防止写入非法配置。
+    - **关键约束**: 写入前必须通过 `MonocoConfig` Pydantic 模型的校验，防止写入非法配置。
 
 ## 验收标准 (Acceptance Criteria)
 

@@ -6,7 +6,7 @@ when:
   statusMatch: "open"
 ---
 你是一位资深软件架构师。
-你的任务是调查以下 Issue 的可行性和影响：
+你的任务是调查以下 Issue 的可行性和影响: 
 
 {{file}}
 

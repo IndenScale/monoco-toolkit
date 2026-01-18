@@ -5,10 +5,10 @@ type: epic
 status: closed
 stage: done
 title: 支持跨领域迁移与可配置化 Issue 系统
-created_at: '2026-01-17T07:55:00'
-opened_at: '2026-01-17T07:55:00'
-updated_at: '2026-01-17T09:26:04'
-closed_at: '2026-01-17T09:25:00'
+created_at: "2026-01-17T07:55:00"
+opened_at: "2026-01-17T07:55:00"
+updated_at: "2026-01-17T09:26:04"
+closed_at: "2026-01-17T09:25:00"
 solution: implemented
 dependencies: []
 related: []
@@ -46,9 +46,13 @@ files_count: 35
 - [x] Self-Review
 
 ## Delivery
+
 <!-- Monoco Auto Generated -->
+
 **Commits (1)**:
+
 - `ad26e9d` epic: close 15 (configurable issue)
 
 **Touched Files (1)**:
+
 - `Issues/Epics/open/EPIC-0015-support-cross-domain-migration-configurable-issue-.md`

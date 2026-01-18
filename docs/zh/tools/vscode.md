@@ -12,7 +12,7 @@ Monoco VS Code 扩展 (`monoco-vscode`) 是 Monoco Toolkit 的官方编辑器集
 
 - **实时诊断 (Diagnostics)**:
   - **Frontmatter 校验**: 检查 YAML 头部语法的正确性。
-  - **生命周期逻辑检查**: 强制执行业务规则（例如：当 `status: closed` 时，`stage` 必须为 `done`），防止无效的状态流转。
+  - **生命周期逻辑检查**: 强制执行业务规则（例如: 当 `status: closed` 时，`stage` 必须为 `done`），防止无效的状态流转。
 - **智能补全 (Auto-Completion)**:
   - 根据工作区索引，自动补全 Issue ID 引用。
   - 提示信息包含 Issue 的标题、类型和阶段。
@@ -42,7 +42,7 @@ Monoco VS Code 扩展 (`monoco-vscode`) 是 Monoco Toolkit 的官方编辑器集
 
 ## 架构设计 (Architecture)
 
-目前扩展处于 "Hybrid" 阶段，同时包含 LSP 和 Legacy Webview 逻辑：
+目前扩展处于 "Hybrid" 阶段，同时包含 LSP 和 Legacy Webview 逻辑:
 
 - **Client (`/client`)**:
   - 负责 VS Code UI 集成 (Webview, Commands)。

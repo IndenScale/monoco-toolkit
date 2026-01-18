@@ -68,10 +68,9 @@ _(取代了 Bug 概念)_
 
 ### 路径流转
 
-使用 `monoco issue`：
+使用 `monoco issue`:
 
 1. **Create**: `monoco issue create <type> --title "..."`
-
    - Params: `--parent <id>`, `--dependency <id>`, `--related <id>`, `--sprint <id>`, `--tags <tag>`
 
 2. **Transition**: `monoco issue open/close/backlog <id>`

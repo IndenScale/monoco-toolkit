@@ -9,7 +9,7 @@ description: 管理用于研究和学习的外部参考仓库。提供对精选�
 
 ## 概述
 
-Spike 功能允许你：
+Spike 功能允许你:
 
 - **添加外部仓库**作为只读参考
 - **同步仓库内容**到本地 `.references/` 目录
@@ -50,7 +50,7 @@ monoco spike list
 
 ## 配置
 
-Spike 仓库在 `.monoco/config.yaml` 中配置：
+Spike 仓库在 `.monoco/config.yaml` 中配置:
 
 ```yaml
 project:

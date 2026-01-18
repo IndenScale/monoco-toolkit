@@ -4,17 +4,17 @@ type: epic
 status: closed
 stage: done
 title: Monoco 服务运行时 (Monoco Server Runtime)
-created_at: '2026-01-12T00:00:00'
-updated_at: '2026-01-15T13:42:54'
-closed_at: '2026-01-15T13:42:54'
+created_at: "2026-01-12T00:00:00"
+updated_at: "2026-01-15T13:42:54"
+closed_at: "2026-01-15T13:42:54"
 solution: implemented
 dependencies: []
 related: []
 tags:
-- server
-- daemon
-- sse
-- infrastructure
+  - server
+  - daemon
+  - sse
+  - infrastructure
 progress: 3/3
 files_count: 0
 uid: 598eba

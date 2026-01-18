@@ -21,13 +21,13 @@ tags: []
 
 ## 验收标准 (Acceptance Criteria)
 
-1.  **动态渲染**：编辑器显示与 Issue 元数据中 `actions` 字段对应的特定 CodeLens 动作（Start, Develop, Submit 等）。
-2.  **命令绑定**：点击这些动作将触发正确的底层 CLI 命令（例如 Develop 触发 `monoco agent run ...`，Submit 触发 `monoco issue submit`）。
-3.  **移除旧代码**：移除旧的通用的 "Agent Actions" CodeLens。
-4.  **图标支持**：动作应渲染其指定的图标（例如 `$(check)`）。
+1.  **动态渲染**: 编辑器显示与 Issue 元数据中 `actions` 字段对应的特定 CodeLens 动作（Start, Develop, Submit 等）。
+2.  **命令绑定**: 点击这些动作将触发正确的底层 CLI 命令（例如 Develop 触发 `monoco agent run ...`，Submit 触发 `monoco issue submit`）。
+3.  **移除旧代码**: 移除旧的通用的 "Agent Actions" CodeLens。
+4.  **图标支持**: 动作应渲染其指定的图标（例如 `$(check)`）。
 
 ## 技术任务 (Technical Tasks)
 
-- [x] **数据获取**：更新 `ActionService.ts` 以从 `monoco issue scope`（或文件解析）输出中检索可用动作。
-- [x] **Provider 更新**：重构 `IssueCodeLensProvider.ts` 以遍历 `actions` 列表并生成单独的 `CodeLens` 对象。
-- [x] **命令处理程序**：确保 `monoco.runAction` 或新的处理程序能够执行 CLI 返回的特定命令/参数。
+- [x] **数据获取**: 更新 `ActionService.ts` 以从 `monoco issue scope`（或文件解析）输出中检索可用动作。
+- [x] **Provider 更新**: 重构 `IssueCodeLensProvider.ts` 以遍历 `actions` 列表并生成单独的 `CodeLens` 对象。
+- [x] **命令处理程序**: 确保 `monoco.runAction` 或新的处理程序能够执行 CLI 返回的特定命令/参数。

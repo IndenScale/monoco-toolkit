@@ -4,10 +4,10 @@ type: fix
 status: closed
 stage: done
 title: 增强 monoco issue create 以支持缺失参数和输出 (Enhance monoco issue create)
-created_at: '2026-01-10T20:40:55.417933'
-opened_at: '2026-01-10T20:40:55.417933'
-updated_at: '2026-01-13T08:37:54.758332'
-closed_at: '2026-01-10T20:46:20.951561'
+created_at: "2026-01-10T20:40:55.417933"
+opened_at: "2026-01-10T20:40:55.417933"
+updated_at: "2026-01-13T08:37:54.758332"
+closed_at: "2026-01-10T20:46:20.951561"
 parent: EPIC-0002
 solution: implemented
 dependencies: []

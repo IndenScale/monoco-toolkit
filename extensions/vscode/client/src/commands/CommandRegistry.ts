@@ -7,15 +7,19 @@ import * as vscode from "vscode";
 import { IssueCommands } from "./IssueCommands";
 import { ActionCommands } from "./ActionCommands";
 import { SettingsCommands } from "./SettingsCommands";
+import { TreeViewCommands } from "./TreeViewCommands";
 import { KanbanProvider } from "../webview/KanbanProvider";
 import { ActionService } from "../services/ActionService";
 import { AgentStateService } from "../services/AgentStateService";
 import { IssueFieldControlProvider } from "../providers/IssueFieldControlProvider";
+import { IssueTreeProvider } from "../views/IssueTreeProvider";
+import { LanguageClientManager } from "../lsp/LanguageClientManager";
 
 export class CommandRegistry {
   private issueCommands: IssueCommands;
   private actionCommands: ActionCommands;
   private settingsCommands: SettingsCommands;
+  private treeViewCommands?: TreeViewCommands;
 
   constructor(
     context: vscode.ExtensionContext,
@@ -26,6 +30,8 @@ export class CommandRegistry {
       issueFieldControl: IssueFieldControlProvider;
       runMonoco: (args: string[], cwd?: string) => Promise<string>;
       checkDependencies: () => Promise<void>;
+      treeProvider?: IssueTreeProvider;
+      lspManager?: LanguageClientManager;
     },
   ) {
     this.issueCommands = new IssueCommands(
@@ -47,6 +53,15 @@ export class CommandRegistry {
       dependencies.checkDependencies,
       dependencies.kanbanProvider,
     );
+
+    // Initialize TreeView commands if provider is available
+    if (dependencies.treeProvider && dependencies.lspManager) {
+      this.treeViewCommands = new TreeViewCommands(
+        context,
+        dependencies.treeProvider,
+        dependencies.lspManager,
+      );
+    }
   }
 
   /**
@@ -56,5 +71,6 @@ export class CommandRegistry {
     this.issueCommands.registerAll();
     this.actionCommands.registerAll();
     this.settingsCommands.registerAll();
+    this.treeViewCommands?.registerAll();
   }
 }
