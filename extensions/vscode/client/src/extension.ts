@@ -14,9 +14,12 @@ import { bootstrapActions } from "./services/ActionBootstrap";
 
 import { LanguageClientManager } from "./lsp/LanguageClientManager";
 import { KanbanProvider } from "./webview/KanbanProvider";
+import { IssueTreeProvider } from "./views/IssueTreeProvider";
 import { ProviderRegistry } from "./providers/ProviderRegistry";
 import { CommandRegistry } from "./commands/CommandRegistry";
 import { VIEW_TYPES } from "../../shared/constants";
+import { IssueFilterWebviewProvider } from "./views/IssueFilterWebviewProvider";
+import { AgentWebviewProvider } from "./views/AgentWebviewProvider";
 
 const execAsync = promisify(exec);
 let outputChannel: vscode.OutputChannel;
@@ -28,15 +31,6 @@ let lspManager: LanguageClientManager;
 async function runMonoco(args: string[], cwd?: string): Promise<string> {
   const executable = await resolveMonocoExecutable();
 
-  // Escape args
-  const escapedArgs = args.map((a) => {
-    if (/^[\w\d\-_]+$/.test(a)) {
-      return a;
-    }
-    return `"${a.replace(/"/g, '\\"')}"`;
-  });
-
-  const cmd = `${executable} ${escapedArgs.join(" ")}`;
   const workspaceRoot =
     cwd || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
@@ -44,6 +38,18 @@ async function runMonoco(args: string[], cwd?: string): Promise<string> {
     throw new Error("No workspace root found");
   }
 
+  // Inject --root parameter for strict context enforcement (FIX-0009)
+  const finalArgs = ["--root", workspaceRoot, ...args];
+
+  // Escape args
+  const escapedArgs = finalArgs.map((a) => {
+    if (/^[\w\d\-_]+$/.test(a)) {
+      return a;
+    }
+    return `"${a.replace(/"/g, '\\"')}"`;
+  });
+
+  const cmd = `${executable} ${escapedArgs.join(" ")}`;
   const result = await execAsync(cmd, { cwd: workspaceRoot });
   return result.stdout.trim();
 }
@@ -143,6 +149,100 @@ export async function activate(context: vscode.ExtensionContext) {
     outputChannel,
   );
 
+  // 5.1 Initialize Native TreeView Provider
+  const issueTreeProvider = new IssueTreeProvider();
+  const treeView = vscode.window.createTreeView("monoco.issueTreeView", {
+    treeDataProvider: issueTreeProvider,
+    showCollapseAll: true,
+    canSelectMany: false,
+    dragAndDropController: issueTreeProvider,
+  });
+  context.subscriptions.push(treeView);
+
+  // 5.2 Initialize Filter Webview Provider
+  const issueFilterProvider = new IssueFilterWebviewProvider(
+    context.extensionUri,
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      "monoco.issueFilterView",
+      issueFilterProvider,
+    ),
+  );
+
+  // 5.3 Initialize Agent Webview Provider
+  const agentWebviewProvider = new AgentWebviewProvider(
+    context.extensionUri,
+    agentStateService,
+    actionService,
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      "monoco.agentView",
+      agentWebviewProvider,
+    ),
+  );
+
+  // Handle filter selection from Webview
+  issueFilterProvider.onDidUpdateFilter((state: any) => {
+    issueTreeProvider.setFilter(state);
+  });
+
+  // Register command to open issue and expand tree
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "monoco.openIssueAndExpand",
+      async (item) => {
+        if (item && item.issue && item.issue.path) {
+          // 1. Open document
+          await vscode.commands.executeCommand(
+            "vscode.open",
+            vscode.Uri.file(item.issue.path),
+          );
+          // 2. Expand in tree
+          try {
+            await treeView.reveal(item, {
+              expand: true,
+              focus: false,
+              select: true,
+            });
+          } catch (e) {
+            // Ignore reveal errors (e.g. if item not visible)
+          }
+        }
+      },
+    ),
+  );
+
+  // Helper function to fetch and update TreeView data
+  const updateTreeViewData = async () => {
+    try {
+      const client = lspManager.getClient();
+      if (!client) {
+        return;
+      }
+
+      const issues: any[] = await lspManager.sendRequest("monoco/getAllIssues");
+      issueTreeProvider.updateIssues(issues);
+
+      // Also get metadata for filters
+      const metadata: any = await lspManager.sendRequest("monoco/getMetadata");
+      if (metadata && metadata.projects) {
+        issueFilterProvider.setProjects(
+          metadata.projects.map((p: any) => p.id),
+        );
+      }
+    } catch (e) {
+      // Silently fail if LSP is not ready
+    }
+  };
+
+  // Initial data load and periodic refresh
+  setTimeout(() => {
+    updateTreeViewData();
+    setInterval(updateTreeViewData, 10000); // Refresh every 10s
+  }, 2000); // Wait 2s for LSP to be ready
+
   // Background Initialization to prevent blocking activation
   vscode.window.withProgress(
     {
@@ -173,6 +273,8 @@ export async function activate(context: vscode.ExtensionContext) {
     issueFieldControl,
     runMonoco,
     checkDependencies,
+    treeProvider: issueTreeProvider,
+    lspManager,
   });
   commandRegistry.registerAll();
 

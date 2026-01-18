@@ -4,9 +4,9 @@ type: feature
 status: closed
 stage: done
 title: VS Code 扩展与 Agent 状态的集成
-created_at: '2026-01-15T23:19:38'
-updated_at: '2026-01-15T23:19:44'
-closed_at: '2026-01-15T23:19:44'
+created_at: "2026-01-15T23:19:38"
+updated_at: "2026-01-15T23:19:44"
+closed_at: "2026-01-15T23:19:44"
 parent: EPIC-0014
 solution: implemented
 dependencies: []
@@ -40,7 +40,7 @@ Toolkit 已经实现了 Agent 执行层 (`monoco.core.agent`)，它通过 `monoc
 
 ### 1. 状态服务 (State Service)
 
-用 TypeScript 实现 `AgentStateService`：
+用 TypeScript 实现 `AgentStateService`:
 
 ```typescript
 interface AgentState {
@@ -63,7 +63,7 @@ class AgentStateService {
 
 ### 2. 上下文键 (Context Keys)
 
-设置 VS Code Context Keys 供 `package.json` 菜单使用：
+设置 VS Code Context Keys 供 `package.json` 菜单使用:
 
 - `monoco:agentAvailable`: 如果任一 provider 可用则为 true。
 - `monoco:geminiAvailable`: 如果 gemini 可用则为 true。
@@ -71,7 +71,7 @@ class AgentStateService {
 
 ### 3. UI 提示 (UI Hints)
 
-如果用户尝试运行 Agent 命令但 `agentAvailable` 为 false，显示 toast 提示：
+如果用户尝试运行 Agent 命令但 `agentAvailable` 为 false，显示 toast 提示:
 "Agent 环境未就绪。请在终端运行 `monoco doctor`。"
 
 ## Acceptance Criteria

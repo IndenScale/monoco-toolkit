@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: Workspace 内跨项目引用互操作性
-created_at: '2026-01-13T10:36:19'
-opened_at: '2026-01-13T12:25:00'
-updated_at: '2026-01-13T12:43:34'
-closed_at: '2026-01-13T12:43:34'
+created_at: "2026-01-13T10:36:19"
+opened_at: "2026-01-13T12:25:00"
+updated_at: "2026-01-13T12:43:34"
+closed_at: "2026-01-13T12:43:34"
 parent: EPIC-0001
 solution: implemented
 dependencies: []

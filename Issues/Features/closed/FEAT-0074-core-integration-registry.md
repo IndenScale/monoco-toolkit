@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: Core Integration Registry
-created_at: '2026-01-15T16:32:44'
-opened_at: '2026-01-15T16:32:44'
-updated_at: '2026-01-15T17:03:45'
-closed_at: '2026-01-15T17:03:45'
+created_at: "2026-01-15T16:32:44"
+opened_at: "2026-01-15T16:32:44"
+updated_at: "2026-01-15T17:03:45"
+closed_at: "2026-01-15T17:03:45"
 solution: implemented
 dependencies: []
 related: []
@@ -21,7 +21,7 @@ tags: []
 
 随着 Monoco 支持的 Agent 框架日益增多（Cursor, Claude, Gemini, Qwen, Antigravity），各框架的配置文件路径（如 `.cursorrules`, `GEMINI.md`）和技能目录路径（如 `.cursor/skills`, `.gemini/skills`）目前在代码中处于硬编码或分散状态，缺乏统一管理。
 
-这导致：
+这导致:
 
 1. **维护困难**: 新增支持一个框架需要修改多处代码。
 2. **配置僵化**: 用户无法轻易覆盖默认路径。
@@ -69,7 +69,6 @@ tags: []
 ### 已完成的工作
 
 1. **核心模块** (`monoco/core/integrations.py`):
-
    - 定义了 `AgentIntegration` Pydantic 模型
    - 创建了包含 5 个主流框架的 `DEFAULT_INTEGRATIONS` 注册表
    - 实现了 `get_integration()` 函数,支持配置覆盖
@@ -78,17 +77,14 @@ tags: []
    - 实现了 `get_active_integrations()` 函数,结合检测和配置
 
 2. **配置支持** (`monoco/core/config.py`):
-
    - 在 `AgentConfig` 中添加了 `integrations` 字段
    - 支持用户通过 `.monoco/config.yaml` 自定义集成配置
 
 3. **代码重构** (`monoco/core/sync.py`):
-
    - 标记硬编码的默认文件列表为 Deprecated
    - 添加 TODO 注释,指向集成注册表的使用
 
 4. **测试覆盖** (`tests/test_integrations.py`):
-
    - 创建了完整的单元测试套件
    - 覆盖所有核心功能和边界情况
 

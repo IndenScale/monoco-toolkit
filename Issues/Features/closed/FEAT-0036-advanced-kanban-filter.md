@@ -4,10 +4,10 @@ type: feature
 status: closed
 stage: done
 title: Advanced Kanban Filter
-created_at: '2026-01-13T08:43:32.369535'
-opened_at: '2026-01-13T08:43:32.369535'
-updated_at: '2026-01-13T09:26:20.031330'
-closed_at: '2026-01-13T09:26:20.031367'
+created_at: "2026-01-13T08:43:32.369535"
+opened_at: "2026-01-13T08:43:32.369535"
+updated_at: "2026-01-13T09:26:20.031330"
+closed_at: "2026-01-13T09:26:20.031367"
 solution: implemented
 dependencies: []
 related: []
@@ -30,7 +30,7 @@ uid: e64f42
   - [x] 支持排除项 (例如 `-feat`): 条目**必须不包含**此词。
   - [x] 支持短语项 (例如 `"login error"`): 条目**必须包含**此短语。
   - 逻辑为隐式 `AND`。
-- [x] **全面范围**: 搜索适用于所有字段，包括：
+- [x] **全面范围**: 搜索适用于所有字段，包括:
   - [x] ID
   - [x] 标题 (Title)
   - [x] 描述 (Description)。

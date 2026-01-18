@@ -48,21 +48,18 @@ Toolkit 守护进程负责维护状态流转的规则与自动化。状态机不
 ### 核心流转 (Transitions)
 
 0. **Create (创建 - 思考热启动)**
-
    - _Default Action_: `monoco issue create`
    - _Physical_: 直接进入 `open/`
    - _Logical_: `stage` -> `todo`
    - _Optional_: `monoco issue create --backlog` -> 进入 `backlog/`
 
 1. **Start (开始)**
-
    - _Action_: `monoco issue start <id>`
    - _Physical_: `backlog/` -> `open/` (如果还在 Backlog)
    - _Logical_: `stage` -> `doing`
    - _Side Effect_: 自动切出/创建 git 分支。
 
 2. **Review (提测)**
-
    - _Action_: `monoco issue review <id>`
    - _Physical_: 不变 (`open/`)
    - _Logical_: `stage` -> `review`
@@ -75,10 +72,10 @@ Toolkit 守护进程负责维护状态流转的规则与自动化。状态机不
 
 ### 守卫条件 (Guard Conditions)
 
-状态机包含软性守卫 (Soft Guards)，用于辅助开发者保持最佳实践：
+状态机包含软性守卫 (Soft Guards)，用于辅助开发者保持最佳实践:
 
 - **WIP Guard**: 限制 `In Progress` 的并行数量 (尽管是软限制)。
-- **Dirty Guard**: 尝试从 `Doing` 转入 `Review` 时，若检测到未提交的代码 (Dirty Worktree)，发出警告："Did you forget to commit?"
+- **Dirty Guard**: 尝试从 `Doing` 转入 `Review` 时，若检测到未提交的代码 (Dirty Worktree)，发出警告: "Did you forget to commit?"
 
 ## 4. 可视化 (Visualization)
 

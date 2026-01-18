@@ -4,10 +4,10 @@ type: feature
 status: closed
 stage: done
 title: CLI Advanced Issue Query
-created_at: '2026-01-13T08:55:29.551568'
-opened_at: '2026-01-13T08:55:29.551568'
-updated_at: '2026-01-13T09:26:20.225208'
-closed_at: '2026-01-13T09:26:20.225293'
+created_at: "2026-01-13T08:55:29.551568"
+opened_at: "2026-01-13T08:55:29.551568"
+updated_at: "2026-01-13T09:26:20.225208"
+closed_at: "2026-01-13T09:26:20.225293"
 solution: implemented
 dependencies: []
 related: []

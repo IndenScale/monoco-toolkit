@@ -5,10 +5,10 @@ type: chore
 status: closed
 stage: done
 title: 重构配置加载以统一上下文
-created_at: '2026-01-15T12:55:25'
-opened_at: '2026-01-15T12:55:25'
-updated_at: '2026-01-15T13:06:28'
-closed_at: '2026-01-15T13:06:28'
+created_at: "2026-01-15T12:55:25"
+opened_at: "2026-01-15T12:55:25"
+updated_at: "2026-01-15T13:06:28"
+closed_at: "2026-01-15T13:06:28"
 solution: implemented
 dependencies: []
 related: []
@@ -21,7 +21,7 @@ tags: []
 
 目前，系统同时支持 `monoco.yaml`（在文件根目录）和 `.monoco/config.yaml`。
 这种双重支持造成了歧义和维护开销。
-**决定**：我们将标准化使用 **`.monoco/` 目录** 作为 Monoco 上下文的唯一标识符。
+**决定**: 我们将标准化使用 **`.monoco/` 目录** 作为 Monoco 上下文的唯一标识符。
 
 ## 目标
 
@@ -34,9 +34,9 @@ EPIC-0013
 
 ## 技术任务
 
-- [x] **更新配置加载器**：修改 `monoco.core.config.py` 以停止查找 `monoco.yaml`。
-- [x] **更新工作区扫描器**：修改 `monoco.core.workspace.py`（以及任何 `ProjectManager` 逻辑）仅通过 `.monoco/` 目录的存在来识别项目。
-- [x] **迁移工具（可选）**：添加逻辑片段，如果找到 `monoco.yaml` 则警告用户并建议移动它。
+- [x] **更新配置加载器**: 修改 `monoco.core.config.py` 以停止查找 `monoco.yaml`。
+- [x] **更新工作区扫描器**: 修改 `monoco.core.workspace.py`（以及任何 `ProjectManager` 逻辑）仅通过 `.monoco/` 目录的存在来识别项目。
+- [x] **迁移工具（可选）**: 添加逻辑片段，如果找到 `monoco.yaml` 则警告用户并建议移动它。
 
 ## 验收标准
 

@@ -10,7 +10,7 @@ Monoco Kanban 是 Monoco 生态系统的图形化客户端。它旨在为基于 
 
 ## 文档导航
 
-请按顺序阅读以下文档以理解设计决策：
+请按顺序阅读以下文档以理解设计决策:
 
 1.  [**产品愿景**](docs/zh/00-vision.md): 为什么我们需要一个独立的客户端？它解决了什么问题？
 2.  [**技术架构**](docs/zh/01-architecture.md): 基于 Tauri + React 的 Monorepo 架构设计。

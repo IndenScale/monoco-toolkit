@@ -28,7 +28,7 @@ Monoco Kanban 采用 **"物理层 + 策略层"** 的双层权限模型，旨在�
 
 **机制**: `SaaS Account + RBAC as Code`
 
-当需要更细粒度的权限控制时（例如：实习生只能评论，不能移动卡片），通过 SaaS 层叠加策略。
+当需要更细粒度的权限控制时（例如: 实习生只能评论，不能移动卡片），通过 SaaS 层叠加策略。
 
 - **身份绑定**: 用户在 Monoco SaaS 登录（GitHub/Google），并验证其 Git Email 所有权。
 - **策略文件**: 权限规则存储在代码库中（例如 `.monoco/policy.yaml`），受 Git 版本控制。

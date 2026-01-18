@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: 社区健康文件
-created_at: '2026-01-13T13:26:36'
-opened_at: '2026-01-13T13:26:36'
-updated_at: '2026-01-13T13:27:54'
-closed_at: '2026-01-13T13:27:54'
+created_at: "2026-01-13T13:26:36"
+opened_at: "2026-01-13T13:26:36"
+updated_at: "2026-01-13T13:27:54"
+closed_at: "2026-01-13T13:27:54"
 parent: EPIC-0008
 solution: implemented
 dependencies: []

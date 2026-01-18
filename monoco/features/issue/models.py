@@ -127,6 +127,22 @@ class IssueMetadata(BaseModel):
     @classmethod
     def normalize_fields(cls, v: Any) -> Any:
         if isinstance(v, dict):
+            # Handle common capitalization variations for robustness
+            field_map = {
+                "ID": "id",
+                "Type": "type",
+                "Status": "status",
+                "Stage": "stage",
+                "Title": "title",
+                "Parent": "parent",
+                "Solution": "solution",
+                "Sprint": "sprint",
+            }
+            for old_k, new_k in field_map.items():
+                if old_k in v and new_k not in v:
+                    v[new_k] = v[old_k] # Don't pop yet to avoid mutation issues if used elsewhere, or pop if safe.
+                    # Pydantic v2 mode='before' is usually a copy if we want to be safe, but let's just add it.
+
             # Normalize type and status to lowercase for compatibility
             if "type" in v and isinstance(v["type"], str):
                 v["type"] = v["type"].lower()

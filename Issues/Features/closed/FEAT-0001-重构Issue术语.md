@@ -9,10 +9,10 @@ solution: implemented
 dependencies: []
 related: []
 tags:
-- refactor
-- agent-native
+  - refactor
+  - agent-native
 parent: EPIC-0003
-uid: '063766'
+uid: "063766"
 ---
 
 ## FEAT-0001: 重构 Issue 术语为原生代理语义 (Refactor Issue Terminology)
@@ -27,12 +27,12 @@ uid: '063766'
 
 ## 术语映射 (Terminology Mapping)
 
-| 旧术语 | 新术语 | ID 前缀 | 目录 |
-| :---- | :---------- | :-------- | :---------- |
-| Epic | **Epic** | `EPIC-` | `Epics/` |
-| Story | **Feature** | `FEAT-` | `Features/` |
-| Task | **Chore** | `CHORE-` | `Chores/` |
-| Bug | **Fix** | `FIX-` | `Fixes/` |
+| 旧术语 | 新术语      | ID 前缀  | 目录        |
+| :----- | :---------- | :------- | :---------- |
+| Epic   | **Epic**    | `EPIC-`  | `Epics/`    |
+| Story  | **Feature** | `FEAT-`  | `Features/` |
+| Task   | **Chore**   | `CHORE-` | `Chores/`   |
+| Bug    | **Fix**     | `FIX-`   | `Fixes/`    |
 
 ## 验收标准 (Acceptance Criteria)
 
@@ -48,10 +48,10 @@ uid: '063766'
   - [x] 更新 `toolkit/monoco/features/issue/commands.py` 中的 CLI 命令以接受新类型。
   - [x] 更新 Lint 逻辑以识别新目录结构。
 - [x] **数据迁移**
-  - [x] 重命名目录：`Epics`->`Goals`, `Stories`->`Features`, `Tasks`->`Chores`, `Bugs`->`Fixes`。
-  - [x] 重命名文件：更改前缀（例如 `FEAT-` -> `FEAT-`）。
-  - [x] 批量更新文件内容：将 `type: feature` 替换为 `type: feature` 等。
-  - [x] 批量更新引用：更新双括号链接 `[[FEAT-xx]]` -> `[[FEAT-xx]]`。
+  - [x] 重命名目录: `Epics`->`Goals`, `Stories`->`Features`, `Tasks`->`Chores`, `Bugs`->`Fixes`。
+  - [x] 重命名文件: 更改前缀（例如 `FEAT-` -> `FEAT-`）。
+  - [x] 批量更新文件内容: 将 `type: feature` 替换为 `type: feature` 等。
+  - [x] 批量更新引用: 更新双括号链接 `[[FEAT-xx]]` -> `[[FEAT-xx]]`。
 - [x] **文档**
   - [x] 重写 `Toolkit/skills/issues-management/SKILL.md` 以反映新本体论。
 

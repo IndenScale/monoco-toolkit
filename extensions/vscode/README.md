@@ -13,23 +13,30 @@
 ## ✨ Features
 
 ### 1. Visual Kanban Board
+
 Manage your project's heartbeat without leaving VS Code. The **Monoco Cockpit** provides a real-time Kanban view of your issues.
+
 - **Drag & Drop**: Move tasks between Todo, Doing, Review, and Done.
 - **Filtering**: Quickly filter by Epics, Features, Chores, or Bugs.
 - **One-Click Navigation**: Click any card to jump directly to the underlying Markdown file.
 
 ### 2. Intelligent Markdown Editing (LSP)
+
 Monoco uses a dedicated **Language Server** to treat your Issue Markdown files as first-class citizens.
+
 - **Diagnostics**: Get real-time error reporting for invalid frontmatter, lifecycle violations (e.g., closing an issue without completing it), and schema errors.
 - **Auto-Completion**: Type `#` to trigger intelligent suggestions for Issue IDs, referencing other tasks instantly.
 - **Go to Definition**: `Ctrl+Click` (or `Cmd+Click`) on any Issue ID to navigate to its definition.
 
 ### 3. Seamless Agent Orchestration
+
 Execute Monoco Agent skills and SOPs directly from the editor.
+
 - **Action Discovery**: Browses available actions defined in your project.
 - **Context-Aware**: Agents are aware of your current workspace context.
 
 ### 4. Zero-Config Runtime
+
 - **Auto-Daemon**: The extension automatically detects and launches the `monoco serve` daemon if it's not running.
 - **Project Detection**: Automatically identifies Monoco projects based on `.monoco` configuration.
 
@@ -46,11 +53,11 @@ Execute Monoco Agent skills and SOPs directly from the editor.
 
 You can customize the extension via VS Code Settings (`Ctrl+,`):
 
-| Setting | Default | Description |
-| :--- | :--- | :--- |
-| `monoco.apiBaseUrl` | `http://127.0.0.1:8642/api/v1` | URL for the Monoco Daemon API. |
-| `monoco.webUrl` | `http://127.0.0.1:8642` | URL for the full Web UI. |
-| `monoco.executablePath` | `monoco` | Path to the `monoco` CLI executable. |
+| Setting                 | Default                        | Description                          |
+| :---------------------- | :----------------------------- | :----------------------------------- |
+| `monoco.apiBaseUrl`     | `http://127.0.0.1:8642/api/v1` | URL for the Monoco Daemon API.       |
+| `monoco.webUrl`         | `http://127.0.0.1:8642`        | URL for the full Web UI.             |
+| `monoco.executablePath` | `monoco`                       | Path to the `monoco` CLI executable. |
 
 ## 📦 Requirements
 
@@ -64,12 +71,14 @@ You can customize the extension via VS Code Settings (`Ctrl+,`):
 **Monoco VS Code 扩展** 为您的开发工作流带来原生的看板管理与 AI 智能体编排体验。
 
 ### 主要功能
+
 - **可视化看板**: 在侧边栏直接管理 Epic、Feature 和 Bug，支持拖拽流转状态。
 - **智能编辑 (LSP)**: 提供 Markdown 文件的语法检查、生命周期校验和 ID 自动补全。
 - **一键跳转**: 点击 Issue ID 即可跳转到对应文件。
 - **零配置**: 自动启动后台守护进程，开箱即用。
 
 ### 快速开始
+
 1. 安装本插件。
 2. 打开包含 `.monoco` 目录的项目文件夹。
 3. 点击侧边栏的 Monoco 图标即可开启看板。

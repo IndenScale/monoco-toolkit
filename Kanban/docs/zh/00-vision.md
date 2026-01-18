@@ -2,7 +2,7 @@
 
 ## 1. 背景与痛点
 
-Monoco 已经在底层实现了强大的 **"Consensus as Code"** 基础设施（Typedown, Chassis, Toolkit）。然而，目前的用户交互主要依赖 CLI (`monoco issue`) 和纯文本编辑。这带来了以下问题：
+Monoco 已经在底层实现了强大的 **"Consensus as Code"** 基础设施（Typedown, Chassis, Toolkit）。然而，目前的用户交互主要依赖 CLI (`monoco issue`) 和纯文本编辑。这带来了以下问题:
 
 - **门槛过高**: 对于非技术人员（PM, Designer），通过 CLI 管理任务是不现实的。
 - **缺乏全景图**: 纯文本难以直观展示看板（Kanban）、甘特图（Gantt）或冲刺进度（Burn-down）。

@@ -4,7 +4,7 @@ type: feature
 status: closed
 stage: Done
 title: 建立 Spike 系统使用文档体系 (Establish Spike Docs)
-created_at: '2026-01-09'
+created_at: "2026-01-09"
 dependencies: []
 related: []
 solution: implemented
@@ -26,7 +26,7 @@ uid: e6fd0b
 ## 验收标准 (Acceptance Criteria)
 
 1. **文档架构**: 在 `Toolkit/docs` 下建立标准的多语言目录结构（`zh/spike/`, `en/spike/`）。
-2. **核心内容**: 完成 Spike System 的用户手册，涵盖：
+2. **核心内容**: 完成 Spike System 的用户手册，涵盖:
    - 核心概念 (Spike, Repo Management)
    - 命令详解 (`init`, `add`, `remove`, `sync`, `list`)
    - 最佳实践
