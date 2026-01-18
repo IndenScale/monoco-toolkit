@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: Spike 内容清洗与元数据增强
-created_at: '2026-01-15T13:35:38'
-opened_at: '2026-01-15T13:35:38'
-updated_at: '2026-01-15T13:37:41'
-closed_at: '2026-01-15T13:37:41'
+created_at: "2026-01-15T13:35:38"
+opened_at: "2026-01-15T13:35:38"
+updated_at: "2026-01-15T13:37:41"
+closed_at: "2026-01-15T13:37:41"
 parent: EPIC-0003
 solution: cancelled
 dependencies: []
@@ -24,10 +24,10 @@ tags: []
 
 ## Acceptance Criteria
 
-1. **内容提取**：集成 `trafilatura` 或类似库，准确提取网页正文。
-2. **格式转换**：输出纯净的 Markdown，保留标题结构和列表。
-3. **元数据持久化**：在导出的 Markdown 文件 Front Matter 中包含 `source_url`, `captured_at`, `title` 等信息。
-4. **CLI 集成**：`monoco spike add` 命令支持处理网页 URL 并自动进行清洗。
+1. **内容提取**: 集成 `trafilatura` 或类似库，准确提取网页正文。
+2. **格式转换**: 输出纯净的 Markdown，保留标题结构和列表。
+3. **元数据持久化**: 在导出的 Markdown 文件 Front Matter 中包含 `source_url`, `captured_at`, `title` 等信息。
+4. **CLI 集成**: `monoco spike add` 命令支持处理网页 URL 并自动进行清洗。
 
 ## Technical Tasks
 

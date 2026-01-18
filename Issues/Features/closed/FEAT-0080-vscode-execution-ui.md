@@ -50,7 +50,7 @@ author: Monoco
   - [x] 点击后弹出 QuickPick，列出适用于当前文件类型的 Executions。
 - [x] **Injection**:
   - [x] 选择 Action 后，支持弹出 InputBox 让用户输入额外指令（User Instruction）。
-  - [x] 最终组装命令：`monoco agent run <task> <current_file> --instruction "..."`
+  - [x] 最终组装命令: `monoco agent run <task> <current_file> --instruction "..."`
 
 ## 技术方案 (Technical Design)
 

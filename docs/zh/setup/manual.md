@@ -45,7 +45,7 @@ core:
   - **Project Name**: 项目名称。
   - **Project Key**: 3-4 位大写字母，作为 Issue ID 的前缀 (e.g., `MON-123`)。Monoco 会根据项目名自动推荐 Key。
 
-生成的配置文件示例：
+生成的配置文件示例:
 
 ```yaml
 project:
@@ -59,7 +59,7 @@ paths:
 
 ### 3. 脚手架与资源注入 (Scaffolding & Injection)
 
-`monoco init` 会调用各个功能模块 (Features) 的 `init` 方法，执行以下操作：
+`monoco init` 会调用各个功能模块 (Features) 的 `init` 方法，执行以下操作:
 
 - **Issues**:确保存储目录存在（默认 `Issues/`）。
 - **Spikes**: 确保存储目录存在（默认 `.references/`）。

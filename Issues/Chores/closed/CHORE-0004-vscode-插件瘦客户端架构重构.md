@@ -5,10 +5,10 @@ type: chore
 status: closed
 stage: done
 title: VSCode 插件瘦客户端架构重构
-created_at: '2026-01-16T22:32:58'
-opened_at: '2026-01-16T22:32:58'
-updated_at: '2026-01-16T22:42:30'
-closed_at: '2026-01-16T22:42:30'
+created_at: "2026-01-16T22:32:58"
+opened_at: "2026-01-16T22:32:58"
+updated_at: "2026-01-16T22:42:30"
+closed_at: "2026-01-16T22:42:30"
 solution: implemented
 dependencies: []
 related: []
@@ -19,7 +19,7 @@ tags: []
 
 ### 背景与目标 (Context & Objective)
 
-当前 VS Code 插件架构处于 "Hybrid Client" 状态：
+当前 VS Code 插件架构处于 "Hybrid Client" 状态:
 
 - **写操作 (Write)**: 部分通过 CLI (LSP Lint)，部分手动实现 (Create/Toggle)。
 - **读操作 (Read)**: 大量依赖前端手动扫描文件系统 (`indexer.ts`, `server.ts`)。

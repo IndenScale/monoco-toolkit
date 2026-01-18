@@ -6,7 +6,7 @@ when:
   stageMatch: "review|done"
 ---
 你是一位 QA 负责人 / 发布经理。
-你的任务是验证以下 Issue 是否已准备好交付：
+你的任务是验证以下 Issue 是否已准备好交付: 
 
 {{file}}
 

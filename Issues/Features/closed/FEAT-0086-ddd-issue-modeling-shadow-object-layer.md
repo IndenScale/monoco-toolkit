@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: DDD Issue 建模 (影子对象层)
-created_at: '2026-01-17T07:56:27'
-opened_at: '2026-01-17T07:56:27'
-updated_at: '2026-01-17T08:22:07'
-closed_at: '2026-01-17T08:22:07'
+created_at: "2026-01-17T07:56:27"
+opened_at: "2026-01-17T07:56:27"
+updated_at: "2026-01-17T08:22:07"
+closed_at: "2026-01-17T08:22:07"
 parent: EPIC-0015
 solution: implemented
 dependencies: []
@@ -35,7 +35,7 @@ path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/F
 
 ## 技术任务 (Technical Tasks)
 
-- [x] **定义领域模型**: 在 `monoco/features/issue/domain/models.py` 中定义以下核心类：
+- [x] **定义领域模型**: 在 `monoco/features/issue/domain/models.py` 中定义以下核心类:
   - `Issue` (Aggregate Root)
   - `IssueFrontmatter` (包含 Metadata 和 State Validation 逻辑)
   - `IssueBody` (Entity) 与 `ContentBlock` (Value Object)
@@ -49,11 +49,15 @@ path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/F
 - [x] Self-Review
 
 ## Delivery
+
 <!-- Monoco Auto Generated -->
+
 **Commits (1)**:
+
 - `2a1208d` feat(issue): implement ddd issue modeling and parser
 
 **Touched Files (26)**:
+
 - `"Issues/Chores/closed/CHORE-0004-vscode-\346\217\222\344\273\266\347\230\246\345\256\242\346\210\267\347\253\257\346\236\266\346\236\204\351\207\215\346\236\204.md"`
 - `.github/workflows/publish-vscode-extension.yml`
 - `Kanban/apps/webui/package.json`

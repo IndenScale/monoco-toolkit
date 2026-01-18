@@ -6,16 +6,17 @@ stage: Done
 priority: NORMAL
 solution: implemented
 title: 增强 Init 命令 (Enhanced Init Command)
-description: 'Expand `monoco init` to recursively initialize all sub-modules (Issue,
+description:
+  "Expand `monoco init` to recursively initialize all sub-modules (Issue,
   Spike, I18n, Skills) to ensure a fully ready environment with a single command.
 
-  '
+  "
 dependencies: []
 related: []
 tags:
-- cli
-- init
-- devops
+  - cli
+  - init
+  - devops
 parent: EPIC-0001
 uid: a66263
 ---
@@ -28,17 +29,17 @@ uid: a66263
 
 ## 对比与差距分析 (Comparison & Gap Analysis)
 
-| 模块 | 当前 `monoco init` | 当前能力 | 差距 |
-| :--- | :--- | :--- | :--- |
-| **Core** | 脚手架 `.monoco/config.yaml`. | `core/setup.py` 中的 `init_cli` | 无. |
-| **Issue** | 脚手架 `Issues/{Type}` 目录 (硬编码). | 基本目录创建. | 逻辑硬编码在 `core/setup.py` 中，而不是委托给 `issue` 模块. |
-| **Spike** | **忽略**. | 存在 `monoco spike init` (设置 `.gitignore`, 创建目录). | `init` 不调用 `spike init`. |
-| **I18n** | **忽略**. | 无 `init` 命令. 依赖 `config` 默认值. | 应该填充 `config.i18n` 或确保默认值明确. |
-| **Skills** | **忽略**. | 无代码. | 需要脚手架 `Toolkit/skills` 或类似结构. |
+| 模块       | 当前 `monoco init`                    | 当前能力                                                | 差距                                                        |
+| :--------- | :------------------------------------ | :------------------------------------------------------ | :---------------------------------------------------------- |
+| **Core**   | 脚手架 `.monoco/config.yaml`.         | `core/setup.py` 中的 `init_cli`                         | 无.                                                         |
+| **Issue**  | 脚手架 `Issues/{Type}` 目录 (硬编码). | 基本目录创建.                                           | 逻辑硬编码在 `core/setup.py` 中，而不是委托给 `issue` 模块. |
+| **Spike**  | **忽略**.                             | 存在 `monoco spike init` (设置 `.gitignore`, 创建目录). | `init` 不调用 `spike init`.                                 |
+| **I18n**   | **忽略**.                             | 无 `init` 命令. 依赖 `config` 默认值.                   | 应该填充 `config.i18n` 或确保默认值明确.                    |
+| **Skills** | **忽略**.                             | 无代码.                                                 | 需要脚手架 `Toolkit/skills` 或类似结构.                     |
 
 ## 技术任务 (Technical Tasks)
 
-- [x] **基础设施：模块资源接口**: 定义一种标准方式 (`get_resources()`) 供功能模块 (`issue`, `spike`, `i18n`) 暴露其 `SKILL` (文档) 和 `PROMPT` (代理指南) 内容。
+- [x] **基础设施: 模块资源接口**: 定义一种标准方式 (`get_resources()`) 供功能模块 (`issue`, `spike`, `i18n`) 暴露其 `SKILL` (文档) 和 `PROMPT` (代理指南) 内容。
 - [x] **重构 Issue Init**: 将 Issue 目录脚手架从 `core/setup.py` 提取到 `features/issue`。实现 `get_resources` 以返回 Issue 管理技能。
 - [x] **重构 Spike Init**: 集成 `spike.init`。实现 `get_resources` 以返回 Spike 方法论技能。
 - [x] **创建 I18n Init**: 实现 `i18n.init`。实现 `get_resources` 以返回 I18n 工作流技能。
@@ -47,7 +48,7 @@ uid: a66263
   - 从所有模块聚合 `SKILL` 内容，并在 `Toolkit/skills` 中写入/更新相应文件。
 - [x] **实现 Agent 文档注入**:
   - 目标 `AGENTS.md`, `GEMINI.md`, 和 `CLAUDE.md`。
-  - 实现“部分替换”实用程序：找到 `## Monoco Toolkit`，替换直到下一个 `##` 或 EOF 之间的所有内容为来自模块的聚合 `PROMPT` 内容。
+  - 实现“部分替换”实用程序: 找到 `## Monoco Toolkit`，替换直到下一个 `##` 或 EOF 之间的所有内容为来自模块的聚合 `PROMPT` 内容。
   - 确保幂等性（无重复部分）。
 - [x] **编排**: 更新 `monoco.core.setup.init_cli` 以驱动此序列。
 

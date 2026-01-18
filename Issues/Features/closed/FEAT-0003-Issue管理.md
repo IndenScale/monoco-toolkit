@@ -22,7 +22,7 @@ tags: [toolkit, feature, issue, architecture]
 3. **取消 (Cancel)**: `monoco issue cancel {ID}` 将工单标记为 `cancelled`。
 4. **范围 (Scope)**: `monoco issue scope` 展示树状进度统计。
    - 支持 `--sprint {sprint-id}` 仅显示特定迭代。
-   - 统计格式：`[Epic] Title (2/5 Stories Done)`。
+   - 统计格式: `[Epic] Title (2/5 Stories Done)`。
 5. **无列表 (No List)**: 按照要求删除通用 list 命令，通过 scope 实现概览。
 
 ## 技术任务 (Technical Tasks)

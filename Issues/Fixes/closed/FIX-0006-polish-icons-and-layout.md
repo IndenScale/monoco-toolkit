@@ -5,10 +5,10 @@ type: fix
 status: closed
 stage: done
 title: 优化图标和布局
-created_at: '2026-01-14T16:47:25'
-opened_at: '2026-01-14T16:47:25'
-updated_at: '2026-01-14T16:47:34'
-closed_at: '2026-01-14T16:47:34'
+created_at: "2026-01-14T16:47:25"
+opened_at: "2026-01-14T16:47:25"
+updated_at: "2026-01-14T16:47:34"
+closed_at: "2026-01-14T16:47:34"
 parent: FEAT-0063
 solution: implemented
 dependencies: []

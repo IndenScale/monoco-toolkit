@@ -3,11 +3,11 @@ id: FEAT-0061
 uid: vsc003
 type: feature
 status: open
-stage: doing
-title: Interactive Context Actions (Go-to & File Linking)
+stage: backlog
+title: Cockpit Navigation Bridge (Webview to Editor)
 created_at: "2026-01-14T14:05:00"
 opened_at: "2026-01-14T14:05:00"
-updated_at: "2026-01-14T14:05:00"
+updated_at: "2026-01-18T08:53:00"
 parent: EPIC-0011
 dependencies:
   - FEAT-0059
@@ -17,23 +17,28 @@ tags:
   - interaction
 ---
 
-## FEAT-0061: Interactive Context Actions (Go-to & File Linking)
+## FEAT-0061: Cockpit Navigation Bridge (Webview to Editor)
 
-## Objective
+## Objective (目标)
 
-实现看板 Webview 与 VS Code 编辑器之间的深度联动，允许用户在看板中点击文件路径直接跳转到编辑器对应位置。
+建立看板 Cockpit (Webview) 与 VS Code 编辑器之间的导航桥梁。当用户在看板详情、活动流或 Agent 报告中看到文件路径时，可以一键跳转到编辑器指定位置。
 
-## Acceptance Criteria
+_注：编辑器源代码内的跳转已由 LSP (FEAT-0076) 覆盖，本 Feature 专注于跨环境（Webview -> Editor）通信。_
 
-- [ ] **双向通信协议**:
-  - [ ] 定义 `OPEN_FILE` 消息格式，包含 `path`, `line`, `column`。
-- [ ] **VS Code 侧响应**:
-  - [ ] 插件进程接收消息后，使用 `vscode.window.showTextDocument` 打开文件并定位光标。
-- [ ] **Kanban 侧交互**:
-  - [ ] 在 Issue 详情页及活动流中，检测符合 `/path/to/file:line` 格式的文本并渲染为可点击链接。
-  - [ ] 实现点击后的消息发送逻辑。
+## Acceptance Criteria (验收标准)
 
-## Technical Tasks
+- [ ] **跨环境通信协议**:
+  - [ ] 在 `shared/constants/MessageTypes.ts` 中标准化 `OPEN_FILE` 消息。
+  - [ ] 协议需支持 `path` (相对/绝对), `line`, `column` 参数。
+- [ ] **VS Code 扩展端逻辑**:
+  - [ ] 在 `KanbanProvider.ts` 或专门的服务中实现 `handleOpenFile`。
+  - [ ] 支持打开非 Markdown 文件并精确定位光标。
+- [ ] **Cockpit 端渲染 (依赖于 UI 详情页实现)**:
+  - [ ] 在 Webview 的 Markdown 渲染层集成路径检测逻辑（检测 `path/to/file:line` 模式）。
+  - [ ] 点击检测到的路径时，通过 `VSCodeBridge` 发送跳转指令。
 
-- [ ] 实现 VS Code 端的 `FileOpener` 服务。
-- [ ] 在 `Toolkit/Kanban` 中增加路径解析 Common Component。
+## Technical Tasks (技术任务)
+
+- [ ] 标准化消息类型定义。
+- [ ] 在扩展端实现带有行号定位功能的 `FileOpener` 服务。
+- [ ] (待详情页 UI 确认后) 在 Webview 组件中实现路径链接化处理器。

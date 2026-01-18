@@ -50,7 +50,7 @@ solution: "Implemented Pure LSP architecture, removing Python dependency for the
 
 ### 2.3 与 Monoco Server (HTTP) 的关系
 
-**Monoco HTTP Server (Daemon) 依然保留**，但职责发生变更：
+**Monoco HTTP Server (Daemon) 依然保留**，但职责发生变更:
 
 - **不再作为 VS Code 的后端**。
 - **专用于**:

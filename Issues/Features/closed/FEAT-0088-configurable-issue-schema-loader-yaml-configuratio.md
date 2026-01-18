@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: 可配置 Issue Schema 加载器 (YAML 配置)
-created_at: '2026-01-17T08:26:47'
-opened_at: '2026-01-17T08:26:47'
-updated_at: '2026-01-17T09:12:28'
-closed_at: '2026-01-17T09:12:28'
+created_at: "2026-01-17T08:26:47"
+opened_at: "2026-01-17T08:26:47"
+updated_at: "2026-01-17T09:12:28"
+closed_at: "2026-01-17T09:12:28"
 parent: EPIC-0015
 solution: implemented
 dependencies: []
@@ -28,7 +28,7 @@ path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/F
 
 - [x] **Schema 定义**: 制定 `issue.types`, `issue.statuses`, `issue.workflows` 的 YAML Schema。
 - [x] **加载器实现**: 实现 `SchemaLoader`，解析并校验 `monoco.yaml`。
-- [x] **覆盖机制 (Overlay)**: 支持策略加载：默认预设 + 用户覆盖。
+- [x] **覆盖机制 (Overlay)**: 支持策略加载: 默认预设 + 用户覆盖。
 - [x] **集成**: 引擎启动时自动加载用户配置。
 - [x] **文档**: 更新文档，提供配置示例。
 
@@ -45,11 +45,15 @@ path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/F
 - [x] Self-Review
 
 ## Delivery
+
 <!-- Monoco Auto Generated -->
+
 **Commits (1)**:
+
 - `ef32197` feat(config): implement configurable issue schema loader
 
 **Touched Files (3)**:
+
 - `monoco/core/config.py`
 - `monoco/features/issue/engine/__init__.py`
 - `tests/features/issue/test_config_integration.py`

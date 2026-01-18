@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: Integration of Monoco CLI as LSP Backend
-created_at: '2026-01-16T10:16:06'
-opened_at: '2026-01-16T10:16:06'
-updated_at: '2026-01-16T10:40:38'
-closed_at: '2026-01-16T10:40:38'
+created_at: "2026-01-16T10:16:06"
+opened_at: "2026-01-16T10:16:06"
+updated_at: "2026-01-16T10:40:38"
+closed_at: "2026-01-16T10:40:38"
 solution: implemented
 dependencies: []
 related: []
@@ -27,20 +27,20 @@ tags: []
 
 ## 验收标准
 
-1. **一致性**：VS Code 的 "Problems" 面板显示的错误/警告与 `monoco issue lint` 完全一致。
-2. **性能**：单文件校验响应时间 < 500ms。
-3. **精度**：用户能看到行级精确的错误提示，包括"时间旅行"、"依赖缺失"等复杂规则。
-4. **SSOT**：`server.ts` 不包含任何业务校验逻辑，仅保留基础设施代码。
+1. **一致性**: VS Code 的 "Problems" 面板显示的错误/警告与 `monoco issue lint` 完全一致。
+2. **性能**: 单文件校验响应时间 < 500ms。
+3. **精度**: 用户能看到行级精确的错误提示，包括"时间旅行"、"依赖缺失"等复杂规则。
+4. **SSOT**: `server.ts` 不包含任何业务校验逻辑，仅保留基础设施代码。
 
 ## 技术任务
 
-- [x] **CLI 增强**：为 `monoco issue lint` 添加 `--file <path>` 参数，支持单文件校验而无需扫描整个工作区。
-- [x] **CLI JSON 输出**：确保 `monoco issue lint --format json` 输出符合 LSP Diagnostic 模型的 JSON 列表。
-- [x] **VS Code 适配器**：重构 `server.ts` 的 `validateTextDocument` 函数：
+- [x] **CLI 增强**: 为 `monoco issue lint` 添加 `--file <path>` 参数，支持单文件校验而无需扫描整个工作区。
+- [x] **CLI JSON 输出**: 确保 `monoco issue lint --format json` 输出符合 LSP Diagnostic 模型的 JSON 列表。
+- [x] **VS Code 适配器**: 重构 `server.ts` 的 `validateTextDocument` 函数:
   - 通过 `spawn` 调用 `monoco issue lint --format json --file <current_doc_path>`
   - 解析标准输出
   - 将 CLI JSON 映射为 VS Code `Diagnostic` 对象
-- [x] **错误处理**：优雅处理 CLI 执行失败的情况（如 monoco 不在 PATH 中）。
+- [x] **错误处理**: 优雅处理 CLI 执行失败的情况（如 monoco 不在 PATH 中）。
 
 ## Review Comments
 
@@ -51,13 +51,11 @@ tags: []
 ### 已完成工作
 
 1. **CLI 增强** (`monoco/features/issue/commands.py` & `linter.py`)
-
    - 添加 `--file <path>` 参数支持单文件校验
-   - 实现智能索引构建：单文件模式下仅扫描必要的 Issue IDs 用于引用验证
+   - 实现智能索引构建: 单文件模式下仅扫描必要的 Issue IDs 用于引用验证
    - 保持与全工作区扫描模式的完全兼容
 
 2. **JSON 输出格式** (`monoco/features/issue/linter.py`)
-
    - 确保 `--format json` 输出符合 LSP Diagnostic 模型
    - 包含完整的 range、severity、source、message 等字段
    - 支持 `data` 字段附加文件路径等上下文信息

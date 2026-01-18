@@ -4,15 +4,15 @@ type: feature
 status: closed
 stage: done
 title: UI术语可配置化
-created_at: '2026-01-12T17:27:04.755703'
-opened_at: '2026-01-12T17:27:04.755703'
-updated_at: '2026-01-13T08:35:36.579401'
-closed_at: '2026-01-13T08:35:36.579422'
+created_at: "2026-01-12T17:27:04.755703"
+opened_at: "2026-01-12T17:27:04.755703"
+updated_at: "2026-01-13T08:35:36.579401"
+closed_at: "2026-01-13T08:35:36.579422"
 parent: EPIC-0004
 solution: implemented
 dependencies:
-- FEAT-0029
-- FEAT-0014
+  - FEAT-0029
+  - FEAT-0014
 related: []
 tags: []
 uid: fd8604
@@ -26,11 +26,11 @@ uid: fd8604
 
 ## Acceptance Criteria
 
-1. **配置驱动**：支持在 `monoco.yaml` 中定义 `ui.dictionary` 字段，映射内部枚举值到显示文本。
-2. **默认回退**：若未配置，默认使用标准的软件工程术语（Epic/Feature, To Do/In Progress）。
-3. **API 暴露**：Daemon 需提供 `/config/dictionary` 接口，供前端获取当前术语表。
-4. **全局替换**：Web 看板中的列名、卡片标签、创建弹窗及过滤器文案均需应用该映射。
-5. **多语言支持**：映射表结构应预留 I18n 支持（虽本阶段仅需支持单语言映射）。
+1. **配置驱动**: 支持在 `monoco.yaml` 中定义 `ui.dictionary` 字段，映射内部枚举值到显示文本。
+2. **默认回退**: 若未配置，默认使用标准的软件工程术语（Epic/Feature, To Do/In Progress）。
+3. **API 暴露**: Daemon 需提供 `/config/dictionary` 接口，供前端获取当前术语表。
+4. **全局替换**: Web 看板中的列名、卡片标签、创建弹窗及过滤器文案均需应用该映射。
+5. **多语言支持**: 映射表结构应预留 I18n 支持（虽本阶段仅需支持单语言映射）。
 
 ## Technical Tasks
 

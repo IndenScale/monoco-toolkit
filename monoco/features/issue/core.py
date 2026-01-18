@@ -679,7 +679,7 @@ description: Monoco Issue System 的官方技能定义。将 Issue 视为通用�
 - **Status Level (Lowercase)**: `open`, `backlog`, `closed`
 
 ### 路径流转
-使用 `monoco issue`：
+使用 `monoco issue`: 
 1. **Create**: `monoco issue create <type> --title "..."`
 2. **Transition**: `monoco issue open/close/backlog <id>`
 3. **View**: `monoco issue scope`
@@ -745,6 +745,22 @@ def list_issues(issues_root: Path, recursive_workspace: bool = False) -> List[Is
                     member_issues = list_issues(member_issues_dir, False)
                     for m in member_issues:
                         # Namespace the ID to avoid collisions and indicate origin
+                        # CRITICAL: Also namespace references to keep parent-child structure intact
+                        if m.parent and "::" not in m.parent:
+                            m.parent = f"{name}::{m.parent}"
+                        
+                        if m.dependencies:
+                            m.dependencies = [
+                                f"{name}::{d}" if d and "::" not in d else d 
+                                for d in m.dependencies
+                            ]
+                        
+                        if m.related:
+                            m.related = [
+                                f"{name}::{r}" if r and "::" not in r else r 
+                                for r in m.related
+                            ]
+
                         m.id = f"{name}::{m.id}"
                         issues.append(m)
         except Exception:

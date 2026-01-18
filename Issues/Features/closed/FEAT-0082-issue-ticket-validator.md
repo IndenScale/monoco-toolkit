@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: Issue Ticket Validator
-created_at: '2026-01-16T08:56:11'
-opened_at: '2026-01-16T08:56:11'
-updated_at: '2026-01-16T09:45:45'
-closed_at: '2026-01-16T09:45:45'
+created_at: "2026-01-16T08:56:11"
+opened_at: "2026-01-16T08:56:11"
+updated_at: "2026-01-16T09:45:45"
+closed_at: "2026-01-16T09:45:45"
 solution: implemented
 dependencies: []
 related: []
@@ -23,7 +23,7 @@ tags: []
 
 ## Acceptance Criteria
 
-1. **状态矩阵校验**: 必须严格遵循定义的状态-阶段映射：
+1. **状态矩阵校验**: 必须严格遵循定义的状态-阶段映射:
    - Open: Draft, Doing, Review, Done
    - Close: Done
    - Backlog: Draft, Doing, Review
@@ -46,12 +46,12 @@ tags: []
 8. **Checkbox 严格校验**:
    - 必须使用无序列表符 `-`。
    - 必须使用单层方括号 `[]`。
-   - 状态符仅限以下枚举：
+   - 状态符仅限以下枚举:
      - `[ ]`: 待办/可选
      - `[x]`: 完成/选中
      - `[-]`: 废弃/部分完成/半选
      - `[/]`: 处理中/正在进行
-   - **层级一致性**:若存在嵌套列表，父项状态必须正确反映子项状态聚合结果（如：子项全选则父项必须为 `[x]`；子项有进行中则父项为 `[/]`）。
+   - **层级一致性**:若存在嵌套列表，父项状态必须正确反映子项状态聚合结果（如: 子项全选则父项必须为 `[x]`；子项有进行中则父项为 `[/]`）。
 
 ## Technical Tasks
 

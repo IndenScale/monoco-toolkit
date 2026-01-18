@@ -723,27 +723,9 @@ def _resolve_issues_root(config, cli_root: Optional[str]) -> Path:
         return path
     
     # 2. Handle Default / Contextual Execution (No --root)
-    # We need to detect if we are in a Workspace Root with multiple projects
+    # Strict Workspace Check: If not in a project root, we rely on the config root.
+    # (The global app callback already enforces presence of .monoco for most commands)
     cwd = Path.cwd()
-    
-    # If CWD is NOT a project root (no .monoco/), scan for subprojects
-    if not is_project_root(cwd):
-        subprojects = find_projects(cwd)
-        if len(subprojects) > 1:
-            console.print(f"[yellow]Workspace detected with {len(subprojects)} projects:[/yellow]")
-            for p in subprojects:
-                console.print(f" - [bold]{p.name}[/bold]")
-            console.print("\n[yellow]Please specify a project using --root <PATH>.[/yellow]")
-            # We don't exit here strictly, but usually this means we can't find 'Issues' in CWD anyway
-            # so the config fallbacks below will likely fail or point to non-existent CWD/Issues.
-            # But let's fail fast to be helpful.
-            raise typer.Exit(code=1)
-        elif len(subprojects) == 1:
-            # Auto-select the only child project?
-            # It's safer to require explicit intent, but let's try to be helpful if it's obvious.
-            # However, standard behavior is usually "operate on current dir". 
-            # Let's stick to standard config resolution, but maybe warn.
-            pass
 
     # 3. Config Fallback
     config_issues_path = Path(config.paths.issues)
