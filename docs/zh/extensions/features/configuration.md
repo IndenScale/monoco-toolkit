@@ -2,11 +2,6 @@
 
 ## 5.1 扩展配置
 
-- **`monoco.webUrl`**
-  - **类型**: String
-  - **默认值**: `http://127.0.0.1:8642`
-  - **作用**: 定义外部 Web UI 的访问地址。
-
 - **`monoco.executablePath`**
   - **类型**: String
   - **默认值**: `monoco`

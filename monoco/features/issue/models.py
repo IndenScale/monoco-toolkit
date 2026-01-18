@@ -120,7 +120,8 @@ class IssueMetadata(BaseModel):
     path: Optional[str] = None  # Absolute path to the issue file
     
     # Proxy UI Actions (Excluded from file persistence)
-    actions: List[IssueAction] = Field(default=[], exclude=True)
+    # Modified: Remove exclude=True to allow API/CLI inspection. Must be manually excluded during YAML Dump.
+    actions: List[IssueAction] = Field(default=[])
 
 
     @model_validator(mode='before')

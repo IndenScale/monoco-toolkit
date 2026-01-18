@@ -19,16 +19,14 @@ Powered by built-in Node.js Language Server, specifically for semantic analysis 
 - **Go to Definition**:
   - Support `Ctrl+Click` (macOS `Cmd+Click`) on Issue ID to jump directly to corresponding Markdown file location.
 
-### 2. Cockpit View
+### 2. Visual Interface
 
-Visual management interface integrated in VS Code Activity Bar.
+Integrated management interface in VS Code Activity Bar.
 
-- **Monoco Kanban**: Provides global task Kanban view, intuitively displaying flow of Epic/Feature/Bug.
-- **Real-time Sync**: Keeps millisecond-level sync with local Daemon via SSE (Server-Sent Events); external modifications (like CLI operations) are instantly reflected in view.
+- **Issue Explorer**: Provides a tree view displaying all Issues within the Workspace.
 - **Shortcuts**:
   - Create new Issue.
-  - Click card to open corresponding Markdown file.
-  - View and filter Execution Profiles.
+  - Click node to open corresponding Markdown file.
 
 ### 3. Runtime Management
 
@@ -42,10 +40,10 @@ Extension is responsible for maintaining Monoco background services, ensuring "O
 
 ## Architecture
 
-Currently extension is in "Hybrid" stage, containing both LSP and Legacy Webview logic:
+The extension adopts a standard Client-Server architecture:
 
 - **Client (`/client`)**:
-  - Responsible for VS Code UI integration (Webview, Commands).
+  - Responsible for VS Code UI integration and command registration.
   - Manages Language Client lifecycle.
   - Responsible for HTTP/SSE communication with Monoco Daemon (Python).
 - **Server (`/server`)**:
@@ -56,4 +54,3 @@ Currently extension is in "Hybrid" stage, containing both LSP and Legacy Webview
 ## Configuration
 
 - `monoco.apiBaseUrl`: Monoco Daemon API address (Default: `http://127.0.0.1:8642/api/v1`)
-- `monoco.webUrl`: Monoco Web UI address (Default: `http://127.0.0.1:8642`)

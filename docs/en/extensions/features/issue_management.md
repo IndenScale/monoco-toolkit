@@ -2,21 +2,20 @@
 
 This module is responsible for visual management and editing support of project tasks.
 
-## 2.1 Kanban View (`monoco-kanban`)
+## 2.1 Issue Explorer
 
 - **View Interaction**
-  - **Display Format**: Webview-based Kanban interface.
-  - **Grouping Logic**: Group by Issue status (Open, In Progress, Done, etc.).
-  - **Status Update**: Support updating Issue status via card dragging or right-click menu.
-  - **Context Switching**: Read `.monoco` metadata, support switching between different projects.
+  - **Display Format**: Native TreeView based on VS Code API.
+  - **Grouping Logic**: Group by Issue Type (Epic, Feature, etc.) or Status.
+  - **Shortcuts**: Support creating sub-issues or transitioning state directly on tree nodes.
+  - **Context Switching**: Automatically recognized by Workspace boundaries.
 
 - **Data Sync**
-  - **Read**: Fetch latest task list via LSP request `monoco/getAllIssues`.
-  - **Write**: Write changes back to file system via LSP request `monoco/updateIssue`.
-  - **Real-time**: Listen to file change events and automatically refresh Kanban data.
+  - **Read**: Fetch latest task list via LSP request.
+  - **Write**: All CRUD operations directly manipulate Markdown files via File System API, synced by File Watcher.
 
 - **Create Task**
-  - **Entry**: "New Issue" button in Kanban interface.
+  - **Entry**: "Create Issue" button in view title bar.
   - **Generation Logic**: Automatically generate Markdown file containing Frontmatter metadata.
   - **Naming**: Follow `ID-Title.md` standard format.
 

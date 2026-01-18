@@ -2,6 +2,7 @@
 id: CHORE-0002
 type: chore
 status: closed
+stage: done
 title: 完善 monoco i18n 命令文档 (Complete i18n Docs)
 created_at: "2026-01-09"
 solution: completed
@@ -13,7 +14,7 @@ parent: EPIC-0001
 uid: 7e54fe
 ---
 
-## CHORE-0002: 完善 monoco i18n 命令文档
+## CHORE-0002: 完善 monoco i18n 命令文档 (Complete i18n Docs)
 
 ## 目标 (Objective)
 
@@ -35,3 +36,7 @@ uid: 7e54fe
 - [x] **增强 CLI 文档字符串**: 优化 `Toolkit/monoco/features/i18n/commands.py` 中的 help 文本。
 - [x] **创建用户手册**: 撰写 `Toolkit/docs/zh/i18n/manual.md`。
 - [x] **更新索引**: 更新项目文档索引，纳入 i18n 手册。
+
+## Review Comments
+
+- [x] Self-Review

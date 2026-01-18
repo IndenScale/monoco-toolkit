@@ -42,16 +42,14 @@ While Monoco provides a default set of mindset-based categories (Epic/Feature/Ch
 - **Prefix**: ID prefix (e.g., `STORY`)
 - **Folder**: Storage directory (e.g., `Stories`)
 
-### 2.2 Workflows -> Configurable
+### 2.2 Transitions (Flexible Workflow)
 
-All state transitions are defined by a set of explicit rules. A Transition includes:
+The lifecycle of an Issue is driven by state transitions. Monoco leans towards being a flexible tracking system rather than an enforcement tool.
 
-- **Trigger**: Source state (From Status/Stage)
-- **Action**: Action name (e.g., `submit`)
-- **Effect**: Target state (To Status/Stage)
-- **Side Effect**: Triggered CLI command (e.g., run Agent)
+- **Status Transition**: Moving physical files (e.g., Open -> Closed).
+- **Stage Transition**: Updating logical progress (e.g., Doing -> Review).
 
-This design allows you to attach various automation logic to the state machine, such as "Automatically run AI Code Review Agent when entering the Review stage."
+This design allows teams to define their own collaboration patterns without being bound by hard-coded rules.
 
 ## 3. Topology
 
