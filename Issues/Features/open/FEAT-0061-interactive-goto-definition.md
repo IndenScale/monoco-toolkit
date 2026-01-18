@@ -5,16 +5,19 @@ type: feature
 status: open
 stage: backlog
 title: Cockpit Navigation Bridge (Webview to Editor)
-created_at: "2026-01-14T14:05:00"
-opened_at: "2026-01-14T14:05:00"
-updated_at: "2026-01-18T08:53:00"
+created_at: '2026-01-14T14:05:00'
+opened_at: '2026-01-14T14:05:00'
+updated_at: '2026-01-18T08:53:00'
 parent: EPIC-0011
 dependencies:
-  - FEAT-0059
+- FEAT-0059
 related: []
 tags:
-  - vscode
-  - interaction
+- '#EPIC-0011'
+- '#FEAT-0059'
+- '#FEAT-0061'
+- interaction
+- vscode
 ---
 
 ## FEAT-0061: Cockpit Navigation Bridge (Webview to Editor)

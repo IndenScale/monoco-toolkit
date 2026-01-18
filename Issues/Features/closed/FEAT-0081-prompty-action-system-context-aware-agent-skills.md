@@ -4,16 +4,18 @@ uid: 009188
 type: feature
 status: closed
 stage: done
-title: "Prompty Action System: Context-Aware Agent Skills"
-created_at: "2026-01-15T23:46:19"
-opened_at: "2026-01-15T23:46:19"
-updated_at: "2026-01-15T23:52:11"
-closed_at: "2026-01-15T23:52:11"
+title: 'Prompty Action System: Context-Aware Agent Skills'
+created_at: '2026-01-15T23:46:19'
+opened_at: '2026-01-15T23:46:19'
+updated_at: '2026-01-15T23:52:11'
+closed_at: '2026-01-15T23:52:11'
 parent: EPIC-0010
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0010'
+- '#FEAT-0081'
 ---
 
 ## FEAT-0081: Prompty Action System: Context-Aware Agent Skills

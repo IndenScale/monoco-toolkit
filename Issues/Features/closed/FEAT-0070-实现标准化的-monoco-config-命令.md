@@ -5,15 +5,17 @@ type: feature
 status: closed
 stage: done
 title: 实现标准化的 monoco config 命令
-created_at: "2026-01-15T14:29:26"
-opened_at: "2026-01-15T14:29:26"
-updated_at: "2026-01-15T14:32:50"
-closed_at: "2026-01-15T14:32:50"
+created_at: '2026-01-15T14:29:26'
+opened_at: '2026-01-15T14:29:26'
+updated_at: '2026-01-15T14:32:50'
+closed_at: '2026-01-15T14:32:50'
 parent: EPIC-0013
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0013'
+- '#FEAT-0070'
 ---
 
 ## FEAT-0070: 实现标准化的 monoco config 命令

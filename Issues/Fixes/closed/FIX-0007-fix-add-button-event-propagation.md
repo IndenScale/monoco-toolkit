@@ -5,15 +5,17 @@ type: fix
 status: closed
 stage: done
 title: 修复添加按钮事件传播
-created_at: "2026-01-14T16:53:55"
-opened_at: "2026-01-14T16:53:55"
-updated_at: "2026-01-14T16:54:00"
-closed_at: "2026-01-14T16:54:00"
+created_at: '2026-01-14T16:53:55'
+opened_at: '2026-01-14T16:53:55'
+updated_at: '2026-01-14T16:54:00'
+closed_at: '2026-01-14T16:54:00'
 parent: FEAT-0063
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0063'
+- '#FIX-0007'
 ---
 
 ## FIX-0007: 修复添加按钮事件传播

@@ -5,17 +5,18 @@ type: feature
 status: closed
 stage: done
 title: VS Code Extension Scaffold & Webview Bridge
-created_at: "2026-01-14T13:40:00"
-opened_at: "2026-01-14T13:40:00"
-updated_at: "2026-01-15T22:50:00"
+created_at: '2026-01-14T13:40:00'
+opened_at: '2026-01-14T13:40:00'
+updated_at: '2026-01-15T22:50:00'
 solution: implemented
 parent: EPIC-0011
-dependencies:
-  - FEAT-0044
+dependencies: []
 related: []
 tags:
-  - vscode
-  - infrastructure
+- '#EPIC-0011'
+- '#FEAT-0059'
+- infrastructure
+- vscode
 ---
 
 ## FEAT-0059: VS Code Extension Scaffold & Webview Bridge

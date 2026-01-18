@@ -13,7 +13,9 @@ parent: EPIC-0008
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0008'
+- '#FEAT-0046'
 ---
 
 ## FEAT-0046: GitHub Page 维护

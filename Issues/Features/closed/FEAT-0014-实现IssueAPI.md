@@ -4,14 +4,16 @@ type: feature
 status: closed
 stage: done
 title: 实现 Issue 管理 API (Implement Issue API)
-created_at: "2026-01-11T11:44:10.963729"
-opened_at: "2026-01-11T11:44:10.963729"
-updated_at: "2026-01-11T11:54:37.517210"
-closed_at: "2026-01-11T11:54:37.517239"
+created_at: '2026-01-11T11:44:10.963729'
+opened_at: '2026-01-11T11:44:10.963729'
+updated_at: '2026-01-11T11:54:37.517210'
+closed_at: '2026-01-11T11:54:37.517239'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0003'
+- '#FEAT-0014'
 parent: EPIC-0003
 uid: 395c35
 ---

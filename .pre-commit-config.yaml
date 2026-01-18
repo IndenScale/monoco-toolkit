@@ -1,0 +1,53 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.13
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      # --- Pre-commit Hooks ---
+      - id: monoco-issue-lint
+        name: Monoco Issue Lint
+        entry: monoco issue lint
+        language: system
+        types: [markdown]
+        files: ^Issues/.*\.md$
+        pass_filenames: true
+
+      # --- Pre-push Hooks ---
+      - id: pytest
+        name: Python Tests
+        entry: uv run pytest
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        # Run only if python files changed (optional optimization, but CI runs always)
+        # keeping always_run true for safety as logic might depend on non-py files
+        always_run: true
+
+      - id: vscode-compile
+        name: VS Code Extension Compile
+        entry: bash -c "cd extensions/vscode && npm run compile"
+        language: system
+        stages: [pre-push]
+        files: ^extensions/vscode/
+        pass_filenames: false
+
+      - id: vscode-lint
+        name: VS Code Extension Lint
+        entry: bash -c "cd extensions/vscode && npm run lint"
+        language: system
+        stages: [pre-push]
+        files: ^extensions/vscode/
+        pass_filenames: false

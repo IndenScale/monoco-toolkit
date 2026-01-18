@@ -13,7 +13,9 @@ parent: EPIC-0009
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0009'
+- '#FEAT-0058'
 ---
 
 ## FEAT-0058: Kanban 分发 - npm
