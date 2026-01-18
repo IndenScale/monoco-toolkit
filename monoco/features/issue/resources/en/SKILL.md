@@ -29,9 +29,13 @@ Use this skill to create and manage **Issues** (Universal Atoms) in Monoco proje
 
 Monoco enforces a **Feature Branch** model.
 
-- **Start**: Must use `monoco issue start <ID> --branch` to start working. This creates a `feat/<ID>-<slug>` branch.
+- **Start**: Agents **MUST** use `monoco issue start <ID> --branch` to start working.
+  - This creates and switches to a standard `feat/<ID>-<slug>` branch.
+  - **Do NOT** manually create branches using `git checkout -b`.
 - **Protected Main**: **NO** direct modification on `main`, `master`, or `production` branches. Linter will block this.
-- **Submit**: Run `monoco issue submit <ID>` before PR to clean up and validate.
+- **Submit**: Run `monoco issue submit <ID>` when work is ready for review.
+  - This moves the issue to `Review` stage and generates a Delivery Report.
+  - **Note**: This does **not** merge the code. You (or the user) must handle the Merge/PR process.
 
 ### 2. File Tracking
 
