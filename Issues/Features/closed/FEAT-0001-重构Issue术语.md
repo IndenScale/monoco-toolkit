@@ -9,10 +9,12 @@ solution: implemented
 dependencies: []
 related: []
 tags:
-  - refactor
-  - agent-native
+- '#EPIC-0003'
+- '#FEAT-0001'
+- agent-native
+- refactor
 parent: EPIC-0003
-uid: "063766"
+uid: '063766'
 ---
 
 ## FEAT-0001: 重构 Issue 术语为原生代理语义 (Refactor Issue Terminology)

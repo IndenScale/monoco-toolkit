@@ -4,12 +4,39 @@ from rich.console import Console
 from rich.table import Table
 import typer
 import re
-
+from monoco.core import git
 from . import core
 from .validator import IssueValidator
 from monoco.core.lsp import Diagnostic, DiagnosticSeverity
 
 console = Console()
+
+def check_environment_policy(project_root: Path):
+    """
+    Guardrail: Prevent direct modifications on protected branches (main/master).
+    """
+    # Only enforce if it is a git repo
+    try:
+        if not git.is_git_repo(project_root):
+            return
+
+        current_branch = git.get_current_branch(project_root)
+        # Standard protected branches
+        if current_branch in ["main", "master", "production"]:
+            # Check if dirty (uncommitted changes)
+            changed_files = git.get_git_status(project_root)
+            if changed_files:
+                console.print(f"\n[bold red]🛑 Environment Policy Violation[/bold red]")
+                console.print(f"You are modifying code directly on protected branch: [bold cyan]{current_branch}[/bold cyan]")
+                console.print(f"Found {len(changed_files)} uncommitted changes.")
+                console.print(f"[yellow]Action Required:[/yellow] Please stash your changes and switch to a feature branch.")
+                console.print(f"  > git stash")
+                console.print(f"  > monoco issue start <ID> --branch")
+                console.print(f"  > git stash pop")
+                raise typer.Exit(code=1)
+    except Exception:
+        # Fail safe: Do not block linting if git check fails unexpectedly
+        pass
 
 def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnostic]:
     """
@@ -110,6 +137,10 @@ def run_lint(issues_root: Path, recursive: bool = False, fix: bool = False, form
         format: Output format (table, json)
         file_path: Optional path to a single file to validate (LSP mode)
     """
+    # 0. Environment Policy Check (Guardrail)
+    # We assume issues_root.parent is the project root or close enough for git context
+    check_environment_policy(issues_root.parent)
+
     # Single-file mode (for LSP integration)
     if file_path:
         file = Path(file_path).resolve()
@@ -231,6 +262,56 @@ def run_lint(issues_root: Path, recursive: bool = False, fix: bool = False, form
                              new_content = new_content.rstrip() + "\n\n## Review Comments\n\n- [ ] Self-Review\n"
                              has_changes = True
 
+                    if "Malformed ID" in d.message:
+                        lines = new_content.splitlines()
+                        if d.range and d.range.start.line < len(lines):
+                            line_idx = d.range.start.line
+                            line = lines[line_idx]
+                            # Remove # from quoted strings or raw values
+                            new_line = line.replace("'#", "'").replace('"#', '"')
+                            if new_line != line:
+                                lines[line_idx] = new_line
+                                new_content = "\n".join(lines) + "\n"
+                                has_changes = True
+                    
+                    if "Tag Check: Missing required context tags" in d.message:
+                         # Extract missing tags from message
+                         # Message format: "Tag Check: Missing required context tags: #TAG1, #TAG2"
+                         try:
+                             parts = d.message.split(": ")
+                             if len(parts) >= 3:
+                                 tags_str = parts[-1]
+                                 missing_tags = [t.strip() for t in tags_str.split(",")]
+                                 
+                                 # We need to update content via core.update_issue logic effectively
+                                 # But we are in a loop potentially with other string edits.
+                                 # IMPORTANT: Mixed strategy (Regex vs Object Update) is risky.
+                                 # However, tags are in YAML frontmatter.
+                                 # Since we might have modified new_content already (string), using core.update_issue on file is dangerous (race condition with memory).
+                                 # Better to append to tags list in YAML via regex or yaml parser on new_content.
+                                 
+                                 # Parsing Frontmatter from new_content
+                                 fm_match = re.search(r"^---(.*?)---", new_content, re.DOTALL | re.MULTILINE)
+                                 if fm_match:
+                                      import yaml
+                                      fm_text = fm_match.group(1)
+                                      data = yaml.safe_load(fm_text) or {}
+                                      current_tags = data.get('tags', [])
+                                      if not isinstance(current_tags, list): current_tags = []
+                                      
+                                      # Add missing
+                                      updated_tags = sorted(list(set(current_tags) | set(missing_tags)))
+                                      data['tags'] = updated_tags
+                                      
+                                      # Dump back
+                                      new_fm_text = yaml.dump(data, sort_keys=False, allow_unicode=True)
+                                      
+                                      # Replace FM block
+                                      new_content = new_content.replace(fm_match.group(1), "\n" + new_fm_text)
+                                      has_changes = True
+                         except Exception as ex:
+                             console.print(f"[red]Failed to fix tags: {ex}[/red]")
+
                 if has_changes:
                     path.write_text(new_content)
                     fixed_count += 1
@@ -288,5 +369,9 @@ def run_lint(issues_root: Path, recursive: bool = False, fix: bool = False, form
         console.print(table)
         
         if any(d.severity == DiagnosticSeverity.Error for d in issues):
+            console.print("\n[yellow]Tip: Run 'monoco issue lint --fix' to attempt automatic repairs.[/yellow]")
             raise typer.Exit(code=1)
+        
+        if issues:
+             console.print("\n[yellow]Tip: Run 'monoco issue lint --fix' to attempt automatic repairs.[/yellow]")
 

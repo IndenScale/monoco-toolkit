@@ -18,7 +18,12 @@ System for managing tasks using `monoco issue`.
 - **Status**: `monoco issue open|close|backlog <id>`
 - **Check**: `monoco issue lint` (Must run after manual edits)
 - **Lifecycle**: `monoco issue start|submit|delete <id>`
+- **Sync Context**: `monoco issue sync-files [id]` (Update file tracking)
 - **Structure**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (e.g. `Issues/Features/open/`). Do not deviate.
+- **Environment Policy**:
+  - Must use `monoco issue start --branch`.
+  - Protected Branches (main/master) are READ-ONLY.
+  - Linter will block direct modifications on main.
 
 ### Spike (Research)
 

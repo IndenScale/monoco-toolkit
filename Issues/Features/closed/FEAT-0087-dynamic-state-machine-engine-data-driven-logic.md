@@ -5,15 +5,17 @@ type: feature
 status: closed
 stage: done
 title: 动态状态机引擎 (数据驱动逻辑)
-created_at: "2026-01-17T08:26:45"
-opened_at: "2026-01-17T08:26:45"
-updated_at: "2026-01-17T08:43:37"
-closed_at: "2026-01-17T08:43:37"
+created_at: '2026-01-17T08:26:45'
+opened_at: '2026-01-17T08:26:45'
+updated_at: '2026-01-17T08:43:37'
+closed_at: '2026-01-17T08:43:37'
 parent: EPIC-0015
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0015'
+- '#FEAT-0087'
 path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/FEAT-0087-dynamic-state-machine-engine-data-driven-logic.md
 ---
 

@@ -6,13 +6,16 @@ status: Open
 owner: Product Owner
 parent: null
 dependencies:
-  - EPIC-0006
-  - EPIC-0010
+- EPIC-0006
+- EPIC-0010
 tags:
-  - vscode
-  - extension
-  - webview
-  - cockpit
+- '#EPIC-0006'
+- '#EPIC-0010'
+- '#EPIC-0011'
+- cockpit
+- extension
+- vscode
+- webview
 created_at: 2026-01-14
 progress: 2/4
 files_count: 0

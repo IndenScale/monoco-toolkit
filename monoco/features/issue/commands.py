@@ -40,6 +40,13 @@ def create(
     issues_root = _resolve_issues_root(config, root)
     status = "backlog" if is_backlog else "open"
     
+    # Sanitize inputs (strip #)
+    if parent and parent.startswith("#"):
+        parent = parent[1:]
+    
+    dependencies = [d[1:] if d.startswith("#") else d for d in dependencies]
+    related = [r[1:] if r.startswith("#") else r for r in related]
+
     if parent:
         parent_path = core.find_issue_path(issues_root, parent)
         if not parent_path:
@@ -631,6 +638,43 @@ def scope(
                 story_node.add(f"{status_map[task.status]} [bold]{task.id}[/bold]: {task.title}")
 
     console.print(Panel(tree, expand=False))
+
+@app.command("sync-files")
+def sync_files(
+    issue_id: Optional[str] = typer.Argument(None, help="Issue ID to sync (default: current context)"),
+    root: Optional[str] = typer.Option(None, "--root", help="Override issues root directory"),
+    json: AgentOutput = False,
+):
+    """
+    Sync issue 'files' field with git changed files.
+    """
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+    project_root = _resolve_project_root(config)
+    
+    if not issue_id:
+        # Infer from branch
+        from monoco.core import git
+        current = git.get_current_branch(project_root)
+        # Try to parse ID from branch "feat/issue-123-slug"
+        import re
+        match = re.search(r"(?:feat|fix|chore|epic)/([a-zA-Z]+-\d+)", current)
+        if match:
+             issue_id = match.group(1).upper()
+        else:
+             OutputManager.error("Cannot infer Issue ID from current branch. Please specify Issue ID.")
+             raise typer.Exit(code=1)
+
+    try:
+        changed = core.sync_issue_files(issues_root, issue_id, project_root)
+        OutputManager.print({
+            "id": issue_id,
+            "status": "synced",
+            "files": changed
+        })
+    except Exception as e:
+        OutputManager.error(str(e))
+        raise typer.Exit(code=1)
 
 @app.command("inspect")
 def inspect(

@@ -4,17 +4,21 @@ type: feature
 status: closed
 stage: done
 title: UI术语可配置化
-created_at: "2026-01-12T17:27:04.755703"
-opened_at: "2026-01-12T17:27:04.755703"
-updated_at: "2026-01-13T08:35:36.579401"
-closed_at: "2026-01-13T08:35:36.579422"
+created_at: '2026-01-12T17:27:04.755703'
+opened_at: '2026-01-12T17:27:04.755703'
+updated_at: '2026-01-13T08:35:36.579401'
+closed_at: '2026-01-13T08:35:36.579422'
 parent: EPIC-0004
 solution: implemented
 dependencies:
-  - FEAT-0029
-  - FEAT-0014
+- FEAT-0029
+- FEAT-0014
 related: []
-tags: []
+tags:
+- '#EPIC-0004'
+- '#FEAT-0014'
+- '#FEAT-0029'
+- '#FEAT-0034'
 uid: fd8604
 ---
 

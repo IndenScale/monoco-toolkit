@@ -5,12 +5,13 @@ type: feature
 status: open
 stage: draft
 title: 优化 Issue 生命周期动作与 Agent 集成
-created_at: "2026-01-16T23:32:20"
-opened_at: "2026-01-16T23:32:20"
-updated_at: "2026-01-16T23:32:20"
+created_at: '2026-01-16T23:32:20'
+opened_at: '2026-01-16T23:32:20'
+updated_at: '2026-01-16T23:32:20'
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0084'
 ---
 
 ## FEAT-0084: 优化 Issue 生命周期动作与 Agent 集成

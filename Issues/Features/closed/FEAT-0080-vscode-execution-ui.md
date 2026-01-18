@@ -3,15 +3,17 @@ id: FEAT-0080
 type: feature
 status: closed
 stage: done
-title: "VS Code Execution UI: Sidebar & CodeLens"
-created_at: "2026-01-15T23:30:15"
-updated_at: "2026-01-15T23:30:18"
-closed_at: "2026-01-15T23:30:18"
+title: 'VS Code Execution UI: Sidebar & CodeLens'
+created_at: '2026-01-15T23:30:15'
+updated_at: '2026-01-15T23:30:18'
+closed_at: '2026-01-15T23:30:18'
 parent: EPIC-0010
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0010'
+- '#FEAT-0080'
 priority: High
 author: Monoco
 ---
