@@ -9,7 +9,6 @@ import * as vscode from "vscode";
 import { VIEW_TYPES, MESSAGE_TYPES } from "@shared/constants";
 import { WebviewMessage, ExtensionMessage } from "@shared/types";
 import { LanguageClientManager } from "../lsp/LanguageClientManager";
-import { AgentStateService } from "../services/AgentStateService";
 
 export class KanbanProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = VIEW_TYPES.KANBAN;
@@ -22,7 +21,7 @@ export class KanbanProvider implements vscode.WebviewViewProvider {
       args: string[],
       cwd?: string,
     ) => Promise<string>,
-    private readonly agentStateService: AgentStateService,
+
     private readonly outputChannel: vscode.OutputChannel,
   ) {}
 
@@ -117,16 +116,6 @@ export class KanbanProvider implements vscode.WebviewViewProvider {
       this.outputChannel.appendLine(
         `[Extension] Data fetched: ${issues.length} issues, ${metadata.projects?.length} projects`,
       );
-
-      // Send available agent providers
-      const providers = this.agentStateService.getAvailableProviders();
-      this.outputChannel.appendLine(
-        `[Extension] Sending AGENT_STATE_UPDATED with providers: ${JSON.stringify(providers)}`,
-      );
-      this.postMessage({
-        type: MESSAGE_TYPES.AGENT_STATE_UPDATED,
-        payload: { providers },
-      });
 
       const dataPayload = {
         issues,

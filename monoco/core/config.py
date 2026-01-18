@@ -10,7 +10,7 @@ import asyncio
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-from monoco.core.integrations import AgentIntegration
+
 
 logger = logging.getLogger("monoco.core.config")
 
@@ -46,15 +46,7 @@ class TelemetryConfig(BaseModel):
     """Configuration for Telemetry."""
     enabled: Optional[bool] = Field(default=None, description="Whether telemetry is enabled")
 
-class AgentConfig(BaseModel):
-    """Configuration for Agent Environment Integration."""
-    targets: Optional[list[str]] = Field(default=None, description="Specific target files to inject into (e.g. .cursorrules)")
-    framework: Optional[str] = Field(default=None, description="Manually specified agent framework (cursor, windsurf, etc.)")
-    includes: Optional[list[str]] = Field(default=None, description="List of specific features to include in injection")
-    integrations: Optional[Dict[str, "AgentIntegration"]] = Field(
-        default=None, 
-        description="Custom agent framework integrations (overrides defaults from monoco.core.integrations)"
-    )
+
 
 class IssueTypeConfig(BaseModel):
     name: str
@@ -128,7 +120,7 @@ class MonocoConfig(BaseModel):
     i18n: I18nConfig = Field(default_factory=I18nConfig)
     ui: UIConfig = Field(default_factory=UIConfig)
     telemetry: TelemetryConfig = Field(default_factory=TelemetryConfig)
-    agent: AgentConfig = Field(default_factory=AgentConfig)
+
     issue: IssueSchemaConfig = Field(default_factory=IssueSchemaConfig)
 
     @staticmethod

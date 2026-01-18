@@ -235,6 +235,10 @@ connection.onDocumentLinks(async (params) => {
 });
 
 /**
+ * CodeLens
+ */
+
+/**
  * Custom requests for Cockpit
  */
 
@@ -340,6 +344,9 @@ connection.onRequest(
   },
 );
 
+/**
+ * Start listening
+ */
 /**
  * Start listening
  */

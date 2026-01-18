@@ -3,7 +3,7 @@ id: EPIC-0007
 type: epic
 status: closed
 stage: done
-title: "EPIC-0007: Toolkit 项目独立化 (Toolkit Independence)"
+title: "Toolkit 项目独立化 (Toolkit Independence)"
 created_at: "2026-01-12T00:00:00"
 updated_at: "2026-01-15T13:22:40"
 closed_at: "2026-01-15T13:22:40"
@@ -19,7 +19,7 @@ files_count: 0
 uid: 3b4179
 ---
 
-## EPIC-0007: EPIC-0007: Toolkit 项目独立化 (Toolkit Independence)
+## EPIC-0007: Toolkit 项目独立化 (Toolkit Independence)
 
 ### 解决方案 (Solution)
 
@@ -38,12 +38,18 @@ Local `Toolkit/` directory has been pruned.
 3. **回引依赖 (Re-integration)**: Monoco 主仓库已通过 Editable Mode 引用新 Toolkit。
 4. **清理 (Cleanup)**: Monoco 主仓库已移除 Toolkit 源码。
 
+## Technical Tasks
+
+- [x] Extract toolkit to standalone repository
+- [x] Configure CI/CD for toolkit
+- [x] Update Monoco main repo to use external toolkit dependency
+- [x] Prune legacy Toolkit/ directory in main repo
+
 ## 执行历史 (Execution History)
 
-- [x] [[FEAT-0035]]: 初始化 Toolkit 独立仓库与历史迁移 (Done)
 - [x] [[FEAT-0036]]: 建立 Toolkit 独立构建与发布流程 (Done)
 - [x] [[FEAT-0037]]: 重构 Monoco 依赖以适配外部 Toolkit (Done)
-- [x] [[CHORE-0050]]: 清理 Monoco 主仓库中的 Toolkit 遗留 (Done)
+- [x] [[FEAT-0050]]: 清理 Monoco 主仓库中的 Toolkit 遗留 (Done)
 
 ## Review Comments
 
