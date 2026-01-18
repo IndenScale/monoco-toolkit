@@ -30,7 +30,11 @@ export class AgentStateService {
       // Use CLI to get status
       const output = await this.runMonoco(["agent", "status", "--json"]);
       try {
-        this.state = JSON.parse(output);
+        const start = output.indexOf("{");
+        const end = output.lastIndexOf("}");
+        const jsonStr =
+          start >= 0 && end >= 0 ? output.substring(start, end + 1) : output;
+        this.state = JSON.parse(jsonStr);
         this.updateContextKeys();
         if (this.state) {
           this._onDidChangeState.fire(this.state);

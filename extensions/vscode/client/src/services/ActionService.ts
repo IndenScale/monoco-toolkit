@@ -56,7 +56,7 @@ export class ActionService {
       }
 
       const executable = await resolveMonocoExecutable();
-      const cmd = `${executable} agent list --json`;
+      const cmd = `${executable} agent action list --json`;
       console.log(`[Monoco] Executing: ${cmd}`);
 
       cp.exec(cmd, { cwd: rootPath }, (err, stdout, _stderr) => {
@@ -65,11 +65,15 @@ export class ActionService {
           return;
         }
         try {
-          const actions = JSON.parse(stdout);
+          const start = stdout.indexOf("[");
+          const end = stdout.lastIndexOf("]");
+          const jsonStr =
+            start >= 0 && end >= 0 ? stdout.substring(start, end + 1) : stdout;
+          const actions = JSON.parse(jsonStr);
           this._actions = actions;
           this._onDidChangeActions.fire(this._actions);
         } catch (e) {
-          console.error("Failed to parse monoco agent list output", e);
+          console.error("Failed to parse monoco agent action list output", e);
         }
       });
     } catch (e) {
@@ -87,7 +91,7 @@ export class ActionService {
 
     const executable = await resolveMonocoExecutable();
     const contextJson = JSON.stringify(context);
-    const cmd = `${executable} agent list --json --context '${contextJson}'`;
+    const cmd = `${executable} agent action list --json --context '${contextJson}'`;
 
     return new Promise((resolve) => {
       cp.exec(cmd, { cwd: rootPath }, (err, stdout, _stderr) => {
@@ -96,7 +100,11 @@ export class ActionService {
           return resolve([]);
         }
         try {
-          const actions = JSON.parse(stdout);
+          const start = stdout.indexOf("[");
+          const end = stdout.lastIndexOf("]");
+          const jsonStr =
+            start >= 0 && end >= 0 ? stdout.substring(start, end + 1) : stdout;
+          const actions = JSON.parse(jsonStr);
           resolve(actions);
         } catch (e) {
           console.error("Failed to parse filtered actions", e);
@@ -121,7 +129,11 @@ export class ActionService {
           return resolve([]);
         }
         try {
-          const meta = JSON.parse(stdout);
+          const start = stdout.indexOf("{");
+          const end = stdout.lastIndexOf("}");
+          const jsonStr =
+            start >= 0 && end >= 0 ? stdout.substring(start, end + 1) : stdout;
+          const meta = JSON.parse(jsonStr);
           resolve(meta.actions || []);
         } catch (e) {
           console.error("Failed to parse monoco issue inspect output", e);
