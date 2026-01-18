@@ -1,11 +1,15 @@
 ---
-id: "FEAT-0077"
-type: "feature"
-status: "closed"
-stage: "done"
-title: "Migrate Cockpit View to Pure LSP Architecture"
-parent: "EPIC-0005"
-solution: "Implemented Pure LSP architecture, removing Python dependency for the Kanban view."
+id: FEAT-0077
+type: feature
+status: closed
+stage: done
+title: Migrate Cockpit View to Pure LSP Architecture
+parent: EPIC-0005
+solution: Implemented Pure LSP architecture, removing Python dependency for the Kanban
+  view.
+tags:
+- '#EPIC-0005'
+- '#FEAT-0077'
 ---
 
 ## FEAT-0077: Migrate Cockpit View to Pure LSP Architecture

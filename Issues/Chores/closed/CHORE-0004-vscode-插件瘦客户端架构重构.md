@@ -5,14 +5,15 @@ type: chore
 status: closed
 stage: done
 title: VSCode 插件瘦客户端架构重构
-created_at: "2026-01-16T22:32:58"
-opened_at: "2026-01-16T22:32:58"
-updated_at: "2026-01-16T22:42:30"
-closed_at: "2026-01-16T22:42:30"
+created_at: '2026-01-16T22:32:58'
+opened_at: '2026-01-16T22:32:58'
+updated_at: '2026-01-16T22:42:30'
+closed_at: '2026-01-16T22:42:30'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#CHORE-0004'
 ---
 
 ## CHORE-0004: VSCode 插件瘦客户端架构重构

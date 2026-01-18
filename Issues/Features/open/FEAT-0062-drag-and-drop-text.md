@@ -5,17 +5,20 @@ type: feature
 status: open
 stage: draft
 title: Drag-and-Drop Workflow via Text/URL
-created_at: "2026-01-14T14:07:00"
-opened_at: "2026-01-14T14:07:00"
-updated_at: "2026-01-14T14:07:00"
+created_at: '2026-01-14T14:07:00'
+opened_at: '2026-01-14T14:07:00'
+updated_at: '2026-01-14T14:07:00'
 parent: EPIC-0011
 dependencies:
-  - FEAT-0059
+- FEAT-0059
 related: []
 tags:
-  - vscode
-  - interaction
-  - ux
+- '#EPIC-0011'
+- '#FEAT-0059'
+- '#FEAT-0062'
+- interaction
+- ux
+- vscode
 ---
 
 ## FEAT-0062: Drag-and-Drop Workflow via Text/URL

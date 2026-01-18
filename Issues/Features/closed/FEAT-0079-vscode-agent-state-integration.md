@@ -4,14 +4,16 @@ type: feature
 status: closed
 stage: done
 title: VS Code 扩展与 Agent 状态的集成
-created_at: "2026-01-15T23:19:38"
-updated_at: "2026-01-15T23:19:44"
-closed_at: "2026-01-15T23:19:44"
+created_at: '2026-01-15T23:19:38'
+updated_at: '2026-01-15T23:19:44'
+closed_at: '2026-01-15T23:19:44'
 parent: EPIC-0014
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0014'
+- '#FEAT-0079'
 priority: Medium
 author: Monoco
 ---

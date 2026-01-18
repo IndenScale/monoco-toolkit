@@ -5,14 +5,15 @@ type: fix
 status: closed
 stage: done
 title: Centralize workspace resolution in CLI to fix subdirectory context issues
-created_at: "2026-01-16T12:01:06"
-opened_at: "2026-01-16T12:01:06"
-updated_at: "2026-01-18T08:24:36"
-closed_at: "2026-01-18T08:24:36"
+created_at: '2026-01-16T12:01:06'
+opened_at: '2026-01-16T12:01:06'
+updated_at: '2026-01-18T08:24:36'
+closed_at: '2026-01-18T08:24:36'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FIX-0009'
 ---
 
 ## FIX-0009: Centralize workspace resolution in CLI to fix subdirectory context issues

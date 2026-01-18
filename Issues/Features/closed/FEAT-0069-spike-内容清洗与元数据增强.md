@@ -5,15 +5,17 @@ type: feature
 status: closed
 stage: done
 title: Spike 内容清洗与元数据增强
-created_at: "2026-01-15T13:35:38"
-opened_at: "2026-01-15T13:35:38"
-updated_at: "2026-01-15T13:37:41"
-closed_at: "2026-01-15T13:37:41"
+created_at: '2026-01-15T13:35:38'
+opened_at: '2026-01-15T13:35:38'
+updated_at: '2026-01-15T13:37:41'
+closed_at: '2026-01-15T13:37:41'
 parent: EPIC-0003
 solution: cancelled
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0003'
+- '#FEAT-0069'
 ---
 
 ## FEAT-0069: Spike 内容清洗与元数据增强

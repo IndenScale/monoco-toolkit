@@ -13,7 +13,9 @@ parent: FEAT-0063
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0063'
+- '#FIX-0008'
 ---
 
 ## FIX-0008: 启用孤儿问题的创建

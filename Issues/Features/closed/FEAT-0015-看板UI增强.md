@@ -4,14 +4,16 @@ type: feature
 status: closed
 stage: done
 title: 看板 UI 增强 (Kanban UI Enhancements)
-created_at: "2026-01-11T12:02:00.818615"
-opened_at: "2026-01-11T12:02:00.818615"
-updated_at: "2026-01-11T13:20:50.734671"
-closed_at: "2026-01-11T13:20:50.734702"
+created_at: '2026-01-11T12:02:00.818615'
+opened_at: '2026-01-11T12:02:00.818615'
+updated_at: '2026-01-11T13:20:50.734671'
+closed_at: '2026-01-11T13:20:50.734702'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0003'
+- '#FEAT-0015'
 parent: EPIC-0003
 uid: 78a1a1
 ---
