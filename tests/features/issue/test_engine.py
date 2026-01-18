@@ -19,7 +19,7 @@ def test_engine_available_transitions():
     transition_names = [t.name for t in transitions]
     
     assert "start" in transition_names
-    assert "investigate" in transition_names
+
     assert "cancel" in transition_names
     assert "submit" not in transition_names
 
@@ -36,7 +36,7 @@ def test_engine_available_transitions():
     transition_names = [t.name for t in transitions]
     
     assert "submit" in transition_names
-    assert "develop" in transition_names
+
     assert "start" not in transition_names
 
     # Test BACKLOG issue

@@ -1,58 +1,94 @@
-# Monoco: 驾驭智能体
+# Monoco Toolkit
 
-> **在狂暴的 AI 动力与人类有限的带宽之间，建立一道确定性的屏障。**
+[![Version](https://img.shields.io/pypi/v/monoco-toolkit)](https://pypi.org/project/monoco-toolkit/)
+[![License](https://img.shields.io/github/license/IndenScale/Monoco)](LICENSE)
 
-LLM 时代的生产力正以垂直曲线爆发。一个 Agent 可以 24/7 不断执行任务、产生海量数据，而人类的生物性信息带宽是有限的。当 Agent 的规模从一变成一百，系统的瓶颈不再是"智能不足"，而是"无法驾驭"。
+> **面向 Agentic Engineering (智能体工程) 的核心操作系统。**
+>
+> 将 AI Agent 锚定在确定性的工作流中。把模糊的“对话”转化为结构化、可验证、可交付的工程单元。
 
-**Monoco 就是你的驾驶舱。**
+---
 
-它存在的目的不是为了"观察"代理，而是为了"封装"代理。它在 LLM 原始且狂暴的执行力与人类严谨且有限的决策带宽之间，建立了一套人机对齐的控制界面。它确保所有的智能体行为，最终都坍缩为你所预期的结果。
+## ⚡️ 为什么选择 Monoco?
 
-## 工作流: 规划 - 执行 - 审核 - 归档
+在 LLM 时代，瓶颈不再是**智能**，而是**控制**。
 
-Monoco 将智能体的执行过程纳入一个清晰的循环:
+生成代码很容易，但要管理数以千计的 Agent 生成任务、验证其产出、并维护项目状态的一致性却非常困难。**Monoco** 是连接原始 AI 算力与严谨工程纪律之间的控制平面。
 
-1. **规划 (Plan)**: 通过 **Project → Epic → Feature** 的层级分解，将复杂艰巨的任务拆解为可执行的最小单元。
-2. **执行 (Execute)**: Agent 根据 Issue 中定义的验收标准自主工作，所有中间状态通过结构化文件持久化。
-3. **审核 (Review)**: 人类通过 Kanban 看板实时监控任务进展，仅在关键决策点介入。
-4. **归档 (Archive)**: 完成的任务自动流转至归档状态，形成可追溯的项目历史。
+Monoco 掌管开发过程中的 **"BizOps 逻辑"**，让你在一个统一的、版本控制的环境中编排人类与 AI 的协作。
 
-## 控制矩阵
+## 🌟 核心特性
 
-- **任务锚定 (Issues)**: 通过结构化的文件定义任务，为 Agent 设定明确的活动范围和验收标准。
-- **确定性接口 (CLI)**: 作为 Agent 的感官延伸，为其提供确定性的、结构化的项目感知能力，消除过度联想。
-- **意图大盘 (Kanban)**: 高带宽的可视化控制台，让人类通过极低的操作成本完成高频的任务审计与状态流转。
+### 1. Issue as Code (任务即代码)
 
-## 快速上手
+像管理代码一样管理你的项目任务。
 
-### 1. 安装控制套件
+- **Markdown 原生**: 所有的任务 (Epic, Feature, Chore) 都以结构化的 Markdown 文件存储在仓库中。
+- **Git 驱动**: 将你的路线图纳入版本控制。通过 Pull Request 审查需求变更。
+- **统一上下文**: 为 AI Agent 提供标准化的、无幻觉的状态表达。
+
+### 2. 智能体驾驶舱 (VS Code 扩展)
+
+拒绝上下文切换。直接在编辑器中管理完整的 Agent 工作流。
+
+- **原生看板 (Kanban)**: 无需离开 VS Code 即可可视化并拖拽流转任务。
+- **层级树视图**: 从顶层的宏大叙事 (Epic) 逐级钻取至原子的实现任务 (Task)。
+- **智能体绑定**: 将特定的 Agent Provider (Gemini, Claude 等) 绑定到具体的任务上下文中。
+
+### 3. 可追溯的执行
+
+- **确定性状态机**: 每个任务都遵循严格的生命周期 (提议 -> 批准 -> 进行中 -> 审查 -> 完成)。
+- **审计追踪**: Agent 的行为与决策直接记录在任务文件中。
+- **健全性检查**: 内置 Linter 确保任务定义在执行前是完整且合法的。
+
+## 🚀 快速开始
+
+### 安装
+
+Monoco 作为一个 Python CLI 工具发布。
 
 ```bash
 pip install monoco-toolkit
 ```
 
-### 2. 初始化工作流
+### 初始化
+
+将任意目录转化为 Monoco 工作空间。
 
 ```bash
 monoco init
 ```
 
-### 3. 掌握全局实况
+### 基本工作流
 
-启动后台控制中枢:
+1.  **计划**: 创建一个新的功能需求。
+    ```bash
+    monoco issue create feature -t "实现深色模式"
+    ```
+2.  **编辑**: 在生成的 Markdown 文件中细化需求。
+3.  **可视化**: 通过 VS Code 或 CLI 打开看板。
+    ```bash
+    # 启动本地服务
+    monoco serve
+    ```
 
-```bash
-monoco serve
-```
+## 📦 VS Code 扩展
 
-在任意位置启动可视化看板控制台:
+**Monoco VS Code Extension** 是工具套件的主要可视化界面。
 
-```bash
-npx @monoco-io/kanban
-```
+- **市场安装**: 搜索 `Monoco`.
+- **快捷键**: `Cmd+Shift+P` -> `Monoco: Open Kanban Board`.
 
-访问 `http://localhost:3123`（或终端显示的地址）即可进入你的驾驶舱。
+## 🛠️ 技术栈与架构
 
----
+- **核心**: Python (CLI & 逻辑层)
+- **扩展**: TypeScript (VS Code 客户端 & LSP)
+- **数据**: 本地文件系统 (Markdown/YAML)
 
-_"车是用来开的，不是用来修的。"_
+## 🤝 贡献指南
+
+Monoco 为社区而生。我们欢迎对核心 CLI 和 VS Code 扩展的贡献。
+
+## 📄 开源协议
+
+MIT © [IndenScale](https://github.com/IndenScale)

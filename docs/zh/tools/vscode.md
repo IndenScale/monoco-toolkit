@@ -19,16 +19,14 @@ Monoco VS Code 扩展 (`monoco-vscode`) 是 Monoco Toolkit 的官方编辑器集
 - **跳转定义 (Go to Definition)**:
   - 支持 `Ctrl+Click` (macOS `Cmd+Click`) 点击 Issue ID，直接跳转到对应的 Markdown 文件位置。
 
-### 2. 可视化看板 (Cockpit View)
+### 2. 可视化界面 (Visual Interface)
 
-集成在 VS Code 活动栏 (Activity Bar) 中的可视化管理界面。
+集成在 VS Code 活动栏 (Activity Bar) 中的管理界面。
 
-- **Monoco Kanban**: 提供全局任务的看板视图，直观展示 Epic/Feature/Bug 的流动。
-- **实时同步**: 通过 SSE (Server-Sent Events) 与本地 Daemon 保持毫秒级同步，外部修改（如 CLI 操作）会即时反映在试图中。
+- **Issue Explorer**: 提供树状视图，展示 Workspace 内的所有 Issue。
 - **快捷操作**:
   - 创建新 Issue。
-  - 点击卡片打开对应的 Markdown 文件。
-  - 查看和筛选执行配置 (Execution Profiles)。
+  - 点击节点打开对应的 Markdown 文件。
 
 ### 3. 运行时管理 (Runtime Management)
 
@@ -42,10 +40,10 @@ Monoco VS Code 扩展 (`monoco-vscode`) 是 Monoco Toolkit 的官方编辑器集
 
 ## 架构设计 (Architecture)
 
-目前扩展处于 "Hybrid" 阶段，同时包含 LSP 和 Legacy Webview 逻辑:
+扩展采用标准的 Client-Server 架构:
 
 - **Client (`/client`)**:
-  - 负责 VS Code UI 集成 (Webview, Commands)。
+  - 负责 VS Code UI 集成与命令注册。
   - 管理 Language Client 生命周期。
   - 负责与 Monoco Daemon (Python) 的 HTTP/SSE 通信。
 - **Server (`/server`)**:
@@ -56,4 +54,3 @@ Monoco VS Code 扩展 (`monoco-vscode`) 是 Monoco Toolkit 的官方编辑器集
 ## 配置项 (Configuration)
 
 - `monoco.apiBaseUrl`: Monoco Daemon API 地址 (默认: `http://127.0.0.1:8642/api/v1`)
-- `monoco.webUrl`: Monoco Web UI 地址 (默认: `http://127.0.0.1:8642`)

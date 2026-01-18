@@ -152,7 +152,8 @@ def create_issue_file(
     get_engine().enforce_policy(metadata)
 
     # Serialize metadata
-    yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
+    # Explicitly exclude actions and path from file persistence
+    yaml_header = yaml.dump(metadata.model_dump(exclude_none=True, mode='json', exclude={'actions', 'path'}), sort_keys=False, allow_unicode=True)
     
     # Inject Self-Documenting Hints (Interactive Frontmatter)
     if "parent:" not in yaml_header:
@@ -210,19 +211,13 @@ def get_available_actions(meta: IssueMetadata) -> List[Any]:
     for t in transitions:
         command = t.command_template.format(id=meta.id) if t.command_template else ""
         
-        # Determine task if it's an agent action
-        task = None
-        if t.name == "develop":
-            task = "develop"
-        
         actions.append(IssueAction(
             label=t.label,
             icon=t.icon,
             target_status=t.to_status if t.to_status != meta.status or t.to_stage != meta.stage else None,
             target_stage=t.to_stage if t.to_stage != meta.stage else None,
             target_solution=t.required_solution,
-            command=command,
-            task=task
+            command=command
         ))
 
     return actions
@@ -446,7 +441,8 @@ def update_issue(
         raise ValueError(f"Failed to validate updated metadata: {e}")
         
     # Serialize back
-    new_yaml = yaml.dump(updated_meta.model_dump(exclude_none=True, mode='json'), sort_keys=False, allow_unicode=True)
+    # Explicitly exclude actions and path from file persistence
+    new_yaml = yaml.dump(updated_meta.model_dump(exclude_none=True, mode='json', exclude={'actions', 'path'}), sort_keys=False, allow_unicode=True)
     
     # Reconstruct File
     match_header = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)

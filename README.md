@@ -1,58 +1,94 @@
-# Monoco: Harnessing AI Agents
+# Monoco Toolkit
 
-> **The control interface between raw AI velocity and human information bandwidth.**
+[![Version](https://img.shields.io/pypi/v/monoco-toolkit)](https://pypi.org/project/monoco-toolkit/)
+[![License](https://img.shields.io/github/license/IndenScale/Monoco)](LICENSE)
 
-Production in the LLM era is exploding along a vertical curve. A single AI agent can work 24/7, generating massive amounts of intermediate data that far exceeds the biological information bandwidth of a human supervisor. When one agent becomes a hundred, the bottleneck is no longer "intelligence"—it is "command and control."
+> **The Operating System for Agentic Engineering.**
+>
+> Ground your AI Agents into deterministic workflows. Turn vague "chats" into structured, validatable, and shippable engineering units.
 
-**Monoco is the Cockpit.**
+---
 
-It doesn't just "run" agents; it "encapsulates" them. It provides a deterministic barrier between the chaotic, raw execution power of LLMs and the rigorous, finite decision bandwidth of human engineers. It ensures that every agentic action eventually collapses into the outcome you intended.
+## ⚡️ Why Monoco?
 
-## Workflow: Plan - Execute - Review - Archive
+In the era of LLMs, the bottleneck isn't **intelligence**—it's **control**.
 
-Monoco channels agent execution into a clear cycle:
+Generating code is easy. Managing the lifecycle of thousands of agent-generated tasks, validating their outputs, and maintaining a coherent project state is hard. **Monoco** is the missing control plane that bridges the gap between raw AI velocity and strict engineering rigor.
 
-1. **Plan**: Decompose complex missions through **Project → Epic → Feature** hierarchies into executable atomic units.
-2. **Execute**: Agents work autonomously based on acceptance criteria defined in Issues, with all intermediate states persisted as structured files.
-3. **Review**: Humans monitor progress through the Kanban dashboard, intervening only at critical decision points.
-4. **Archive**: Completed tasks automatically transition to archived states, forming a traceable project history.
+Monoco handles the **"BizOps Logic"** of your development process, allowing you to orchestrate human and AI labor within a unified, version-controlled environment.
 
-## The Control Matrix
+## 🌟 Core Features
 
-- **Task Anchors (Issues)**: Define missions via structured files, setting clear boundaries and acceptance criteria for agents.
-- **Deterministic Interface (CLI)**: Acts as a sensory extension for LLMs, providing them with structured perception of project state and eliminating hallucinated guesses.
-- **Mission Dashboard (Kanban)**: A high-fidelity visual console that allows humans to audit tasks and transition states with minimal cognitive load.
+### 1. Issue as Code (IaaC)
 
-## Quick Start
+Treat your project management like your code.
 
-### 1. Install the Control Suite
+- **Markdown Native**: All tasks (Epics, Features, Chores) are stored as structured Markdown files in your repository.
+- **Git Backed**: Version control your roadmap. Review changes to requirements via Pull Requests.
+- **Universal Context**: Provides a standardized, hallucination-free state representation for AI Agents.
+
+### 2. The Agent Cockpit (VS Code Extension)
+
+Stop context switching. Manage your entire agentic workflow directly inside your editor.
+
+- **Native Kanban Board**: Visualize and drag-and-drop tasks without leaving VS Code.
+- **Hierarchical Tree View**: Drill down from high-level Epics to atomic Implementation Tasks.
+- **Agent Integration**: Bind specific Agent Providers (Gemini, Claude, etc.) to specific tasks.
+
+### 3. Traceable Execution
+
+- **Deterministic State Machine**: Every task follows a strict lifecycle (Proposed -> Approved -> Doing -> Review -> Done).
+- **Audit Trails**: Agents log their actions and decisions directly into the task file.
+- **Sanity Checks**: Built-in linters ensure your task definitions are complete and valid before execution.
+
+## 🚀 Quick Start
+
+### Installation
+
+Monoco is available as a Python CLI tool.
 
 ```bash
 pip install monoco-toolkit
 ```
 
-### 2. Initialize the Workflow
+### Initialization
+
+Turn any directory into a Monoco workspace.
 
 ```bash
 monoco init
 ```
 
-### 3. Take Control
+### Workflow
 
-Start the backend control hub:
+1.  **Plan**: Create a new feature request.
+    ```bash
+    monoco issue create feature -t "Implement Dark Mode"
+    ```
+2.  **Edit**: Refine the requirements in the generated markdown file.
+3.  **Visualize**: Open the board in VS Code or via CLI.
+    ```bash
+    # Starts the local server
+    monoco serve
+    ```
 
-```bash
-monoco serve
-```
+## 📦 Extension for VS Code
 
-Then, launch the visual mission dashboard from anywhere:
+The **Monoco VS Code Extension** is the primary visual interface for the toolkit.
 
-```bash
-npx @monoco-io/kanban
-```
+- **Install from Marketplace**: Search for `Monoco`.
+- **Keybinding**: `Cmd+Shift+P` -> `Monoco: Open Kanban Board`.
 
-Visit `http://localhost:3123` (or the URL displayed in your terminal) to enter your cockpit.
+## 🛠️ Tech Stack & Architecture
 
----
+- **Core**: Python (CLI & Logic Layer)
+- **Extension**: TypeScript (VS Code Client & LSP)
+- **Data**: Local Filesystem (Markdown/YAML)
 
-_"Cars are made to drive, not to fix."_
+## 🤝 Contributing
+
+Monoco is designed for the community. We welcome contributions to both the core CLI and the VS Code extension.
+
+## 📄 License
+
+MIT © [IndenScale](https://github.com/IndenScale)
