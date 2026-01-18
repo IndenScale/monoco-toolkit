@@ -5,14 +5,15 @@ type: feature
 status: closed
 stage: done
 title: Issue Ticket Validator
-created_at: "2026-01-16T08:56:11"
-opened_at: "2026-01-16T08:56:11"
-updated_at: "2026-01-16T09:45:45"
-closed_at: "2026-01-16T09:45:45"
+created_at: '2026-01-16T08:56:11'
+opened_at: '2026-01-16T08:56:11'
+updated_at: '2026-01-16T09:45:45'
+closed_at: '2026-01-16T09:45:45'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0082'
 ---
 
 ## FEAT-0082: Issue Ticket Validator

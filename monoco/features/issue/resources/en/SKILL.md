@@ -23,6 +23,24 @@ Use this skill to create and manage **Issues** (Universal Atoms) in Monoco proje
 - **🧹 CHORE**: Engineering maintenance, no direct user value. Mindset: Builder.
 - **🐞 FIX**: Correcting deviations. Mindset: Debugger.
 
+## Workflow Policies
+
+### 1. Strict Git Workflow
+
+Monoco enforces a **Feature Branch** model.
+
+- **Start**: Must use `monoco issue start <ID> --branch` to start working. This creates a `feat/<ID>-<slug>` branch.
+- **Protected Main**: **NO** direct modification on `main`, `master`, or `production` branches. Linter will block this.
+- **Submit**: Run `monoco issue submit <ID>` before PR to clean up and validate.
+
+### 2. File Tracking
+
+Agents must track modified files to maintain Self-Contained Context.
+
+- **Mechanism**: Issue Ticket Front Matter contains a `files: []` field.
+- **Automated (Recommended)**: Run `monoco issue sync-files` inside the Feature Branch. It diffs against the base branch.
+- **Manual (Fallback)**: If working without branches, Agent MUST **actively** append modified paths to the `files` list.
+
 ## Guidelines
 
 ### Directory Structure & Naming
@@ -45,7 +63,6 @@ Issues are validated via `monoco issue lint`. key constraints:
 Use `monoco issue`:
 
 1. **Create**: `monoco issue create <type> --title "..."`
-
    - Params: `--parent <id>`, `--dependency <id>`, `--related <id>`, `--sprint <id>`, `--tags <tag>`
 
 2. **Transition**: `monoco issue open/close/backlog <id>`
@@ -56,7 +73,8 @@ Use `monoco issue`:
 
 5. **Modification**: `monoco issue start/submit/delete <id>`
 
-6. **Commit**: `monoco issue commit` (Atomic commit for issue files)
+6. **Sync**: `monoco issue sync-files [id]` (Sync code changes to Issue file)
+
 7. **Validation**: `monoco issue lint` (Enforces compliance)
 
 ## Validation Rules (FEAT-0082)
@@ -85,3 +103,9 @@ The `status` (folder) and `stage` (front matter) must be compatible:
 - **open**: Draft, Doing, Review, Done
 - **backlog**: Draft, Doing, Review
 - **closed**: Done
+
+### 5. Environment Policy
+
+Linter includes environment-aware guardrails:
+
+- 🛑 **Dirty Main Protection**: Fails if uncommitted changes are detected on protected branches (`main`/`master`).

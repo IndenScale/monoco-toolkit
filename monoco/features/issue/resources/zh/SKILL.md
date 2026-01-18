@@ -57,6 +57,24 @@ Monoco 不仅仅复刻 Jira，而是基于 **"思维模式 (Mindset)"** 重新�
 - **次要**: `CHORE` (工程维护/支撑) - 通常独立存在。
 - **原子性原则**: Feature = Design + Dev + Test + Doc + i18n。它们是一体的。
 
+## 工作流策略 (Workflow Policies)
+
+### 1. 严格 Git 工作流 (Strict Git Workflow)
+
+Monoco 强制采用 **Feature Branch** 模式。
+
+- **Start**: 必须使用 `monoco issue start <ID> --branch` 启动任务。这会自动创建 `feat/<ID>-<slug>` 分支。
+- **禁止主干开发**: **严禁** 直接在 `main`, `master`, `production` 分支上修改代码。Linter 会拦截此类行为。
+- **Submit**: 在提交 PR 前，运行 `monoco issue submit <ID>` 进行清理和预发布检查。
+
+### 2. 文件追踪 (File Tracking)
+
+为了保证上下文的自包含性 (Self-Contained Context)，Agent 必须记录修改过的文件。
+
+- **机制**: Issue Ticket 的 Front Matter 包含 `files: []` 字段。
+- **自动化 (推荐)**: 在 Feature Branch 中运行 `monoco issue sync-files`。它会自动对比当前分支与 Base 分支的差异并更新列表。
+- **手动 (备选)**: 如果进行非分支开发，Agent 必须**主动**将修改的文件路径写入 `files` 列表。
+
 ## 准则 (Guidelines)
 
 ### 目录结构
@@ -81,7 +99,8 @@ Monoco 不仅仅复刻 Jira，而是基于 **"思维模式 (Mindset)"** 重新�
 
 5. **Modification**: `monoco issue start/submit/delete <id>`
 
-6. **Commit**: `monoco issue commit` (原子化提交 Issue 文件)
+6. **Sync**: `monoco issue sync-files [id]` (同步代码变更到 Issue 文件)
+
 7. **Validation**: `monoco issue lint` (强制执行合规性检查)
 
 ## 合规与结构校验 (Validation Rules)
@@ -111,3 +130,9 @@ Monoco 不仅仅复刻 Jira，而是基于 **"思维模式 (Mindset)"** 重新�
 - **open**: Draft, Doing, Review, Done
 - **backlog**: Draft, Doing, Review
 - **closed**: Done
+
+### 5. 环境策略 (Environment Policy)
+
+Linter 包含环境感知防护：
+
+- 🛑 **Dirty Main Protection**: 当检测到处于受保护分支 (`main`/`master`) 且存在未提交变更时，Lint 将失败并阻止操作。
