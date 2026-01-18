@@ -8,7 +8,7 @@ parent: "EPIC-0005"
 solution: "Implemented Pure LSP architecture, removing Python dependency for the Kanban view."
 ---
 
-# Feature: Migrate Cockpit View to Pure LSP Architecture
+## FEAT-0077: Migrate Cockpit View to Pure LSP Architecture
 
 本特性旨在将 VS Code 扩展的 Cockpit (Kanban) 视图从当前的 Hybrid 架构（Webview <-> HTTP Daemon）迁移到 Pure LSP 架构（Webview <-> VS Code Client <-> LSP Server）。
 
@@ -65,7 +65,7 @@ solution: "Implemented Pure LSP architecture, removing Python dependency for the
 - [x] **Undo Support**: 在看板中拖拽 Issue 状态后，在 VS Code 中按 `Cmd+Z` 可以撤销该变更。
 - [x] **Realtime Sync**: 在外部修改 `.md` 文件，看板应在 100ms 内自动刷新（通过 LSP `onDidChangeWatchedFiles` 触发通知）。
 
-## 4. 技术任务 (Tasks)
+## Technical Tasks
 
 - [x] **LSP Protocol Extension**: 定义用于看板通信的 LSP Custom Requests (e.g., `monoco/getAllIssues`, `monoco/updateIssue`).
 - [x] **Server Implementation**:
@@ -77,3 +77,7 @@ solution: "Implemented Pure LSP architecture, removing Python dependency for the
   - [x] 重写 `MonocoKanbanProvider` 以使用 `languageClient.sendRequest`。
   - [x] 桥接 LSP Notification 到 Webview `postMessage`。
 - [x] **Cleanup**: 移除扩展中自动启动 Daemon 的逻辑。
+
+## Review Comments
+
+- [x] Self-Review

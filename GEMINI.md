@@ -48,5 +48,18 @@ Monoco CLI 被设计为 **Agent 原生接口**。
 
 - **扫描**: `monoco i18n scan` (检查缺失的翻译)
 - **结构**:
-  - 根文件: `FILE_ZH.md`
-  - 子目录: `folder/zh/file.md`
+  - Root files: `FILE_ZH.md`
+  - Subdirs: `folder/zh/file.md`
+
+### Release Management
+
+### 发布管理
+
+Manage release lifecycle and versioning.
+管理发布生命周期和版本控制。
+
+- **Set Version**: `python Toolkit/scripts/set_version.py <version>` (Update version in all manifests)
+- **设置版本**: `python Toolkit/scripts/set_version.py <version>` (更新所有清单文件中的版本)
+
+- **Release Check**: `Toolkit/scripts/run_release_checks.sh <version>` (Run full validation suite)
+- **发布检查**: `Toolkit/scripts/run_release_checks.sh <version>` (运行完整验证套件)

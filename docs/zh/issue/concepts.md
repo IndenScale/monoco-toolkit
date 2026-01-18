@@ -42,16 +42,14 @@ Monoco 使用一种独特的双层状态机来管理 Issue 的生命周期，以
 - **Prefix**: ID 前缀 (e.g., `STORY`)
 - **Folder**: 存储目录 (e.g., `Stories`)
 
-### 2.2 工作流 (Workflows) -> 可配置
+### 2.2 状态流转 (Transitions)
 
-所有的状态转移 (Transition) 均由一组明确的规则定义。一个 Transition 包含:
+Issue 的生命周期由状态流转驱动。Monoco 倾向于作为一个灵活的追踪系统，而非强制执行工具。
 
-- **Trigger**: 起始状态 (From Status/Stage)
-- **Action**: 动作名称 (e.g., `submit`)
-- **Effect**: 目标状态 (To Status/Stage)
-- **Side Effect**: 触发的 CLI 命令 (e.g., 自动运行 Agent)
+- **Status Transition**: 物理文件的移动 (e.g. Open -> Closed)。
+- **Stage Transition**: 逻辑进度的更新 (e.g. Doing -> Review)。
 
-这种设计允许你在这个状态机上挂载各种自动化逻辑，例如“当进入 Review 阶段时，自动运行 AI Code Review Agent”。
+这种设计允许团队灵活定义自己的协作模式，而不被硬编码的规则束缚。
 
 ## 3. 引用拓扑 (Topology)
 

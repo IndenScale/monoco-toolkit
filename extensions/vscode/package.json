@@ -2,7 +2,7 @@
   "name": "monoco-vscode",
   "displayName": "Monoco",
   "description": "Native Kanban & Agent Management for Monoco. Manage tasks, visualize workflows, and orchestrate AI agents directly in VS Code.",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "publisher": "indenscale",
   "repository": {
     "type": "git",
@@ -114,13 +114,6 @@
         },
         {
           "type": "webview",
-          "id": "monoco.agentView",
-          "name": "Agents",
-          "icon": "$(hubot)",
-          "when": "config.monoco.useNativeTree != false"
-        },
-        {
-          "type": "webview",
           "id": "monoco.kanbanView",
           "name": "Project Board (Legacy)",
           "icon": "$(layout-kanban)",
@@ -170,16 +163,6 @@
           "type": "boolean",
           "description": "Use native TreeView instead of Webview for issue list (recommended for better drag & drop support).",
           "default": true
-        },
-        "monoco.agent.defaultProvider": {
-          "type": "string",
-          "description": "Default AI agent provider.",
-          "default": "gemini"
-        },
-        "monoco.agent.actionProviders": {
-          "type": "object",
-          "description": "Map of action names to agent providers.",
-          "default": {}
         }
       }
     },

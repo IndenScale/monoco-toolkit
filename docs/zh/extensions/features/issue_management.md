@@ -2,21 +2,20 @@
 
 该模块负责项目任务的可视化管理与编辑支持。
 
-## 2.1 看板视图 (`monoco-kanban`)
+## 2.1 Issue 资源管理器 (Issue Explorer)
 
 - **视图交互**
-  - **展示形式**: 基于 Webview 的看板界面。
-  - **分组逻辑**: 按 Issue 状态（Open, In Progress, Done 等）分组展示。
-  - **状态更新**: 支持拖拽卡片或使用右键菜单更新 Issue 状态。
-  - **上下文切换**: 读取 `.monoco` 元数据，支持在不同项目（Project）间切换。
+  - **展示形式**: 基于 VS Code TreeView 的原生树状视图。
+  - **分组逻辑**: 按 Issue 类型（Epic, Feature, etc.）或状态分组展示。
+  - **快捷操作**: 支持在树节点上直接创建子 Issue 或进行状态流转。
+  - **上下文切换**: 由 Workspace 自动识别项目边界。
 
 - **数据同步**
-  - **读取**: 通过 LSP 请求 `monoco/getAllIssues` 获取最新任务列表。
-  - **写入**: 通过 LSP 请求 `monoco/updateIssue` 将变更回写到文件系统。
-  - **实时性**: 监听文件变更事件，自动刷新看板数据。
+  - **读取**: 通过 LSP 请求获取最新任务列表。
+  - **写入**: 所有的增删改查直接通过 File System API 操作 Markdown 文件，由 File Watcher 保持同步。
 
 - **创建任务**
-  - **入口**: 看板界面的 "New Issue" 按钮。
+  - **入口**: 视图标题栏的 "Create Issue" 按钮。
   - **生成逻辑**: 自动生成包含 Frontmatter 元数据的 Markdown 文件。
   - **文件命名**: 遵循 `ID-Title.md` 的规范格式。
 

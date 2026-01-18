@@ -8,10 +8,6 @@ import { promisify } from "util";
 
 import * as vscode from "vscode";
 import { checkAndBootstrap, resolveMonocoExecutable } from "./bootstrap";
-import { AgentStateService } from "./services/AgentStateService";
-import { ActionService } from "./services/ActionService";
-import { bootstrapActions } from "./services/ActionBootstrap";
-
 import { LanguageClientManager } from "./lsp/LanguageClientManager";
 import { KanbanProvider } from "./webview/KanbanProvider";
 import { IssueTreeProvider } from "./views/IssueTreeProvider";
@@ -19,7 +15,6 @@ import { ProviderRegistry } from "./providers/ProviderRegistry";
 import { CommandRegistry } from "./commands/CommandRegistry";
 import { VIEW_TYPES } from "../../shared/constants";
 import { IssueFilterWebviewProvider } from "./views/IssueFilterWebviewProvider";
-import { AgentWebviewProvider } from "./views/AgentWebviewProvider";
 
 const execAsync = promisify(exec);
 let outputChannel: vscode.OutputChannel;
@@ -130,22 +125,15 @@ export async function activate(context: vscode.ExtensionContext) {
   outputChannel = vscode.window.createOutputChannel("Monoco");
   outputChannel.appendLine("Monoco extension activated!");
 
-  // 1. Initialize Agent State Service
-  const agentStateService = new AgentStateService(context, runMonoco);
-
-  // 2. Bootstrap default actions
-  await bootstrapActions();
-
   // 4. Start LSP client
   lspManager = new LanguageClientManager(context, outputChannel);
 
   // 5. Initialize services
-  const actionService = ActionService.getInstance();
+
   const kanbanProvider = new KanbanProvider(
     context.extensionUri,
     lspManager,
     runMonoco,
-    agentStateService,
     outputChannel,
   );
 
@@ -167,19 +155,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.registerWebviewViewProvider(
       "monoco.issueFilterView",
       issueFilterProvider,
-    ),
-  );
-
-  // 5.3 Initialize Agent Webview Provider
-  const agentWebviewProvider = new AgentWebviewProvider(
-    context.extensionUri,
-    agentStateService,
-    actionService,
-  );
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      "monoco.agentView",
-      agentWebviewProvider,
     ),
   );
 
@@ -262,14 +237,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // 6. Register providers
-  const providerRegistry = new ProviderRegistry(context, actionService);
+  const providerRegistry = new ProviderRegistry(context);
   const issueFieldControl = providerRegistry.registerAll();
 
   // 7. Register commands
   const commandRegistry = new CommandRegistry(context, {
     kanbanProvider,
-    actionService,
-    agentStateService,
+
     issueFieldControl,
     runMonoco,
     checkDependencies,
@@ -283,26 +257,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.registerWebviewViewProvider(
       VIEW_TYPES.KANBAN,
       kanbanProvider,
-    ),
-  );
-
-  // 10. Register action template provider
-  const templateProvider = new (class
-    implements vscode.TextDocumentContentProvider
-  {
-    provideTextDocumentContent(uri: vscode.Uri): string {
-      const name = uri.path.split(".")[0];
-      const action = actionService.getActions().find((e) => e.name === name);
-      if (action) {
-        return `---\nname: ${action.name}\ndescription: ${action.description}\nprovider: ${action.provider}\n---\n\n${action.template}`;
-      }
-      return "Action not found";
-    }
-  })();
-  context.subscriptions.push(
-    vscode.workspace.registerTextDocumentContentProvider(
-      "monoco-action",
-      templateProvider,
     ),
   );
 

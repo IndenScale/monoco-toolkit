@@ -12,14 +12,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
     solutions=["implemented", "cancelled", "wontfix", "duplicate"],
     workflows=[
         # --- UNIVERSAL AGENT ACTIONS ---
-        TransitionConfig(
-            name="investigate",
-            label="Investigate",
-            icon="$(telescope)",
-            to_status="open",  # Dummy, doesn't change status
-            command_template="monoco agent run investigate",
-            description="Run agent investigation"
-        ),
+
 
         # --- OPEN -> OPEN Transitions (Stage changes) ---
         TransitionConfig(
@@ -34,17 +27,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             description="Start working on the issue"
         ),
         
-        TransitionConfig(
-            name="develop",
-            label="Develop",
-            icon="$(tools)",
-            from_status="open",
-            from_stage="doing",
-            to_status="open",
-            to_stage="doing",
-            command_template="monoco agent run develop",
-            description="Run agent development"
-        ),
+
 
         TransitionConfig(
             name="stop",
