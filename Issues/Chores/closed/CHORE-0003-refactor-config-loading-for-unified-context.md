@@ -5,14 +5,15 @@ type: chore
 status: closed
 stage: done
 title: 重构配置加载以统一上下文
-created_at: "2026-01-15T12:55:25"
-opened_at: "2026-01-15T12:55:25"
-updated_at: "2026-01-15T13:06:28"
-closed_at: "2026-01-15T13:06:28"
+created_at: '2026-01-15T12:55:25'
+opened_at: '2026-01-15T12:55:25'
+updated_at: '2026-01-15T13:06:28'
+closed_at: '2026-01-15T13:06:28'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#CHORE-0003'
 ---
 
 ## CHORE-0003: 重构配置加载以统一上下文

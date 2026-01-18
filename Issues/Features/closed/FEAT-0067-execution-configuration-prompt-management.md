@@ -5,15 +5,17 @@ type: feature
 status: closed
 stage: done
 title: 执行配置与提示词管理
-created_at: "2026-01-15T08:55:53"
-opened_at: "2026-01-15T08:55:53"
-updated_at: "2026-01-15T13:22:55"
-closed_at: "2026-01-15T13:22:55"
+created_at: '2026-01-15T08:55:53'
+opened_at: '2026-01-15T08:55:53'
+updated_at: '2026-01-15T13:22:55'
+closed_at: '2026-01-15T13:22:55'
 parent: EPIC-0012
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0012'
+- '#FEAT-0067'
 ---
 
 ## FEAT-0067: 执行配置与提示词管理

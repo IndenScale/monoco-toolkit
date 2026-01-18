@@ -3,19 +3,21 @@ id: FIX-0005
 uid: fix-005-httpx
 type: fix
 status: closed
-stage: implemented
+stage: done
 title: 修复 CLI 运行时缺失 httpx 依赖
-created_at: "2026-01-13T16:35:15"
-opened_at: "2026-01-13T16:35:15"
-updated_at: "2026-01-13T16:41:12"
-closed_at: "2026-01-13T16:41:12"
-parent:
+created_at: '2026-01-13T16:35:15'
+opened_at: '2026-01-13T16:35:15'
+updated_at: '2026-01-13T16:41:12'
+closed_at: '2026-01-13T16:41:12'
+solution: implemented
+parent: null
 dependencies: []
 related: []
 tags:
-  - cli
-  - dependency
-  - bug
+- '#FIX-0005'
+- bug
+- cli
+- dependency
 ---
 
 ## FIX-0005: 修复 CLI 运行时缺失 httpx 依赖
@@ -48,3 +50,17 @@ def capture(self, ...):
     except ImportError:
         pass # Telemetry is optional
 ```
+
+## Acceptance Criteria
+
+- [x] CLI 不再因为缺少 `httpx` 而崩溃。
+- [x] 在没有 `httpx` 的环境下，遥测逻辑被安全忽略。
+
+## Technical Tasks
+
+- [x] 实现 `monoco/core/telemetry.py` 的 Lazy Import 逻辑。
+- [x] 手动验证卸载 `httpx` 后的运行情况。
+
+## Review Comments
+
+- [x] Self-Review

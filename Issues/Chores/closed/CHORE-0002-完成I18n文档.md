@@ -4,12 +4,14 @@ type: chore
 status: closed
 stage: done
 title: 完善 monoco i18n 命令文档 (Complete i18n Docs)
-created_at: "2026-01-09"
+created_at: '2026-01-09'
 solution: completed
 tags:
-  - documentation
-  - i18n
-  - cli
+- '#CHORE-0002'
+- '#EPIC-0001'
+- cli
+- documentation
+- i18n
 parent: EPIC-0001
 uid: 7e54fe
 ---

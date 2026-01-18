@@ -5,15 +5,17 @@ type: feature
 status: closed
 stage: done
 title: DDD Issue 建模 (影子对象层)
-created_at: "2026-01-17T07:56:27"
-opened_at: "2026-01-17T07:56:27"
-updated_at: "2026-01-17T08:22:07"
-closed_at: "2026-01-17T08:22:07"
+created_at: '2026-01-17T07:56:27'
+opened_at: '2026-01-17T07:56:27'
+updated_at: '2026-01-17T08:22:07'
+closed_at: '2026-01-17T08:22:07'
 parent: EPIC-0015
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0015'
+- '#FEAT-0086'
 path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/FEAT-0086-ddd-issue-modeling-shadow-object-layer.md
 ---
 

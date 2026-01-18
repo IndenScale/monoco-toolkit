@@ -65,8 +65,15 @@ monoco init
     ```bash
     monoco issue create feature -t "Implement Dark Mode"
     ```
-2.  **Edit**: Refine the requirements in the generated markdown file.
-3.  **Visualize**: Open the board in VS Code or via CLI.
+2.  **Start**: Create a feature branch automatically.
+    ```bash
+    monoco issue start FEAT-001 --branch
+    ```
+3.  **Code & Sync**: Track modified files automatically.
+    ```bash
+    monoco issue sync-files
+    ```
+4.  **Visualize**: Open the board in VS Code or via CLI.
     ```bash
     # Starts the local server
     monoco serve

@@ -117,6 +117,7 @@ class IssueMetadata(BaseModel):
     dependencies: List[str] = []
     related: List[str] = []
     tags: List[str] = []
+    files: List[str] = []
     path: Optional[str] = None  # Absolute path to the issue file
     
     # Proxy UI Actions (Excluded from file persistence)

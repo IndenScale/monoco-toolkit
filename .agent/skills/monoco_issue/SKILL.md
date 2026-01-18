@@ -1,74 +1,66 @@
 ---
 name: monoco-issue
-description: Monoco Issue System 的官方技能定义。将 Issue 视为通用原子 (Universal Atom)，管理 Epic/Feature/Chore/Fix 的生命周期。
+description: Official skill for Monoco Issue System. Treats Issues as Universal Atoms, managing the lifecycle of Epic/Feature/Chore/Fix.
 ---
 
-# 自我管理 (Monoco Issue System)
+# Issue Management
 
-使用此技能在 Monoco 项目中创建和管理 **Issue** (通用原子)。该系统参考 Jira 表达体系，同时保持 "建设者 (Builder)" 和 "调试者 (Debugger)" 思维模式的隔离。
+Use this skill to create and manage **Issues** (Universal Atoms) in Monoco projects.
 
-## 核心本体论 (Core Ontology)
+## Core Ontology
 
-Monoco 不仅仅复刻 Jira，而是基于 **"思维模式 (Mindset)"** 重新定义工作单元。
+### 1. Strategy Layer
 
-### 1. 战略层 (Strategy)
+- **🏆 EPIC**: Grand goals, vision containers. Mindset: Architect.
 
-#### 🏆 EPIC (史诗)
+### 2. Value Layer
 
-- **Mindset**: _Architect_ (架构师)
-- **定义**: 跨越多个周期的宏大目标。它不是单纯的"大任务"，而是"愿景的容器"。
-- **产出**: 定义了系统的边界和核心价值。
+- **✨ FEATURE**: Value increments from user perspective. Mindset: Product Owner.
+- **Atomicity Principle**: Feature = Design + Dev + Test + Doc + i18n. They are one.
 
-### 2. 价值层 (Value)
+### 3. Execution Layer
 
-#### ✨ FEATURE (特性)
+- **🧹 CHORE**: Engineering maintenance, no direct user value. Mindset: Builder.
+- **🐞 FIX**: Correcting deviations. Mindset: Debugger.
 
-- **Mindset**: _Product Owner_ (产品负责人)
-- **定义**: 用户视角的价值增量。必须是可独立交付 (Shippable) 的垂直切片。
-- **Focus**: "Why" & "What" (用户想要什么？)。
-- **Prefix**: `FEAT-`
+## Workflow Policies
 
-### 3. 执行层 (Execution)
+### 1. Strict Git Workflow
 
-#### 🧹 CHORE (杂务)
+Monoco enforces a **Feature Branch** model.
 
-- **Mindset**: _Builder_ (建设者)
-- **定义**: **不产生**直接用户价值的工程性事务。
-- **场景**: 架构升级、写构建脚本、修复 CI/CD 流水线。
-- **Focus**: "How" (为了支撑系统运转，必须做什么)。
-- **Prefix**: `CHORE-`
+- **Start**: Must use `monoco issue start <ID> --branch` to start working. This creates a `feat/<ID>-<slug>` branch.
+- **Protected Main**: **NO** direct modification on `main`, `master`, or `production` branches. Linter will block this.
+- **Submit**: Run `monoco issue submit <ID>` before PR to clean up and validate.
 
-_(取代了 Task 概念)_
+### 2. File Tracking
 
-#### 🐞 FIX (修复)
+Agents must track modified files to maintain Self-Contained Context.
 
-- **Mindset**: _Debugger_ (调试者)
-- **定义**: 预期与现实的偏差。它是负价值的修正。
-- **Focus**: "Fix" (恢复原状)。
-- **Prefix**: `FIX-`
+- **Mechanism**: Issue Ticket Front Matter contains a `files: []` field.
+- **Automated (Recommended)**: Run `monoco issue sync-files` inside the Feature Branch. It diffs against the base branch.
+- **Manual (Fallback)**: If working without branches, Agent MUST **actively** append modified paths to the `files` list.
 
-_(取代了 Bug 概念)_
+## Guidelines
 
----
-
-**关系链**:
-
-- **主要**: `EPIC` (愿景) -> `FEATURE` (价值交付单元)
-- **次要**: `CHORE` (工程维护/支撑) - 通常独立存在。
-- **原子性原则**: Feature = Design + Dev + Test + Doc + i18n。它们是一体的。
-
-## 准则 (Guidelines)
-
-### 目录结构
+### Directory Structure & Naming
 
 `Issues/{CapitalizedPluralType}/{lowercase_status}/`
 
-- `{TYPE}`: `Epics`, `Features`, `Chores`, `Fixes`
-- `{STATUS}`: `open`, `backlog`, `closed`
+- **Types**: `Epics`, `Features`, `Chores`, `Fixes`
+- **Statuses**: `open`, `backlog`, `closed`
 
-### 路径流转
+### Structural Integrity
 
-使用 `monoco issue`:
+Issues are validated via `monoco issue lint`. key constraints:
+
+1. **Mandatory Heading**: `## {ID}: {Title}` must match front matter.
+2. **Min Checkboxes**: At least 2 checkboxes (AC/Tasks).
+3. **Review Protocol**: `## Review Comments` required for `review` or `done` stages.
+
+### Path Transitions
+
+Use `monoco issue`:
 
 1. **Create**: `monoco issue create <type> --title "..."`
    - Params: `--parent <id>`, `--dependency <id>`, `--related <id>`, `--sprint <id>`, `--tags <tag>`
@@ -81,4 +73,39 @@ _(取代了 Bug 概念)_
 
 5. **Modification**: `monoco issue start/submit/delete <id>`
 
-6. **Commit**: `monoco issue commit` (Atomic commit for issue files)
+6. **Sync**: `monoco issue sync-files [id]` (Sync code changes to Issue file)
+
+7. **Validation**: `monoco issue lint` (Enforces compliance)
+
+## Validation Rules (FEAT-0082)
+
+To ensure data integrity, all Issue tickets must follow these strict rules:
+
+### 1. Structural Consistency
+
+- Must contain a Level 2 Heading matching exactly: `## {ID}: {Title}`.
+- Example: `## FEAT-0082: Issue Ticket Validator`
+
+### 2. Content Completeness
+
+- **Checkboxes**: Minimum of 2 checkboxes required (one for AC, one for Tasks).
+- **Review Comments**: If `stage` is `review` or `done`, a `## Review Comments` section is mandatory and must not be empty.
+
+### 3. Checkbox Syntax & Hierarchy
+
+- Use only `- [ ]`, `- [x]`, `- [-]`, or `- [/]`.
+- **Inheritance**: If nested checkboxes exist, the parent state must reflect child states (e.g., if any child is `[/]`, parent must be `[/]`; if all children are `[x]`, parent must be `[x]`).
+
+### 4. State Matrix
+
+The `status` (folder) and `stage` (front matter) must be compatible:
+
+- **open**: Draft, Doing, Review, Done
+- **backlog**: Draft, Doing, Review
+- **closed**: Done
+
+### 5. Environment Policy
+
+Linter includes environment-aware guardrails:
+
+- 🛑 **Dirty Main Protection**: Fails if uncommitted changes are detected on protected branches (`main`/`master`).

@@ -4,15 +4,17 @@ type: feature
 status: closed
 stage: done
 title: Web 看板实现 (Web Kanban Implementation)
-created_at: "2026-01-10T21:21:08.666551"
-opened_at: "2026-01-10T21:21:08.666551"
-updated_at: "2026-01-10T21:34:06.593250"
-closed_at: "2026-01-10T21:34:06.593293"
+created_at: '2026-01-10T21:21:08.666551'
+opened_at: '2026-01-10T21:21:08.666551'
+updated_at: '2026-01-10T21:34:06.593250'
+closed_at: '2026-01-10T21:34:06.593293'
 solution: implemented
 dependencies: []
 related:
-  - EPIC-0003
-tags: []
+- EPIC-0003
+tags:
+- '#EPIC-0003'
+- '#FEAT-0029'
 uid: a8bcfe
 ---
 

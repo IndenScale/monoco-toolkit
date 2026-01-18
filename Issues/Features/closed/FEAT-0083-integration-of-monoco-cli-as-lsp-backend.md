@@ -5,14 +5,15 @@ type: feature
 status: closed
 stage: done
 title: Integration of Monoco CLI as LSP Backend
-created_at: "2026-01-16T10:16:06"
-opened_at: "2026-01-16T10:16:06"
-updated_at: "2026-01-16T10:40:38"
-closed_at: "2026-01-16T10:40:38"
+created_at: '2026-01-16T10:16:06'
+opened_at: '2026-01-16T10:16:06'
+updated_at: '2026-01-16T10:40:38'
+closed_at: '2026-01-16T10:40:38'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0083'
 ---
 
 ## FEAT-0083: Integration of Monoco CLI as LSP Backend

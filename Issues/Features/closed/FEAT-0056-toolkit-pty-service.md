@@ -4,20 +4,22 @@ type: feature
 status: closed
 stage: done
 title: Implement monoco-pty Service via WebSockets
-created_at: "2026-01-14T00:00:00"
-updated_at: "2026-01-14T08:24:53"
-closed_at: "2026-01-14T08:24:53"
+created_at: '2026-01-14T00:00:00'
+updated_at: '2026-01-14T08:24:53'
+closed_at: '2026-01-14T08:24:53'
 parent: EPIC-0010
 solution: implemented
 dependencies: []
 related: []
 tags:
-  - pty
-  - websocket
-  - cli
-  - daemon
+- '#EPIC-0010'
+- '#FEAT-0056'
+- cli
+- daemon
+- pty
+- websocket
 owner: Backend Engineer
-uid: "143695"
+uid: '143695'
 ---
 
 ## FEAT-0056: Implement monoco-pty Service via WebSockets

@@ -28,7 +28,12 @@ Monoco CLI 被设计为 **Agent 原生接口**。
 - **状态**: `monoco issue open|close|backlog <id>`
 - **检查**: `monoco issue lint` (手动编辑后必须运行)
 - **生命周期**: `monoco issue start|submit|delete <id>`
+- **上下文同步**: `monoco issue sync-files [id]`
 - **结构**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (例如 `Issues/Features/open/`)。不要偏离此结构。
+- **环境策略**:
+  - 必须使用 `monoco issue start --branch`。
+  - 受保护分支 (main/master) 仅限只读。
+  - Linter 会阻止在主分支直接修改代码。
 
 ### Spike (Research)
 

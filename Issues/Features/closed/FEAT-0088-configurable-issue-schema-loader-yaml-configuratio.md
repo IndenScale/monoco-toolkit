@@ -5,15 +5,17 @@ type: feature
 status: closed
 stage: done
 title: 可配置 Issue Schema 加载器 (YAML 配置)
-created_at: "2026-01-17T08:26:47"
-opened_at: "2026-01-17T08:26:47"
-updated_at: "2026-01-17T09:12:28"
-closed_at: "2026-01-17T09:12:28"
+created_at: '2026-01-17T08:26:47'
+opened_at: '2026-01-17T08:26:47'
+updated_at: '2026-01-17T09:12:28'
+closed_at: '2026-01-17T09:12:28'
 parent: EPIC-0015
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0015'
+- '#FEAT-0088'
 path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/FEAT-0088-configurable-issue-schema-loader-yaml-configuratio.md
 ---
 

@@ -4,14 +4,15 @@ type: feature
 status: closed
 stage: done
 title: Advanced Kanban Filter
-created_at: "2026-01-13T08:43:32.369535"
-opened_at: "2026-01-13T08:43:32.369535"
-updated_at: "2026-01-13T09:26:20.031330"
-closed_at: "2026-01-13T09:26:20.031367"
+created_at: '2026-01-13T08:43:32.369535'
+opened_at: '2026-01-13T08:43:32.369535'
+updated_at: '2026-01-13T09:26:20.031330'
+closed_at: '2026-01-13T09:26:20.031367'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0036'
 uid: e64f42
 ---
 

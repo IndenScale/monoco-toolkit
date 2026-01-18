@@ -5,15 +5,18 @@ type: feature
 status: closed
 stage: done
 solution: implemented
-title: "VS Code Extension Realignment: Implementation of Proxy Pattern"
-created_at: "2026-01-15T18:02:47"
-opened_at: "2026-01-15T18:02:47"
-updated_at: "2026-01-15T18:30:00"
-closed_at: "2026-01-15T18:30:00"
+title: 'VS Code Extension Realignment: Implementation of Proxy Pattern'
+created_at: '2026-01-15T18:02:47'
+opened_at: '2026-01-15T18:02:47'
+updated_at: '2026-01-15T18:30:00'
+closed_at: '2026-01-15T18:30:00'
 parent: EPIC-0013
 dependencies: []
 related: []
-tags: [extension]
+tags:
+- '#EPIC-0013'
+- '#FEAT-0075'
+- extension
 ---
 
 ## FEAT-0075: VS Code Extension Realignment: Implementation of Proxy Pattern

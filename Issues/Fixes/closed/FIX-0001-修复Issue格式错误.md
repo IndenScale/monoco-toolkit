@@ -4,12 +4,15 @@ type: fix
 status: closed
 stage: Done
 title: 修复 Issue 格式错误 (Fix Issue Formatting Errors)
-created_at: "2026-01-09"
+created_at: '2026-01-09'
 dependencies: []
 related:
-  - FEAT-0009
+- FEAT-0009
 solution: implemented
-tags: []
+tags:
+- '#EPIC-0002'
+- '#FEAT-0009'
+- '#FIX-0001'
 parent: EPIC-0002
 uid: dca954
 ---
