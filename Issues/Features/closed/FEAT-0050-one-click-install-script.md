@@ -13,7 +13,9 @@ parent: EPIC-0008
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0008'
+- '#FEAT-0050'
 ---
 
 ## FEAT-0050: 一键安装脚本

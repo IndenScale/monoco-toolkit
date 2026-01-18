@@ -5,12 +5,13 @@ type: epic
 status: open
 stage: draft
 title: LSP Cross-Project Navigation Architecture
-created_at: "2026-01-17T10:33:08"
-opened_at: "2026-01-17T10:33:08"
-updated_at: "2026-01-17T10:33:08"
+created_at: '2026-01-17T10:33:08'
+opened_at: '2026-01-17T10:33:08'
+updated_at: '2026-01-17T10:33:08'
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0016'
 ---
 
 ## EPIC-0016: LSP Cross-Project Navigation Architecture

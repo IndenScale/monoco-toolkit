@@ -5,15 +5,17 @@ type: feature
 status: closed
 stage: done
 title: Implement Skill Manager and Distribution
-created_at: "2026-01-15T15:56:16"
-opened_at: "2026-01-15T15:56:16"
-updated_at: "2026-01-15T17:03:40"
-closed_at: "2026-01-15T17:03:40"
+created_at: '2026-01-15T15:56:16'
+opened_at: '2026-01-15T15:56:16'
+updated_at: '2026-01-15T17:03:40'
+closed_at: '2026-01-15T17:03:40'
 parent: EPIC-0014
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0014'
+- '#FEAT-0073'
 ---
 
 ## FEAT-0073: Implement Skill Manager and Distribution

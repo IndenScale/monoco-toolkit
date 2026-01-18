@@ -4,17 +4,18 @@ type: epic
 status: closed
 stage: done
 title: Monoco 服务运行时 (Monoco Server Runtime)
-created_at: "2026-01-12T00:00:00"
-updated_at: "2026-01-15T13:42:54"
-closed_at: "2026-01-15T13:42:54"
+created_at: '2026-01-12T00:00:00'
+updated_at: '2026-01-15T13:42:54'
+closed_at: '2026-01-15T13:42:54'
 solution: implemented
 dependencies: []
 related: []
 tags:
-  - server
-  - daemon
-  - sse
-  - infrastructure
+- '#EPIC-0005'
+- daemon
+- infrastructure
+- server
+- sse
 progress: 3/3
 files_count: 0
 uid: 598eba
@@ -45,7 +46,7 @@ uid: 598eba
 - [x] [[FEAT-0012]]: 增强 CLI 与 Server 的多工作区支持 (Implemented)
 - [x] **SSE 事件推送实现**: 已在 `monoco.daemon.services.Broadcaster` 与 `/api/v1/events` 中实现。
 - [x] **统一文件监听服务 (Watcher Service)**: 已在 `monoco.daemon.services.IssueMonitor` 中实现，基于 `watchdog`。
-- [x] [[FEAT-0018]]: 运行时远程交互 (Deferred: 范围与 Chassis 项目重叠，延期处理)
+- [~] FEAT-XXXX: 运行时远程交互 (Deferred: 范围与 Chassis 项目重叠，延期处理)
 
 ## Review Comments
 

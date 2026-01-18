@@ -132,6 +132,28 @@ def create_issue_file(
         
     target_dir.mkdir(parents=True, exist_ok=True)
     
+    # Auto-Populate Tags with required IDs (Requirement: Maintain tags field with parent/deps/related/self IDs)
+    # Ensure they are prefixed with '#' for tagging convention if not present (usually tags are just strings, but user asked for #ID)
+    auto_tags = set(tags) if tags else set()
+    
+    # 1. Add Parent
+    if parent:
+        auto_tags.add(f"#{parent}")
+        
+    # 2. Add Dependencies
+    for dep in dependencies:
+        auto_tags.add(f"#{dep}")
+        
+    # 3. Add Related
+    for rel in related:
+        auto_tags.add(f"#{rel}")
+        
+    # 4. Add Self (as per instruction "auto add this issue... number")
+    # Note: issue_id is generated just above
+    auto_tags.add(f"#{issue_id}")
+    
+    final_tags = sorted(list(auto_tags))
+
     metadata = IssueMetadata(
         id=issue_id,
         uid=generate_uid(),  # Generate global unique identifier
@@ -143,7 +165,7 @@ def create_issue_file(
         dependencies=dependencies,
         related=related,
         sprint=sprint,
-        tags=tags,
+        tags=final_tags,
         opened_at=current_time() if status == IssueStatus.OPEN else None
     )
     
@@ -160,6 +182,13 @@ def create_issue_file(
         yaml_header += "# parent: <EPIC-ID>   # Optional: Parent Issue ID\n"
     if "solution:" not in yaml_header:
         yaml_header += "# solution: null      # Required for Closed state (implemented, cancelled, etc.)\n"
+
+    if "dependencies:" not in yaml_header:
+        yaml_header += "# dependencies: []    # List of dependency IDs\n"
+    if "related:" not in yaml_header:
+        yaml_header += "# related: []         # List of related issue IDs\n"
+    if "files:" not in yaml_header:
+        yaml_header += "# files: []           # List of modified files\n"
 
     slug = _get_slug(title)
     filename = f"{issue_id}-{slug}.md"
@@ -278,7 +307,8 @@ def update_issue(
     sprint: Optional[str] = None,
     dependencies: Optional[List[str]] = None,
     related: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None
+    tags: Optional[List[str]] = None,
+    files: Optional[List[str]] = None
 ) -> IssueMetadata:
     path = find_issue_path(issues_root, issue_id)
     if not path:
@@ -403,6 +433,9 @@ def update_issue(
     
     if tags is not None:
         data['tags'] = tags
+
+    if files is not None:
+        data['files'] = files
     
     # Lifecycle Hooks
     # 1. Opened At: If transitioning to OPEN
@@ -641,6 +674,77 @@ def delete_issue_file(issues_root: Path, issue_id: str):
         raise FileNotFoundError(f"Issue {issue_id} not found.")
     
     path.unlink()
+
+def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> List[str]:
+    """
+    Sync 'files' field in issue metadata with actual changed files in git.
+    Strategies:
+    1. Isolation Ref: If issue has isolation (branch/worktree), use that ref.
+    2. Convention: If no isolation, look for branch `*/<id>-*`.
+    3. Current Branch: If current branch matches pattern.
+    
+    Compares against default branch (usually 'main' or 'master').
+    """
+    path = find_issue_path(issues_root, issue_id)
+    if not path:
+        raise FileNotFoundError(f"Issue {issue_id} not found.")
+        
+    issue = parse_issue(path)
+    if not issue:
+        raise ValueError(f"Could not parse issue {issue_id}")
+
+    # Determine Target Branch
+    target_ref = None
+    
+    if issue.isolation and issue.isolation.ref:
+        target_ref = issue.isolation.ref
+    else:
+        # Heuristic Search
+        # 1. Is current branch related?
+        current = git.get_current_branch(project_root)
+        if issue_id.lower() in current.lower():
+            target_ref = current
+        else:
+            # 2. Search for branch
+            # Limitation: core.git doesn't list all branches yet. 
+            # We skip this for now to avoid complexity, relying on isolation or current context.
+            pass
+
+    if not target_ref:
+         raise RuntimeError(f"Could not determine git branch for Issue {issue_id}. Please ensure issue is started or you are on the feature branch.")
+
+    # Determine Base Branch (assume main, or config?)
+    # For now hardcode main, eventually read from config
+    base_ref = "main" 
+    
+    # Check if base exists, if not try master
+    if not git.branch_exists(project_root, base_ref):
+        if git.branch_exists(project_root, "master"):
+            base_ref = "master"
+        else:
+             # Fallback: remote/main?
+             pass
+
+    # Git Diff
+    # git diff --name-only base...target
+    cmd = ["diff", "--name-only", f"{base_ref}...{target_ref}"]
+    code, stdout, stderr = git._run_git(cmd, project_root)
+    
+    if code != 0:
+        raise RuntimeError(f"Git diff failed: {stderr}")
+        
+    changed_files = [f.strip() for f in stdout.splitlines() if f.strip()]
+    
+    # Sort for consistency
+    changed_files.sort()
+    
+    # Update Issue
+    # Only update if changed
+    if changed_files != issue.files:
+        update_issue(issues_root, issue_id, files=changed_files)
+        return changed_files
+    
+    return []
         
 # Resources
 SKILL_CONTENT = """

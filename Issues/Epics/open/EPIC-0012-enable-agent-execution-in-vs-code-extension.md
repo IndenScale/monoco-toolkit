@@ -5,12 +5,13 @@ type: epic
 status: open
 stage: doing
 title: 在 VS Code 扩展中启用代理执行
-created_at: "2026-01-15T08:55:46"
-opened_at: "2026-01-15T08:55:46"
-updated_at: "2026-01-15T08:55:46"
+created_at: '2026-01-15T08:55:46'
+opened_at: '2026-01-15T08:55:46'
+updated_at: '2026-01-15T08:55:46'
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0012'
 progress: 3/3
 files_count: 0
 ---

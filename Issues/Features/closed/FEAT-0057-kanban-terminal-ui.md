@@ -4,19 +4,22 @@ type: feature
 status: closed
 stage: done
 title: 看板终端集成 (xterm.js)
-created_at: "2026-01-14T00:00:00"
-updated_at: "2026-01-15T13:45:57"
-closed_at: "2026-01-15T13:45:57"
+created_at: '2026-01-14T00:00:00'
+updated_at: '2026-01-15T13:45:57'
+closed_at: '2026-01-15T13:45:57'
 parent: EPIC-0010
 solution: implemented
 dependencies:
-  - FEAT-0056
+- FEAT-0056
 related: []
 tags:
-  - kanban
-  - ui
-  - pty
-  - xterm
+- '#EPIC-0010'
+- '#FEAT-0056'
+- '#FEAT-0057'
+- kanban
+- pty
+- ui
+- xterm
 owner: 前端工程师
 uid: 86ce1a
 ---

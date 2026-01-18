@@ -2,12 +2,13 @@
 id: EPIC-0001
 type: epic
 status: open
-title: "EPIC-0001: Monoco 生态内核构建 (Kernel Construction)"
+title: 'EPIC-0001: Monoco 生态内核构建 (Kernel Construction)'
 created_at: 2026-01-08
 tags:
-  - toolkit
-  - infrastructure
-  - core
+- '#EPIC-0001'
+- core
+- infrastructure
+- toolkit
 progress: 5/6
 files_count: 0
 stage: doing

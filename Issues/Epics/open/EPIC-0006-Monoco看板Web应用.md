@@ -13,9 +13,12 @@ dependencies:
 - EPIC-0005
 related: []
 tags:
+- '#EPIC-0002'
+- '#EPIC-0005'
+- '#EPIC-0006'
 - frontend
-- visualization
 - ux
+- visualization
 progress: 1/3
 files_count: 0
 uid: b7c0c7

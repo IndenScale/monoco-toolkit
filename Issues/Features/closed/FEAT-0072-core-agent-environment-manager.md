@@ -5,19 +5,22 @@ type: feature
 status: closed
 stage: done
 title: Core Agent Environment Manager (Sync & Uninstall)
-created_at: "2026-01-15T15:35:00"
-opened_at: "2026-01-15T15:35:00"
-updated_at: "2026-01-15T15:59:58"
-closed_at: "2026-01-15T15:59:58"
+created_at: '2026-01-15T15:35:00'
+opened_at: '2026-01-15T15:35:00'
+updated_at: '2026-01-15T15:59:58'
+closed_at: '2026-01-15T15:59:58'
 parent: EPIC-0014
 solution: implemented
 dependencies:
-  - FEAT-0071
+- FEAT-0071
 related: []
 tags:
-  - agent-native
-  - cli
-  - core
+- '#EPIC-0014'
+- '#FEAT-0071'
+- '#FEAT-0072'
+- agent-native
+- cli
+- core
 ---
 
 ## FEAT-0072: Core Agent Environment Manager (Sync & Uninstall)

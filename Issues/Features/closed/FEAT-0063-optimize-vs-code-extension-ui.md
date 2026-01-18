@@ -5,14 +5,15 @@ type: feature
 status: closed
 stage: done
 title: 优化 VS Code 扩展 UI
-created_at: "2026-01-14T16:42:55"
-opened_at: "2026-01-14T16:42:55"
-updated_at: "2026-01-14T16:43:38"
-closed_at: "2026-01-14T16:43:38"
+created_at: '2026-01-14T16:42:55'
+opened_at: '2026-01-14T16:42:55'
+updated_at: '2026-01-14T16:43:38'
+closed_at: '2026-01-14T16:43:38'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0063'
 progress: 4/4
 files_count: 0
 ---

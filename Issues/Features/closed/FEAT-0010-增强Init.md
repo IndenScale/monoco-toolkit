@@ -6,17 +6,18 @@ stage: Done
 priority: NORMAL
 solution: implemented
 title: 增强 Init 命令 (Enhanced Init Command)
-description:
-  "Expand `monoco init` to recursively initialize all sub-modules (Issue,
+description: 'Expand `monoco init` to recursively initialize all sub-modules (Issue,
   Spike, I18n, Skills) to ensure a fully ready environment with a single command.
 
-  "
+  '
 dependencies: []
 related: []
 tags:
-  - cli
-  - init
-  - devops
+- '#EPIC-0001'
+- '#FEAT-0010'
+- cli
+- devops
+- init
 parent: EPIC-0001
 uid: a66263
 ---
