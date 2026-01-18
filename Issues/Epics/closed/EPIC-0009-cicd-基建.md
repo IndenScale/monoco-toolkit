@@ -5,14 +5,15 @@ type: epic
 status: closed
 stage: done
 title: CICD 基建
-created_at: "2026-01-13T13:21:48"
-opened_at: "2026-01-13T13:21:48"
-updated_at: "2026-01-15T13:25:55"
-closed_at: "2026-01-15T13:25:55"
+created_at: '2026-01-13T13:21:48'
+opened_at: '2026-01-13T13:21:48'
+updated_at: '2026-01-15T13:25:55'
+closed_at: '2026-01-15T13:25:55'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0009'
 progress: 5/5
 files_count: 0
 ---

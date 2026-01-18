@@ -3,13 +3,20 @@ parent: EPIC-0002
 id: FEAT-0003
 type: feature
 status: closed
-title: 特性: Issue 管理 (本地) (Issue Management - Local)
+stage: done
+title: '特性: Issue 管理 (本地) (Issue Management - Local)'
 created_at: 2026-01-08
 solution: implemented
-tags: [toolkit, feature, issue, architecture]
+tags:
+- '#EPIC-0002'
+- '#FEAT-0003'
+- architecture
+- feature
+- issue
+- toolkit
 ---
 
-## FEAT-0003: 特性: Issue 管理 (本地)
+## FEAT-0003: 特性: Issue 管理 (本地) (Issue Management - Local)
 
 ## 目标 (Objective)
 
@@ -32,3 +39,7 @@ tags: [toolkit, feature, issue, architecture]
 - [x] 实现带有文件移动逻辑的 `monoco issue archive/cancel`。
 - [x] 使用 `Rich.Tree` 可视化实现 `monoco issue scope`。
 - [x] 实现用于范围扫描的 `--sprint` 过滤器。
+
+## Review Comments
+
+- [x] Self-Review

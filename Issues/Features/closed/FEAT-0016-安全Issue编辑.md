@@ -4,14 +4,16 @@ type: feature
 status: closed
 stage: done
 title: 安全 Issue 编辑 (Safe Issue Editing)
-created_at: "2026-01-11T12:02:01.293307"
-opened_at: "2026-01-11T12:02:01.293307"
-updated_at: "2026-01-11T13:20:52.819608"
-closed_at: "2026-01-11T13:20:52.819640"
+created_at: '2026-01-11T12:02:01.293307'
+opened_at: '2026-01-11T12:02:01.293307'
+updated_at: '2026-01-11T13:20:52.819608'
+closed_at: '2026-01-11T13:20:52.819640'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0003'
+- '#FEAT-0016'
 parent: EPIC-0003
 uid: 88a412
 ---

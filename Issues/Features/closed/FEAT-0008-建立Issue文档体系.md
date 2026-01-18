@@ -4,14 +4,16 @@ type: feature
 status: closed
 stage: Done
 title: 建立 Issue 系统使用文档体系 (Establish Issue Docs)
-created_at: "2026-01-09"
+created_at: '2026-01-09'
 dependencies: []
 related: []
 solution: implemented
 tags:
-  - docs
-  - i18n
-  - issue
+- '#EPIC-0002'
+- '#FEAT-0008'
+- docs
+- i18n
+- issue
 parent: EPIC-0002
 uid: 3a2bc7
 ---

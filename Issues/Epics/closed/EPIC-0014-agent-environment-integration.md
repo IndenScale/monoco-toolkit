@@ -5,17 +5,18 @@ type: epic
 status: closed
 stage: done
 title: Agent Environment Integration (Agent Native)
-created_at: "2026-01-15T14:43:34"
-opened_at: "2026-01-15T14:43:34"
-updated_at: "2026-01-15T17:10:50"
-closed_at: "2026-01-15T17:10:50"
+created_at: '2026-01-15T14:43:34'
+opened_at: '2026-01-15T14:43:34'
+updated_at: '2026-01-15T17:10:50'
+closed_at: '2026-01-15T17:10:50'
 solution: implemented
 dependencies: []
 related: []
 tags:
-  - agent-native
-  - integration
-  - dx
+- '#EPIC-0014'
+- agent-native
+- dx
+- integration
 progress: 5/5
 files_count: 0
 ---
@@ -72,28 +73,28 @@ graph TD
 
 ### 1. 核心与指令 (Core & CLI)
 
-- **Feature**: 实现 `monoco sync` 命令，支持检测环境并执行幂等写入（Idempotent Write）。
-- **Feature**: 实现 `monoco uninstall` 命令，支持识别标记并清理注入内容。
-- **Logic**: 抽象 `InjectionEngine`，作为底层负责处理文件 I/O、标记识别（Marker `## Monoco Managed`）和 Diff 逻辑。
+- [x] **Feature**: 实现 `monoco sync` 命令，支持检测环境并执行幂等写入（Idempotent Write）。
+- [x] **Feature**: 实现 `monoco uninstall` 命令，支持识别标记并清理注入内容。
+- [x] **Logic**: 抽象 `InjectionEngine`，作为底层负责处理文件 I/O、标记识别（Marker `## Monoco Managed`）和 Diff 逻辑。
 
 ### 2. 功能模块适配 (Feature Adaptation)
 
-- **Refactor**: 改造 `issue`, `spike`, `i18n` 模块，实现统一的 `MonocoFeature` 协议。
-- **Interface**: 各模块需暴露 `get_system_prompts()` 和 `get_skills()` 方法，返回标准化数据结构。
+- [x] **Refactor**: 改造 `issue`, `spike`, `i18n` 模块，实现统一的 `MonocoFeature` 协议。
+- [x] **Interface**: 各模块需暴露 `get_system_prompts()` 和 `get_skills()` 方法，返回标准化数据结构。
 
 ### 3. 配置系统 (Configuration System)
 
-- **Feature**: 在 `.monoco/config.yaml` 中新增 `agent` 配置段。
-- **Logic**: 支持用户自定义集成参数，例如:
-  - `target`: 指定注入目标文件（如 `.cursorrules` 或 `.windsurfrules`）。
-  - `framework`: 显式指定智能体框架类型。
-  - `includes`: 允许用户选择性启用特定的 Feature 注入。
+- [x] **Feature**: 在 `.monoco/config.yaml` 中新增 `agent` 配置段。
+- [x] **Logic**: 支持用户自定义集成参数，例如:
+  - [x] `target`: 指定注入目标文件（如 `.cursorrules` 或 `.windsurfrules`）。
+  - [x] `framework`: 显式指定智能体框架类型。
+  - [x] `includes`: 允许用户选择性启用特定的 Feature 注入。
 
 ### 4. 质量与测试 (QA & Validation)
 
-- **Test**: 编写集成测试，模拟反复运行 `sync`，验证内容不重复（幂等性）。
-- **Test**: 验证 `uninstall` 执行后，目标文件完全不残留 Monoco 标记。
-- **Lint**: 确保注入的 Markdown 内容格式规范（如列表缩进、空行控制），符合 LLM 阅读习惯。
+- [x] **Test**: 编写集成测试，模拟反复运行 `sync`，验证内容不重复（幂等性）。
+- [x] **Test**: 验证 `uninstall` 执行后，目标文件完全不残留 Monoco 标记。
+- [x] **Lint**: 确保注入的 Markdown 内容格式规范（如列表缩进、空行控制），符合 LLM 阅读习惯。
 
 ## 验收标准 (Acceptance Criteria)
 

@@ -5,14 +5,15 @@ type: epic
 status: closed
 stage: done
 title: GitHub 发布准备
-created_at: "2026-01-13T13:21:46"
-opened_at: "2026-01-13T13:21:46"
-updated_at: "2026-01-13T13:32:38"
-closed_at: "2026-01-13T13:32:38"
+created_at: '2026-01-13T13:21:46'
+opened_at: '2026-01-13T13:21:46'
+updated_at: '2026-01-13T13:32:38'
+closed_at: '2026-01-13T13:32:38'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0008'
 progress: 4/4
 files_count: 0
 ---

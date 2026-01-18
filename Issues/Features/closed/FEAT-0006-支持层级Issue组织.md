@@ -4,13 +4,16 @@ type: feature
 status: closed
 stage: Done
 title: 支持层级 Issue 组织 (Support Hierarchical Issue Organization)
-created_at: "2026-01-09"
+created_at: '2026-01-09'
 parent: EPIC-0002
 dependencies:
-  - FEAT-0002
+- FEAT-0002
 related: []
 solution: implemented
-tags: []
+tags:
+- '#EPIC-0002'
+- '#FEAT-0002'
+- '#FEAT-0006'
 uid: d68c40
 ---
 

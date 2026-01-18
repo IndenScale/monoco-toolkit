@@ -5,15 +5,17 @@ type: feature
 status: closed
 stage: done
 title: CLI 工具分发 - PyPI
-created_at: "2026-01-13T13:58:29"
-opened_at: "2026-01-13T14:43:49"
-updated_at: "2026-01-13T14:43:55"
-closed_at: "2026-01-13T14:43:55"
+created_at: '2026-01-13T13:58:29'
+opened_at: '2026-01-13T14:43:49'
+updated_at: '2026-01-13T14:43:55'
+closed_at: '2026-01-13T14:43:55'
 parent: EPIC-0009
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0009'
+- '#FEAT-0051'
 ---
 
 ## FEAT-0051: CLI 工具分发 - PyPI

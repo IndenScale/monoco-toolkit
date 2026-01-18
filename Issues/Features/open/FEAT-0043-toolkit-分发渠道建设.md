@@ -5,13 +5,14 @@ type: feature
 status: open
 stage: doing
 title: Toolkit 分发渠道建设
-created_at: "2026-01-13T10:17:58"
-opened_at: "2026-01-13T10:17:58"
-updated_at: "2026-01-15T20:19:00"
+created_at: '2026-01-13T10:17:58'
+opened_at: '2026-01-13T10:17:58'
+updated_at: '2026-01-15T20:19:00'
 parent: null
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0043'
 ---
 
 ## FEAT-0043: Toolkit 分发渠道建设

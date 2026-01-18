@@ -13,7 +13,9 @@ parent: FEAT-0063
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0063'
+- '#FEAT-0064'
 ---
 
 ## FEAT-0064: 智能父级选择

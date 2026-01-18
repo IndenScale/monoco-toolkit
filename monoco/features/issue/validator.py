@@ -154,12 +154,16 @@ class IssueValidator:
         for block in blocks:
             if block.type == "heading":
                 title = block.content.strip().lower()
-                if "technical tasks" in title:
+                # Parse title to identify sections (supporting Chinese and English synonyms)
+                if any(kw in title for kw in ["technical tasks", "工作包", "技术任务", "key deliverables", "关键交付", "重点工作", "子功能", "子故事", "child features", "stories", "需求", "requirements", "implementation", "实现", "交付", "delivery", "规划", "plan", "tasks", "任务"]):
                     current_section = "tasks"
-                elif "acceptance criteria" in title:
+                elif any(kw in title for kw in ["acceptance criteria", "验收标准", "交付目标", "验收"]):
                     current_section = "ac"
-                elif "review comments" in title:
+                elif any(kw in title for kw in ["review comments", "确认事项", "评审记录", "复盘记录", "review", "评审", "确认"]):
                     current_section = "review"
+                elif title.startswith("###"):
+                    # Subheading: allow continued collection for the current section
+                    pass
                 else:
                     current_section = None
             elif block.type == "task_item":
@@ -279,14 +283,80 @@ class IssueValidator:
                 DiagnosticSeverity.Error,
                 line=line
             ))
+            
+        # Tags Integrity Check
+        # Requirement: tags field must carry parent dependencies and related issue id
+        required_tags = set()
+        
+        # Self ID
+        required_tags.add(f"#{meta.id}")
+        
+        if meta.parent:
+            # Strip potential user # if accidentally added in models, though core stripped it
+            # But here we want the tag TO HAVE #
+             p = meta.parent if not meta.parent.startswith("#") else meta.parent[1:]
+             required_tags.add(f"#{p}")
+             
+        for d in meta.dependencies:
+             _d = d if not d.startswith("#") else d[1:]
+             required_tags.add(f"#{_d}")
+             
+        for r in meta.related:
+             _r = r if not r.startswith("#") else r[1:]
+             required_tags.add(f"#{_r}")
+             
+        current_tags = set(meta.tags) if meta.tags else set()
+        missing_tags = required_tags - current_tags
+        
+        if missing_tags:
+            line = self._get_field_line(content, "tags")
+            # If tags field doesn't exist, line is 0, which is fine
+            # We join them for display
+            missing_str = ", ".join(sorted(missing_tags))
+            diagnostics.append(self._create_diagnostic(
+                f"Tag Check: Missing required context tags: {missing_str}",
+                DiagnosticSeverity.Warning,
+                line=line
+            ))
+            
         return diagnostics
         
     def _validate_references(self, meta: IssueMetadata, content: str, all_ids: Set[str]) -> List[Diagnostic]:
         diagnostics = []
+        
+        # Malformed ID Check
+        if meta.parent and meta.parent.startswith("#"):
+             line = self._get_field_line(content, "parent")
+             diagnostics.append(self._create_diagnostic(
+                f"Malformed ID: Parent '{meta.parent}' should not start with '#'.",
+                DiagnosticSeverity.Warning,
+                line=line
+             ))
+
+        if meta.dependencies:
+            for dep in meta.dependencies:
+                if dep.startswith("#"):
+                    line = self._get_field_line(content, "dependencies")
+                    diagnostics.append(self._create_diagnostic(
+                        f"Malformed ID: Dependency '{dep}' should not start with '#'.",
+                        DiagnosticSeverity.Warning,
+                        line=line
+                    ))
+
+        if meta.related:
+            for rel in meta.related:
+                if rel.startswith("#"):
+                    line = self._get_field_line(content, "related")
+                    diagnostics.append(self._create_diagnostic(
+                        f"Malformed ID: Related '{rel}' should not start with '#'.",
+                        DiagnosticSeverity.Warning,
+                        line=line
+                    ))
+
         if not all_ids:
             return diagnostics
             
-        if meta.parent and meta.parent not in all_ids:
+        if meta.parent and meta.parent not in all_ids and not meta.parent.startswith("#"):
              line = self._get_field_line(content, "parent")
              diagnostics.append(self._create_diagnostic(
                 f"Broken Reference: Parent '{meta.parent}' not found.",

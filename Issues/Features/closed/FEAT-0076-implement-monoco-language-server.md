@@ -5,19 +5,23 @@ type: feature
 status: closed
 stage: done
 title: Implement Monoco Language Server
-created_at: "2026-01-15T20:57:14"
-opened_at: "2026-01-15T20:57:14"
-updated_at: "2026-01-15T20:57:14"
+created_at: '2026-01-15T20:57:14'
+opened_at: '2026-01-15T20:57:14'
+updated_at: '2026-01-15T20:57:14'
 dependencies: []
 related: []
-solution: >
-  Implemented a dual-project structure (client/server) within `extensions/vscode`.
-  The core logic was migrated to a TypeScript-based LSP server that validates Markdown frontmatter against JSON Schemas exported from the Python core.
-  This decoupled architecture removes the runtime dependency on Python for basic editor features and improves performance.
-tags: []
+solution: 'Implemented a dual-project structure (client/server) within `extensions/vscode`.
+  The core logic was migrated to a TypeScript-based LSP server that validates Markdown
+  frontmatter against JSON Schemas exported from the Python core. This decoupled architecture
+  removes the runtime dependency on Python for basic editor features and improves
+  performance.
+
+  '
+tags:
+- '#FEAT-0076'
 ---
 
-## FEAT-0076: 实现 Monoco 语言服务器 (TypeScript)
+## FEAT-0076: Implement Monoco Language Server
 
 ## 目标 (Objective)
 
@@ -33,19 +37,19 @@ tags: []
   - **TS Validator**: LSP Server 加载 JSON Schema 进行校验，确保编辑器与 CLI 的逻辑一致。
 - **Decoupling**: 编辑器体验完全独立于 Python 环境，无需配置 Python 解释器即可获得基本的语法高亮和校验。
 
-## 验收标准 (Acceptance Criteria)
+## Acceptance Criteria
 
-1. **分发友好**: 插件打包后为单一 `.vsix`，不依赖外部 Python 环境。
-2. **诊断 (Diagnostics)**:
-   - 基于 JSON Schema 校验 Frontmatter 结构 (字段类型、枚举值)。
-   - 自定义逻辑校验 (Logic Validation): 如断链检测 (Link Integrity)。
-3. **能力对齐**:
-   - 支持 `completion` (智能补全状态和 ID)。
-   - 支持 `definition` (跳转到 Parent/Dependency 文件)。
-   - 支持 `codeAction` (状态机流转快速修复)。
-4. **Schema 同步**: 提供脚本从 `monoco.core` 导出 Schema 供 LSP 使用。
+- [x] **分发友好**: 插件打包后为单一 `.vsix`，不依赖外部 Python 环境。
+- [x] **诊断 (Diagnostics)**:
+  - 基于 JSON Schema 校验 Frontmatter 结构 (字段类型、枚举值)。
+  - 自定义逻辑校验 (Logic Validation): 如断链检测 (Link Integrity)。
+- [x] **能力对齐**:
+  - 支持 `completion` (智能补全状态和 ID)。
+  - 支持 `definition` (跳转到 Parent/Dependency 文件)。
+  - 支持 `codeAction` (状态机流转快速修复)。
+- [x] **Schema 同步**: 提供脚本从 `monoco.core` 导出 Schema 供 LSP 使用。
 
-## 技术任务 (Technical Tasks)
+## Technical Tasks
 
 ### 1. 项目结构重构
 
@@ -74,3 +78,7 @@ tags: []
 
 - [x] 移植 Status/Stage 校验逻辑到 TypeScript。
 - [x] 实现 ID 索引逻辑 (用于 Auto-completion 和 Goto Definition)。
+
+## Review Comments
+
+- [x] Self-Review

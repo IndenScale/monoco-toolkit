@@ -4,14 +4,16 @@ type: feature
 status: closed
 stage: done
 title: Agent 执行层与 CLI 集成
-created_at: "2026-01-15T22:56:10"
-updated_at: "2026-01-15T23:01:43"
-closed_at: "2026-01-15T23:01:43"
+created_at: '2026-01-15T22:56:10'
+updated_at: '2026-01-15T23:01:43'
+closed_at: '2026-01-15T23:01:43'
 parent: EPIC-0014
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0014'
+- '#FEAT-0078'
 priority: High
 author: Monoco
 ---
