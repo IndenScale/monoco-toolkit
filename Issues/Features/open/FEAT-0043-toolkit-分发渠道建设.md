@@ -19,7 +19,7 @@ tags: []
 ## Objective
 
 构建全渠道分发矩阵，确保 Monoco Toolkit 能够触达从核心开发者到业务架构师的所有目标用户。
-采用分级分发策略：Core (GitHub/PyPI/Docker) -> Package (Homebrew/NPM) -> Consumer (Native Wrappers)。
+采用分级分发策略: Core (GitHub/PyPI/Docker) -> Package (Homebrew/NPM) -> Consumer (Native Wrappers)。
 
 ## Acceptance Criteria
 

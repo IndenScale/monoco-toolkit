@@ -15,7 +15,7 @@ Monoco Toolkit 是一个基于 Python 的模块化工具链，旨在为 Agent �
 
 ### 1.2 生命周期分离 (Lifecycle Separation)
 
-Toolkit 包含两种截然不同的运行时生命周期：
+Toolkit 包含两种截然不同的运行时生命周期:
 
 - **CLI (命令行界面)**: **瞬态 (Transient)**。
   - 不仅是人类的工具，更是 Agent 的“手”。

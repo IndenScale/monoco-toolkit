@@ -47,4 +47,4 @@ Agent 可能会重复执行命令，或者在任务中途失败重试。
 - **Trust but Verify (Lint/Check)**:
   - 必须提供 `lint` 或 `check` 命令。
   - 在关键路径（如 git commit, build）挂载检查钩子。
-  - 如果 Agent 手动修改文件破坏了 Schema，`lint` 命令必须能给出精确的修复建议（如：`Line 5: Missing 'status' field`）。
+  - 如果 Agent 手动修改文件破坏了 Schema，`lint` 命令必须能给出精确的修复建议（如: `Line 5: Missing 'status' field`）。

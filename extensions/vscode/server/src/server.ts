@@ -98,7 +98,7 @@ connection.onInitialized(async () => {
   if (hasConfigurationCapability) {
     connection.client.register(
       DidChangeConfigurationNotification.type,
-      undefined
+      undefined,
     );
   }
 
@@ -115,18 +115,18 @@ connection.onInitialized(async () => {
 
     // Initialize services
     cliExecutor = new CLIExecutor(globalSettings, (msg) =>
-      connection.console.log(msg)
+      connection.console.log(msg),
     );
 
     workspaceIndexer = new WorkspaceIndexer(workspaceRoot, cliExecutor, (msg) =>
-      connection.console.log(msg)
+      connection.console.log(msg),
     );
 
     // Initialize providers
     definitionProvider = new DefinitionProvider(
       workspaceRoot,
       cliExecutor,
-      (msg) => connection.console.log(msg)
+      (msg) => connection.console.log(msg),
     );
 
     completionProvider = new CompletionProvider(workspaceIndexer);
@@ -136,7 +136,7 @@ connection.onInitialized(async () => {
     diagnosticProvider = new DiagnosticProvider(
       workspaceRoot,
       cliExecutor,
-      (msg) => connection.console.log(msg)
+      (msg) => connection.console.log(msg),
     );
 
     // Initial scan
@@ -177,13 +177,19 @@ connection.onDidChangeConfiguration(async (change) => {
  * Document events
  */
 documents.onDidOpen(async (change) => {
-  const diagnostics = await diagnosticProvider.validate(change.document);
-  connection.sendDiagnostics({ uri: change.document.uri, diagnostics });
+  await initialScanPromise;
+  if (diagnosticProvider) {
+    const diagnostics = await diagnosticProvider.validate(change.document);
+    connection.sendDiagnostics({ uri: change.document.uri, diagnostics });
+  }
 });
 
 documents.onDidSave(async (change) => {
-  const diagnostics = await diagnosticProvider.validate(change.document);
-  connection.sendDiagnostics({ uri: change.document.uri, diagnostics });
+  await initialScanPromise;
+  if (diagnosticProvider) {
+    const diagnostics = await diagnosticProvider.validate(change.document);
+    connection.sendDiagnostics({ uri: change.document.uri, diagnostics });
+  }
 });
 
 /**
@@ -198,26 +204,33 @@ connection.onDidChangeWatchedFiles((_change: DidChangeWatchedFilesParams) => {
 /**
  * Completion
  */
-connection.onCompletion((params) => {
-  return completionProvider.provideCompletion(params);
+connection.onCompletion(async (params) => {
+  await initialScanPromise;
+  return completionProvider?.provideCompletion(params) ?? [];
 });
 
-connection.onCompletionResolve((item) => {
-  return completionProvider.resolveCompletion(item);
+connection.onCompletionResolve(async (item) => {
+  await initialScanPromise;
+  return completionProvider?.resolveCompletion(item) ?? item;
 });
 
 /**
  * Definition
  */
 connection.onDefinition(async (params) => {
-  return definitionProvider.provideDefinition(params);
+  await initialScanPromise;
+  return definitionProvider?.provideDefinition(params) ?? null;
 });
 
 /**
  * Document Links
  */
-connection.onDocumentLinks((params) => {
+connection.onDocumentLinks(async (params) => {
+  await initialScanPromise;
   const document = documents.get(params.textDocument.uri);
+  if (!document || !documentLinkProvider) {
+    return [];
+  }
   return documentLinkProvider.provideDocumentLinks(params, document);
 });
 
@@ -228,9 +241,13 @@ connection.onDocumentLinks((params) => {
 // Get all issues
 connection.onRequest("monoco/getAllIssues", async () => {
   await initialScanPromise;
+  if (!workspaceIndexer) {
+    connection.console.warn("[Monoco LSP] WorkspaceIndexer not initialized");
+    return [];
+  }
   const issues = workspaceIndexer.getAllIssues();
   connection.console.log(
-    `[Monoco LSP] Serving ${issues.length} issues to Cockpit. Sample ID: ${issues[0]?.id}, Project: ${issues[0]?.project_id}`
+    `[Monoco LSP] Serving ${issues.length} issues to Cockpit. Sample ID: ${issues[0]?.id}, Project: ${issues[0]?.project_id}`,
   );
   return issues;
 });
@@ -238,6 +255,14 @@ connection.onRequest("monoco/getAllIssues", async () => {
 // Get metadata (projects and last active project)
 connection.onRequest("monoco/getMetadata", async () => {
   await initialScanPromise;
+
+  if (!workspaceIndexer) {
+    connection.console.warn("[Monoco LSP] WorkspaceIndexer not initialized");
+    return {
+      last_active_project_id: null,
+      projects: [],
+    };
+  }
 
   let lastActive = null;
   if (workspaceRoot) {
@@ -293,7 +318,7 @@ connection.onRequest(
     } catch (e: any) {
       return { success: false, error: e.message };
     }
-  }
+  },
 );
 
 // Get execution profiles
@@ -306,13 +331,13 @@ connection.onRequest(
     try {
       const stdout = await cliExecutor.execute(
         ["agent", "list", "--json"],
-        workspaceRoot
+        workspaceRoot,
       );
       return JSON.parse(stdout);
     } catch (e) {
       return [];
     }
-  }
+  },
 );
 
 /**

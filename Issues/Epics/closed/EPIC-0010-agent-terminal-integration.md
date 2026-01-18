@@ -5,17 +5,17 @@ status: Closed
 stage: done
 solution: implemented
 title: Agent Terminal Integration (PTY & Console)
-created_at: '2026-01-14T00:00:00'
-updated_at: '2026-01-15T13:46:02'
+created_at: "2026-01-14T00:00:00"
+updated_at: "2026-01-15T13:46:02"
 dependencies:
-- EPIC-0005
-- EPIC-0006
+  - EPIC-0005
+  - EPIC-0006
 related: []
 tags:
-- agent-native
-- terminal
-- cli
-- websocket
+  - agent-native
+  - terminal
+  - cli
+  - websocket
 owner: Product Owner
 progress: 4/4
 files_count: 0

@@ -1,4 +1,4 @@
-```
+````
 ---
 id: EPIC-0006
 type: epic
@@ -16,7 +16,7 @@ tags:
 - frontend
 - visualization
 - ux
-progress: 1/4
+progress: 1/3
 files_count: 0
 uid: b7c0c7
 ---
@@ -63,3 +63,4 @@ uid: b7c0c7
 - [ ] Integrate with Daemon API.
 
 ## Review Comments```
+````

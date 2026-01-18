@@ -35,7 +35,7 @@ class Span(BaseModel):
     metadata: Dict[str, Any]
 ```
 
-这是实现以下功能的基础：
+这是实现以下功能的基础:
 
 - **语义高亮 (Semantic Tokens)**: 精确的语法高亮。
 - **定义跳转 (Definition)**: `[[...]]` 的精确点击目标。
@@ -43,7 +43,7 @@ class Span(BaseModel):
 
 ### 2. 服务层 (Service Layer): Workspace Symbol Index
 
-增强现有的 `IssueValidator` 或创建一个新的 `WorkspaceService` 来维护全局查找表：
+增强现有的 `IssueValidator` 或创建一个新的 `WorkspaceService` 来维护全局查找表:
 
 - **注册表 (Registry)**: `Map<IssueID, IssueLocation>`
 - **作用域感知 (Scope Awareness)**: 解析 `ID` (本地) vs `Project::ID` (全局)。
@@ -51,7 +51,7 @@ class Span(BaseModel):
 
 ### 3. 应用层 (Application Layer): LSP Adapters
 
-实现专用的 LSP 请求适配器，将请求委托给领域层：
+实现专用的 LSP 请求适配器，将请求委托给领域层:
 
 - `DefinitionAdapter`: `textDocument/definition` -> `Parser.find_span_at(pos)` -> `Resolver.resolve(span)`。
 - `SemanticTokensAdapter`: `textDocument/semanticTokens/full` -> `Parser.parse(doc).to_tokens()`。

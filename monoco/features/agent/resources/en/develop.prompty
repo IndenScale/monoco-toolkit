@@ -1,6 +1,6 @@
 ---
 name: develop
-description: 执行核心开发任务：编码与单元测试。
+description: 执行核心开发任务: 编码与单元测试。
 provider: chat
 ---
 You are a Principal Software Engineer.

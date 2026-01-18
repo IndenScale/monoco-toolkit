@@ -97,9 +97,9 @@ Kanban 采用 **"基于提交的同步 (Commit-Based Synchronization)"** 策略�
 2. **Commit as Transaction**: 只有被 Commit 的数据才是“生效”的数据。Kanban **只渲染 Git HEAD** 的状态，不读取工作区（Working Directory）的脏数据。
 3. **Lint as Gatekeeper**: `monoco issue lint` 是写入的唯一闸口。任何未能通过校验的变更都无法提交，也就无法进入 Kanban 视野。
 
-### 6.2 通信架构：The Sidecar Daemon
+### 6.2 通信架构: The Sidecar Daemon
 
-为了解决 GUI 与 CLI 的协同问题，Kanban 依赖 Toolkit 提供的守护进程 (`monoco serve`)：
+为了解决 GUI 与 CLI 的协同问题，Kanban 依赖 Toolkit 提供的守护进程 (`monoco serve`):
 
 - **角色**: 作为一个 Sidecar 进程运行，提供 HTTP REST API 和 SSE (Server-Sent Events) 服务。
 - **职责**:

@@ -3,6 +3,7 @@
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
 
 ### Design Philosophy
+
 ### 设计哲学
 
 Monoco CLI is designed as an **Agent-Native Interface**.

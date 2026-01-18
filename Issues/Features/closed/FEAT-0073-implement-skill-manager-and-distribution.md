@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: Implement Skill Manager and Distribution
-created_at: '2026-01-15T15:56:16'
-opened_at: '2026-01-15T15:56:16'
-updated_at: '2026-01-15T17:03:40'
-closed_at: '2026-01-15T17:03:40'
+created_at: "2026-01-15T15:56:16"
+opened_at: "2026-01-15T15:56:16"
+updated_at: "2026-01-15T17:03:40"
+closed_at: "2026-01-15T17:03:40"
 parent: EPIC-0014
 solution: implemented
 dependencies: []
@@ -22,7 +22,7 @@ tags: []
 
 通过对 `Cursor`, `Antigravity`, `Gemini CLI`, `Qwen Code` 等主流 Agent 框架的调研，确认 **Agent Skills (SKILL.md)** 已成为事实上的行业标准。
 
-该标准的核心特征（参考 `agentskills.io`）：
+该标准的核心特征（参考 `agentskills.io`）:
 
 1. **统一格式**: 均为包含 YAML Frontmatter 的 `SKILL.md` 文件。
 2. **统一结构**: `Skill Folder` -> `SKILL.md` + Resources。
@@ -34,7 +34,7 @@ tags: []
 
 实现 **Monoco Skill Manager**，作为 Skill 的 "Source of Truth" 和 "Distribution Hub"。
 
-核心能力：
+核心能力:
 
 1. **Skill Registry**: 在 Monoco 内部统一管理 Standard Skills (如 `issue_management`, `git_workflow` 等)。
 2. **Standard Compliance**: 确保所有内建及分发的 Skill 严格符合 `agentskills.io` 规范（Name, Description 等）。
@@ -78,16 +78,14 @@ tags: []
 
 ### 架构设计
 
-采用 **"分布式 Skill 管理"** 架构，而非集中式目录：
+采用 **"分布式 Skill 管理"** 架构，而非集中式目录:
 
 1. **每个 Feature 维护自己的 resources**:
-
    - `monoco/features/{feature}/resources/{lang}/AGENTS.md` - 系统提示词
    - `monoco/features/{feature}/resources/{lang}/SKILL.md` - 完整技能文档
    - `monoco/core/resources/{lang}/` - Core 特殊处理
 
 2. **SkillManager 动态发现**:
-
    - 从 Feature Registry 收集 skills
    - 从 `monoco/core/resources/` 发现 core skill
    - 验证 metadata 符合 agentskills.io 标准
@@ -109,7 +107,7 @@ tags: []
 
 ### 分发结果
 
-成功分发到 4 个 agent 框架：
+成功分发到 4 个 agent 框架:
 
 - `.claude/skills/` - Claude Code
 - `.gemini/skills/` - Gemini CLI
@@ -121,13 +119,11 @@ tags: []
 ### 关键实现
 
 1. **`monoco/core/skills.py`**:
-
    - `SkillMetadata`: Pydantic 模型验证 frontmatter
    - `Skill`: 表示单个 skill，支持多语言检测
    - `SkillManager`: 核心管理器，负责发现、分发、清理
 
 2. **集成到 sync 流程**:
-
    - `monoco sync`: 分发 skills 到所有检测到的框架
    - `monoco uninstall`: 清理分发的 skills
 

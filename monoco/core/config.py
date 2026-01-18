@@ -241,15 +241,21 @@ def get_config_path(scope: ConfigScope, project_root: Optional[str] = None) -> P
         return cwd / ".monoco" / "project.yaml"
 
 def find_monoco_root(start_path: Optional[Path] = None) -> Path:
-    """Recursively find the .monoco directory upwards."""
+    """
+    Find the Monoco Workspace root.
+    Strictly restricted to checking the current directory (or its parent if CWD is .monoco).
+    Recursive upward lookup is disabled per FIX-0009.
+    """
     current = (start_path or Path.cwd()).resolve()
-    # Check if we are inside a .monoco folder (unlikely but possible)
+    
+    # Check if we are inside a .monoco folder
     if current.name == ".monoco":
         return current.parent
         
-    for parent in [current] + list(current.parents):
-        if (parent / ".monoco").exists():
-            return parent
+    # Check if current directory has .monoco
+    if (current / ".monoco").exists():
+        return current
+        
     return current
 
 def load_raw_config(scope: ConfigScope, project_root: Optional[str] = None) -> Dict[str, Any]:

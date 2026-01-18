@@ -1,0 +1,9 @@
+{
+  "name": "Monoco Issue",
+  "scopeName": "source.monoco-issue",
+  "patterns": [
+    {
+      "include": "text.html.markdown"
+    }
+  ]
+}

@@ -8,9 +8,9 @@ title: Toolkit 核心基础设施 (Toolkit Core Infrastructure)
 created_at: 2026-01-08
 solution: implemented
 tags:
-- toolkit
-- infra
-- architecture
+  - toolkit
+  - infra
+  - architecture
 uid: 3f44cf
 ---
 

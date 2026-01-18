@@ -5,10 +5,10 @@ type: feature
 status: closed
 stage: done
 title: 动态状态机引擎 (数据驱动逻辑)
-created_at: '2026-01-17T08:26:45'
-opened_at: '2026-01-17T08:26:45'
-updated_at: '2026-01-17T08:43:37'
-closed_at: '2026-01-17T08:43:37'
+created_at: "2026-01-17T08:26:45"
+opened_at: "2026-01-17T08:26:45"
+updated_at: "2026-01-17T08:43:37"
+closed_at: "2026-01-17T08:43:37"
 parent: EPIC-0015
 solution: implemented
 dependencies: []
@@ -24,7 +24,7 @@ path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/F
 将目前散落在 `core.py` 中的硬编码状态流转逻辑（`if-else`），重构为一个**动态状态机引擎 (Dynamic State Machine Engine)**。
 该引擎将接受一个 "配置对象"（初期为默认配置）来判定合法的状态转移路径和可用的 Action。
 
-这是实现 "可配置化" 的关键前置步骤：先将逻辑**数据驱动化 (Data-Driven)**，再实现数据的外部加载。
+这是实现 "可配置化" 的关键前置步骤: 先将逻辑**数据驱动化 (Data-Driven)**，再实现数据的外部加载。
 
 ## 验收标准 (Acceptance Criteria)
 
@@ -47,11 +47,15 @@ path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/F
 - [x] Self-Review
 
 ## Delivery
+
 <!-- Monoco Auto Generated -->
+
 **Commits (1)**:
+
 - `76ba8f5` feat(issue): integrate dynamic state machine engine
 
 **Touched Files (6)**:
+
 - `monoco/features/issue/commands.py`
 - `monoco/features/issue/core.py`
 - `monoco/features/issue/engine/__init__.py`

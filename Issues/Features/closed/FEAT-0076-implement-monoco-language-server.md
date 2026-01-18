@@ -22,7 +22,7 @@ tags: []
 ## 目标 (Objective)
 
 将 Monoco Issue System 当前僵化的 "Action Proxy" 模式替换为灵活、基于校验驱动的 **Language Server Protocol (LSP)** 架构。
-**技术决策**：为了确保插件的轻量化、高性能和易分发性，决定采用 **TypeScript** 技术栈 (`vscode-languageserver`) 实现 LSP，与 VS Code 插件生态保持原生一致。
+**技术决策**: 为了确保插件的轻量化、高性能和易分发性，决定采用 **TypeScript** 技术栈 (`vscode-languageserver`) 实现 LSP，与 VS Code 插件生态保持原生一致。
 
 ## 架构上下文 (Context & Architecture)
 

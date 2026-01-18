@@ -24,7 +24,7 @@ tags:
 
 ## 背景 (Context)
 
-`FEAT-0071` 完成了 Agent Environment Injection 的 MVP 实现（主要是写入逻辑）。但为了满足 `EPIC-0014` 的最终验收标准，核心引擎仍缺失以下关键能力：
+`FEAT-0071` 完成了 Agent Environment Injection 的 MVP 实现（主要是写入逻辑）。但为了满足 `EPIC-0014` 的最终验收标准，核心引擎仍缺失以下关键能力:
 
 1. **无法撤销**: 缺少 `uninstall` 命令，用户无法一键清理注入的内容。
 2. **配置硬编码**: `sync` 目前仅针对硬编码的文件列表，无法通过 `.monoco/config.yaml` 定制（如指定 Framework 或 Target File）。
@@ -51,7 +51,7 @@ tags:
 - [x] **Core**: 扩展 `PromptInjector` 类，新增 `remove()` 方法 (Reverse of `inject`)。
   - 逻辑: 定位 `MANAGED_HEADER`，识别 Block 边界，执行删除并清理多余空行。
 - [x] **QA**: 编写 `tests/core/test_injector.py` 单元测试。
-  - Case: 空文件/新文件注入（自动初始化一级标题，如 ` # AGENTS``# Gemini Memory `）。
+  - Case: 空文件/新文件注入（自动初始化一级标题，如 `# AGENTS``# Gemini Memory`）。
   - Case: 现有文件追加/插入/覆盖。
   - Case: 幂等性验证（重复注入不改变内容）。
   - Case: 删除逻辑验证（完美还原，不残留空行）。

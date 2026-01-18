@@ -18,7 +18,7 @@ export class LanguageClientManager {
 
   constructor(
     private context: vscode.ExtensionContext,
-    private outputChannel: vscode.OutputChannel
+    private outputChannel: vscode.OutputChannel,
   ) {}
 
   /**
@@ -26,7 +26,7 @@ export class LanguageClientManager {
    */
   async start(): Promise<void> {
     const serverModule = this.context.asAbsolutePath(
-      path.join("server", "out", "server.js")
+      path.join("server", "out", "server.js"),
     );
 
     // Check if server module exists
@@ -41,13 +41,13 @@ export class LanguageClientManager {
       "monocoLanguageServer",
       "Monoco Language Server",
       serverOptions,
-      clientOptions
+      clientOptions,
     );
 
     this.outputChannel.appendLine("Starting Monoco Language Server...");
     await this.client.start();
     this.outputChannel.appendLine(
-      "Monoco Language Server started successfully"
+      "Monoco Language Server started successfully",
     );
   }
 
@@ -116,7 +116,10 @@ export class LanguageClientManager {
    */
   private createClientOptions(): LanguageClientOptions {
     return {
-      documentSelector: [{ scheme: "file", language: "markdown" }],
+      documentSelector: [
+        { scheme: "file", language: "markdown" },
+        { scheme: "file", language: "monoco-issue" },
+      ],
       synchronize: {
         fileEvents: vscode.workspace.createFileSystemWatcher("**/.clientrc"),
       },
