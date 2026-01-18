@@ -3,17 +3,18 @@ id: EPIC-0007
 type: epic
 status: closed
 stage: done
-title: "Toolkit 项目独立化 (Toolkit Independence)"
-created_at: "2026-01-12T00:00:00"
-updated_at: "2026-01-15T13:22:40"
-closed_at: "2026-01-15T13:22:40"
+title: Toolkit 项目独立化 (Toolkit Independence)
+created_at: '2026-01-12T00:00:00'
+updated_at: '2026-01-15T13:22:40'
+closed_at: '2026-01-15T13:22:40'
 solution: implemented
 dependencies: []
 related: []
 tags:
-  - architecture
-  - devops
-  - strategic
+- '#EPIC-0007'
+- architecture
+- devops
+- strategic
 progress: 4/4
 files_count: 0
 uid: 3b4179

@@ -5,14 +5,15 @@ type: chore
 status: closed
 stage: done
 title: Update VS Code Extension Documentation
-created_at: "2026-01-16T22:54:34"
-opened_at: "2026-01-16T22:54:34"
-updated_at: "2026-01-16T22:56:32"
-closed_at: "2026-01-16T22:56:32"
+created_at: '2026-01-16T22:54:34'
+opened_at: '2026-01-16T22:54:34'
+updated_at: '2026-01-16T22:56:32'
+closed_at: '2026-01-16T22:56:32'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#CHORE-0005'
 ---
 
 ## CHORE-0005: Update VS Code Extension Documentation

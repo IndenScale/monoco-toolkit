@@ -5,12 +5,13 @@ type: feature
 status: open
 stage: draft
 title: 更新 VS Code 扩展以支持优化的动作系统
-created_at: "2026-01-16T23:45:53"
-opened_at: "2026-01-16T23:45:53"
-updated_at: "2026-01-16T23:45:53"
+created_at: '2026-01-16T23:45:53'
+opened_at: '2026-01-16T23:45:53'
+updated_at: '2026-01-16T23:45:53'
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0085'
 ---
 
 ## FEAT-0085: 更新 VS Code 扩展以支持优化的动作系统

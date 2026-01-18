@@ -5,14 +5,15 @@ type: feature
 status: closed
 stage: done
 title: Core Integration Registry
-created_at: "2026-01-15T16:32:44"
-opened_at: "2026-01-15T16:32:44"
-updated_at: "2026-01-15T17:03:45"
-closed_at: "2026-01-15T17:03:45"
+created_at: '2026-01-15T16:32:44'
+opened_at: '2026-01-15T16:32:44'
+updated_at: '2026-01-15T17:03:45'
+closed_at: '2026-01-15T17:03:45'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0074'
 ---
 
 ## FEAT-0074: Core Integration Registry

@@ -5,18 +5,20 @@ type: feature
 status: closed
 stage: done
 title: Implement Monoco Sync and Prompt Injection System
-created_at: "2026-01-15T15:01:21"
-opened_at: "2026-01-15T15:01:21"
-updated_at: "2026-01-15T15:09:32"
-closed_at: "2026-01-15T15:09:32"
+created_at: '2026-01-15T15:01:21'
+opened_at: '2026-01-15T15:01:21'
+updated_at: '2026-01-15T15:09:32'
+closed_at: '2026-01-15T15:09:32'
 parent: EPIC-0014
 solution: implemented
 dependencies: []
 related: []
 tags:
-  - agent-native
-  - cli
-  - prompt-engineering
+- '#EPIC-0014'
+- '#FEAT-0071'
+- agent-native
+- cli
+- prompt-engineering
 ---
 
 ## FEAT-0071: Implement Monoco Sync and Prompt Injection System

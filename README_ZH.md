@@ -65,8 +65,19 @@ monoco init
     ```bash
     monoco issue create feature -t "实现深色模式"
     ```
-2.  **编辑**: 在生成的 Markdown 文件中细化需求。
-3.  **可视化**: 通过 VS Code 或 CLI 打开看板。
+    monoco issue create feature -t "实现深色模式"
+    ```
+
+    ```
+2.  **启动**: 自动创建分支。
+    ```bash
+    monoco issue start FEAT-001 --branch
+    ```
+3.  **开发与同步**: 编码并自动追踪修改文件。
+    ```bash
+    monoco issue sync-files
+    ```
+4.  **可视化**: 通过 VS Code 或 CLI 打开看板。
     ```bash
     # 启动本地服务
     monoco serve

@@ -5,15 +5,16 @@ type: chore
 status: closed
 stage: done
 title: 调研增强型 Issue 模板
-created_at: "2026-01-17T09:55:05"
-opened_at: "2026-01-17T09:55:05"
-updated_at: "2026-01-17T10:25:00"
-closed_at: "2026-01-17T10:25:00"
+created_at: '2026-01-17T09:55:05'
+opened_at: '2026-01-17T09:55:05'
+updated_at: '2026-01-17T10:25:00'
+closed_at: '2026-01-17T10:25:00'
 parent: null
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#CHORE-0006'
 ---
 
 ## CHORE-0006: 调研增强型 Issue 模板

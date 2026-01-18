@@ -5,15 +5,17 @@ type: feature
 status: closed
 stage: done
 title: 智能体运行时诊断 (Agent Runtime Diagnostics)
-created_at: "2026-01-15T08:55:53"
-opened_at: "2026-01-15T08:55:53"
-updated_at: "2026-01-16T08:34:01"
-closed_at: "2026-01-16T08:34:01"
+created_at: '2026-01-15T08:55:53'
+opened_at: '2026-01-15T08:55:53'
+updated_at: '2026-01-16T08:34:01'
+closed_at: '2026-01-16T08:34:01'
 parent: EPIC-0012
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#EPIC-0012'
+- '#FEAT-0066'
 ---
 
 ## FEAT-0066: 智能体运行时诊断 (Agent Runtime Diagnostics)

@@ -5,14 +5,15 @@ type: feature
 status: closed
 stage: done
 title: 安全清理
-created_at: "2026-01-13T13:29:03"
-opened_at: "2026-01-13T13:29:03"
-updated_at: "2026-01-13T13:30:00"
-closed_at: "2026-01-13T13:30:00"
+created_at: '2026-01-13T13:29:03'
+opened_at: '2026-01-13T13:29:03'
+updated_at: '2026-01-13T13:30:00'
+closed_at: '2026-01-13T13:30:00'
 solution: implemented
 dependencies: []
 related: []
-tags: []
+tags:
+- '#FEAT-0049'
 ---
 
 ## FEAT-0049: 安全清理
