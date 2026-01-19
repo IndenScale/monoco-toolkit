@@ -5,23 +5,23 @@ type: feature
 status: closed
 stage: done
 title: 文档内容与 CLI 参考
-created_at: '2026-01-19T13:47:03'
-opened_at: '2026-01-19T13:47:03'
-updated_at: '2026-01-19T14:25:29'
-closed_at: '2026-01-19T14:25:29'
+created_at: "2026-01-19T13:47:03"
+opened_at: "2026-01-19T13:47:03"
+updated_at: "2026-01-19T14:42:00"
+solution: Implemented - Core documentation pages (Manifesto, CLI Reference, Landing Page) populated and verified.
 parent: EPIC-0018
-solution: implemented
-isolation:
-  type: branch
-  ref: feat/feat-0095-文档内容与-cli-参考
-  created_at: '2026-01-19T14:23:53'
 dependencies: []
 related: []
 domains: []
 tags:
-- '#EPIC-0018'
-- '#FEAT-0095'
+  - "#EPIC-0018"
+  - "#FEAT-0095"
 files: []
+isolation:
+  type: branch
+  ref: feat/feat-0095-文档内容与-cli-参考
+  path: null
+  created_at: "2026-01-19T14:23:53"
 ---
 
 ## FEAT-0095: 文档内容与 CLI 参考
