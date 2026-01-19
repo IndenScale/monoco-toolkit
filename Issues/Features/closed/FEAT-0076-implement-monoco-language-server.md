@@ -17,6 +17,7 @@ solution: 'Implemented a dual-project structure (client/server) within `extensio
   performance.
 
   '
+domains: []
 tags:
 - '#FEAT-0076'
 ---

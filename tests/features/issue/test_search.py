@@ -2,6 +2,7 @@ import pytest
 from monoco.features.issue.core import parse_search_query, check_issue_match
 from monoco.features.issue.models import IssueMetadata, IssueType, IssueStatus
 
+
 class TestQueryParser:
     def test_basic_implicit_terms(self):
         """Test simple terms without prefixes (Nice to have)"""
@@ -31,7 +32,7 @@ class TestQueryParser:
         assert pos == ["critical"]
         assert terms == ["login"]
         assert negs == ["wontfix"]
-    
+
     def test_quoted_phrases(self):
         """Test quoted phrases"""
         # "access denied" -"unit test" +core
@@ -46,7 +47,7 @@ class TestQueryParser:
         # Current shlex logic splits: '+"foo bar"' -> ['+foo bar']? NO.
         # shlex.split('+"foo bar"') -> ['+foo bar']
         # check_issue_match logic: startswith("+") -> len > 1 -> strip 1.
-        
+
         pos, terms, negs = parse_search_query('+"critical error" -"minor bug"')
         assert pos == ["critical error"]
         assert negs == ["minor bug"]
@@ -61,14 +62,14 @@ class TestIssueMatcher:
             type=IssueType.FEATURE,
             status=IssueStatus.OPEN,
             title="Implement User Login System",
-            tags=["auth", "security", "high-priority"]
+            tags=["auth", "security", "high-priority"],
         )
 
     def test_match_simple_term(self, mock_issue):
         """Implicit OR: Should match if term exists"""
         assert check_issue_match(mock_issue, [], ["login"], []) is True
-        assert check_issue_match(mock_issue, [], ["logout"], []) is False # No match
-        
+        assert check_issue_match(mock_issue, [], ["logout"], []) is False  # No match
+
     def test_match_multiple_terms_or_logic(self, mock_issue):
         """Implicit OR: 'login logout' -> matches login"""
         # If no explicit positives, terms are implicit OR.
@@ -79,31 +80,35 @@ class TestIssueMatcher:
         """Must Include logic"""
         assert check_issue_match(mock_issue, ["auth"], [], []) is True
         assert check_issue_match(mock_issue, ["payment"], [], []) is False
-        
+
     def test_match_explicit_negative(self, mock_issue):
         """Must Not Include logic"""
         assert check_issue_match(mock_issue, [], [], ["docs"]) is True
-        assert check_issue_match(mock_issue, [], [], ["auth"]) is False # Exclude tag
+        assert check_issue_match(mock_issue, [], [], ["auth"]) is False  # Exclude tag
 
     def test_match_mixed_logic(self, mock_issue):
         """Mixed logic: +auth -docs login"""
         # Should match: Has 'auth', No 'docs'. 'login' is optional nice-to-have.
         assert check_issue_match(mock_issue, ["auth"], ["login"], ["docs"]) is True
-        
+
         # Even if 'login' is missing, it should match because +auth is present!
         # Rule: If explicit positives exist, terms are optional.
-        assert check_issue_match(mock_issue, ["auth"], ["missing_term"], ["docs"]) is True
+        assert (
+            check_issue_match(mock_issue, ["auth"], ["missing_term"], ["docs"]) is True
+        )
 
     def test_match_phrase(self, mock_issue):
         """Exact phrase matching"""
         # Title: "Implement User Login System"
         assert check_issue_match(mock_issue, [], ["user login"], []) is True
-        assert check_issue_match(mock_issue, [], ["login user"], []) is False # Order matters in blob? 
+        assert (
+            check_issue_match(mock_issue, [], ["login user"], []) is False
+        )  # Order matters in blob?
         # Actually our implementation joins fields with space.
         # "Implement User Login System" -> blob has "user login".
-        
+
     def test_all_fields_search(self, mock_issue):
         """Search across ID, Status, Tags"""
-        assert check_issue_match(mock_issue, [], ["feat-001"], []) is True # ID
-        assert check_issue_match(mock_issue, [], ["open"], []) is True # Status
-        assert check_issue_match(mock_issue, [], ["security"], []) is True # Tag
+        assert check_issue_match(mock_issue, [], ["feat-001"], []) is True  # ID
+        assert check_issue_match(mock_issue, [], ["open"], []) is True  # Status
+        assert check_issue_match(mock_issue, [], ["security"], []) is True  # Tag

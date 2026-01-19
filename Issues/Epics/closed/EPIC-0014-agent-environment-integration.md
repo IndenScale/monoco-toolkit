@@ -12,6 +12,7 @@ closed_at: '2026-01-15T17:10:50'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#EPIC-0014'
 - agent-native

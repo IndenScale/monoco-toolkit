@@ -1,6 +1,6 @@
 {
   "name": "@monoco-io/kanban-core",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

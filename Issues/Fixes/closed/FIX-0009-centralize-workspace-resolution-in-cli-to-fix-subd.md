@@ -12,6 +12,7 @@ closed_at: '2026-01-18T08:24:36'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#FIX-0009'
 ---

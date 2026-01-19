@@ -16,7 +16,7 @@ const formatDate = (dateStr: string) => {
         if (diffMins < 60) return `${diffMins}m ago`;
         if (diffHours < 24) return `${diffHours}h ago`;
         if (diffDays < 7) return `${diffDays}d ago`;
-        
+
         return date.toLocaleDateString();
     } catch (e) {
         return dateStr;
@@ -63,7 +63,7 @@ export default function ActivityList({ showHeader = true }: { showHeader?: boole
                     Activity Feed
                 </h3>
             )}
-            
+
             <div className="flex-1 overflow-y-auto max-h-[400px] pr-2">
                 {!recent_activities || recent_activities.length === 0 ? (
                     <div className="text-text-muted text-center py-8">
@@ -74,9 +74,9 @@ export default function ActivityList({ showHeader = true }: { showHeader?: boole
                         {recent_activities.map((activity) => (
                             <div key={activity.id} className="flex items-start gap-3">
                                 <div className="mt-1">
-                                    <Icon 
-                                        icon={getActivityIcon(activity.type)} 
-                                        intent={getActivityIntent(activity.type)} 
+                                    <Icon
+                                        icon={getActivityIcon(activity.type)}
+                                        intent={getActivityIntent(activity.type)}
                                         size={14}
                                     />
                                 </div>

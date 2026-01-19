@@ -10,6 +10,7 @@ closed_at: '2026-01-15T13:42:54'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#EPIC-0005'
 - daemon

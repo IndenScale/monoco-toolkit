@@ -11,6 +11,7 @@ closed_at: '2026-01-12T17:18:28.505752'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#FIX-0004'
 uid: 38f911
