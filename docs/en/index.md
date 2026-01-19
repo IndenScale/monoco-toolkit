@@ -1,25 +1,35 @@
-# Monoco Toolkit
+---
+layout: home
 
-> **The Agent-Native Development Experience.**
+hero:
+  name: "Monoco Toolkit"
+  text: "Agent-Native Issue Tracking"
+  tagline: "Git-Native Issue Tracking System with CLI & VS Code UI"
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /guide
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/indenscale/monoco-toolkit
 
-Monoco Toolkit is a specialized toolchain designed to bridge the gap between Human intention and Agent execution. It solves the "Bootstrap Paradox" in AI-assisted development by providing a standardized, deterministic interface for Agents to interact with your codebase, manageable tasks, and external knowledge.
+features:
+  - title: Git-Native
+    details: Issues are stored as Markdown/YAML files in your repository. Use your favorite Git tools to manage them.
+  - title: Agent-Compatible
+    details: Designed for AI agents to read and write. No complex APIs, just structured text.
+  - title: CLI & VS Code
+    details: Seamlessly integrate into your development workflow with our powerful CLI and VS Code extension.
+---
 
-## Why Monoco?
+<style>
+:root {
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff);
 
-In the era of AI coding assistants, we often face a disconnect: Humans think in **Strategy**, but Agents work in **Operations**.
-
-Monoco aligns these worlds:
-*   **For Humans**: A Linear-style Kanban board to manage Epics, Features, and Bugs without getting lost in code details.
-*   **For Agents**: A structured CLI (`monoco`) that treats "Task as Code", allowing agents to discover, understand, and update project status deterministically.
-
-## Key Features
-
-*   **Task as Code**: Issues are stored as structured Markdown/YAML files in your repository. No external DB lock-in.
-*   **Agent-First CLI**: Commands optimized for LLM consumption (structured output, deterministic behavior).
-*   **Kanban UI**: A modern Next.js web interface for human project management.
-*   **Research Spikes**: Dedicated management for external knowledge and research tasks.
-*   **I18n Native**: Built-in support for multilingual documentation and issue tracking.
-
-## Getting Started
-
-See [Setup Guide](setup/manual.md) or use our Quick Start in the repository README.
+  --vp-c-brand-1: #646cff;
+  --vp-c-brand-2: #747bff;
+  --vp-c-brand-3: #8d91ff;
+  --vp-c-brand-soft: rgba(100, 108, 255, 0.14);
+}
+</style>

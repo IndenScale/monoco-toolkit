@@ -22,6 +22,7 @@ export default defineConfig({
             text: "Introduction",
             items: [
               { text: "What is Monoco?", link: "/guide" },
+              { text: "Manifesto", link: "/Manifesto" },
               { text: "Architecture", link: "/architecture" },
               {
                 text: "Design Patterns",
@@ -55,6 +56,7 @@ export default defineConfig({
             text: "介绍",
             items: [
               { text: "什么是 Monoco?", link: "/zh/guide" },
+              { text: "项目宣言", link: "/zh/Manifesto" },
               { text: "架构", link: "/zh/architecture" },
               { text: "设计模式", link: "/zh/agent-native-design-pattern.md" },
             ],
