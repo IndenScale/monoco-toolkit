@@ -2,8 +2,6 @@
 Tests for Core Integration Registry.
 """
 
-import pytest
-from pathlib import Path
 from monoco.core.integrations import (
     AgentIntegration,
     DEFAULT_INTEGRATIONS,
@@ -17,7 +15,7 @@ from monoco.core.integrations import (
 def test_default_integrations_structure():
     """Test that all default integrations have required fields."""
     assert len(DEFAULT_INTEGRATIONS) >= 5  # cursor, claude, gemini, qwen, agent
-    
+
     for key, integration in DEFAULT_INTEGRATIONS.items():
         assert integration.key == key
         assert integration.name
@@ -43,10 +41,10 @@ def test_get_integration_with_override():
         system_prompt_file="custom.rules",
         skill_root_dir="custom/skills/",
     )
-    
+
     overrides = {"cursor": custom_cursor}
     result = get_integration("cursor", overrides)
-    
+
     assert result.name == "Custom Cursor"
     assert result.system_prompt_file == "custom.rules"
 
@@ -73,10 +71,10 @@ def test_get_all_integrations_with_overrides():
         system_prompt_file="CUSTOM.md",
         skill_root_dir=".custom/skills/",
     )
-    
+
     overrides = {"custom": custom}
     all_integrations = get_all_integrations(overrides)
-    
+
     assert "custom" in all_integrations
     assert "cursor" in all_integrations  # Defaults still present
 
@@ -90,13 +88,13 @@ def test_get_all_integrations_enabled_filter():
         skill_root_dir=".disabled/skills/",
         enabled=False,
     )
-    
+
     overrides = {"disabled": disabled}
-    
+
     # With enabled_only=True (default)
     enabled_integrations = get_all_integrations(overrides, enabled_only=True)
     assert "disabled" not in enabled_integrations
-    
+
     # With enabled_only=False
     all_integrations = get_all_integrations(overrides, enabled_only=False)
     assert "disabled" in all_integrations
@@ -108,9 +106,9 @@ def test_detect_frameworks(tmp_path):
     (tmp_path / ".cursorrules").touch()
     (tmp_path / "GEMINI.md").touch()
     (tmp_path / ".qwen" / "skills").mkdir(parents=True)
-    
+
     detected = detect_frameworks(tmp_path)
-    
+
     assert "cursor" in detected
     assert "gemini" in detected
     assert "qwen" in detected
@@ -128,14 +126,14 @@ def test_get_active_integrations(tmp_path):
     # Create some framework files
     (tmp_path / ".cursorrules").touch()
     (tmp_path / "GEMINI.md").touch()
-    
+
     # Get active integrations (auto-detect enabled)
     active = get_active_integrations(tmp_path, auto_detect=True)
-    
+
     assert "cursor" in active
     assert "gemini" in active
     assert "claude" not in active  # Not detected
-    
+
     # Get all enabled integrations (auto-detect disabled)
     all_enabled = get_active_integrations(tmp_path, auto_detect=False)
     assert len(all_enabled) >= 5  # All defaults
@@ -144,7 +142,7 @@ def test_get_active_integrations(tmp_path):
 def test_get_active_integrations_with_overrides(tmp_path):
     """Test active integrations with custom config."""
     (tmp_path / ".cursorrules").touch()
-    
+
     # Override cursor integration
     custom_cursor = AgentIntegration(
         key="cursor",
@@ -152,9 +150,9 @@ def test_get_active_integrations_with_overrides(tmp_path):
         system_prompt_file=".cursorrules",
         skill_root_dir=".cursor/skills/",
     )
-    
+
     overrides = {"cursor": custom_cursor}
     active = get_active_integrations(tmp_path, overrides, auto_detect=True)
-    
+
     assert "cursor" in active
     assert active["cursor"].name == "Custom Cursor"

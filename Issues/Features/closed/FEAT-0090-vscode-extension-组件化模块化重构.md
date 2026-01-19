@@ -10,6 +10,7 @@ opened_at: '2026-01-17T12:42:08'
 updated_at: '2026-01-17T12:53:06'
 dependencies: []
 related: []
+domains: []
 tags:
 - '#FEAT-0090'
 - architecture

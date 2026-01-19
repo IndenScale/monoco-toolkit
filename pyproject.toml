@@ -1,6 +1,6 @@
 [project]
 name = "monoco-toolkit"
-version = "0.2.9"
+version = "0.3.0"
 description = "Agent Native Toolkit for Monoco - Task Management & Kanban for AI Agents"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -60,7 +60,9 @@ packages = ["monoco"]
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
-    "pytest>=9.0.2",
     "pytest-mock>=3.14.0",
+    "pre-commit>=3.5.0",
 ]
+
+[tool.ruff.lint]
+ignore = ["E402", "E722", "F811", "F841", "E741"]

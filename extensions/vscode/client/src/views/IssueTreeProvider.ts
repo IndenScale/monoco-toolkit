@@ -281,35 +281,50 @@ export class IssueTreeProvider
   /**
    * Filter issues by all criteria
    */
+  /**
+   * Filter issues by all criteria
+   */
   private applyFilters(issues: Issue[]): Issue[] {
     return issues.filter((i) => {
       // 1. Project
       if (this.filterState.project) {
         if (this.filterState.project === "root") {
-          if (i.project_id) return false;
+          if (i.project_id) {
+            return false;
+          }
         } else {
-          if (i.project_id !== this.filterState.project) return false;
+          if (i.project_id !== this.filterState.project) {
+            return false;
+          }
         }
       }
 
       // 2. Type
       if (this.filterState.types.length > 0) {
-        if (!this.filterState.types.includes(i.type)) return false;
+        if (!this.filterState.types.includes(i.type)) {
+          return false;
+        }
       }
 
       // 3. Status
       if (this.filterState.statuses.length > 0) {
-        if (!this.filterState.statuses.includes(i.status)) return false;
+        if (!this.filterState.statuses.includes(i.status)) {
+          return false;
+        }
       }
 
       // 4. Stage
       if (this.filterState.stages.length > 0) {
-        if (!this.filterState.stages.includes(i.stage)) return false;
+        if (!this.filterState.stages.includes(i.stage)) {
+          return false;
+        }
       }
 
       // 5. Tags
       if (this.filterState.tagQuery) {
-        if (!this.matchesTags(i, this.filterState.tagQuery)) return false;
+        if (!this.matchesTags(i, this.filterState.tagQuery)) {
+          return false;
+        }
       }
 
       return true;
@@ -320,48 +335,49 @@ export class IssueTreeProvider
    * Parse and match tags
    * Supports: +required, -excluded, optional (nice to have - treated as optional match?)
    * User Request: "+#tag1 -#tag2 #tag3"
-   * Implementation:
-   *  - Terms starting with +: MUST HAVE
-   *  - Terms starting with -: MUST NOT HAVE
-   *  - Terms without prefix: OR match (if any 'optional' terms exist, must match at least one? Or just standard search?)
-   *    Let's go with: If there are "optional" terms, the item must match at least one of them UNLESS only required/excluded terms are present.
    */
   private matchesTags(issue: Issue, query: string): boolean {
     const tokens = query.split(/\s+/).filter((t) => t.length > 0);
-    if (tokens.length === 0) return true;
+    if (tokens.length === 0) {
+      return true;
+    }
 
     const required: string[] = [];
     const excluded: string[] = [];
     const optional: string[] = [];
 
     tokens.forEach((t) => {
-      if (t.startsWith("+"))
+      if (t.startsWith("+")) {
         required.push(t.slice(1).replace(/^#/, "")); // Remove + and optional #
-      else if (t.startsWith("-"))
+      } else if (t.startsWith("-")) {
         excluded.push(t.slice(1).replace(/^#/, "")); // Remove - and optional #
-      else optional.push(t.replace(/^#/, "")); // Remove optional #
+      } else {
+        optional.push(t.replace(/^#/, "")); // Remove optional #
+      }
     });
 
     const issueTags = issue.tags || [];
 
     // 1. Check Excluded (Fail fast)
     for (const ex of excluded) {
-      if (issueTags.includes(ex)) return false;
+      if (issueTags.includes(ex)) {
+        return false;
+      }
     }
 
     // 2. Check Required
     for (const req of required) {
-      if (!issueTags.includes(req)) return false;
+      if (!issueTags.includes(req)) {
+        return false;
+      }
     }
 
     // 3. Check Optional
-    // If optional terms exist, usually in search logic it means "Must match one of these" OR "Just boost score".
-    // Since this is a hard filter, "Must match at least one" is the standard interpretation of mixed boolean queries usually,
-    // UNLESS it's purely a "Nice to have" (sorting).
-    // Warning: If I make it strict, "#tag3" filters out everything else. This seems to be what "filter" means.
     if (optional.length > 0) {
       const hasMatch = optional.some((opt) => issueTags.includes(opt));
-      if (!hasMatch) return false;
+      if (!hasMatch) {
+        return false;
+      }
     }
 
     return true;

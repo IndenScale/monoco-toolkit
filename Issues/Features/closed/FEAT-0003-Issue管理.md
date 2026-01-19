@@ -7,6 +7,7 @@ stage: done
 title: '特性: Issue 管理 (本地) (Issue Management - Local)'
 created_at: 2026-01-08
 solution: implemented
+domains: []
 tags:
 - '#EPIC-0002'
 - '#FEAT-0003'

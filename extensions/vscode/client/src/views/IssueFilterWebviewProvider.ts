@@ -89,10 +89,10 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                         --focus-border: var(--vscode-focusBorder);
                         --hover-bg: var(--vscode-list-hoverBackground);
                     }
-                    body { 
-                        padding: 0; 
-                        font-family: var(--vscode-font-family); 
-                        color: var(--vscode-foreground); 
+                    body {
+                        padding: 0;
+                        font-family: var(--vscode-font-family);
+                        color: var(--vscode-foreground);
                         font-size: 13px;
                         height: 100vh;
                         margin: 0;
@@ -109,7 +109,7 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                         gap: 12px;
                         /* max-height: 100vh; Removed to allow scroll */
                     }
-                    
+
                     /* Filters Section */
                     .filters-container {
                         display: flex;
@@ -156,7 +156,7 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                         height: 22px; /* Fixed height for consistency */
                         box-sizing: border-box;
                     }
-                    
+
                     .dropdown-trigger:hover {
                         border-color: var(--focus-border);
                     }
@@ -183,7 +183,7 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                         box-shadow: 0 -4px 6px rgba(0,0,0,0.2); /* Shadow up */
                         margin-bottom: 2px;
                     }
-                    
+
                     .dropdown-content.show {
                         display: block;
                     }
@@ -199,11 +199,11 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                     .dropdown-item:hover {
                         background: var(--hover-bg);
                     }
-                    
+
                     .dropdown-item.checked {
                         /* font-weight: bold; */
                     }
-                    
+
                     .dropdown-item .check {
                         opacity: 0;
                         width: 14px;
@@ -218,7 +218,7 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                         padding-top: 4px;
                         /* border-top: 1px solid var(--vscode-widget-border); REMOVED border for integration */
                     }
-                    
+
                     input[type="text"] {
                         background: var(--input-bg);
                         color: var(--input-fg);
@@ -267,7 +267,7 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
 
 				<script nonce="${nonce}">
                     const vscode = acquireVsCodeApi();
-                    
+
                     // State
                     let state = {
                         project: null,
@@ -326,12 +326,12 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                         ];
                         // Convert project 'null' state to 'all' value for UI
                         let currentProj = state.project === null ? 'all' : state.project;
-                        
+
                         renderDropdown(els.project, 'Project', projectOpts, [currentProj], true, (val) => {
                              state.project = val === 'all' ? null : val;
                              emitState();
                              // Project is single select, so we re-render to update trigger text immediately
-                             renderAll(); 
+                             renderAll();
                         });
 
                         // Types
@@ -354,7 +354,7 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                             emitState();
                             renderAll();
                         });
-                        
+
                         // Tag Input
                         els.tag.value = state.tagQuery;
                     }
@@ -362,7 +362,7 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                     function renderDropdown(container, labelText, options, currentValues, isSingle, onSelect) {
                         // Only create structure if empty (to avoid losing open state if possible, though re-render might close it)
                         // For simplicity in this version, we reconstruct content but keep open state if matches
-                        
+
                         // Check if already open
                         const wasOpen = container.querySelector('.dropdown-content')?.classList.contains('show');
 

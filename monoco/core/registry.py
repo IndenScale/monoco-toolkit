@@ -1,5 +1,6 @@
-from typing import Dict, List, Type
+from typing import Dict, List
 from monoco.core.feature import MonocoFeature
+
 
 class FeatureRegistry:
     _features: Dict[str, MonocoFeature] = {}
@@ -29,7 +30,7 @@ class FeatureRegistry:
         from monoco.features.issue.adapter import IssueFeature
         from monoco.features.spike.adapter import SpikeFeature
         from monoco.features.i18n.adapter import I18nFeature
-        
+
         cls.register(IssueFeature())
         cls.register(SpikeFeature())
         cls.register(I18nFeature())

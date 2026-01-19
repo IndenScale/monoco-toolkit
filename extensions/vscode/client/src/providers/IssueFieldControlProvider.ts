@@ -19,7 +19,7 @@ export class IssueFieldControlProvider implements vscode.DocumentLinkProvider {
     while ((match = statusRegex.exec(text)) !== null) {
       const line = document.positionAt(match.index).line;
       const value = match[1];
-      
+
       // The range should cover the value itself (e.g., "open")
       // match[0] is "status: open"
       // We need the offset of the value within the match
@@ -31,14 +31,14 @@ export class IssueFieldControlProvider implements vscode.DocumentLinkProvider {
       // Create DocumentLink
       const link = new vscode.DocumentLink(range);
       link.tooltip = "Click to toggle Status";
-      
+
       // Construct command URI
       const args = [document.uri.fsPath, line];
       const commandUri = vscode.Uri.parse(
         `command:monoco.toggleStatus?${encodeURIComponent(JSON.stringify(args))}`
       );
       link.target = commandUri;
-      
+
       links.push(link);
     }
 
