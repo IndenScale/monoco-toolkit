@@ -5,7 +5,7 @@ export default defineConfig({
   title: "Monoco Toolkit",
   description: "Agent-Native Issue Tracking System",
   srcDir: "src",
-  base: "/",
+  base: "/monoco-toolkit/",
 
   rewrites: {
     "en/:rest*": ":rest*",
