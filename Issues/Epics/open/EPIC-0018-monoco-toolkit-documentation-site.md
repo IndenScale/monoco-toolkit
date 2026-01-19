@@ -14,7 +14,7 @@ domains: []
 tags:
 - '#EPIC-0018'
 files: []
-progress: 0/4
+progress: 1/4
 files_count: 0
 ---
 
