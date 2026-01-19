@@ -23,4 +23,4 @@ Monoco aligns these worlds:
 
 ## Getting Started
 
-See [Setup Guide](setup/) or use our Quick Start in the repository README.
+See [Setup Guide](setup/) or check out our [Git Workflow Best Practices](workflow.md).
