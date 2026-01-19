@@ -2,17 +2,21 @@
 id: EPIC-0016
 uid: cc3c36
 type: epic
-status: open
-stage: draft
+status: closed
+stage: done
 title: LSP Cross-Project Navigation Architecture
 created_at: '2026-01-17T10:33:08'
 opened_at: '2026-01-17T10:33:08'
-updated_at: '2026-01-17T10:33:08'
+updated_at: '2026-01-19T14:30:23'
+closed_at: '2026-01-19T14:30:23'
+solution: implemented
 dependencies: []
 related: []
 domains: []
 tags:
 - '#EPIC-0016'
+files: []
+progress: 5/5
 ---
 
 ## EPIC-0016: LSP Cross-Project Navigation Architecture
@@ -60,15 +64,21 @@ class Span(BaseModel):
 
 ## Acceptance Criteria
 
-- [ ] **解析器升级**: `MarkdownParser` 生成包含详细 `spans` 的 `blocks`。
-- [ ] **跨项目解析**: 能够将 `[[OtherProject::FEAT-123]]` 解析到正确的文件路径。
-- [ ] **LSP 定义**: `monoco issue lsp` 正确处理 `textDocument/definition` 请求。
-- [ ] **Extension 逻辑**: VS Code Extension 将 "Go to Definition" 路由到 CLI (瘦客户端模式)。
+- [x] **解析器升级**: `MarkdownParser` 生成包含详细 `spans` 的 `blocks`。
+- [x] **跨项目解析**: 能够将 `[[OtherProject::FEAT-123]]` 解析到正确的文件路径。
+- [x] **LSP 定义**: `monoco issue lsp` 正确处理 `textDocument/definition` 请求。
+- [x] **Extension 逻辑**: VS Code Extension 将 "Go to Definition" 路由到 CLI (瘦客户端模式)。
 
 ## Technical Tasks
 
-- [ ] **Design**: 定义 `Span` 模型并更新 `ContentBlock`。
-- [ ] **Core**: 重构 `MarkdownParser` 以提取 Spans (基于正则)。
-- [ ] **Core**: 实现 `WorkspaceSymbolIndex` (扩展 `linter.py` 逻辑)。
-- [ ] **LSP**: 在 `monoco.features.issue.lsp` 中实现 `DefinitionProvider`。
-- [ ] **Test**: 添加 Parser 的回归测试和跨项目解析的新测试。
+- [x] **Design**: 定义 `Span` 模型并更新 `ContentBlock`。
+- [x] **Core**: 重构 `MarkdownParser` 以提取 Spans (基于正则)。
+- [x] **Core**: 实现 `WorkspaceSymbolIndex` (扩展 `linter.py` 逻辑)。
+- [x] **LSP**: 在 `monoco.features.issue.lsp` 中实现 `DefinitionProvider`。
+- [x] **Test**: 添加 Parser 的回归测试和跨项目解析的新测试。
+
+## Review Comments
+
+- 实现了 `Span` 级别的位置追踪和 `WorkspaceSymbolIndex`。
+- LSP `DefinitionProvider` 已支持基于工作空间索引的跨项目跳转。
+- 解析器已支持识别 `Project::ID` 格式。
