@@ -28,6 +28,7 @@ export default defineConfig({
             items: [
               { text: "Get Started", link: "/guide/" },
               { text: "Setup", link: "/guide/setup/" },
+              { text: "Best Practices", link: "/guide/workflow" },
             ],
           },
           {
@@ -103,6 +104,7 @@ export default defineConfig({
             items: [
               { text: "快速开始", link: "/zh/guide/" },
               { text: "安装配置", link: "/zh/guide/setup/" },
+              { text: "最佳实践", link: "/zh/guide/workflow" },
             ],
           },
           {
