@@ -10,19 +10,19 @@ Unlike traditional tools like Jira or Linear, it is not designed to isolate huma
 
 Please read the following documents in order to establish a complete understanding:
 
-### [Concepts: Why Issues?](./concepts.md)
+### [Concepts: Why Issues?](./00_overview.md)
 
 > Explore the problem of entropy in software engineering and the challenges Agents face in collaboration (hallucinations, amnesia, divergence). Explain how Monoco solves these problems through "Issue as Code".
 
-### [Structural Anatomy](./configuration.md) (Actually Configuration/Structure)
+### [Structural Anatomy](./01_structure.md)
 
 > Details the static structure of an Issue. Including YAML Front Matter as a machine interface (with file tracking) and Markdown Body as a human interface. Introduces static verification mechanisms.
 
-### [User Manual: Workflow Tools](./manual.md)
+### [User Manual: Workflow Tools](./03_workflow.md)
 
 > CLI command reference manual. Covers the entire process from creation, starting branches, syncing context (`sync-files`) to submission for acceptance.
 
-### [Query Syntax](./query_syntax.md)
+### [Query Syntax](./06_query_syntax.md)
 
 > Query and filter Issues using SQL-like logic.
 
