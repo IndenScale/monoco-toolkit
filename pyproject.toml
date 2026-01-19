@@ -60,7 +60,8 @@ packages = ["monoco"]
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
-    "pytest>=9.0.2",
     "pytest-mock>=3.14.0",
 ]
+
+[tool.ruff.lint]
+ignore = ["E402", "E722", "F811", "F841", "E741"]

@@ -63,7 +63,7 @@ suite("Bootstrap Test Suite", () => {
   test("Do nothing if bundled binary is available", async () => {
     // Bundled binary check succeeds
     execStub.withArgs("/mock/path/bin/monoco --help").yields(null);
-    
+
     // System monoco fails
     execStub.withArgs("monoco --help").yields(new Error("not found"));
 
