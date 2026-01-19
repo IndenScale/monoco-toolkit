@@ -2,25 +2,26 @@
 id: FEAT-0094
 uid: a74498
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: 内容管道与国际化策略
-created_at: "2026-01-19T13:47:02"
-opened_at: "2026-01-19T13:47:02"
-updated_at: 2026-01-19 14:22:11
+created_at: '2026-01-19T13:47:02'
+opened_at: '2026-01-19T13:47:02'
+updated_at: '2026-01-19T14:23:39'
+closed_at: '2026-01-19T14:23:39'
 parent: EPIC-0018
+solution: implemented
+isolation:
+  type: branch
+  ref: feat/feat-0094-内容管道与国际化策略
+  created_at: '2026-01-19T14:22:11'
 dependencies: []
 related: []
 domains: []
 tags:
-  - "#EPIC-0018"
-  - "#FEAT-0094"
+- '#EPIC-0018'
+- '#FEAT-0094'
 files: []
-isolation:
-  type: branch
-  ref: feat/feat-0094-内容管道与国际化策略
-  path: null
-  created_at: "2026-01-19T14:22:11"
 ---
 
 ## FEAT-0094: 内容管道与国际化策略
