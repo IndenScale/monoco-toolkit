@@ -1,22 +1,24 @@
 ---
-id: CHORE-0012
-uid: 6ab718
-type: chore
-status: open
-stage: review
-title: Refactor Documentation Structure and Unify Source
-created_at: '2026-01-19T15:35:15'
-opened_at: '2026-01-19T15:35:15'
-updated_at: '2026-01-19T15:43:32'
+id: FEAT-0096
+uid: 382b6b
+type: feature
+status: closed
+stage: done
+title: Document Monoco Git Workflow Best Practices
+created_at: '2026-01-19T15:46:24'
+opened_at: '2026-01-19T15:46:24'
+updated_at: '2026-01-19T15:51:11'
+closed_at: '2026-01-19T15:51:11'
+solution: implemented
 isolation:
   type: branch
-  ref: feat/chore-0012-refactor-documentation-structure-and-unify-source
-  created_at: '2026-01-19T15:35:22'
+  ref: feat/feat-0096-document-monoco-git-workflow-best-practices
+  created_at: '2026-01-19T15:46:28'
 dependencies: []
 related: []
 domains: []
 tags:
-- '#CHORE-0012'
+- '#FEAT-0096'
 files:
 - '"Issues/Epics/closed/EPIC-0002-\346\231\272\350\203\275\344\273\273\345\212\241\345\206\205\346\240\270\344\270\216\347\212\266\346\200\201\346\234\272.md"'
 - '"Issues/Epics/closed/EPIC-0006-Monoco\347\234\213\346\235\277Web\345\272\224\347\224\250.md"'
@@ -45,6 +47,7 @@ files:
 - Issues/Features/open/FEAT-0061-interactive-goto-definition.md
 - Issues/Features/open/FEAT-0062-drag-and-drop-text.md
 - Issues/Features/open/FEAT-0092-governance-maturity-checks.md
+- Issues/Features/open/FEAT-0096-document-monoco-git-workflow-best-practices.md
 - Issues/Fixes/closed/FIX-0012-fix-site-light-mode-color-scheme.md
 - Kanban/apps/webui/package.json
 - Kanban/apps/webui/src/app/components/KanbanCard.tsx
@@ -140,24 +143,27 @@ files:
 - uv.lock
 ---
 
-## CHORE-0012: Refactor Documentation Structure and Unify Source
+## FEAT-0096: Document Monoco Git Workflow Best Practices
 
 ## Objective
 
-Solve the split-brain problem between `docs/` and `site/` directories, and professionalize the information architecture by restructuring content into Guide, Reference, and Meta.
+Establish a standard operating procedure (SOP) for integrating Monoco Issue Tracking with Git Workflows. This guide will define the canonical lifecycle: Creation -> Branching -> Implementation -> Validation -> Merging -> Release.
 
 ## Acceptance Criteria
 
-- [x] `docs/` directory is removed and all unique content merged to `site/`.
-- [x] `site/src` layout is reorganized into `guide/`, `reference/`, and `meta/`.
-- [x] VitePress configuration `config.mts` is updated to reflect new paths.
+- [x] A new guide `site/src/zh/guide/workflow.md` (and en) is created.
+- [x] The guide covers:
+  - Branching strategy (Feature Branch Workflow).
+  - Lifecycle mapping (Open -> Doing -> Review -> Closed).
+  - Quality Gates (Linting, Tests before commit/push).
+- [x] `site/src/zh/guide/index.md` links to this new workflow guide.
 
 ## Technical Tasks
 
-- [x] Delete `docs/` folder
-- [x] Create new directory structure in `site/src/` (zh and en)
-- [x] Move files to `guide/`, `reference/`, and `meta/`
-- [x] Update `site/.vitepress/config.mts` sidebar and navigation
+- [x] Draft `site/src/zh/guide/workflow.md` with "Best Practices" content.
+- [x] Translate to `site/src/en/guide/workflow.md`.
+- [x] Update `site/.vitepress/config.mts` sidebar to include the new page.
+- [x] Add navigation links in `guide/index.md`.
 
 ## Review Comments
 
@@ -166,125 +172,13 @@ Solve the split-brain problem between `docs/` and `site/` directories, and profe
 ## Delivery
 <!-- Monoco Auto Generated -->
 **Commits (2)**:
-- `934bd7f` docs: update CHORE-0012 definition
-- `c664b3e` chore: refactor documentation structure and unify source
+- `16bf8b1` docs: complete FEAT-0096
+- `f2e7c4e` docs: add workflow best practices guide
 
-**Touched Files (118)**:
-- `Issues/Chores/open/CHORE-0012-refactor-documentation-structure-and-unify-source.md`
-- `docs/en/i18n/README.md`
-- `docs/en/index.md`
-- `docs/en/issue/README.md`
-- `docs/en/spike/README.md`
-- `docs/zh/i18n/README.md`
-- `docs/zh/index.md`
-- `docs/zh/issue/README.md`
-- `docs/zh/spike/README.md`
+**Touched Files (6)**:
+- `Issues/Features/open/FEAT-0096-document-monoco-git-workflow-best-practices.md`
 - `site/.vitepress/config.mts`
-- `site/src/en/Manifesto.md`
-- `site/src/en/agent-native-design-pattern.md`
-- `site/src/en/architecture.md`
-- `site/src/en/core-integration-registry.md`
-- `site/src/en/extensions/features/architecture.md`
-- `site/src/en/extensions/features/commands.md`
-- `site/src/en/extensions/features/configuration.md`
-- `site/src/en/extensions/features/index.md`
-- `site/src/en/extensions/features/issue_management.md`
-- `site/src/en/guide.md`
 - `site/src/en/guide/index.md`
-- `site/src/en/guide/setup/manual.md`
-- `site/src/en/i18n/manual.md`
-- `site/src/en/issue/00_overview.md`
-- `site/src/en/issue/01_structure.md`
-- `site/src/en/issue/02_lifecycle.md`
-- `site/src/en/issue/03_workflow.md`
-- `site/src/en/issue/04_agent_protocol.md`
-- `site/src/en/issue/05_configuration.md`
-- `site/src/en/issue/06_query_syntax.md`
-- `site/src/en/issue/07_governance.md`
-- `site/src/en/meta/Manifesto.md`
-- `site/src/en/meta/design/agent-native-design-pattern.md`
-- `site/src/en/meta/process/pypi-implementation-summary.md`
-- `site/src/en/meta/process/pypi-trusted-publishing.md`
-- `site/src/en/meta/process/release_audit.md`
-- `site/src/en/pypi-implementation-summary.md`
-- `site/src/en/pypi-trusted-publishing.md`
-- `site/src/en/reference/architecture.md`
-- `site/src/en/reference/core-integration-registry.md`
-- `site/src/en/reference/extensions/features/architecture.md`
-- `site/src/en/reference/extensions/features/commands.md`
-- `site/src/en/reference/extensions/features/configuration.md`
-- `site/src/en/reference/extensions/features/index.md`
-- `site/src/en/reference/extensions/features/issue_management.md`
-- `site/src/en/reference/i18n/index.md`
-- `site/src/en/reference/i18n/manual.md`
-- `site/src/en/reference/issue/00_overview.md`
-- `site/src/en/reference/issue/01_structure.md`
-- `site/src/en/reference/issue/02_lifecycle.md`
-- `site/src/en/reference/issue/03_workflow.md`
-- `site/src/en/reference/issue/04_agent_protocol.md`
-- `site/src/en/reference/issue/05_configuration.md`
-- `site/src/en/reference/issue/06_query_syntax.md`
-- `site/src/en/reference/issue/07_governance.md`
-- `site/src/en/reference/issue/index.md`
-- `site/src/en/reference/spike/index.md`
-- `site/src/en/reference/spike/manual.md`
-- `site/src/en/reference/tools/cli.md`
-- `site/src/en/reference/tools/vscode.md`
-- `site/src/en/release_audit.md`
-- `site/src/en/setup/manual.md`
-- `site/src/en/spike/manual.md`
-- `site/src/en/tools/cli.md`
-- `site/src/en/tools/vscode.md`
-- `site/src/zh/Manifesto.md`
-- `site/src/zh/agent-native-design-pattern.md`
-- `site/src/zh/architecture.md`
-- `site/src/zh/core-integration-registry.md`
-- `site/src/zh/extensions/features/architecture.md`
-- `site/src/zh/extensions/features/commands.md`
-- `site/src/zh/extensions/features/configuration.md`
-- `site/src/zh/extensions/features/index.md`
-- `site/src/zh/extensions/features/issue_management.md`
+- `site/src/en/guide/workflow.md`
 - `site/src/zh/guide/index.md`
-- `site/src/zh/guide/setup/manual.md`
-- `site/src/zh/i18n/manual.md`
-- `site/src/zh/issue/00_overview.md`
-- `site/src/zh/issue/01_structure.md`
-- `site/src/zh/issue/02_lifecycle.md`
-- `site/src/zh/issue/03_workflow.md`
-- `site/src/zh/issue/04_agent_protocol.md`
-- `site/src/zh/issue/05_configuration.md`
-- `site/src/zh/issue/06_query_syntax.md`
-- `site/src/zh/issue/07_governance.md`
-- `site/src/zh/meta/Manifesto.md`
-- `site/src/zh/meta/design/agent-native-design-pattern.md`
-- `site/src/zh/meta/process/pypi-implementation-summary.md`
-- `site/src/zh/meta/process/pypi-trusted-publishing.md`
-- `site/src/zh/meta/process/release_audit.md`
-- `site/src/zh/pypi-implementation-summary.md`
-- `site/src/zh/pypi-trusted-publishing.md`
-- `site/src/zh/reference/architecture.md`
-- `site/src/zh/reference/core-integration-registry.md`
-- `site/src/zh/reference/extensions/features/architecture.md`
-- `site/src/zh/reference/extensions/features/commands.md`
-- `site/src/zh/reference/extensions/features/configuration.md`
-- `site/src/zh/reference/extensions/features/index.md`
-- `site/src/zh/reference/extensions/features/issue_management.md`
-- `site/src/zh/reference/i18n/index.md`
-- `site/src/zh/reference/i18n/manual.md`
-- `site/src/zh/reference/issue/00_overview.md`
-- `site/src/zh/reference/issue/01_structure.md`
-- `site/src/zh/reference/issue/02_lifecycle.md`
-- `site/src/zh/reference/issue/03_workflow.md`
-- `site/src/zh/reference/issue/04_agent_protocol.md`
-- `site/src/zh/reference/issue/05_configuration.md`
-- `site/src/zh/reference/issue/06_query_syntax.md`
-- `site/src/zh/reference/issue/07_governance.md`
-- `site/src/zh/reference/issue/index.md`
-- `site/src/zh/reference/spike/index.md`
-- `site/src/zh/reference/spike/manual.md`
-- `site/src/zh/reference/tools/cli.md`
-- `site/src/zh/reference/tools/vscode.md`
-- `site/src/zh/setup/manual.md`
-- `site/src/zh/spike/manual.md`
-- `site/src/zh/tools/cli.md`
-- `site/src/zh/tools/vscode.md`
+- `site/src/zh/guide/workflow.md`
