@@ -64,6 +64,9 @@ class IssueValidator:
         # 5. Reference Integrity
         diagnostics.extend(self._validate_references(meta, content, all_issue_ids))
 
+        # 5.5 Domain Integrity
+        diagnostics.extend(self._validate_domains(meta, content))
+
         # 6. Time Consistency
         diagnostics.extend(self._validate_time_consistency(meta, content))
 
@@ -434,6 +437,38 @@ class IssueValidator:
             if o and o > cl:
                  diagnostics.append(self._create_diagnostic("Time Travel: opened_at > closed_at", DiagnosticSeverity.Error, line=opened_line))
 
+        return diagnostics
+
+    def _validate_domains(self, meta: IssueMetadata, content: str) -> List[Diagnostic]:
+        diagnostics = []
+        # Check if 'domains' field exists in frontmatter text
+        # We rely on text parsing because Pydantic defaults 'domains' to [] if missing.
+        line = self._get_field_line(content, "domains")
+        
+        # If line is 0, it might be the first line (rare) or missing.
+        # _get_field_line returns 0 if not found, but also if found at line 0?
+        # Let's check if the field actually exists in text.
+        has_domains_field = False
+        lines = content.splitlines()
+        in_fm = False
+        for i, l in enumerate(lines):
+            stripped = l.strip()
+            if stripped == "---":
+                if not in_fm: in_fm = True
+                else: break
+            elif in_fm:
+                if stripped.startswith("domains:"):
+                    has_domains_field = True
+                    break
+        
+        if not has_domains_field:
+             # We report it on line 0 (start of file) or line 1
+             diagnostics.append(self._create_diagnostic(
+                 "Structure Error: Missing 'domains' field in frontmatter.",
+                 DiagnosticSeverity.Warning,
+                 line=0
+             ))
+        
         return diagnostics
 
     def _validate_checkbox_logic_blocks(self, blocks: List[ContentBlock]) -> List[Diagnostic]:

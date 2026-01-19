@@ -116,6 +116,7 @@ class IssueMetadata(BaseModel):
     isolation: Optional[IssueIsolation] = None
     dependencies: List[str] = []
     related: List[str] = []
+    domains: List[str] = []
     tags: List[str] = []
     files: List[str] = []
     path: Optional[str] = None  # Absolute path to the issue file
@@ -139,6 +140,7 @@ class IssueMetadata(BaseModel):
                 "Parent": "parent",
                 "Solution": "solution",
                 "Sprint": "sprint",
+                "Domains": "domains",
             }
             for old_k, new_k in field_map.items():
                 if old_k in v and new_k not in v:

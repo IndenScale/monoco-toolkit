@@ -11,6 +11,7 @@ opened_at: '2026-01-15T16:45:00'
 updated_at: '2026-01-15T18:30:00'
 closed_at: '2026-01-15T18:30:00'
 solution: implemented
+domains: []
 tags:
 - '#EPIC-0013'
 ---

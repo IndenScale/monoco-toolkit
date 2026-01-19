@@ -8,6 +8,7 @@ created_at: '2026-01-09'
 dependencies: []
 related: []
 solution: implemented
+domains: []
 tags:
 - '#EPIC-0003'
 - '#FEAT-0009'

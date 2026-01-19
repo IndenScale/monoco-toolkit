@@ -7,6 +7,7 @@ stage: Done
 title: Toolkit 核心基础设施 (Toolkit Core Infrastructure)
 created_at: 2026-01-08
 solution: implemented
+domains: []
 tags:
 - '#EPIC-0001'
 - '#FEAT-0002'

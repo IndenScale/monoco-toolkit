@@ -10,6 +10,7 @@ closed_at: '2026-01-15T13:22:40'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#EPIC-0007'
 - architecture
