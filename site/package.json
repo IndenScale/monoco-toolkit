@@ -1,0 +1,21 @@
+{
+  "name": "monoco-docs",
+  "version": "0.3.2",
+  "description": "Monoco Toolkit Documentation",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "keywords": [],
+  "author": "IndenScale",
+  "license": "MIT",
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "vue": "^3.4.21"
+  }
+}
