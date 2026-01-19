@@ -11,6 +11,7 @@ closed_at: '2026-01-11T11:10:42.635955'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#EPIC-0002'
 - '#FEAT-0013'

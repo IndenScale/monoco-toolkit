@@ -6,6 +6,7 @@ stage: done
 title: 完善 monoco i18n 命令文档 (Complete i18n Docs)
 created_at: '2026-01-09'
 solution: completed
+domains: []
 tags:
 - '#CHORE-0002'
 - '#EPIC-0001'

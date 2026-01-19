@@ -7,6 +7,7 @@ title: Migrate Cockpit View to Pure LSP Architecture
 parent: EPIC-0005
 solution: Implemented Pure LSP architecture, removing Python dependency for the Kanban
   view.
+domains: []
 tags:
 - '#EPIC-0005'
 - '#FEAT-0077'

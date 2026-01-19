@@ -10,6 +10,7 @@ opened_at: '2026-01-16T23:32:20'
 updated_at: '2026-01-16T23:32:20'
 dependencies: []
 related: []
+domains: []
 tags:
 - '#FEAT-0084'
 ---

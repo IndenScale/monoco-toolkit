@@ -4,6 +4,7 @@ type: epic
 status: open
 title: 'EPIC-0001: Monoco 生态内核构建 (Kernel Construction)'
 created_at: 2026-01-08
+domains: []
 tags:
 - '#EPIC-0001'
 - core

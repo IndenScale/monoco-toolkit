@@ -13,6 +13,7 @@ closed_at: '2026-01-15T18:30:00'
 parent: EPIC-0013
 dependencies: []
 related: []
+domains: []
 tags:
 - '#EPIC-0013'
 - '#FEAT-0075'
