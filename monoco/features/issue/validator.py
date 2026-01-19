@@ -66,7 +66,7 @@ class IssueValidator:
         diagnostics.extend(self._validate_references(meta, content, all_issue_ids))
 
         # 5.5 Domain Integrity
-        diagnostics.extend(self._validate_domains(meta, content))
+        diagnostics.extend(self._validate_domains(meta, content, all_issue_ids))
 
         # 6. Time Consistency
         diagnostics.extend(self._validate_time_consistency(meta, content))
@@ -562,7 +562,9 @@ class IssueValidator:
 
         return diagnostics
 
-    def _validate_domains(self, meta: IssueMetadata, content: str) -> List[Diagnostic]:
+    def _validate_domains(
+        self, meta: IssueMetadata, content: str, all_ids: Set[str] = set()
+    ) -> List[Diagnostic]:
         diagnostics = []
         # Check if 'domains' field exists in frontmatter text
         # We rely on text parsing because Pydantic defaults 'domains' to [] if missing.
@@ -585,15 +587,25 @@ class IssueValidator:
                     has_domains_field = True
                     break
 
+        # Governance Maturity Check
+        # Rule: If Epics > 8 or Issues > 50, enforce Domain usage
+        num_issues = len(all_ids)
+        num_epics = len(
+            [i for i in all_ids if "EPIC-" in i]
+        )  # Simple heuristic, ideally check type
+
+        is_mature = num_issues > 50 or num_epics > 8
+
         if not has_domains_field:
-            # We report it on line 0 (start of file) or line 1
-            diagnostics.append(
-                self._create_diagnostic(
-                    "Structure Error: Missing 'domains' field in frontmatter.",
-                    DiagnosticSeverity.Warning,
-                    line=0,
+            if is_mature:
+                # We report it on line 0 (start of file) or line 1
+                diagnostics.append(
+                    self._create_diagnostic(
+                        "Governance Maturity: Project scale (Epics>8 or Issues>50) requires 'domains' field in frontmatter.",
+                        DiagnosticSeverity.Warning,
+                        line=0,
+                    )
                 )
-            )
 
         return diagnostics
 
