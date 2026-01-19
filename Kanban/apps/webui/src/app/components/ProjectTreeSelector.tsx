@@ -19,20 +19,20 @@ interface ProjectTreeSelectorProps {
 const buildProjectTree = (projects: any[], currentProjectId: string | null): TreeNodeInfo[] => {
   // Simple implementation: Group by path depth or just list them if structure is complex.
   // For now, let's assume a flat list but rendered with indentation if paths suggest hierarchy.
-  // Or better: Just render them as a flat list with path as subtitle, 
+  // Or better: Just render them as a flat list with path as subtitle,
   // since building a full file system tree might be overkill without more data.
   // BUT user asked for "Tree view".
-  
+
   // Let's try to reconstruct hierarchy from `path`.
   // This is tricky without knowing the common root.
-  
+
   // Fallback: Just return a flat list for now but structured as TreeNodes.
   return projects.map((p) => ({
     id: p.id,
     label: p.name,
     secondaryLabel: (
         <span className="text-xs text-text-muted truncate max-w-[150px] inline-block" title={p.path}>
-            {p.path.split('/').pop()} 
+            {p.path.split('/').pop()}
         </span>
     ),
     icon: currentProjectId === p.id ? "tick" : "briefcase",

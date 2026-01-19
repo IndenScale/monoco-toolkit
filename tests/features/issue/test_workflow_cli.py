@@ -1,4 +1,3 @@
-
 import shutil
 import tempfile
 from pathlib import Path
@@ -13,16 +12,18 @@ def test_feature_0012_workflow(issues_root):
     """
     Validation Test for FEAT-0012: Extended CLI Workflow
     """
-    
+
     # 1. Test Creation (Normal)
     # ------------------------------------------------
     print("\n[Test] Creating Normal Issue...")
-    fid = core.create_issue_file(issues_root, IssueType.FEATURE, "Test Feature", status=IssueStatus.OPEN)[0].id
-    
+    fid = core.create_issue_file(
+        issues_root, IssueType.FEATURE, "Test Feature", status=IssueStatus.OPEN
+    )[0].id
+
     f_path = core.find_issue_path(issues_root, fid)
     assert f_path.exists()
     assert "Features/open" in str(f_path)
-    
+
     meta = core.parse_issue(f_path)
     assert meta.status == IssueStatus.OPEN
     assert meta.stage == IssueStage.DRAFT  # Default
@@ -32,10 +33,10 @@ def test_feature_0012_workflow(issues_root):
     # ------------------------------------------------
     print("\n[Test] Pushing to Backlog...")
     core.update_issue(issues_root, fid, status=IssueStatus.BACKLOG)
-    
+
     f_path = core.find_issue_path(issues_root, fid)
     assert "Features/backlog" in str(f_path)
-    
+
     meta = core.parse_issue(f_path)
     assert meta.status == IssueStatus.BACKLOG
     assert meta.stage == IssueStage.FREEZED
@@ -46,10 +47,10 @@ def test_feature_0012_workflow(issues_root):
     print("\n[Test] Pulling from Backlog...")
     # Simulate some time passing if needed, but we check logic
     core.update_issue(issues_root, fid, status=IssueStatus.OPEN, stage=IssueStage.DRAFT)
-    
+
     f_path = core.find_issue_path(issues_root, fid)
     assert "Features/open" in str(f_path)
-    
+
     meta = core.parse_issue(f_path)
     assert meta.status == IssueStatus.OPEN
     assert meta.stage == IssueStage.DRAFT
@@ -62,7 +63,7 @@ def test_feature_0012_workflow(issues_root):
     # ------------------------------------------------
     print("\n[Test] Starting Issue...")
     core.update_issue(issues_root, fid, stage=IssueStage.DOING)
-    
+
     meta = core.parse_issue(f_path)
     assert meta.stage == IssueStage.DOING
     print(f"✅ Issue started (Stage: {meta.stage})")
@@ -70,15 +71,15 @@ def test_feature_0012_workflow(issues_root):
     # 5. Test Lifecycle: Submit (Doing -> Review)
     # ------------------------------------------------
     print("\n[Test] Submitting Issue...")
-    
+
     # Complete tasks to satisfy validator
     content = f_path.read_text()
     new_content = content.replace("- [ ]", "- [x]")
     new_content += "\n\n## Review Comments\n\n- [x] Self-Review\n"
     f_path.write_text(new_content)
-    
+
     core.update_issue(issues_root, fid, stage=IssueStage.REVIEW)
-    
+
     meta = core.parse_issue(f_path)
     assert meta.stage == IssueStage.REVIEW
     print(f"✅ Issue submitted (Stage: {meta.stage})")
@@ -86,15 +87,18 @@ def test_feature_0012_workflow(issues_root):
     # 6. Test Creation (Backlog directly)
     # ------------------------------------------------
     print("\n[Test] creating directly in backlog...")
-    bid = core.create_issue_file(issues_root, IssueType.FEATURE, "Backlog Feature", status=IssueStatus.BACKLOG)[0].id
+    bid = core.create_issue_file(
+        issues_root, IssueType.FEATURE, "Backlog Feature", status=IssueStatus.BACKLOG
+    )[0].id
     b_path = core.find_issue_path(issues_root, bid)
-    
+
     assert "Features/backlog" in str(b_path)
     meta = core.parse_issue(b_path)
     assert meta.status == IssueStatus.BACKLOG
     assert meta.stage == IssueStage.FREEZED
     print(f"✅ Created {bid} directly in Backlog")
-    
+
+
 if __name__ == "__main__":
     # Manual run setup if not using pytest CLI
     try:
@@ -108,4 +112,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ TEST FAILED: {e}")
         import traceback
+
         traceback.print_exc()

@@ -1,11 +1,7 @@
 import os
 import re
 import yaml
-import hashlib
-import secrets
 from pathlib import Path
-from typing import List, Dict, Any
-from datetime import datetime
 from .models import generate_uid
 
 # Migration Mappings
@@ -21,20 +17,13 @@ DIR_MAP = {
     "features": "Features",
     "chores": "Chores",
     "fixes": "Fixes",
-    "epics": "Epics"
+    "epics": "Epics",
 }
 
-TYPE_MAP = {
-    "story": "feature",
-    "task": "chore",
-    "bug": "fix"
-}
+TYPE_MAP = {"story": "feature", "task": "chore", "bug": "fix"}
 
-ID_PREFIX_MAP = {
-    "STORY": "FEAT",
-    "TASK": "CHORE",
-    "BUG": "FIX"
-}
+ID_PREFIX_MAP = {"STORY": "FEAT", "TASK": "CHORE", "BUG": "FIX"}
+
 
 def migrate_issues_directory(issues_dir: Path):
     """
@@ -48,7 +37,7 @@ def migrate_issues_directory(issues_dir: Path):
         old_path = issues_dir / old_name
         if old_path.exists():
             new_path = issues_dir / new_name
-            
+
             # Case sensitivity check for some filesystems
             same_inode = False
             try:
@@ -64,6 +53,7 @@ def migrate_issues_directory(issues_dir: Path):
 
             if new_path.exists():
                 import shutil
+
                 for item in old_path.iterdir():
                     dest = new_path / item.name
                     if dest.exists() and item.is_dir():
@@ -81,20 +71,37 @@ def migrate_issues_directory(issues_dir: Path):
         subdir = issues_dir / subdir_name
         if not subdir.exists():
             continue
-            
+
         for file_path in subdir.rglob("*.md"):
             content = file_path.read_text(encoding="utf-8")
             new_content = content
-            
+
             # Replace Type in Frontmatter
             for old_type, new_type in TYPE_MAP.items():
-                new_content = re.sub(rf"^type:\s*{old_type}", f"type: {new_type}", new_content, flags=re.IGNORECASE | re.MULTILINE)
-            
+                new_content = re.sub(
+                    rf"^type:\s*{old_type}",
+                    f"type: {new_type}",
+                    new_content,
+                    flags=re.IGNORECASE | re.MULTILINE,
+                )
+
             # Replace ID Prefixes
             for old_prefix, new_prefix in ID_PREFIX_MAP.items():
-                new_content = new_content.replace(f"[[{old_prefix}-", f"[[{new_prefix}-")
-                new_content = re.sub(rf"^id: {old_prefix}-", f"id: {new_prefix}-", new_content, flags=re.MULTILINE)
-                new_content = re.sub(rf"^parent: {old_prefix}-", f"parent: {new_prefix}-", new_content, flags=re.MULTILINE)
+                new_content = new_content.replace(
+                    f"[[{old_prefix}-", f"[[{new_prefix}-"
+                )
+                new_content = re.sub(
+                    rf"^id: {old_prefix}-",
+                    f"id: {new_prefix}-",
+                    new_content,
+                    flags=re.MULTILINE,
+                )
+                new_content = re.sub(
+                    rf"^parent: {old_prefix}-",
+                    f"parent: {new_prefix}-",
+                    new_content,
+                    flags=re.MULTILINE,
+                )
                 new_content = new_content.replace(f"{old_prefix}-", f"{new_prefix}-")
 
             # Structural Updates (UID, Stage)
@@ -104,18 +111,20 @@ def migrate_issues_directory(issues_dir: Path):
                 try:
                     data = yaml.safe_load(yaml_str) or {}
                     changed = False
-                    
-                    if 'uid' not in data:
-                        data['uid'] = generate_uid()
+
+                    if "uid" not in data:
+                        data["uid"] = generate_uid()
                         changed = True
-                        
-                    if 'stage' in data and data['stage'] == 'todo':
-                        data['stage'] = 'draft'
+
+                    if "stage" in data and data["stage"] == "todo":
+                        data["stage"] = "draft"
                         changed = True
-                            
+
                     if changed:
-                         new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
-                         new_content = new_content.replace(match.group(1), "\n" + new_yaml)
+                        new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
+                        new_content = new_content.replace(
+                            match.group(1), "\n" + new_yaml
+                        )
                 except yaml.YAMLError:
                     pass
 
@@ -127,8 +136,10 @@ def migrate_issues_directory(issues_dir: Path):
             new_filename = filename
             for old_prefix, new_prefix in ID_PREFIX_MAP.items():
                 if filename.startswith(f"{old_prefix}-"):
-                    new_filename = filename.replace(f"{old_prefix}-", f"{new_prefix}-", 1)
+                    new_filename = filename.replace(
+                        f"{old_prefix}-", f"{new_prefix}-", 1
+                    )
                     break
-            
+
             if new_filename != filename:
                 file_path.rename(file_path.parent / new_filename)

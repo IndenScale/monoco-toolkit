@@ -23,13 +23,13 @@ check_command() {
 generate_yaml() {
     echo "last_checked: \"$TIMESTAMP\""
     echo "providers:"
-    
+
     echo "  gemini:"
     check_command "gemini"
-    
+
     echo "  claude:"
     check_command "claude"
-    
+
     echo "  qwen:"
     check_command "qwen"
 }
