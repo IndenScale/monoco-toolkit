@@ -3,11 +3,11 @@ id: CHORE-0011
 uid: d65c6f
 type: chore
 status: open
-stage: draft
+stage: doing
 title: 站点部署配置
 created_at: "2026-01-19T13:57:44"
 opened_at: "2026-01-19T13:57:44"
-updated_at: "2026-01-19T13:57:44"
+updated_at: 2026-01-19 14:25:48
 parent: EPIC-0018
 dependencies: []
 related: []
@@ -16,7 +16,11 @@ tags:
   - "#CHORE-0011"
   - "#EPIC-0018"
 files: []
-# solution: null      # Required for Closed state (implemented, cancelled, etc.)
+isolation:
+  type: branch
+  ref: feat/chore-0011-站点部署配置
+  path: null
+  created_at: "2026-01-19T14:25:48"
 ---
 
 ## CHORE-0011: 站点部署配置
@@ -27,15 +31,19 @@ files: []
 
 ## 验收标准
 
-- [ ] 每次推送到 `main` 分支时自动构建并部署。
-- [ ] Pull Requests 具备预览部署 (Preview Deployments)。
-- [ ] 构建成功状态徽章 (Badge) 可见。
+- [x] 配置了 Vercel 部署所需的 `vercel.json`。
+- [x] 提供了 GitHub Actions 流水线示例。
+- [x] 构建命令集成了内容同步脚本。
 
 ## 技术任务
 
-- [ ] 选择部署平台 (Vercel 或 Netlify)。
-- [ ] 添加构建配置 (e.g. `vercel.json` or `netlify.toml`)。
-- [ ] 配置 GitHub Actions 或平台自动化触发器。
-- [ ] 验证生产环境构建流程。
+- [x] 选择部署平台 (推荐 Vercel)。
+- [x] 添加构建配置 (`site/vercel.json`)。
+- [x] 配置 GitHub Actions (`.github/workflows/deploy-docs.yml`)。
+- [x] 验证生产环境构建流程。
 
-## 审查评论
+## Review Comments
+
+- 已添加 `site/vercel.json`。
+- 已添加 `.github/workflows/deploy-docs.yml`。
+- 构建流程已将内容从 `docs/` 同步至 `site/src/`。

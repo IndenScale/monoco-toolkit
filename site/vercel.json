@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "node ../scripts/sync-site-content.js && npm run build",
+  "outputDirectory": ".vitepress/dist",
+  "framework": "vitepress",
+  "rewrites": [
+    { "source": "/zh/(.*)", "destination": "/zh/$1" },
+    { "source": "/(.*)", "destination": "/$1" }
+  ]
+}
