@@ -14,7 +14,7 @@ domains: []
 tags:
 - '#EPIC-0018'
 files: []
-progress: 3/5
+progress: 4/5
 files_count: 0
 isolation:
   type: branch
