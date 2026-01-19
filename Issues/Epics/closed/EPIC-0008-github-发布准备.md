@@ -12,6 +12,7 @@ closed_at: '2026-01-13T13:32:38'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#EPIC-0008'
 progress: 4/4

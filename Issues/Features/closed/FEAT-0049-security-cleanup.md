@@ -12,6 +12,7 @@ closed_at: '2026-01-13T13:30:00'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#FEAT-0049'
 ---

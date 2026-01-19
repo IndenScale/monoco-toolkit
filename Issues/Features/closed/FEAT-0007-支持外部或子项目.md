@@ -10,6 +10,7 @@ dependencies:
 - FEAT-0002
 related: []
 solution: implemented
+domains: []
 tags:
 - '#EPIC-0002'
 - '#FEAT-0002'

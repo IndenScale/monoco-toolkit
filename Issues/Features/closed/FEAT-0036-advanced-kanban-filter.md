@@ -11,6 +11,7 @@ closed_at: '2026-01-13T09:26:20.031367'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#FEAT-0036'
 uid: e64f42
