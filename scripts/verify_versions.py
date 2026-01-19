@@ -78,6 +78,9 @@ def main():
     unique_versions = set(versions.values())
     if len(unique_versions) > 1:
         print("\n❌ INTERNAL MISMATCH: All components must have the same version.")
+        print(
+            "💡 Tip: Run 'python scripts/set_version.py <desired_version>' to sync all components."
+        )
         sys.exit(1)
 
     current_version = list(unique_versions)[0]
@@ -102,6 +105,9 @@ def main():
     if target:
         if current_version != target:
             print(f"\n❌ TARGET MISMATCH: Expected {target}, found {current_version}.")
+            print(
+                f"💡 Tip: Run 'python scripts/set_version.py {target}' to sync version with the release branch."
+            )
             sys.exit(1)
         else:
             print(f"\n✅ Version verified: {current_version} (Matches target/branch)")
