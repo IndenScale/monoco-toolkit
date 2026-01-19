@@ -7,7 +7,7 @@ stage: review
 title: Refactor Documentation Structure and Unify Source
 created_at: '2026-01-19T15:35:15'
 opened_at: '2026-01-19T15:35:15'
-updated_at: '2026-01-19T15:41:38'
+updated_at: '2026-01-19T15:43:32'
 isolation:
   type: branch
   ref: feat/chore-0012-refactor-documentation-structure-and-unify-source
@@ -88,6 +88,7 @@ files:
 - site/src/en/reference/extensions/features/configuration.md
 - site/src/en/reference/extensions/features/index.md
 - site/src/en/reference/extensions/features/issue_management.md
+- site/src/en/reference/extensions/index.md
 - site/src/en/reference/i18n/index.md
 - site/src/en/reference/i18n/manual.md
 - site/src/en/reference/issue/00_overview.md
@@ -118,6 +119,7 @@ files:
 - site/src/zh/reference/extensions/features/configuration.md
 - site/src/zh/reference/extensions/features/index.md
 - site/src/zh/reference/extensions/features/issue_management.md
+- site/src/zh/reference/extensions/index.md
 - site/src/zh/reference/i18n/index.md
 - site/src/zh/reference/i18n/manual.md
 - site/src/zh/reference/issue/00_overview.md
