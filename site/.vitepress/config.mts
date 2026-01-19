@@ -18,28 +18,69 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "Home", link: "/" },
-          { text: "Guide", link: "/guide" },
-          { text: "CLI", link: "/tools/cli" },
+          { text: "Guide", link: "/guide/" },
+          { text: "Reference", link: "/reference/issue/" },
+          { text: "Meta", link: "/meta/Manifesto" },
         ],
         sidebar: [
           {
-            text: "Introduction",
+            text: "Guide",
             items: [
-              { text: "What is Monoco?", link: "/guide" },
-              { text: "Manifesto", link: "/Manifesto" },
-              { text: "Architecture", link: "/architecture" },
+              { text: "Get Started", link: "/guide/" },
+              { text: "Setup", link: "/guide/setup/" },
+            ],
+          },
+          {
+            text: "Reference",
+            items: [
               {
-                text: "Design Patterns",
-                link: "/agent-native-design-pattern.md",
+                text: "Core Domains",
+                items: [
+                  { text: "Issue System", link: "/reference/issue/" },
+                  { text: "Research (Spike)", link: "/reference/spike/" },
+                  { text: "i18n", link: "/reference/i18n/" },
+                ],
+              },
+              {
+                text: "Architecture",
+                items: [
+                  {
+                    text: "System Architecture",
+                    link: "/reference/architecture",
+                  },
+                  {
+                    text: "Integration Registry",
+                    link: "/reference/core-integration-registry",
+                  },
+                ],
+              },
+              {
+                text: "Extensions",
+                link: "/reference/extensions/",
               },
             ],
           },
           {
-            text: "Tools",
+            text: "Meta",
             items: [
-              { text: "Issue System", link: "/issue/" },
-              { text: "Spike", link: "/spike/" },
-              { text: "i18n", link: "/i18n/" },
+              { text: "Manifesto", link: "/meta/Manifesto" },
+              {
+                text: "Design Patterns",
+                link: "/meta/design/agent-native-design-pattern",
+              },
+              {
+                text: "Process",
+                items: [
+                  {
+                    text: "Release Audit",
+                    link: "/meta/process/release_audit",
+                  },
+                  {
+                    text: "PyPI Publishing",
+                    link: "/meta/process/pypi-trusted-publishing",
+                  },
+                ],
+              },
             ],
           },
         ],
@@ -52,25 +93,63 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "首页", link: "/zh/" },
-          { text: "指南", link: "/zh/guide" },
-          { text: "CLI", link: "/zh/tools/cli" },
+          { text: "指南", link: "/zh/guide/" },
+          { text: "参考", link: "/zh/reference/issue/" },
+          { text: "关于", link: "/zh/meta/Manifesto" },
         ],
         sidebar: [
           {
-            text: "介绍",
+            text: "指南",
             items: [
-              { text: "什么是 Monoco?", link: "/zh/guide" },
-              { text: "项目宣言", link: "/zh/Manifesto" },
-              { text: "架构", link: "/zh/architecture" },
-              { text: "设计模式", link: "/zh/agent-native-design-pattern.md" },
+              { text: "快速开始", link: "/zh/guide/" },
+              { text: "安装配置", link: "/zh/guide/setup/" },
             ],
           },
           {
-            text: "工具",
+            text: "参考手册",
             items: [
-              { text: "Issue 系统", link: "/zh/issue/" },
-              { text: "Spike", link: "/zh/spike/" },
-              { text: "i18n", link: "/zh/i18n/" },
+              {
+                text: "核心领域",
+                items: [
+                  { text: "Issue 系统", link: "/zh/reference/issue/" },
+                  { text: "Spike 研究", link: "/zh/reference/spike/" },
+                  { text: "i18n 国际化", link: "/zh/reference/i18n/" },
+                ],
+              },
+              {
+                text: "架构设计",
+                items: [
+                  { text: "系统架构", link: "/zh/reference/architecture" },
+                  {
+                    text: "集成注册表",
+                    link: "/zh/reference/core-integration-registry",
+                  },
+                ],
+              },
+              {
+                text: "扩展开发",
+                link: "/zh/reference/extensions/",
+              },
+            ],
+          },
+          {
+            text: "关于项目",
+            items: [
+              { text: "宣言", link: "/zh/meta/Manifesto" },
+              {
+                text: "设计模式",
+                link: "/zh/meta/design/agent-native-design-pattern",
+              },
+              {
+                text: "流程规范",
+                items: [
+                  { text: "发布审计", link: "/zh/meta/process/release_audit" },
+                  {
+                    text: "PyPI 发布",
+                    link: "/zh/meta/process/pypi-trusted-publishing",
+                  },
+                ],
+              },
             ],
           },
         ],
