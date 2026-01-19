@@ -67,6 +67,14 @@ export class KanbanProvider implements vscode.WebviewViewProvider {
         await this.handleOpenIssueFile(data.value.path);
         break;
 
+      case MESSAGE_TYPES.OPEN_FILE:
+        await this.handleOpenFile(
+          data.path || data.value?.path,
+          data.line || data.value?.line,
+          data.column || data.value?.column,
+        );
+        break;
+
       case MESSAGE_TYPES.UPDATE_CONFIG:
         await this.runMonoco([
           "config",
@@ -224,13 +232,47 @@ export class KanbanProvider implements vscode.WebviewViewProvider {
    * Open issue file
    */
   private async handleOpenIssueFile(filePath: string): Promise<void> {
-    if (filePath) {
-      try {
-        const doc = await vscode.workspace.openTextDocument(filePath);
-        await vscode.window.showTextDocument(doc, { preview: true });
-      } catch (e) {
-        vscode.window.showErrorMessage(`Could not open file: ${filePath}`);
+    await this.handleOpenFile(filePath);
+  }
+
+  /**
+   * Open file at specific line and column
+   */
+  private async handleOpenFile(
+    filePath?: string,
+    line?: number,
+    column?: number,
+  ): Promise<void> {
+    if (!filePath) {
+      return;
+    }
+
+    try {
+      const wsFolder = vscode.workspace.workspaceFolders?.[0];
+      const uri = path.isAbsolute(filePath)
+        ? vscode.Uri.file(filePath)
+        : wsFolder
+          ? vscode.Uri.joinPath(wsFolder.uri, filePath)
+          : vscode.Uri.file(filePath);
+
+      const doc = await vscode.workspace.openTextDocument(uri);
+      const editor = await vscode.window.showTextDocument(doc, {
+        preview: true,
+      });
+
+      if (line !== undefined && line > 0) {
+        const pos = new vscode.Position(
+          line - 1,
+          column !== undefined && column > 0 ? column - 1 : 0,
+        );
+        editor.selection = new vscode.Selection(pos, pos);
+        editor.revealRange(
+          new vscode.Range(pos, pos),
+          vscode.TextEditorRevealType.InCenter,
+        );
       }
+    } catch (e) {
+      vscode.window.showErrorMessage(`Could not open file: ${filePath}`);
     }
   }
 

@@ -9,6 +9,8 @@ export interface Issue {
   dependencies?: string[];
   related?: string[];
   solution?: string;
+  path?: string;
+  project_id?: string;
 }
 
 export interface Project {
