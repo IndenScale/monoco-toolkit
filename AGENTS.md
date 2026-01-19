@@ -41,3 +41,11 @@ Manage internationalization.
 - **Structure**:
   - Root files: `FILE_ZH.md`
   - Subdirs: `folder/zh/file.md`
+
+### Release Management
+
+Manage release lifecycle and versioning.
+
+- **Protocol**: Releases must be pushed from a dedicated branch `release/vX.Y.Z` matching the version in `pyproject.toml`.
+- **Set Version**: `python Toolkit/scripts/set_version.py <version>` (Update version in all manifests)
+- **Release Check**: `Toolkit/scripts/run_release_checks.sh <version>` (Run full validation suite)
