@@ -43,4 +43,8 @@ isolation:
 - [x] 创建基础布局组件，集成 Tailwind 类。
 - [x] 定义 CSS 变量以匹配 Monoco 设计规范。
 
-## 审查评论
+## Review Comments
+
+- 站点基础设施已建立。
+- Tailwind CSS 配置完成。
+- Monoco 主题初步集成。
