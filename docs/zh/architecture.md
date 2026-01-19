@@ -56,3 +56,20 @@ Toolkit/monoco/features/
 
 - **引用协议**: 如 `[[ticket-id]]` 或 `Ref: <ID>`，各模块负责解析标准文本模式。
 - **公共接口**: 如果必须交互，模块应暴露显式的 `PublicAPI` 类，仅用于只读查询，严禁用于修改其他模块的状态。
+
+## 4. 治理成熟度 (Governance Maturity)
+
+随着项目规模的增长，Monoco Toolkit 会自动提升治理要求。
+
+### 4.1 复杂度阈值 (Complexity Thresholds)
+
+当项目达到以下任一规模时，将被视为“成熟项目” (Mature Project):
+
+- **Epics 数量 > 8**
+- **Issues (Feature/Fix/Chore) 总数 > 50**
+
+### 4.2 强制约束 (Enforced Constraints)
+
+一旦达到成熟阈值，系统将启用更严格的验证规则：
+
+- **强制领域划分 (Mandatory Domains)**: 必须在 Frontmatter 中定义 `domains` 字段，确保所有工作项都归属于明确的业务领域。
