@@ -372,6 +372,49 @@ def run_lint(
             except Exception as e:
                 console.print(f"[red]Failed to fix {path.name}: {e}[/red]")
 
+            # Separate Try-Block for Domains Fix to avoid nesting logic too deep
+            try:
+                content = path.read_text()
+                new_content = content
+                has_changes = False
+                
+                # Check diagnostics again for this file
+                current_file_diags = file_diags.get(path, [])
+                
+                needs_domain_fix = any("Missing 'domains' field" in d.message for d in current_file_diags)
+                
+                if needs_domain_fix:
+                     # Add 'domains: []' to frontmatter
+                     # We insert it before 'tags:' if possible, or at end of keys
+                     fm_match = re.search(r"^---(.*?)---", new_content, re.DOTALL | re.MULTILINE)
+                     if fm_match:
+                         import yaml
+                         fm_text = fm_match.group(1)
+                         # We prefer to edit text directly to preserve comments if possible, 
+                         # but for adding a key, robust way is ensuring it's in.
+                         pass
+                         
+                         # Simple Regex Insertion: find "tags:" and insert before it
+                         if "tags:" in fm_text:
+                             new_fm_text = fm_text.replace("tags:", "domains: []\ntags:")
+                             new_content = new_content.replace(fm_match.group(1), new_fm_text)
+                             has_changes = True
+                         else:
+                             # Append to end
+                             new_fm_text = fm_text.rstrip() + "\ndomains: []\n"
+                             new_content = new_content.replace(fm_match.group(1), new_fm_text)
+                             has_changes = True
+
+                if has_changes:
+                    path.write_text(new_content)
+                    if not any(path == p for p in processed_paths): # count once per file
+                        fixed_count += 1
+                        processed_paths.add(path)
+                    console.print(f"[dim]Fixed (Domains): {path.name}[/dim]")
+            
+            except Exception as e:
+                console.print(f"[red]Failed to fix domains for {path.name}: {e}[/red]")
+
         console.print(f"[green]Applied auto-fixes to {fixed_count} files.[/green]")
 
         # Re-run validation to verify

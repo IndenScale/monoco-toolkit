@@ -11,6 +11,7 @@ updated_at: '2026-01-15T20:19:00'
 parent: null
 dependencies: []
 related: []
+domains: []
 tags:
 - '#FEAT-0043'
 ---

@@ -7,6 +7,7 @@ title: 实现 i18n 扫描能力 (Implement i18n scan)
 created_at: '2026-01-08'
 solution: implemented
 parent: EPIC-0004
+domains: []
 tags:
 - '#EPIC-0004'
 - '#FEAT-0005'

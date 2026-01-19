@@ -12,6 +12,7 @@ closed_at: '2026-01-17T09:25:00'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#EPIC-0015'
 path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Epics/closed/EPIC-0015-support-cross-domain-migration-configurable-issue-.md

@@ -12,6 +12,7 @@ closed_at: '2026-01-15T13:06:28'
 solution: implemented
 dependencies: []
 related: []
+domains: []
 tags:
 - '#CHORE-0003'
 ---
