@@ -11,7 +11,7 @@ repos:
     rev: v0.1.13
     hooks:
       - id: ruff
-        args: [ --fix ]
+        args: [--fix]
       - id: ruff-format
 
   - repo: local
@@ -23,7 +23,7 @@ repos:
         language: system
         types: [markdown]
         files: ^Issues/.*\.md$
-        pass_filenames: true
+        pass_filenames: false
 
       # --- Pre-push Hooks ---
       - id: pytest
