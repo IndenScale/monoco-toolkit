@@ -10,6 +10,7 @@ opened_at: '2026-01-15T08:55:46'
 updated_at: '2026-01-15T08:55:46'
 dependencies: []
 related: []
+domains: []
 tags:
 - '#EPIC-0012'
 progress: 3/3

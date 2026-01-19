@@ -1,9 +1,11 @@
-from monoco.core.config import IssueSchemaConfig, IssueTypeConfig, TransitionConfig, StateMachineConfig
+from monoco.core.config import IssueSchemaConfig, IssueTypeConfig, TransitionConfig
 
 DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
     types=[
         IssueTypeConfig(name="epic", label="Epic", prefix="EPIC", folder="Epics"),
-        IssueTypeConfig(name="feature", label="Feature", prefix="FEAT", folder="Features"),
+        IssueTypeConfig(
+            name="feature", label="Feature", prefix="FEAT", folder="Features"
+        ),
         IssueTypeConfig(name="chore", label="Chore", prefix="CHORE", folder="Chores"),
         IssueTypeConfig(name="fix", label="Fix", prefix="FIX", folder="Fixes"),
     ],
@@ -12,8 +14,6 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
     solutions=["implemented", "cancelled", "wontfix", "duplicate"],
     workflows=[
         # --- UNIVERSAL AGENT ACTIONS ---
-
-
         # --- OPEN -> OPEN Transitions (Stage changes) ---
         TransitionConfig(
             name="start",
@@ -24,11 +24,8 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_status="open",
             to_stage="doing",
             command_template="monoco issue start {id}",
-            description="Start working on the issue"
+            description="Start working on the issue",
         ),
-        
-
-
         TransitionConfig(
             name="stop",
             label="Stop",
@@ -38,7 +35,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_status="open",
             to_stage="draft",
             command_template="monoco issue stop {id}",
-            description="Stop working and return to draft"
+            description="Stop working and return to draft",
         ),
         TransitionConfig(
             name="submit",
@@ -49,7 +46,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_status="open",
             to_stage="review",
             command_template="monoco issue submit {id}",
-            description="Submit for review"
+            description="Submit for review",
         ),
         TransitionConfig(
             name="reject",
@@ -60,9 +57,8 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_status="open",
             to_stage="doing",
             command_template="monoco issue update {id} --stage doing",
-            description="Reject review and return to doing"
+            description="Reject review and return to doing",
         ),
-
         # --- OPEN -> CLOSED Transitions ---
         TransitionConfig(
             name="accept",
@@ -74,7 +70,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_stage="done",
             required_solution="implemented",
             command_template="monoco issue close {id} --solution implemented",
-            description="Accept and close issue"
+            description="Accept and close issue",
         ),
         TransitionConfig(
             name="close_done",
@@ -86,7 +82,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_stage="done",
             required_solution="implemented",
             command_template="monoco issue close {id} --solution implemented",
-            description="Close completed issue"
+            description="Close completed issue",
         ),
         TransitionConfig(
             name="cancel",
@@ -98,7 +94,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_stage="done",
             required_solution="cancelled",
             command_template="monoco issue cancel {id}",
-            description="Cancel the issue"
+            description="Cancel the issue",
         ),
         TransitionConfig(
             name="wontfix",
@@ -109,9 +105,8 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_stage="done",
             required_solution="wontfix",
             command_template="monoco issue close {id} --solution wontfix",
-            description="Mark as won't fix"
+            description="Mark as won't fix",
         ),
-
         # --- BACKLOG Transitions ---
         TransitionConfig(
             name="push",
@@ -121,9 +116,8 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_status="backlog",
             to_stage="freezed",
             command_template="monoco issue backlog push {id}",
-            description="Move issue to backlog"
+            description="Move issue to backlog",
         ),
-
         TransitionConfig(
             name="pull",
             label="Pull",
@@ -132,7 +126,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_status="open",
             to_stage="draft",
             command_template="monoco issue backlog pull {id}",
-            description="Restore issue from backlog"
+            description="Restore issue from backlog",
         ),
         TransitionConfig(
             name="cancel_backlog",
@@ -143,9 +137,8 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_stage="done",
             required_solution="cancelled",
             command_template="monoco issue cancel {id}",
-            description="Cancel backlog issue"
+            description="Cancel backlog issue",
         ),
-
         # --- CLOSED Transitions ---
         TransitionConfig(
             name="reopen",
@@ -155,7 +148,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_status="open",
             to_stage="draft",
             command_template="monoco issue open {id}",
-            description="Reopen a closed issue"
+            description="Reopen a closed issue",
         ),
         TransitionConfig(
             name="reopen_from_done",
@@ -166,7 +159,7 @@ DEFAULT_ISSUE_CONFIG = IssueSchemaConfig(
             to_status="open",
             to_stage="draft",
             command_template="monoco issue open {id}",
-            description="Reopen a done issue"
+            description="Reopen a done issue",
         ),
-    ]
+    ],
 )
