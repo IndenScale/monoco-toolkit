@@ -91,3 +91,29 @@ def test_validator_incomplete_tasks():
 
     errors = [d for d in diagnostics if "Technical Tasks must be resolved" in d.message]
     assert len(errors) > 0
+
+
+def test_validator_domains_maturity():
+    validator = IssueValidator()
+    # Content without domains
+    content = SAMPLE_ISSUE_CONTENT
+
+    issue = MarkdownParser.parse(content)
+    from monoco.features.issue.models import IssueMetadata
+
+    meta = IssueMetadata(**issue.frontmatter.model_dump(exclude_none=True))
+
+    # 1. Not Mature
+    ids = {"FEAT-0001"}
+    diags = validator.validate(meta, content, ids)
+    assert not any("Governance Maturity" in d.message for d in diags)
+
+    # 2. Mature (Epics > 8)
+    ids_epics = {f"EPIC-00{i}" for i in range(10)}
+    diags_epics = validator.validate(meta, content, ids_epics)
+    assert any("Governance Maturity" in d.message for d in diags_epics)
+
+    # 3. Mature (Issues > 50)
+    ids_issues = {f"FEAT-00{i}" for i in range(60)}
+    diags_issues = validator.validate(meta, content, ids_issues)
+    assert any("Governance Maturity" in d.message for d in diags_issues)
