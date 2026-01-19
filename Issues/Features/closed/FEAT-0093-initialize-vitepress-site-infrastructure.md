@@ -2,23 +2,25 @@
 id: FEAT-0093
 uid: 3b4f6f
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: 站点基础设施与设计系统
-created_at: "2026-01-19T13:47:02"
-opened_at: "2026-01-19T13:47:02"
-updated_at: "2026-01-19T14:19:37"
+created_at: '2026-01-19T13:47:02'
+opened_at: '2026-01-19T13:47:02'
+updated_at: '2026-01-19T14:19:49'
+closed_at: '2026-01-19T14:19:49'
 parent: EPIC-0018
+solution: implemented
 isolation:
   type: branch
   ref: feat/feat-0093-站点基础设施与设计系统
-  created_at: "2026-01-19T14:16:39"
+  created_at: '2026-01-19T14:16:39'
 dependencies: []
 related: []
 domains: []
 tags:
-  - "#EPIC-0018"
-  - "#FEAT-0093"
+- '#EPIC-0018'
+- '#FEAT-0093'
 files: []
 ---
 
