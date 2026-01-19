@@ -14,11 +14,22 @@
     #bd34fe 30%,
     #41d1ff
   );
+
+  /* Light mode curated palette */
+  --vp-c-bg: #f8fafc;
+  --vp-c-bg-alt: #f1f5f9;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #f1f5f9;
 }
 
 /* Terminal style for code blocks */
 .vp-doc [class*="language-"] {
   border-radius: 8px;
+  background-color: #f8fafc; /* Slate 50 for Light Mode - lighter than bg-alt */
+  border: 1px solid #e2e8f0; /* Slate 200 */
+}
+
+.dark .vp-doc [class*="language-"] {
   background-color: #011627 !important;
   border: 1px solid #1e293b;
 }
@@ -38,7 +49,6 @@ body {
     "Droid Sans",
     "Helvetica Neue",
     sans-serif;
-  background-color: #0f172a; /* Slate 900 */
 }
 
 .dark {
