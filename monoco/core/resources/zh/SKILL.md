@@ -42,6 +42,24 @@ Monoco 是一个开发者生产力工具包，提供:
   - 从 agent 配置文件中移除托管块
   - 清理已分发的 skills
 
+### Git 工作流集成
+
+Monoco 强制执行 **Feature Branch 工作流**以确保代码隔离和质量:
+
+- **`monoco init`**: 自动安装 Git Hooks
+  - **pre-commit**: 运行 Issue Linter 和代码格式检查
+  - **pre-push**: 执行测试套件和完整性验证
+  - 所有 Hooks 可通过 `.monoco/config.yaml` 配置
+
+- **分支隔离策略**:
+  - ⚠️ **强制要求**: 使用 `monoco issue start <ID> --branch` 创建隔离环境
+  - 自动创建规范化分支名: `feat/<id>-<slug>`
+  - **主干保护**: Linter 会阻止在 `main`/`master` 分支上的直接代码修改
+
+- **文件追踪**: `monoco issue sync-files` 自动同步 Git 变更到 Issue 元数据
+
+> 📖 **详细工作流**: 参见 `monoco-issue` skill 获取完整的 Issue 生命周期管理指南。
+
 ## 配置结构
 
 配置以 YAML 格式存储在:
@@ -59,7 +77,21 @@ Monoco 是一个开发者生产力工具包，提供:
 
 ## 最佳实践
 
+### 基础操作
+
 1. **优先使用 CLI 命令**，而不是手动编辑文件
 2. **配置更改后运行 `monoco sync`** 以更新 agent 环境
 3. **将 `.monoco/config.yaml` 提交到版本控制**，保持团队一致性
 4. **保持全局配置最小化** - 大多数设置应该是项目特定的
+
+### Git 工作流 (⚠️ CRITICAL for Agents)
+
+5. **严格遵循分支隔离**:
+   - ✅ 始终使用: `monoco issue start <ID> --branch`
+   - ❌ 禁止在 `main`/`master` 分支直接修改代码
+   - 📝 提交前运行: `monoco issue sync-files` 更新文件追踪
+
+6. **质量门禁**:
+   - Git Hooks 会自动运行检查,不要尝试绕过 (`--no-verify`)
+   - 提交前确保 `monoco issue lint` 通过
+   - 使用 `monoco issue submit` 生成交付报告
