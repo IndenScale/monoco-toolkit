@@ -54,6 +54,14 @@ repos:
         files: ^extensions/vscode/
         pass_filenames: false
 
+      - id: vitepress-build
+        name: VitePress Site Build
+        entry: bash -c "cd site && npm run build"
+        language: system
+        stages: [pre-push]
+        files: ^site/
+        pass_filenames: false
+
       - id: verify-versions
         name: Verify Version Consistency
         entry: python scripts/verify_versions.py
