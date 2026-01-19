@@ -1,13 +1,18 @@
 ---
 id: EPIC-0011
-type: Epic
+uid: 287d08
+type: epic
+status: closed
+stage: done
 title: VS Code Cockpit Integration (VS Code 驾驶舱集成)
-status: Open
-owner: Product Owner
-parent: null
+created_at: '2026-01-14T00:00:00'
+updated_at: '2026-01-19T14:28:55'
+closed_at: '2026-01-19T14:28:55'
+solution: implemented
 dependencies:
 - EPIC-0006
 - EPIC-0010
+related: []
 domains: []
 tags:
 - '#EPIC-0006'
@@ -17,11 +22,10 @@ tags:
 - extension
 - vscode
 - webview
-created_at: 2026-01-14
-progress: 2/4
+files: []
+owner: Product Owner
+progress: 4/4
 files_count: 0
-stage: draft
-uid: 287d08
 ---
 
 ## EPIC-0011: VS Code Cockpit Integration (VS Code 驾驶舱集成)
@@ -49,12 +53,16 @@ uid: 287d08
 
 ## Acceptance Criteria
 
-- [ ] KR1: VS Code Sidebar/Webview integration.
-- [ ] KR2: Message Bus for communication.
+- [x] KR1: VS Code Sidebar/Webview integration.
+- [x] KR2: Message Bus for communication.
 
 ## Technical Tasks
 
-- [ ] Setup VS Code extension project.
-- [ ] Implement Webview bridge.
+- [x] Setup VS Code extension project.
+- [x] Implement Webview bridge.
 
 ## Review Comments
+
+- VS Code 扩展已实现，支持在侧边栏加载 Kanban Webview。
+- 实现了 Webview 与 Extension Host 之间的通信总线。
+- 提供了与 CLI 状态同步的基本功能。
