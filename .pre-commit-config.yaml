@@ -53,3 +53,11 @@ repos:
         stages: [pre-push]
         files: ^extensions/vscode/
         pass_filenames: false
+
+      - id: verify-versions
+        name: Verify Version Consistency
+        entry: python Toolkit/scripts/verify_versions.py
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true

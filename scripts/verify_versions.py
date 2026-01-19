@@ -84,12 +84,27 @@ def main():
 
     # Check against target argument if provided
     target = sys.argv[1] if len(sys.argv) > 1 else None
+
+    # Check git branch if no explicit target provided
+    if not target:
+        try:
+            import subprocess
+
+            branch = subprocess.check_output(
+                ["git", "symbolic-ref", "--short", "HEAD"], text=True
+            ).strip()
+            if branch.startswith("release/v"):
+                target = branch.replace("release/v", "")
+                print(f"\n🔄 Auto-detected release target from branch: {target}")
+        except Exception:
+            pass
+
     if target:
         if current_version != target:
             print(f"\n❌ TARGET MISMATCH: Expected {target}, found {current_version}.")
             sys.exit(1)
         else:
-            print(f"\n✅ Version verified: {current_version}")
+            print(f"\n✅ Version verified: {current_version} (Matches target/branch)")
     else:
         print(f"\n✅ Consistent version: {current_version}")
 
