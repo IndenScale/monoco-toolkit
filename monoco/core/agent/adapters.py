@@ -3,10 +3,10 @@ CLI Adapters for Agent Frameworks.
 """
 
 import shutil
-import subprocess
 from typing import List
 from pathlib import Path
 from .protocol import AgentClient
+
 
 class BaseCLIClient:
     def __init__(self, executable: str):
@@ -24,10 +24,11 @@ class BaseCLIClient:
         # Inject Language Rule
         try:
             from monoco.core.config import get_config
+
             settings = get_config()
             lang = settings.i18n.source_lang
             if lang:
-                 prompt = f"{prompt}\n\n[SYSTEM: LANGUAGE CONSTRAINT]\nThe project source language is '{lang}'. You MUST use '{lang}' for all thinking and reporting unless explicitly instructed otherwise."
+                prompt = f"{prompt}\n\n[SYSTEM: LANGUAGE CONSTRAINT]\nThe project source language is '{lang}'. You MUST use '{lang}' for all thinking and reporting unless explicitly instructed otherwise."
         except Exception:
             pass
 
@@ -39,7 +40,9 @@ class BaseCLIClient:
                     full_prompt.append(f"\nFile: {file_path}")
                     full_prompt.append("```")
                     # Read file content safely
-                    full_prompt.append(file_path.read_text(encoding="utf-8", errors="replace"))
+                    full_prompt.append(
+                        file_path.read_text(encoding="utf-8", errors="replace")
+                    )
                     full_prompt.append("```")
                 except Exception as e:
                     full_prompt.append(f"Error reading {file_path}: {e}")
@@ -51,25 +54,25 @@ class BaseCLIClient:
         # Using synchronous subprocess in async function for now
         # Ideally this should use asyncio.create_subprocess_exec
         import asyncio
-        
+
         proc = await asyncio.create_subprocess_exec(
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            *args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
-        
+
         stdout, stderr = await proc.communicate()
-        
+
         if proc.returncode != 0:
             error_msg = stderr.decode().strip()
-            raise RuntimeError(f"Agent CLI failed (code {proc.returncode}): {error_msg}")
-            
+            raise RuntimeError(
+                f"Agent CLI failed (code {proc.returncode}): {error_msg}"
+            )
+
         return stdout.decode().strip()
 
 
 class GeminiClient(BaseCLIClient, AgentClient):
     """Adapter for Google Gemini CLI."""
-    
+
     def __init__(self):
         super().__init__("gemini")
 
@@ -81,7 +84,7 @@ class GeminiClient(BaseCLIClient, AgentClient):
 
 class ClaudeClient(BaseCLIClient, AgentClient):
     """Adapter for Anthropic Claude CLI."""
-    
+
     def __init__(self):
         super().__init__("claude")
 
@@ -93,7 +96,7 @@ class ClaudeClient(BaseCLIClient, AgentClient):
 
 class QwenClient(BaseCLIClient, AgentClient):
     """Adapter for Alibaba Qwen CLI."""
-    
+
     def __init__(self):
         super().__init__("qwen")
 
@@ -105,7 +108,7 @@ class QwenClient(BaseCLIClient, AgentClient):
 
 class KimiClient(BaseCLIClient, AgentClient):
     """Adapter for Moonshot Kimi CLI."""
-    
+
     def __init__(self):
         super().__init__("kimi")
 
@@ -119,8 +122,9 @@ _ADAPTERS = {
     "gemini": GeminiClient,
     "claude": ClaudeClient,
     "qwen": QwenClient,
-    "kimi": KimiClient
+    "kimi": KimiClient,
 }
+
 
 def get_agent_client(name: str) -> AgentClient:
     """Factory to get agent client by name."""

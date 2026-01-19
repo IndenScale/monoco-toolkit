@@ -618,10 +618,10 @@ function createTreeNode(issue, children, depth = 0, renderInner) {
 
     const bar = document.createElement("div");
     bar.className = "epic-progress-bar";
-    bar.style.background = `linear-gradient(to right, 
-      var(--status-done) 0% ${stop1}%, 
-      var(--status-review) ${stop1}% ${stop2}%, 
-      var(--status-doing) ${stop2}% ${stop3}%, 
+    bar.style.background = `linear-gradient(to right,
+      var(--status-done) 0% ${stop1}%,
+      var(--status-review) ${stop1}% ${stop2}%,
+      var(--status-doing) ${stop2}% ${stop3}%,
       var(--border-color) ${stop3}% 100%
     )`;
     header.appendChild(bar);

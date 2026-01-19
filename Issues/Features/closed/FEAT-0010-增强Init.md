@@ -12,6 +12,7 @@ description: 'Expand `monoco init` to recursively initialize all sub-modules (Is
   '
 dependencies: []
 related: []
+domains: []
 tags:
 - '#EPIC-0001'
 - '#FEAT-0010'

@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 from monoco.features.issue import core
 
+
 @pytest.fixture
 def issues_root():
     """
@@ -13,7 +14,7 @@ def issues_root():
     tmp_dir = tempfile.mkdtemp()
     path = Path(tmp_dir)
     core.init(path)
-    
+
     yield path
-    
+
     shutil.rmtree(tmp_dir)
