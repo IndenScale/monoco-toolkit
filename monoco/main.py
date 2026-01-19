@@ -7,7 +7,7 @@ app = typer.Typer(
     name="monoco",
     help="Monoco Agent Native Toolkit",
     add_completion=False,
-    no_args_is_help=True
+    no_args_is_help=True,
 )
 
 
@@ -15,9 +15,9 @@ def version_callback(value: bool):
     if value:
         # Try to read from pyproject.toml first (for dev mode)
         from pathlib import Path
-        
+
         version = "unknown"
-        
+
         try:
             # Look for pyproject.toml relative to this file
             # monoco/main.py -> ../pyproject.toml
@@ -28,13 +28,14 @@ def version_callback(value: bool):
                         if line.strip().startswith('version = "'):
                             version = line.split('"')[1]
                             break
-            
+
             if version == "unknown":
                 import importlib.metadata
+
                 version = importlib.metadata.version("monoco-toolkit")
         except Exception:
-             # Fallback
-             pass
+            # Fallback
+            pass
 
         print(f"Monoco Toolkit v{version}")
         raise typer.Exit()
@@ -44,27 +45,32 @@ def version_callback(value: bool):
 def main(
     ctx: typer.Context,
     version: Optional[bool] = typer.Option(
-        None, "--version", "-v", help="Show version and exit", callback=version_callback, is_eager=True
+        None,
+        "--version",
+        "-v",
+        help="Show version and exit",
+        callback=version_callback,
+        is_eager=True,
     ),
     root: Optional[str] = typer.Option(
         None, "--root", help="Explicitly specify the Monoco Workspace root directory."
-    )
+    ),
 ):
     """
     Monoco Toolkit - The sensory and motor system for Monoco Agents.
     """
     # Capture command execution
     from monoco.core.telemetry import capture_event
+
     if ctx.invoked_subcommand:
         capture_event("cli_command_executed", {"command": ctx.invoked_subcommand})
 
     # Strict Workspace Resolution
     # Commands allowed to run without a workspace
-    NO_WORKSPACE_COMMANDS = ["init", "clone"] 
-    
+    NO_WORKSPACE_COMMANDS = ["init", "clone"]
+
     # Initialize Config
     from monoco.core.config import get_config, find_monoco_root
-    from pathlib import Path
 
     # If subcommand is not in whitelist, we enforce workspace
     require_workspace = False
@@ -74,7 +80,7 @@ def main(
     try:
         # We pass root if provided. If require_workspace is True, get_config will throw if not found.
         # Note: If root is None, it defaults to CWD in get_config.
-        
+
         # Auto-discover root if not provided
         config_root = root
         if config_root is None:
@@ -82,23 +88,28 @@ def main(
             # Only use discovered root if it actually has .monoco
             if (discovered / ".monoco").exists():
                 config_root = str(discovered)
-        
+
         get_config(project_root=config_root, require_project=require_workspace)
     except FileNotFoundError as e:
         # Graceful exit for workspace errors
         from rich.console import Console
+
         console = Console()
         console.print(f"[bold red]Error:[/bold red] {e}")
-        console.print(f"[yellow]Tip:[/yellow] Run this command in a Monoco Workspace root (containing .monoco), or use [bold]--root <path>[/bold].")
+        console.print(
+            "[yellow]Tip:[/yellow] Run this command in a Monoco Workspace root (containing .monoco), or use [bold]--root <path>[/bold]."
+        )
         raise typer.Exit(code=1)
 
+
 from monoco.core.setup import init_cli
+
 app.command(name="init")(init_cli)
 
 from monoco.core.sync import sync_command, uninstall_command
+
 app.command(name="sync")(sync_command)
 app.command(name="uninstall")(uninstall_command)
-
 
 
 @app.command()
@@ -108,7 +119,7 @@ def info():
     """
     from pydantic import BaseModel
     from monoco.core.config import get_config
-    
+
     settings = get_config()
 
     class Status(BaseModel):
@@ -118,8 +129,9 @@ def info():
         project: str
 
     mode = "Agent (JSON)" if os.getenv("AGENT_FLAG") == "true" else "Human (Rich)"
-    
+
     import importlib.metadata
+
     try:
         version = importlib.metadata.version("monoco-toolkit")
     except importlib.metadata.PackageNotFoundError:
@@ -129,13 +141,14 @@ def info():
         version=version,
         mode=mode,
         root=os.getcwd(),
-        project=f"{settings.project.name} ({settings.project.key})"
+        project=f"{settings.project.name} ({settings.project.key})",
     )
-    
+
     print_output(status, title="Monoco Toolkit Status")
-    
+
     if mode == "Human (Rich)":
         print_output(settings, title="Current Configuration")
+
 
 # Register Feature Modules
 # Register Feature Modules
@@ -154,8 +167,8 @@ app.add_typer(project_cmd.app, name="project", help="Manage projects")
 app.add_typer(workspace_cmd.app, name="workspace", help="Manage workspace")
 
 
-
 from monoco.daemon.commands import serve
+
 app.command(name="serve")(serve)
 
 if __name__ == "__main__":

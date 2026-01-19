@@ -1,21 +1,18 @@
-import asyncio
 import logging
-import subprocess
-import os
-import re
 from typing import List, Optional, Dict, Any
 from asyncio import Queue
 from pathlib import Path
 
-from monoco.features.issue.core import parse_issue, IssueMetadata
 import json
 
 logger = logging.getLogger("monoco.daemon.services")
+
 
 class Broadcaster:
     """
     Manages SSE subscriptions and broadcasts events to all connected clients.
     """
+
     def __init__(self):
         self.subscribers: List[Queue] = []
 
@@ -33,32 +30,28 @@ class Broadcaster:
     async def broadcast(self, event_type: str, payload: dict):
         if not self.subscribers:
             return
-        
-        message = {
-            "event": event_type,
-            "data": json.dumps(payload)
-        }
-        
+
+        message = {"event": event_type, "data": json.dumps(payload)}
+
         # Dispatch to all queues
         for queue in self.subscribers:
             await queue.put(message)
-        
+
         logger.debug(f"Broadcasted {event_type} to {len(self.subscribers)} clients.")
 
 
 # Monitors moved to monoco.core.git and monoco.features.issue.monitor
 
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-from monoco.core.config import MonocoConfig, get_config
 
 from monoco.core.workspace import MonocoProject, Workspace
+
 
 class ProjectContext:
     """
     Holds the runtime state for a single project.
     Now wraps the core MonocoProject primitive.
     """
+
     def __init__(self, project: MonocoProject, broadcaster: Broadcaster):
         self.project = project
         self.id = project.id
@@ -73,11 +66,13 @@ class ProjectContext:
     def stop(self):
         self.monitor.stop()
 
+
 class ProjectManager:
     """
     Discovers and manages multiple Monoco projects within a workspace.
     Uses core Workspace primitive for discovery.
     """
+
     def __init__(self, workspace_root: Path, broadcaster: Broadcaster):
         self.workspace_root = workspace_root
         self.broadcaster = broadcaster
@@ -89,7 +84,7 @@ class ProjectManager:
         """
         logger.info(f"Scanning workspace: {self.workspace_root}")
         workspace = Workspace.discover(self.workspace_root)
-        
+
         for project in workspace.projects:
             if project.id not in self.projects:
                 ctx = ProjectContext(project, self.broadcaster)
@@ -114,50 +109,54 @@ class ProjectManager:
                 "id": p.id,
                 "name": p.name,
                 "path": str(p.path),
-                "issues_path": str(p.issues_root)
+                "issues_path": str(p.issues_root),
             }
             for p in self.projects.values()
         ]
 
+
 from monoco.features.issue.monitor import IssueMonitor
+
 
 class ProjectContext:
     """
     Holds the runtime state for a single project.
     Now wraps the core MonocoProject primitive.
     """
+
     def __init__(self, project: MonocoProject, broadcaster: Broadcaster):
         self.project = project
         self.id = project.id
         self.name = project.name
         self.path = project.path
         self.issues_root = project.issues_root
-        
+
         async def on_upsert(issue_data: dict):
-            await broadcaster.broadcast("issue_upserted", {
-                "issue": issue_data,
-                "project_id": self.id
-            })
+            await broadcaster.broadcast(
+                "issue_upserted", {"issue": issue_data, "project_id": self.id}
+            )
 
         async def on_delete(issue_data: dict):
             # We skip broadcast here if it's part of a move?
-            # Actually, standard upsert/delete is fine, but we need a specialized event for MOVE 
+            # Actually, standard upsert/delete is fine, but we need a specialized event for MOVE
             # to help VS Code redirect without closing/reopening.
-            await broadcaster.broadcast("issue_deleted", {
-                "id": issue_data["id"],
-                "project_id": self.id
-            })
+            await broadcaster.broadcast(
+                "issue_deleted", {"id": issue_data["id"], "project_id": self.id}
+            )
 
         self.monitor = IssueMonitor(self.issues_root, on_upsert, on_delete)
 
     async def notify_move(self, old_path: str, new_path: str, issue_data: dict):
         """Explicitly notify frontend about a logical move (Physical path changed)."""
-        await self.broadcaster.broadcast("issue_moved", {
-            "old_path": old_path,
-            "new_path": new_path,
-            "issue": issue_data,
-            "project_id": self.id
-        })
+        await self.broadcaster.broadcast(
+            "issue_moved",
+            {
+                "old_path": old_path,
+                "new_path": new_path,
+                "issue": issue_data,
+                "project_id": self.id,
+            },
+        )
 
     async def start(self):
         await self.monitor.start()

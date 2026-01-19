@@ -2,10 +2,10 @@
   <g stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">
     <!-- Top Face: Filled (Solid) -->
     <path d="M8 8.5 L2 5 L8 1.5 L14 5 Z" fill="currentColor" />
-    
+
     <!-- Right Face: Border + Semi-Transparent (Glassy) -->
     <path d="M8 8.5 L14 5 L14 12 L8 15.5 Z" fill="currentColor" fill-opacity="0.3" />
-    
+
     <!-- Left Face: Border Only (Colorless) -->
     <path d="M8 8.5 L2 5 L2 12 L8 15.5 Z" fill="none" />
   </g>

@@ -1,14 +1,14 @@
-import os
 import shutil
 import subprocess
 
 from pathlib import Path
-from typing import Dict, Optional, List, Any
+from typing import List
 from rich.console import Console
 
-from monoco.core.config import get_config, load_raw_config, save_raw_config, ConfigScope
+from monoco.core.config import load_raw_config, save_raw_config, ConfigScope
 
 console = Console()
+
 
 def run_git_command(cmd: List[str], cwd: Path) -> bool:
     """Run a git command in the specified directory."""
@@ -19,7 +19,7 @@ def run_git_command(cmd: List[str], cwd: Path) -> bool:
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
         )
         return True
     except subprocess.CalledProcessError as e:
@@ -29,24 +29,28 @@ def run_git_command(cmd: List[str], cwd: Path) -> bool:
         console.print("[red]Error:[/red] git command not found.")
         return False
 
-def update_config_repos(root: Path, repo_name: str, repo_url: str, remove: bool = False):
+
+def update_config_repos(
+    root: Path, repo_name: str, repo_url: str, remove: bool = False
+):
     """Update the repos list in the config file."""
     # Use core config utils
     data = load_raw_config(ConfigScope.PROJECT, project_root=str(root))
-            
+
     # Ensure structure exists
     if "project" not in data:
         data["project"] = {}
     if "spike_repos" not in data["project"]:
         data["project"]["spike_repos"] = {}
-        
+
     if remove:
         if repo_name in data["project"]["spike_repos"]:
             del data["project"]["spike_repos"][repo_name]
     else:
         data["project"]["spike_repos"][repo_name] = repo_url
-        
+
     save_raw_config(ConfigScope.PROJECT, data, project_root=str(root))
+
 
 def ensure_gitignore(root: Path, target_dir_name: str):
     """Ensure the target directory is in .gitignore."""
@@ -62,23 +66,27 @@ def ensure_gitignore(root: Path, target_dir_name: str):
         with open(gitignore, "a") as f:
             f.write(f"{prefix}{target_dir_name}/\n")
 
+
 def sync_repo(root: Path, spikes_dir: Path, name: str, url: str):
     """Clone or Pull a repo."""
     target_path = spikes_dir / name
-    
+
     if target_path.exists() and (target_path / ".git").exists():
         console.print(f"Updating [bold]{name}[/bold]...")
         run_git_command(["git", "pull"], cwd=target_path)
     else:
-        # If dir exists but not a git repo, warn or error? 
+        # If dir exists but not a git repo, warn or error?
         # For safety, if non-empty and not git, skip or error.
         if target_path.exists() and any(target_path.iterdir()):
-             console.print(f"[yellow]Skipping {name}:[/yellow] Directory exists and is not empty, but not a git repo.")
-             return
+            console.print(
+                f"[yellow]Skipping {name}:[/yellow] Directory exists and is not empty, but not a git repo."
+            )
+            return
 
         console.print(f"Cloning [bold]{name}[/bold]...")
         target_path.mkdir(parents=True, exist_ok=True)
         run_git_command(["git", "clone", url, "."], cwd=target_path)
+
 
 def remove_repo_dir(spikes_dir: Path, name: str):
     """Physically remove the repo directory."""
@@ -86,6 +94,7 @@ def remove_repo_dir(spikes_dir: Path, name: str):
 
     if target_path.exists():
         shutil.rmtree(target_path)
+
 
 SKILL_CONTENT = """---
 name: git-repo-spike
@@ -107,14 +116,13 @@ This skill normalizes how we introduce external code repositories.
 3. **Remove**: `monoco spike remove <name>`
 """
 
+
 def init(root: Path, spikes_dir_name: str):
     """Initialize Spike environment."""
     ensure_gitignore(root, spikes_dir_name)
     (root / spikes_dir_name).mkdir(exist_ok=True)
 
     return {
-        "skills": {
-            "git-repo-spike": SKILL_CONTENT
-        },
-        "prompts": {} # Handled by adapter via resource files
+        "skills": {"git-repo-spike": SKILL_CONTENT},
+        "prompts": {},  # Handled by adapter via resource files
     }

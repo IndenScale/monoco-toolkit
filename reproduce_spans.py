@@ -1,5 +1,4 @@
 from monoco.features.issue.domain.parser import MarkdownParser
-from monoco.features.issue.domain.models import TaskItem
 
 content = """---
 id: FEAT-0001
