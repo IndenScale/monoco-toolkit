@@ -2,17 +2,18 @@
 id: FEAT-0084
 uid: fd7853
 type: feature
-status: open
-stage: draft
+status: closed
+stage: done
 title: 优化 Issue 生命周期动作与 Agent 集成
-created_at: '2026-01-16T23:32:20'
-opened_at: '2026-01-16T23:32:20'
-updated_at: '2026-01-16T23:32:20'
+created_at: "2026-01-16T23:32:20"
+opened_at: "2026-01-16T23:32:20"
+updated_at: "2026-01-19T14:40:00"
+solution: Cancelled - Agent functionality removed from Monoco core.
 dependencies: []
 related: []
 domains: []
 tags:
-- '#FEAT-0084'
+  - "#FEAT-0084"
 ---
 
 ## FEAT-0084: 优化 Issue 生命周期动作与 Agent 集成
@@ -35,3 +36,11 @@ tags:
 - [x] **更新核心逻辑**: 修改 `monoco/features/issue/core.py` -> `get_available_actions` 以实现新的状态流转规则。
 - [x] **更新 Agent Init**: 确保 `monoco/features/agent/core.py` 处理初始化期间的资源复制。
 - [x] **文档**: 更新文档以描述新的动作语义。
+
+## Solution
+
+根据项目战略调整（Deferred agent/sandbox support），已全面移除 Agent 相关功能。本 Feature 中定义的生命周期动作集成与 `.prompty` 模板机制已废弃。
+
+## Review Comments
+
+- [x] 功能已随 Agent 模块移除。
