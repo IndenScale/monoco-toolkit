@@ -2,25 +2,26 @@
 id: CHORE-0011
 uid: d65c6f
 type: chore
-status: open
-stage: doing
+status: closed
+stage: done
 title: 站点部署配置
-created_at: "2026-01-19T13:57:44"
-opened_at: "2026-01-19T13:57:44"
-updated_at: 2026-01-19 14:25:48
+created_at: '2026-01-19T13:57:44'
+opened_at: '2026-01-19T13:57:44'
+updated_at: '2026-01-19T14:26:16'
+closed_at: '2026-01-19T14:26:16'
 parent: EPIC-0018
+solution: implemented
+isolation:
+  type: branch
+  ref: feat/chore-0011-站点部署配置
+  created_at: '2026-01-19T14:25:48'
 dependencies: []
 related: []
 domains: []
 tags:
-  - "#CHORE-0011"
-  - "#EPIC-0018"
+- '#CHORE-0011'
+- '#EPIC-0018'
 files: []
-isolation:
-  type: branch
-  ref: feat/chore-0011-站点部署配置
-  path: null
-  created_at: "2026-01-19T14:25:48"
 ---
 
 ## CHORE-0011: 站点部署配置
