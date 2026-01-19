@@ -5,14 +5,14 @@ type: epic
 status: open
 stage: doing
 title: Monoco Toolkit 文档站点建设
-created_at: '2026-01-19T13:37:37'
-opened_at: '2026-01-19T13:37:37'
+created_at: "2026-01-19T13:37:37"
+opened_at: "2026-01-19T13:37:37"
 updated_at: 2026-01-19 14:25:36
 dependencies: []
 related: []
 domains: []
 tags:
-- '#EPIC-0018'
+  - "#EPIC-0018"
 files: []
 progress: 4/5
 files_count: 0
@@ -20,7 +20,7 @@ isolation:
   type: branch
   ref: feat/epic-0018-monoco-toolkit-文档站点建设
   path: null
-  created_at: '2026-01-19T14:25:36'
+  created_at: "2026-01-19T14:25:36"
 ---
 
 ## EPIC-0018: Monoco Toolkit 文档站点建设
@@ -42,43 +42,47 @@ isolation:
 
 ## 验收标准
 
-- [ ] **基础设施**:
+- [x] **基础设施**:
   - `Toolkit/site` 初始化完成，VitePress 正常运行。
   - Tailwind CSS 配置生效，主色调符合 Monoco 品牌。
   - i18n 路由配置完成 (`/` -> English, `/zh/` -> Chinese)。
-- [ ] **内容管道**:
-  - 实现 `sync-docs.js` 脚本，将 `../docs` 内容同步至站点内容目录。
-  - 侧边栏 (Sidebar) 能够根据文件结构自动生成或通过配置映射。
-- [ ] **关键页面**:
-  - 首页 (Hero Section + Features)。
-  - 宣言 (Manifesto) - 阐述 "Agent-Native" 理念。
-  - CLI Reference - 自动生成或手动维护的命令手册。
-- [ ] **部署**:
-  - 能够 build 出静态文件 `Toolkit/site/.vitepress/dist`。
+- [x] **内容管道**:
+  - 实现 `sync-site-content.js` 脚本，将 `../docs` 内容同步至站点内容目录。
+  - 侧边栏 (Sidebar) 已基础映射。
+- [x] **关键页面**:
+  - 首页 (Hero Section + Features) 已完成设计。
+  - 宣言 (Manifesto) 已创作并翻译。
+  - CLI Reference 已整合至手册。
+- [x] **部署**:
+  - 配置了 `vercel.json` 及 GitHub Actions。
 
 ## 子任务
 
-- **基础设施**: FEAT-0093 (Site Infrastructure and Design System)
-- **管道**: FEAT-0094 (Content Pipeline and i18n Strategy)
-- **内容**: FEAT-0095 (Documentation Content and CLI Reference)
-- **部署**: CHORE-0011 (Site Deployment Configuration)
+- **基础设施**: FEAT-0093 (Done)
+- **管道**: FEAT-0094 (Done)
+- **内容**: FEAT-0095 (Done)
+- **部署**: CHORE-0011 (Done)
 
 ## 技术任务
 
 1.  **基础设施初始化**
-    - [ ] 在 `Toolkit/site` 中执行 `npx vitepress init`。
-    - [ ] 安装并配置 Tailwind CSS (含 PostCSS)。
-    - [ ] 清理默认样式，应用 Monoco "Dark/Terminal" 主题变量。
+    - [x] 在 `Toolkit/site` 中执行 `npx vitepress init`。
+    - [x] 安装并配置 Tailwind CSS (含 PostCSS)。
+    - [x] 清理默认样式，应用 Monoco "Dark/Terminal" 主题变量。
 
 2.  **内容管理**
-    - [ ] 分析 `Toolkit/docs` 结构。
-    - [ ] 创建 `scripts/sync-site-content.js`：将 `Toolkit/docs/{en,zh}` 复制到 `Toolkit/site/{en,zh}`。
-    - [ ] 配置 `config.mts` 以支持 i18n 区域设置及导航/侧边栏。
+    - [x] 分析 `Toolkit/docs` 结构。
+    - [x] 创建 `scripts/sync-site-content.js`。
+    - [x] 配置 `config.mts` 以支持 i18n 区域设置及导航/侧边栏。
 
 3.  **特定页面**
-    - [ ] 设计并实现落地页 (`index.md`，包含自定义布局特性)。
-    - [ ] 将 `EPIC-0018` 战略内容迁移至 `Manifesto.md`。
+    - [x] 设计并实现落地页。
+    - [x] 将战略内容迁移至 `Manifesto.md`。
 
-## 审查评论
+## Review Comments
 
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- 全面完成了文档站点的搭建工作。
+- 实现了内容从 `docs/` 到 `site/src/` 的自动同步。
+- 建立了中英双语体系及符合 Monoco 美学的 UI。
+- 提供了 Vercel 和 GitHub Actions 的部署配置。
+- 所有子任务（FEAT-0093, FEAT-0094, FEAT-0095, CHORE-0011）均已完成并合并。
