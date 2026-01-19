@@ -10,6 +10,8 @@ export interface Issue {
   body?: string;
   raw_content?: string;
   tags?: string[];
+  path?: string;
+  project_id?: string;
 }
 
 export interface BoardData {

@@ -43,6 +43,7 @@ yarn-error.log*
 .next/
 out/
 build/
+**/.vitepress/cache/
 
 # Project Specific
 MemoryDaemon/
