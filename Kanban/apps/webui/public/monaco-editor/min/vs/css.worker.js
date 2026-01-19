@@ -19500,7 +19500,7 @@ Syntax: ${vr(t.syntax)}`));
     for (
       ;
       n >= 0 &&
-      ` 	
+      `
 \r":{[()]},*>+`.indexOf(r.charAt(n)) === -1;
     )
       n--;
