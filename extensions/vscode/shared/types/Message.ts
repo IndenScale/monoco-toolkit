@@ -14,6 +14,13 @@ export type WebviewMessage =
   | { type: "UPDATE_ISSUE"; issueId: string; changes: Partial<IssueMetadata> }
   | { type: "CREATE_ISSUE"; value: CreateIssueRequest }
   | { type: "OPEN_ISSUE_FILE"; value: { path: string } }
+  | {
+      type: "OPEN_FILE";
+      path?: string;
+      line?: number;
+      column?: number;
+      value?: { path?: string; line?: number; column?: number };
+    }
   | { type: "OPEN_URL"; url: string }
   | { type: "UPDATE_CONFIG"; value: { key: string; value: string } };
 

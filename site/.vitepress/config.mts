@@ -7,6 +7,10 @@ export default defineConfig({
   srcDir: "src",
   base: "/",
 
+  rewrites: {
+    "en/:rest*": ":rest*",
+  },
+
   locales: {
     root: {
       label: "English",

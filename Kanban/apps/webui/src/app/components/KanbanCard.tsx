@@ -70,7 +70,30 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
   const { isVsCode } = useBridge();
 
   const handleDragStart = (e: React.DragEvent) => {
+    // 1. Text fallback
     e.dataTransfer.setData("text/plain", issue.id);
+
+    // 2. URI list if path exists
+    if (issue.path) {
+      const config = (window as any).monocoConfig;
+      const root = config?.rootPath;
+      let fullPath = issue.path;
+
+      if (root && !fullPath.startsWith("/") && !fullPath.match(/^[a-zA-Z]:/)) {
+        const sep = root.includes("\\") ? "\\" : "/";
+        fullPath = root + (root.endsWith(sep) ? "" : sep) + issue.path;
+      }
+
+      // Simple URI construction
+      const fileUri = fullPath.match(/^[a-zA-Z]:/)
+        ? `file:///${fullPath.replace(/\\/g, "/")}`
+        : `file://${fullPath}`;
+
+      e.dataTransfer.setData("text/uri-list", fileUri);
+    }
+
+    // 3. Internal data for drop targets
+    e.dataTransfer.setData("application/monoco-issue", JSON.stringify(issue));
     e.dataTransfer.effectAllowed = "move";
   };
 
@@ -89,7 +112,7 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
           </span>
           <div
             className={`flex flex-row items-center gap-1 text-[10px] uppercase font-bold tracking-wider ${getTypeColor(
-              issue.type
+              issue.type,
             )}`}>
             {/* Hide Icon in extreme compact mode if needed, but keeping for now */}
             {!isVsCode && <Icon icon={getTypeIcon(issue.type)} size={10} />}

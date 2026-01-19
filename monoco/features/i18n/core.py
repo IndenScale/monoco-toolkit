@@ -24,6 +24,13 @@ DEFAULT_EXCLUDES = [
     ".vscode",
     ".idea",
     ".fleet",
+    ".vscode-test",
+    ".cache",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".nox",
     # System Prompts & Agent Configs
     "AGENTS.md",
     "CLAUDE.md",
@@ -55,17 +62,16 @@ def load_gitignore_patterns(root: Path) -> List[str]:
 
 
 def is_excluded(
-    path: Path, root: Path, patterns: List[str], excludes: Optional[List[str]] = None
+    path: Path, root: Path, patterns: List[str], excludes_set: Optional[set] = None
 ) -> bool:
     """Check if a path should be excluded based on patterns and defaults."""
     rel_path = str(path.relative_to(root))
 
-    final_excludes = excludes if excludes is not None else DEFAULT_EXCLUDES
-
     # 1. Check default excludes (exact match for any path component, case-insensitive)
-    for part in path.parts:
-        if part.lower() in [e.lower() for e in final_excludes]:
-            return True
+    if excludes_set:
+        for part in path.parts:
+            if part.lower() in excludes_set:
+                return True
 
     # 2. Check gitignore patterns
     for pattern in patterns:
@@ -98,11 +104,25 @@ def discover_markdown_files(root: Path, include_issues: bool = False) -> List[Pa
     if not include_issues:
         excludes.append("Issues")
 
-    # We walk to ensure we can skip directories early if needed,
-    # but for now rglob + filter is simpler.
-    for p in root.rglob("*.md"):
-        if p.is_file() and not is_excluded(p, root, patterns, excludes=excludes):
-            all_md_files.append(p)
+    # Pre-calculate lowercase set for performance
+    excludes_set = {e.lower() for e in excludes}
+
+    # Use walk to skip excluded directories early
+    for current_root, dirs, files in root.walk():
+        # Filter directories in-place to skip excluded ones
+        dirs[:] = [
+            d
+            for d in dirs
+            if not is_excluded(
+                current_root / d, root, patterns, excludes_set=excludes_set
+            )
+        ]
+
+        for file in files:
+            if file.endswith(".md"):
+                p = current_root / file
+                if not is_excluded(p, root, patterns, excludes_set=excludes_set):
+                    all_md_files.append(p)
 
     return sorted(all_md_files)
 
