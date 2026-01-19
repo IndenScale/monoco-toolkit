@@ -7,15 +7,20 @@ stage: doing
 title: Monoco Toolkit 文档站点建设
 created_at: '2026-01-19T13:37:37'
 opened_at: '2026-01-19T13:37:37'
-updated_at: '2026-01-19T13:37:37'
+updated_at: 2026-01-19 14:25:36
 dependencies: []
 related: []
 domains: []
 tags:
 - '#EPIC-0018'
 files: []
-progress: 2/4
+progress: 3/5
 files_count: 0
+isolation:
+  type: branch
+  ref: feat/epic-0018-monoco-toolkit-文档站点建设
+  path: null
+  created_at: '2026-01-19T14:25:36'
 ---
 
 ## EPIC-0018: Monoco Toolkit 文档站点建设
