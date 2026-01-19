@@ -1,93 +1,221 @@
 # Changelog
 
-All notable changes to Monoco Toolkit will be documented in this file.
+Generated on 2026-01-19
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [v0.3.2] - Recent Releases
 
-## [0.3.1] - 2026-01-19
+### FEAT-0095: 文档内容与 CLI 参考
+- *Result*: Implemented - Core documentation pages (Manifesto, CLI Reference, Landing Page) populated and verified.
 
-### 🛡️ Governance
+### FEAT-0094: 内容管道与国际化策略
+- *Result*: implemented
 
-- **FEAT-0092**: Implemented Governance Maturity Checks
-  - Enforces `domains` field definition when workspace passes complexity thresholds:
-    - > 8 Epics
-    - > 50 Issues
+### FEAT-0093: 站点基础设施与设计系统
+- *Result*: implemented
 
-## [0.3.0] - 2026-01-19
+### FEAT-0092: Governance Maturity Checks
+- *Result*: Implemented
 
-### 🔧 Improvements
+### FEAT-0091: 实现 Git Hooks 机制
+- *Result*: implemented
 
-- Updated Agent Settings UI with better organization and section headers
-- Improved Agent inheritance logic (Inherit from Default)
-- Fixed Webview initialization and local storage data migration
-- Enhanced Issue Validator with stricter "Technical Tasks" requirements
-- Synced all components (CLI, VS Code Extension, Kanban) to v0.2.6
+### FEAT-0090: VSCode Extension 组件化模块化重构
+- *Result*: Core refactoring (Phase 1-4) completed. Webview and LSP are now modular
 
-## [0.2.0] - 2026-01-16
+### FEAT-0088: 可配置 Issue Schema 加载器 (YAML 配置)
+- *Result*: implemented
 
-### 🎯 Major Features
+### FEAT-0087: 动态状态机引擎 (数据驱动逻辑)
+- *Result*: implemented
 
-#### LSP Architecture & VS Code Integration
+### FEAT-0086: DDD Issue 建模 (影子对象层)
+- *Result*: implemented
 
-- **FEAT-0076**: Implemented Monoco Language Server with real-time diagnostics and intelligent completions
-- **FEAT-0077**: Migrated VS Code Cockpit to LSP architecture, replacing legacy CodeLens providers
-- **FEAT-0075**: Realigned VS Code extension with proxy pattern for better separation of concerns
+### FEAT-0085: 更新 VS Code 扩展以支持优化的动作系统
+- *Result*: Cancelled - Agent functionality removed from VS Code extension.
 
-#### Agent Execution Layer
+### FEAT-0084: 优化 Issue 生命周期动作与 Agent 集成
+- *Result*: Cancelled - Agent functionality removed from Monoco core.
 
-- **FEAT-0078**: Implemented unified Agent Execution Layer with support for multiple AI providers (Claude, Gemini, Qwen)
-- **FEAT-0079**: Integrated Agent state management in VS Code extension
-- **FEAT-0080**: Added VS Code Execution UI with Sidebar and contextual CodeLens actions
-- **FEAT-0081**: Introduced Prompty Action System for context-aware agent skills
+### FEAT-0083: Integration of Monoco CLI as LSP Backend
+- *Result*: implemented
 
-#### Core Infrastructure
+### FEAT-0082: Issue Ticket Validator
+- *Result*: implemented
 
-- **FEAT-0073**: Implemented Skill Manager and Distribution system
-- **FEAT-0074**: Created Core Integration Registry for centralized agent framework management
-- **EPIC-0013**: Unified CLI & Daemon architecture with formal state protocol
+### FEAT-0081: Prompty Action System: Context-Aware Agent Skills
+- *Result*: implemented
 
-### 🔧 Improvements
+### FEAT-0080: VS Code Execution UI: Sidebar & CodeLens
+- *Result*: implemented
 
-- Enhanced workspace state management with `WorkspaceState` protocol
-- Improved Git monitoring and issue lifecycle tracking
-- Refactored daemon services for better modularity
-- Added execution profile scanning and management
+### FEAT-0079: VS Code 扩展与 Agent 状态的集成
+- *Result*: implemented
 
-### 🐛 Bug Fixes
+### FEAT-0078: Agent 执行层与 CLI 集成
+- *Result*: implemented
 
-- Fixed extension server communication issues
-- Resolved LSP module resolution errors
-- Improved delivery report generation
+### FEAT-0077: Migrate Cockpit View to Pure LSP Architecture
+- *Result*: Implemented Pure LSP architecture, removing Python dependency for the Kanban
 
-### 🗑️ Deprecated
+### FEAT-0076: Implement Monoco Language Server
+- *Result*: Implemented a dual-project structure (client/server) within `extensions/vscode`.
 
-- Removed legacy built-in executions in favor of Prompty-based actions
-- Deprecated hardcoded integration logic in `monoco/core/sync.py`
+### FEAT-0075: VS Code Extension Realignment: Implementation of Proxy Pattern
+- *Result*: implemented
 
-### 📚 Documentation
+### FEAT-0074: Core Integration Registry
+- *Result*: implemented
 
-- Updated architecture documentation for LSP integration
-- Enhanced skill system documentation
+### FEAT-0073: Implement Skill Manager and Distribution
+- *Result*: implemented
 
----
+### FEAT-0072: Core Agent Environment Manager (Sync & Uninstall)
+- *Result*: implemented
 
-## [0.1.7] - 2026-01-15
+### FEAT-0071: Implement Monoco Sync and Prompt Injection System
+- *Result*: implemented
 
-### Features
+### FEAT-0070: 实现标准化的 monoco config 命令
+- *Result*: implemented
 
-- Fixed extension publish and lint issues
+### FEAT-0069: Spike 内容清洗与元数据增强
+- *Result*: cancelled
 
-## [0.1.6] - 2026-01-15
+### FEAT-0067: 执行配置与提示词管理
+- *Result*: implemented
 
-### Features
+### FEAT-0066: 智能体运行时诊断 (Agent Runtime Diagnostics)
+- *Result*: implemented
 
-- Agent environment integration
-- Skill distribution system
-- Issue stage renaming (todo → draft)
+### FEAT-0065: 智能体运行时配置 (Agent Runtime Configuration)
+- *Result*: implemented
 
----
+### FEAT-0064: 智能父级选择
+- *Result*: implemented
 
-[0.2.0]: https://github.com/IndenScale/Monoco/compare/v0.1.7...v0.2.0
-[0.1.7]: https://github.com/IndenScale/Monoco/compare/v0.1.6...v0.1.7
-[0.1.6]: https://github.com/IndenScale/Monoco/releases/tag/v0.1.6
+### FEAT-0063: 优化 VS Code 扩展 UI
+- *Result*: implemented
+
+### FEAT-0062: Drag-and-Drop Workflow via Text/URL
+- *Result*: Implemented
+
+### FEAT-0061: Cockpit Navigation Bridge (Webview to Editor)
+- *Result*: Implemented
+
+### FEAT-0059: VS Code Extension Scaffold & Webview Bridge
+- *Result*: implemented
+
+### FEAT-0058: Kanban 分发 - npm
+- *Result*: implemented
+
+### FEAT-0057: 看板终端集成 (xterm.js)
+- *Result*: implemented
+
+### FEAT-0056: Implement monoco-pty Service via WebSockets
+- *Result*: implemented
+
+### FEAT-0052: Kanban 分发 - NPM/NPX
+- *Result*: implemented
+
+### FEAT-0051: CLI 工具分发 - PyPI
+- *Result*: implemented
+
+### FEAT-0050: 一键安装脚本
+- *Result*: implemented
+
+### FEAT-0049: 安全清理
+- *Result*: implemented
+
+### FEAT-0048: 工具包自述文件完善
+- *Result*: implemented
+
+### FEAT-0047: 社区健康文件
+- *Result*: implemented
+
+### FEAT-0046: GitHub Page 维护
+- *Result*: implemented
+
+### FEAT-0043: Toolkit 分发渠道建设
+- *Result*: Implemented
+
+### FEAT-0038: Workspace 内跨项目引用互操作性
+- *Result*: implemented
+
+### FEAT-0037: CLI Advanced Issue Query
+- *Result*: implemented
+
+### FEAT-0036: Advanced Kanban Filter
+- *Result*: implemented
+
+### FEAT-0034: UI术语可配置化
+- *Result*: implemented
+
+### FEAT-0033: 交互式状态流转与合法性校验
+- *Result*: implemented
+
+### FEAT-0032: 可选分支隔离 (Optional Branch Isolation)
+- *Result*: implemented
+
+### FEAT-0031: 状态递归聚合 (Recursive State Aggregation)
+- *Result*: implemented
+
+### FEAT-0030: 提交溯源与扫描器 (Commit Traceability & Scanner)
+- *Result*: implemented
+
+### FEAT-0029: Web 看板实现 (Web Kanban Implementation)
+- *Result*: implemented
+
+### FEAT-0020: 工程视图 (Engineering View)
+- *Result*: implemented
+
+### FEAT-0019: 全局仪表盘 (Global Dashboard)
+- *Result*: implemented
+
+### FEAT-0016: 安全 Issue 编辑 (Safe Issue Editing)
+- *Result*: implemented
+
+### FEAT-0015: 看板 UI 增强 (Kanban UI Enhancements)
+- *Result*: implemented
+
+### FEAT-0014: 实现 Issue 管理 API (Implement Issue API)
+- *Result*: implemented
+
+### FEAT-0013: 实现 monoco issue list 命令 (Implement List Command)
+- *Result*: implemented
+
+### FEAT-0012: 增强 CLI 与 Server 的多工作区支持 (Enhance Workspace Support)
+- *Result*: implemented
+
+### FEAT-0011: 增强 i18n 报告功能: 支持缺失文档清单输出 (Enhance i18n Reporting)
+- *Result*: implemented
+
+### FEAT-0010: 增强 Init 命令 (Enhanced Init Command)
+- *Result*: implemented
+
+### FEAT-0009: 建立 Spike 系统使用文档体系 (Establish Spike Docs)
+- *Result*: implemented
+
+### FEAT-0008: 建立 Issue 系统使用文档体系 (Establish Issue Docs)
+- *Result*: implemented
+
+### FEAT-0007: 支持外部或子项目 Issue 根目录 (Support External Issue Roots)
+- *Result*: implemented
+
+### FEAT-0006: 支持层级 Issue 组织 (Support Hierarchical Issue Organization)
+- *Result*: implemented
+
+### FEAT-0005: 实现 i18n 扫描能力 (Implement i18n scan)
+- *Result*: implemented
+
+### FEAT-0004: 特性: 仓库管理 (Spike) (Repo Management - Spike)
+- *Result*: implemented
+
+### FEAT-0003: 特性: Issue 管理 (本地) (Issue Management - Local)
+- *Result*: implemented
+
+### FEAT-0002: Toolkit 核心基础设施 (Toolkit Core Infrastructure)
+- *Result*: implemented
+
+### FEAT-0001: 重构 Issue 术语为原生代理语义 (Refactor Issue Terminology)
+- *Result*: implemented

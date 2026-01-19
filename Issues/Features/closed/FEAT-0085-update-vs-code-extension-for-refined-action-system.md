@@ -2,17 +2,18 @@
 id: FEAT-0085
 uid: e0bd61
 type: feature
-status: open
-stage: draft
+status: closed
+stage: done
 title: 更新 VS Code 扩展以支持优化的动作系统
-created_at: '2026-01-16T23:45:53'
-opened_at: '2026-01-16T23:45:53'
-updated_at: '2026-01-16T23:45:53'
+created_at: "2026-01-16T23:45:53"
+opened_at: "2026-01-16T23:45:53"
+updated_at: "2026-01-19T14:40:00"
+solution: Cancelled - Agent functionality removed from VS Code extension.
 dependencies: []
 related: []
 domains: []
 tags:
-- '#FEAT-0085'
+  - "#FEAT-0085"
 ---
 
 ## FEAT-0085: 更新 VS Code 扩展以支持优化的动作系统
@@ -33,3 +34,11 @@ tags:
 - [x] **数据获取**: 更新 `ActionService.ts` 以从 `monoco issue scope`（或文件解析）输出中检索可用动作。
 - [x] **Provider 更新**: 重构 `IssueCodeLensProvider.ts` 以遍历 `actions` 列表并生成单独的 `CodeLens` 对象。
 - [x] **命令处理程序**: 确保 `monoco.runAction` 或新的处理程序能够执行 CLI 返回的特定命令/参数。
+
+## Solution
+
+根据项目战略调整，VS Code 扩展中的 Agent 相关交互（菜单、CodeLens、Prompty 渲染）已全部移除。
+
+## Review Comments
+
+- [x] CodeLens 已清理。
