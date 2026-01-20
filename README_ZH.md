@@ -62,13 +62,17 @@ monoco init
 ### 基本工作流
 
 1.  **计划**: 创建一个新的功能需求。
+
     ```bash
     monoco issue create feature -t "实现深色模式"
     ```
+
     monoco issue create feature -t "实现深色模式"
+
     ```
 
     ```
+
 2.  **启动**: 自动创建分支。
     ```bash
     monoco issue start FEAT-001 --branch

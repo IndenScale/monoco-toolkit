@@ -3,10 +3,10 @@
  * Centralized provider registration
  */
 
-import * as vscode from "vscode";
+import * as vscode from 'vscode'
 
 // import { IssueCodeLensProvider } from "./IssueCodeLensProvider";
-import { IssueFieldControlProvider } from "./IssueFieldControlProvider";
+import { IssueFieldControlProvider } from './IssueFieldControlProvider'
 
 export class ProviderRegistry {
   constructor(private context: vscode.ExtensionContext) {}
@@ -15,10 +15,10 @@ export class ProviderRegistry {
    * Register all providers
    */
   registerAll(): IssueFieldControlProvider {
-    const issueFieldControl = this.registerFieldControlProvider();
+    const issueFieldControl = this.registerFieldControlProvider()
 
-    this.registerCodeLensProvider();
-    return issueFieldControl;
+    this.registerCodeLensProvider()
+    return issueFieldControl
   }
 
   /**
@@ -42,13 +42,13 @@ export class ProviderRegistry {
    * Register field control provider (Status/Stage)
    */
   private registerFieldControlProvider(): IssueFieldControlProvider {
-    const provider = new IssueFieldControlProvider();
+    const provider = new IssueFieldControlProvider()
     this.context.subscriptions.push(
       vscode.languages.registerDocumentLinkProvider(
-        { scheme: "file", language: "markdown" },
-        provider,
-      ),
-    );
-    return provider;
+        { scheme: 'file', language: 'markdown' },
+        provider
+      )
+    )
+    return provider
   }
 }

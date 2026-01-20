@@ -3,8 +3,8 @@
  */
 
 export const VIEW_TYPES = {
-  KANBAN: "monoco.kanbanView",
-  EXECUTIONS: "monoco.actionsView",
-} as const;
+  KANBAN: 'monoco.kanbanView',
+  EXECUTIONS: 'monoco.actionsView',
+} as const
 
-export type ViewType = (typeof VIEW_TYPES)[keyof typeof VIEW_TYPES];
+export type ViewType = (typeof VIEW_TYPES)[keyof typeof VIEW_TYPES]

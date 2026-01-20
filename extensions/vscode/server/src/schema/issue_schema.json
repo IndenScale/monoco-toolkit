@@ -1,10 +1,7 @@
 {
   "$defs": {
     "IsolationType": {
-      "enum": [
-        "branch",
-        "worktree"
-      ],
+      "enum": ["branch", "worktree"],
       "title": "IsolationType",
       "type": "string"
     },
@@ -78,9 +75,7 @@
           "type": "object"
         }
       },
-      "required": [
-        "label"
-      ],
+      "required": ["label"],
       "title": "IssueAction",
       "type": "object"
     },
@@ -111,50 +106,27 @@
           "type": "string"
         }
       },
-      "required": [
-        "type",
-        "ref"
-      ],
+      "required": ["type", "ref"],
       "title": "IssueIsolation",
       "type": "object"
     },
     "IssueSolution": {
-      "enum": [
-        "implemented",
-        "cancelled",
-        "wontfix",
-        "duplicate"
-      ],
+      "enum": ["implemented", "cancelled", "wontfix", "duplicate"],
       "title": "IssueSolution",
       "type": "string"
     },
     "IssueStage": {
-      "enum": [
-        "draft",
-        "doing",
-        "review",
-        "done",
-        "freezed"
-      ],
+      "enum": ["draft", "doing", "review", "done", "freezed"],
       "title": "IssueStage",
       "type": "string"
     },
     "IssueStatus": {
-      "enum": [
-        "open",
-        "closed",
-        "backlog"
-      ],
+      "enum": ["open", "closed", "backlog"],
       "title": "IssueStatus",
       "type": "string"
     },
     "IssueType": {
-      "enum": [
-        "epic",
-        "feature",
-        "chore",
-        "fix"
-      ],
+      "enum": ["epic", "feature", "chore", "fix"],
       "title": "IssueType",
       "type": "string"
     }
@@ -326,11 +298,7 @@
       "type": "array"
     }
   },
-  "required": [
-    "id",
-    "type",
-    "title"
-  ],
+  "required": ["id", "type", "title"],
   "title": "IssueMetadata",
   "type": "object"
 }

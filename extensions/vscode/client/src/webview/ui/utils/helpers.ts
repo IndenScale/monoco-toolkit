@@ -4,12 +4,12 @@
 export const ICONS = {
   // VS Code Codicons (Standard)
   // Unicode Symbols (Semantic)
-  EPIC: "🚀", // Rocket - Big initiative
-  FEATURE: "✨", // Sparkles - New value
-  BUG: "🐞", // Lady beetle - Bug
-  CHORE: "🔧", // Wrench - Maintenance
-  ARCH: "🏛", // Building - Architecture
-  FIX: "🩹", // Bandage - Quick fix
+  EPIC: '🚀', // Rocket - Big initiative
+  FEATURE: '✨', // Sparkles - New value
+  BUG: '🐞', // Lady beetle - Bug
+  CHORE: '🔧', // Wrench - Maintenance
+  ARCH: '🏛', // Building - Architecture
+  FIX: '🩹', // Bandage - Quick fix
 
   // UI Icons (SVGs for Native Look)
   CHEVRON: `<svg class="icon" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5-1-1 4-4-4-4 1-1z" fill="currentColor"/></svg>`,
@@ -20,32 +20,32 @@ export const ICONS = {
   EXECUTION: `<svg class="icon" viewBox="0 0 16 16"><path d="M3 2l10 6-10 6V2z" fill="currentColor"/></svg>`,
   MORE: `<svg class="icon" viewBox="0 0 16 16"><path d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM8 4a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM8 14a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" fill="currentColor"/></svg>`,
   FILTER: `<svg class="icon" viewBox="0 0 16 16"><path d="M6 12v-2h4v2H6zm-3-4v-2h10v2H3zm-2-4V2h14v2H1z" fill="currentColor"/></svg>`,
-} as const;
+} as const
 
 /**
  * Get SVG icon for a given issue type
  */
 export function getIcon(type: string): string {
-  const t = (type || "").toUpperCase();
-  if (t === "EPIC") {
-    return ICONS.EPIC;
+  const t = (type || '').toUpperCase()
+  if (t === 'EPIC') {
+    return ICONS.EPIC
   }
-  if (t === "ARCH") {
-    return ICONS.ARCH;
+  if (t === 'ARCH') {
+    return ICONS.ARCH
   }
-  if (t === "FEATURE") {
-    return ICONS.FEATURE;
+  if (t === 'FEATURE') {
+    return ICONS.FEATURE
   }
-  if (t === "BUG") {
-    return ICONS.BUG;
+  if (t === 'BUG') {
+    return ICONS.BUG
   }
-  if (t === "CHORE") {
-    return ICONS.CHORE;
+  if (t === 'CHORE') {
+    return ICONS.CHORE
   }
-  if (t === "FIX") {
-    return ICONS.BUG;
+  if (t === 'FIX') {
+    return ICONS.BUG
   }
-  return ICONS.FEATURE;
+  return ICONS.FEATURE
 }
 
 /**
@@ -53,14 +53,14 @@ export function getIcon(type: string): string {
  */
 export function escapeHtml(unsafe: string | undefined): string {
   if (!unsafe) {
-    return "";
+    return ''
   }
   return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
 }
 
 /**
@@ -74,25 +74,25 @@ export function statusWeight(status: string): number {
     backlog: 3,
     done: 4,
     closed: 5,
-  };
-  return map[status] ?? 99;
+  }
+  return map[status] ?? 99
 }
 
 /**
  * Get status class for styling
  */
 export function getStatusClass(issue: any): string {
-  const s = (issue.stage || issue.status || "draft").toLowerCase();
+  const s = (issue.stage || issue.status || 'draft').toLowerCase()
 
-  if (s.includes("doing") || s.includes("progress")) {
-    return "doing";
-  } else if (s.includes("review")) {
-    return "review";
-  } else if (s.includes("done")) {
-    return "done";
-  } else if (s.includes("closed")) {
-    return "closed";
+  if (s.includes('doing') || s.includes('progress')) {
+    return 'doing'
+  } else if (s.includes('review')) {
+    return 'review'
+  } else if (s.includes('done')) {
+    return 'done'
+  } else if (s.includes('closed')) {
+    return 'closed'
   } else {
-    return "draft";
+    return 'draft'
   }
 }

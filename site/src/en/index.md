@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "Monoco Toolkit"
-  text: "Agent-Native Issue Tracking"
-  tagline: "Git-Native Issue Tracking System with CLI & VS Code UI"
+  name: 'Monoco Toolkit'
+  text: 'Agent-Native Issue Tracking'
+  tagline: 'Git-Native Issue Tracking System with CLI & VS Code UI'
   actions:
     - theme: brand
       text: Get Started
