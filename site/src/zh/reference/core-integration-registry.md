@@ -78,25 +78,25 @@ agent:
     # 覆盖默认的 Cursor 配置
     cursor:
       key: cursor
-      name: "My Custom Cursor"
-      system_prompt_file: "custom-rules.md"
-      skill_root_dir: ".my-cursor/skills/"
+      name: 'My Custom Cursor'
+      system_prompt_file: 'custom-rules.md'
+      skill_root_dir: '.my-cursor/skills/'
       enabled: true
 
     # 添加新的自定义框架
     my_framework:
       key: my_framework
-      name: "My Custom Framework"
-      system_prompt_file: "MY_FRAMEWORK.md"
-      skill_root_dir: ".my-framework/skills/"
+      name: 'My Custom Framework'
+      system_prompt_file: 'MY_FRAMEWORK.md'
+      skill_root_dir: '.my-framework/skills/'
       enabled: true
 
     # 禁用某个框架
     qwen:
       key: qwen
-      name: "Qwen Code"
-      system_prompt_file: "QWEN.md"
-      skill_root_dir: ".qwen/skills/"
+      name: 'Qwen Code'
+      system_prompt_file: 'QWEN.md'
+      skill_root_dir: '.qwen/skills/'
       enabled: false
 ```
 

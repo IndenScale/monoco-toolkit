@@ -2,4 +2,4 @@
  * Export all shared utilities
  */
 
-export * from "./MonocoExecutableResolver";
+export * from './MonocoExecutableResolver'

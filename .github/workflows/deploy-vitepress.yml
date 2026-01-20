@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - "site/**"
-      - ".github/workflows/deploy-vitepress.yml"
+      - 'site/**'
+      - '.github/workflows/deploy-vitepress.yml'
   pull_request:
     branches: [main]
     paths:
-      - "site/**"
-      - ".github/workflows/deploy-vitepress.yml"
+      - 'site/**'
+      - '.github/workflows/deploy-vitepress.yml'
   workflow_dispatch:
 
 permissions:
