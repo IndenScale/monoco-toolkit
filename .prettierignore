@@ -1,0 +1,46 @@
+# Dependencies
+node_modules
+.venv
+venv
+env
+__pycache__
+
+# Build outputs
+dist
+build
+.next
+out
+.pytest_cache
+.ruff_cache
+.monoco
+
+# Media and binary files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.ico
+*.pdf
+*.whl
+
+# Git
+.git
+.gitmodules
+
+# Temporary or other
+.DS_Store
+*.log
+.agent
+.claude
+.gemini
+.qwen
+.references
+.reference
+Kanban
+Issues
+Typedown/website/.next
+Toolkit/site
+Toolkit/Kanban
+Toolkit/build
+Toolkit/dist

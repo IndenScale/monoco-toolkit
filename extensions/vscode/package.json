@@ -195,6 +195,7 @@
     "watch": "tsc -b client/tsconfig.json -w",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint client/src --ext ts",
+    "format": "prettier --write .",
     "test": "node ./client/out/test/runTest.js"
   },
   "devDependencies": {
@@ -210,6 +211,7 @@
     "glob": "^10.3.10",
     "mocha": "^10.4.0",
     "ovsx": "^0.8.3",
+    "prettier": "^3.4.2",
     "sinon": "^17.0.0",
     "typescript": "^5.4.5"
   },

@@ -5,8 +5,11 @@ project:
   key: TOO
   name: Monoco Toolkit
   spike_repos:
+    SWE-agent: https://github.com/SWE-agent/SWE-agent
+    SWE-bench: https://github.com/SWE-bench/SWE-bench
     agentskills: https://github.com/agentskills/agentskills
     gemini-cli: https://github.com/google-gemini/gemini-cli
     qwen-code: https://github.com/QwenLM/qwen-code
+    ralph: https://github.com/snarktank/ralph
     skills: https://github.com/anthropics/skills
     vibe-kanban: https://github.com/BloopAI/vibe-kanban

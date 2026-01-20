@@ -7,8 +7,8 @@ import {
   CompletionItem,
   CompletionItemKind,
   TextDocumentPositionParams,
-} from "vscode-languageserver/node";
-import { WorkspaceIndexer } from "../services/WorkspaceIndexer";
+} from 'vscode-languageserver/node'
+import { WorkspaceIndexer } from '../services/WorkspaceIndexer'
 
 export class CompletionProvider {
   constructor(private workspaceIndexer: WorkspaceIndexer) {}
@@ -23,13 +23,13 @@ export class CompletionProvider {
       detail: `${issue.type} - ${issue.stage}`,
       documentation: issue.title,
       data: issue.id,
-    }));
+    }))
   }
 
   /**
    * Resolve completion item (optional)
    */
   resolveCompletion(item: CompletionItem): CompletionItem {
-    return item;
+    return item
   }
 }

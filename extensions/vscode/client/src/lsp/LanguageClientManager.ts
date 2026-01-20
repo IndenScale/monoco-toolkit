@@ -3,52 +3,48 @@
  * Manages the lifecycle and communication with the LSP server
  */
 
-import * as path from "path";
-import * as fs from "fs";
-import * as vscode from "vscode";
+import * as path from 'path'
+import * as fs from 'fs'
+import * as vscode from 'vscode'
 import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
-} from "vscode-languageclient/node";
+} from 'vscode-languageclient/node'
 
 export class LanguageClientManager {
-  private client?: LanguageClient;
+  private client?: LanguageClient
 
   constructor(
     private context: vscode.ExtensionContext,
-    private outputChannel: vscode.OutputChannel,
+    private outputChannel: vscode.OutputChannel
   ) {}
 
   /**
    * Start the language server
    */
   async start(): Promise<void> {
-    const serverModule = this.context.asAbsolutePath(
-      path.join("server", "out", "server.js"),
-    );
+    const serverModule = this.context.asAbsolutePath(path.join('server', 'out', 'server.js'))
 
     // Check if server module exists
     if (!fs.existsSync(serverModule)) {
-      throw new Error(`LSP server module not found at: ${serverModule}`);
+      throw new Error(`LSP server module not found at: ${serverModule}`)
     }
 
-    const serverOptions = this.createServerOptions(serverModule);
-    const clientOptions = this.createClientOptions();
+    const serverOptions = this.createServerOptions(serverModule)
+    const clientOptions = this.createClientOptions()
 
     this.client = new LanguageClient(
-      "monocoLanguageServer",
-      "Monoco Language Server",
+      'monocoLanguageServer',
+      'Monoco Language Server',
       serverOptions,
-      clientOptions,
-    );
+      clientOptions
+    )
 
-    this.outputChannel.appendLine("Starting Monoco Language Server...");
-    await this.client.start();
-    this.outputChannel.appendLine(
-      "Monoco Language Server started successfully",
-    );
+    this.outputChannel.appendLine('Starting Monoco Language Server...')
+    await this.client.start()
+    this.outputChannel.appendLine('Monoco Language Server started successfully')
   }
 
   /**
@@ -56,12 +52,12 @@ export class LanguageClientManager {
    */
   async stop(): Promise<void> {
     if (!this.client) {
-      return;
+      return
     }
 
-    this.outputChannel.appendLine("Stopping Monoco Language Server...");
-    await this.client.stop();
-    this.outputChannel.appendLine("Monoco Language Server stopped");
+    this.outputChannel.appendLine('Stopping Monoco Language Server...')
+    await this.client.stop()
+    this.outputChannel.appendLine('Monoco Language Server stopped')
   }
 
   /**
@@ -69,16 +65,16 @@ export class LanguageClientManager {
    */
   async sendRequest<T>(method: string, params?: any): Promise<T> {
     if (!this.client) {
-      throw new Error("LSP client not started");
+      throw new Error('LSP client not started')
     }
-    return this.client.sendRequest(method, params);
+    return this.client.sendRequest(method, params)
   }
 
   /**
    * Get the underlying language client
    */
   getClient(): LanguageClient | undefined {
-    return this.client;
+    return this.client
   }
 
   /**
@@ -86,12 +82,12 @@ export class LanguageClientManager {
    */
   private createServerOptions(serverModule: string): ServerOptions {
     // Check for bundled binary
-    const bundledPath = this.getBundledBinaryPath();
-    const env = { ...process.env };
+    const bundledPath = this.getBundledBinaryPath()
+    const env = { ...process.env }
 
     if (bundledPath && fs.existsSync(bundledPath)) {
-      env["MONOCO_BUNDLED_PATH"] = bundledPath;
-      this.outputChannel.appendLine(`Using bundled binary: ${bundledPath}`);
+      env['MONOCO_BUNDLED_PATH'] = bundledPath
+      this.outputChannel.appendLine(`Using bundled binary: ${bundledPath}`)
     }
 
     return {
@@ -105,10 +101,10 @@ export class LanguageClientManager {
         transport: TransportKind.ipc,
         options: {
           env,
-          execArgv: ["--nolazy", "--inspect=6009"],
+          execArgv: ['--nolazy', '--inspect=6009'],
         },
       },
-    };
+    }
   }
 
   /**
@@ -117,21 +113,21 @@ export class LanguageClientManager {
   private createClientOptions(): LanguageClientOptions {
     return {
       documentSelector: [
-        { scheme: "file", language: "markdown" },
-        { scheme: "file", language: "monoco-issue" },
+        { scheme: 'file', language: 'markdown' },
+        { scheme: 'file', language: 'monoco-issue' },
       ],
       synchronize: {
-        fileEvents: vscode.workspace.createFileSystemWatcher("**/.clientrc"),
+        fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc'),
       },
-    };
+    }
   }
 
   /**
    * Get bundled binary path
    */
   private getBundledBinaryPath(): string {
-    const isWindows = process.platform === "win32";
-    const binaryName = isWindows ? "monoco.exe" : "monoco";
-    return this.context.asAbsolutePath(path.join("bin", binaryName));
+    const isWindows = process.platform === 'win32'
+    const binaryName = isWindows ? 'monoco.exe' : 'monoco'
+    return this.context.asAbsolutePath(path.join('bin', binaryName))
   }
 }

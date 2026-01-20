@@ -3,43 +3,43 @@
  * Manages the index of issues and projects in the workspace
  */
 
-import * as path from "path";
-import { CLIExecutor } from "./CLIExecutor";
+import * as path from 'path'
+import { CLIExecutor } from './CLIExecutor'
 
 export interface IssueIndex {
-  id: string;
-  type: string;
-  title: string;
-  status: string;
-  stage: string;
-  parent?: string;
-  solution?: string;
-  dependencies?: string[];
-  related?: string[];
-  tags?: string[];
-  project_id: string;
-  filePath: string;
-  uri: string;
+  id: string
+  type: string
+  title: string
+  status: string
+  stage: string
+  parent?: string
+  solution?: string
+  dependencies?: string[]
+  related?: string[]
+  tags?: string[]
+  project_id: string
+  filePath: string
+  uri: string
 }
 
 export interface Project {
-  id: string;
-  name: string;
-  path: string;
+  id: string
+  name: string
+  path: string
 }
 
 export class WorkspaceIndexer {
-  private issueCache: Map<string, IssueIndex> = new Map();
-  private projectCache: Project[] = [];
-  private isScanning = false;
-  private logger?: (message: string) => void;
+  private issueCache: Map<string, IssueIndex> = new Map()
+  private projectCache: Project[] = []
+  private isScanning = false
+  private logger?: (message: string) => void
 
   constructor(
     private workspaceRoot: string,
     private cliExecutor: CLIExecutor,
-    logger?: (message: string) => void,
+    logger?: (message: string) => void
   ) {
-    this.logger = logger;
+    this.logger = logger
   }
 
   /**
@@ -47,20 +47,20 @@ export class WorkspaceIndexer {
    */
   async scan(): Promise<void> {
     if (this.isScanning) {
-      return;
+      return
     }
-    this.isScanning = true;
+    this.isScanning = true
 
-    this.log(`Scanning workspace: ${this.workspaceRoot}`);
+    this.log(`Scanning workspace: ${this.workspaceRoot}`)
 
     try {
       // 1. Scan Projects first
-      await this.scanProjects();
+      await this.scanProjects()
 
       // 2. Scan Issues
-      await this.scanIssues();
+      await this.scanIssues()
     } finally {
-      this.isScanning = false;
+      this.isScanning = false
     }
   }
 
@@ -70,12 +70,12 @@ export class WorkspaceIndexer {
   private async scanProjects(): Promise<void> {
     try {
       const stdout = await this.cliExecutor.execute(
-        ["project", "list", "--json"],
-        this.workspaceRoot,
-      );
-      this.projectCache = JSON.parse(stdout);
+        ['project', 'list', '--json'],
+        this.workspaceRoot
+      )
+      this.projectCache = JSON.parse(stdout)
     } catch (e: any) {
-      this.logError(`Project scan failed: ${e.message}`);
+      this.logError(`Project scan failed: ${e.message}`)
     }
   }
 
@@ -85,38 +85,36 @@ export class WorkspaceIndexer {
   private async scanIssues(): Promise<void> {
     try {
       const stdout = await this.cliExecutor.execute(
-        ["issue", "list", "--status", "all", "--json", "--workspace"],
-        this.workspaceRoot,
-      );
+        ['issue', 'list', '--status', 'all', '--json', '--workspace'],
+        this.workspaceRoot
+      )
 
       if (stdout.trim()) {
-        const issues = JSON.parse(stdout);
-        this.issueCache.clear();
+        const issues = JSON.parse(stdout)
+        this.issueCache.clear()
 
         issues.forEach((raw: any) => {
           // Security Boundary: Ensure issue is within the current workspace
-          const relativePath = path.relative(this.workspaceRoot, raw.path);
-          if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
-            return;
+          const relativePath = path.relative(this.workspaceRoot, raw.path)
+          if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+            return
           }
 
           // Determine project_id based on path mapping
-          let projectId = "default";
+          let projectId = 'default'
           if (this.projectCache.length > 0) {
             // Find which project path the issue file is under
             const match = [...this.projectCache]
               .sort((a, b) => (b.path?.length || 0) - (a.path?.length || 0))
               .find((p: any) => {
-                const issuePath = raw.path?.toLowerCase();
-                const projectPath = p.path?.toLowerCase();
-                return (
-                  issuePath && projectPath && issuePath.startsWith(projectPath)
-                );
-              });
+                const issuePath = raw.path?.toLowerCase()
+                const projectPath = p.path?.toLowerCase()
+                return issuePath && projectPath && issuePath.startsWith(projectPath)
+              })
             if (match) {
-              projectId = match.id;
+              projectId = match.id
             } else {
-              projectId = this.projectCache[0].id;
+              projectId = this.projectCache[0].id
             }
           }
 
@@ -126,13 +124,13 @@ export class WorkspaceIndexer {
             project_id: projectId,
             filePath: raw.path,
             uri: `file://${raw.path}`,
-          });
-        });
+          })
+        })
 
-        this.log(`Synced ${this.issueCache.size} issues from CLI.`);
+        this.log(`Synced ${this.issueCache.size} issues from CLI.`)
       }
     } catch (e: any) {
-      this.logError(`Issue scan failed: ${e.message}`);
+      this.logError(`Issue scan failed: ${e.message}`)
     }
   }
 
@@ -140,21 +138,21 @@ export class WorkspaceIndexer {
    * Get an issue by ID
    */
   getIssue(id: string): IssueIndex | undefined {
-    return this.issueCache.get(id);
+    return this.issueCache.get(id)
   }
 
   /**
    * Get all issues
    */
   getAllIssues(): IssueIndex[] {
-    return Array.from(this.issueCache.values());
+    return Array.from(this.issueCache.values())
   }
 
   /**
    * Get all projects
    */
   getProjects(): Project[] {
-    return this.projectCache;
+    return this.projectCache
   }
 
   /**
@@ -162,7 +160,7 @@ export class WorkspaceIndexer {
    */
   private log(message: string) {
     if (this.logger) {
-      this.logger(`[Monoco LSP] ${message}`);
+      this.logger(`[Monoco LSP] ${message}`)
     }
   }
 
@@ -171,7 +169,7 @@ export class WorkspaceIndexer {
    */
   private logError(message: string) {
     if (this.logger) {
-      this.logger(`[Monoco LSP] ERROR: ${message}`);
+      this.logger(`[Monoco LSP] ERROR: ${message}`)
     }
   }
 }

@@ -1,16 +1,16 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode'
 
 export interface FilterState {
-  project: string | null;
-  types: string[];
-  statuses: string[];
-  stages: string[];
-  tagQuery: string;
+  project: string | null
+  types: string[]
+  statuses: string[]
+  stages: string[]
+  tagQuery: string
 }
 
 export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
-  private _view?: vscode.WebviewView;
-  private projects: string[] = [];
+  private _view?: vscode.WebviewView
+  private projects: string[] = []
 
   // Default State
   private state: FilterState = {
@@ -18,58 +18,58 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
     types: [],
     statuses: [],
     stages: [],
-    tagQuery: "",
-  };
+    tagQuery: '',
+  }
 
-  private _onDidUpdateFilter = new vscode.EventEmitter<FilterState>();
-  readonly onDidUpdateFilter = this._onDidUpdateFilter.event;
+  private _onDidUpdateFilter = new vscode.EventEmitter<FilterState>()
+  readonly onDidUpdateFilter = this._onDidUpdateFilter.event
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken,
+    _token: vscode.CancellationToken
   ) {
-    this._view = webviewView;
+    this._view = webviewView
 
     webviewView.webview.options = {
       enableScripts: true,
       localResourceRoots: [this._extensionUri],
-    };
+    }
 
-    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
 
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
-        case "updateFilter":
-          this.state = data.value;
-          this._onDidUpdateFilter.fire(this.state);
-          break;
-        case "webviewReady":
-          this.updateWebview();
-          break;
+        case 'updateFilter':
+          this.state = data.value
+          this._onDidUpdateFilter.fire(this.state)
+          break
+        case 'webviewReady':
+          this.updateWebview()
+          break
       }
-    });
+    })
   }
 
   public setProjects(projects: string[]) {
-    this.projects = projects;
-    this.updateWebview();
+    this.projects = projects
+    this.updateWebview()
   }
 
   private updateWebview() {
     if (this._view) {
       this._view.webview.postMessage({
-        type: "initState",
+        type: 'initState',
         projects: this.projects,
         state: this.state,
-      });
+      })
     }
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
-    const nonce = getNonce();
+    const nonce = getNonce()
 
     return `<!DOCTYPE html>
 			<html lang="en">
@@ -449,16 +449,15 @@ export class IssueFilterWebviewProvider implements vscode.WebviewViewProvider {
                     vscode.postMessage({ type: 'webviewReady' });
                 </script>
 			</body>
-			</html>`;
+			</html>`
   }
 }
 
 function getNonce() {
-  let text = "";
-  const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let text = ''
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+    text += possible.charAt(Math.floor(Math.random() * possible.length))
   }
-  return text;
+  return text
 }

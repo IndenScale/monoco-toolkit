@@ -35,12 +35,7 @@
   --color-fix: #ef4444;
 
   /* Fonts */
-  --font-family: var(
-    --vscode-font-family,
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif
-  );
+  --font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, sans-serif);
   --font-size: 13px;
   --line-height: 22px; /* Standard VS Code Tree Item Height */
   --text-disabled: var(--vscode-disabledForeground, rgba(128, 128, 128, 0.5));
@@ -323,10 +318,7 @@ body {
 }
 
 .action-btn {
-  background-color: var(
-    --vscode-button-secondaryBackground,
-    rgba(128, 128, 128, 0.15)
-  );
+  background-color: var(--vscode-button-secondaryBackground, rgba(128, 128, 128, 0.15));
   color: var(--vscode-button-secondaryForeground, var(--text-primary));
   border: 1px solid var(--vscode-button-border, transparent);
   padding: 1px 6px;
@@ -456,17 +448,11 @@ body {
 }
 
 .icon-btn:hover {
-  background-color: var(
-    --vscode-toolbar-hoverBackground,
-    rgba(90, 93, 94, 0.31)
-  );
+  background-color: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
 }
 
 .icon-btn:active {
-  background-color: var(
-    --vscode-toolbar-activeBackground,
-    rgba(90, 93, 94, 0.31)
-  );
+  background-color: var(--vscode-toolbar-activeBackground, rgba(90, 93, 94, 0.31));
 }
 
 .icon-btn svg {
@@ -544,10 +530,10 @@ body {
 }
 
 /* Draggable Visuals */
-.issue-item[draggable="true"] {
+.issue-item[draggable='true'] {
   cursor: grab;
 }
-.issue-item[draggable="true"]:active {
+.issue-item[draggable='true']:active {
   cursor: grabbing;
 }
 
@@ -692,10 +678,7 @@ body {
 }
 
 .icon-toggle:hover {
-  background-color: var(
-    --vscode-toolbar-hoverBackground,
-    rgba(90, 93, 94, 0.31)
-  );
+  background-color: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
   color: var(--text-primary);
 }
 
@@ -929,10 +912,7 @@ body {
 
 .tab-btn.active {
   color: var(--text-primary);
-  border-bottom-color: var(
-    --vscode-settings-headerForeground,
-    var(--text-primary)
-  );
+  border-bottom-color: var(--vscode-settings-headerForeground, var(--text-primary));
   font-weight: 500;
 }
 
@@ -1015,7 +995,7 @@ body {
   flex: 0 0 auto !important;
 }
 
-.form-group.row input[type="checkbox"] {
+.form-group.row input[type='checkbox'] {
   width: 14px;
   height: 14px;
   margin: 0;
@@ -1123,7 +1103,7 @@ select.form-input {
 }
 
 .checkbox-container input:checked::after {
-  content: "✔";
+  content: '✔';
   position: absolute;
   top: 50%;
   left: 50%;
