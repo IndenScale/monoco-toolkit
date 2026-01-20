@@ -25,7 +25,7 @@ types:
     label: Feature # 显示名称
     prefix: FEAT # ID 前缀 (e.g. FEAT-001)
     folder: Features # 存储目录名
-    description: "..." # 描述
+    description: '...' # 描述
 ```
 
 ## 2. 状态与阶段 (Status & Schema)
@@ -63,7 +63,7 @@ solutions:
 workflows:
   - name: start # 动作 ID
     label: Start # UI 显示标签
-    icon: "$(play)" # UI 图标 (VS Code codicons)
+    icon: '$(play)' # UI 图标 (VS Code codicons)
 
     # --- 触发条件 ---
     from_status: open # 仅在 open 状态下可用
@@ -74,12 +74,12 @@ workflows:
     to_stage: doing # 变更为 doing 阶段
 
     # --- 副作用 ---
-    command_template: "monoco issue start {id}" # 执行的 CLI 命令
-    description: "Start working on the issue"
+    command_template: 'monoco issue start {id}' # 执行的 CLI 命令
+    description: 'Start working on the issue'
 
   - name: close_done
     label: Close
-    icon: "$(close)"
+    icon: '$(close)'
     from_status: open
     from_stage: done
     to_status: closed

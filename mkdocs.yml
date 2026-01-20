@@ -19,6 +19,6 @@ nav:
   - Home: en/index.md
   - Architecture: en/architecture.md
   - Manuals:
-    - Issue System: en/issue/manual.md
-    - Spike System: en/spike/manual.md
-    - Setup: en/setup/manual.md
+      - Issue System: en/issue/manual.md
+      - Spike System: en/spike/manual.md
+      - Setup: en/setup/manual.md

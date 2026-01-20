@@ -25,7 +25,7 @@ types:
     label: Feature # Display Name
     prefix: FEAT # ID Prefix (e.g., FEAT-001)
     folder: Features # Storage directory name
-    description: "..."
+    description: '...'
 ```
 
 ## 2. Status & Schema
@@ -63,7 +63,7 @@ Define the state transition matrix. Each entry represents an executable **Action
 workflows:
   - name: start # Action ID
     label: Start # UI Label
-    icon: "$(play)" # UI Icon (VS Code codicons)
+    icon: '$(play)' # UI Icon (VS Code codicons)
 
     # --- Trigger Conditions ---
     from_status: open
@@ -74,8 +74,8 @@ workflows:
     to_stage: doing
 
     # --- Side Effects ---
-    command_template: "monoco issue start {id}"
-    description: "Start working on the issue"
+    command_template: 'monoco issue start {id}'
+    description: 'Start working on the issue'
 ```
 
 ---

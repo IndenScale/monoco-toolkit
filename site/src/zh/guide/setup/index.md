@@ -34,7 +34,7 @@ monoco init [OPTIONS]
 
 ```yaml
 core:
-  author: "Alice"
+  author: 'Alice'
 ```
 
 ### 2. 项目配置 (Project Configuration)
@@ -49,12 +49,12 @@ core:
 
 ```yaml
 project:
-  name: "Monoco Main"
-  key: "MON"
+  name: 'Monoco Main'
+  key: 'MON'
 paths:
-  issues: "Issues" # Issue 存储路径
-  spikes: ".references" # Spike 把资料存储路径
-  specs: "SPECS" # 规格说明书路径
+  issues: 'Issues' # Issue 存储路径
+  spikes: '.references' # Spike 把资料存储路径
+  specs: 'SPECS' # 规格说明书路径
 ```
 
 ### 3. 脚手架与资源注入 (Scaffolding & Injection)

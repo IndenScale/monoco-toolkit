@@ -34,7 +34,7 @@ Typically, when cloning a new repository or creating a new project, simply run `
 
 ```yaml
 core:
-  author: "Alice"
+  author: 'Alice'
 ```
 
 ### 2. Project Configuration
@@ -49,12 +49,12 @@ Example generated configuration file:
 
 ```yaml
 project:
-  name: "Monoco Main"
-  key: "MON"
+  name: 'Monoco Main'
+  key: 'MON'
 paths:
-  issues: "Issues" # Issue storage path
-  spikes: ".references" # Spike reference material storage path
-  specs: "SPECS" # Specification document path
+  issues: 'Issues' # Issue storage path
+  spikes: '.references' # Spike reference material storage path
+  specs: 'SPECS' # Specification document path
 ```
 
 ### 3. Scaffolding & Injection
