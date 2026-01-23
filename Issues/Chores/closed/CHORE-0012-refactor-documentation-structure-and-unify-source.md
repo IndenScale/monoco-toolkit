@@ -165,13 +165,19 @@ files:
 
 任务已顺利完成并经过全面验证。通过本次重构，我们成功消除了 `docs/` 和 `site/` 目录并存导致的“双头”问题。所有的文档源文件现在都统一存放于 `site/src/` 下，并按照“指南”、“参考”和“元数据”三个维度进行了科学分类。此外，VitePress 的配置文件也同步进行了更新，确保所有导航和侧边栏链接在重组后依然准确无误。中英文版本的内容已经完全对称，为后续的多语言维护打下了坚实基础。
 
+本次架构调整不仅提升了文档的可维护性，还显著改善了用户的阅读体验。新建立的分层体系（Guide/Reference/Meta）能够更好地引导用户从入门到精通，同时也为开发者提供了详尽的技术规范。未来所有的文档更新都必须严格遵循这一新架构，严禁随意在根目录或非指定目录下创建碎片化文档。
+
 ## Delivery
+
 <!-- Monoco Auto Generated -->
-**Commits (2)**:
+
+**提交记录 (Commits)**:
+
 - `934bd7f` docs: update CHORE-0012 definition
 - `c664b3e` chore: refactor documentation structure and unify source
 
-**Touched Files (118)**:
+**变更文件 (Touched Files)**:
+
 - `Issues/Chores/open/CHORE-0012-refactor-documentation-structure-and-unify-source.md`
 - `docs/en/i18n/README.md`
 - `docs/en/index.md`
