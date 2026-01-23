@@ -134,12 +134,6 @@ DEFAULT_INTEGRATIONS: Dict[str, AgentIntegration] = {
         bin_name="kimi",
         version_cmd="--version",
     ),
-    "agent": AgentIntegration(
-        key="agent",
-        name="Antigravity",
-        system_prompt_file="GEMINI.md",
-        skill_root_dir=".agent/skills/",
-    ),
 }
 
 

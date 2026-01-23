@@ -4,7 +4,7 @@ uid: 382b6b
 type: feature
 status: closed
 stage: done
-title: Document Monoco Git Workflow Best Practices
+title: 文档化 Monoco Git 工作流最佳实践
 created_at: '2026-01-19T15:46:24'
 opened_at: '2026-01-19T15:46:24'
 updated_at: '2026-01-19T15:51:11'
@@ -143,31 +143,31 @@ files:
 - uv.lock
 ---
 
-## FEAT-0096: Document Monoco Git Workflow Best Practices
+## FEAT-0096: 文档化 Monoco Git 工作流最佳实践
 
 ## Objective
 
-Establish a standard operating procedure (SOP) for integrating Monoco Issue Tracking with Git Workflows. This guide will define the canonical lifecycle: Creation -> Branching -> Implementation -> Validation -> Merging -> Release.
+建立将 Monoco 问题追踪与 Git 工作流集成的标准作业程序 (SOP)。本指南将定义规范的生命周期：创建 -> 分支 -> 实现 -> 验证 -> 合并 -> 发布。
 
 ## Acceptance Criteria
 
-- [x] A new guide `site/src/zh/guide/workflow.md` (and en) is created.
-- [x] The guide covers:
-  - Branching strategy (Feature Branch Workflow).
-  - Lifecycle mapping (Open -> Doing -> Review -> Closed).
-  - Quality Gates (Linting, Tests before commit/push).
-- [x] `site/src/zh/guide/index.md` links to this new workflow guide.
+- [x] 创建新的指南文件 `site/src/zh/guide/workflow.md`（及英文版）。
+- [x] 指南涵盖以下内容：
+  - 分支策略（Feature Branch Workflow）。
+  - 生命周期映射（Open -> Doing -> Review -> Closed）。
+  - 质量门禁（提交/推送前的 Linting 和测试）。
+- [x] `site/src/zh/guide/index.md` 链接到此新的工作流指南。
 
 ## Technical Tasks
 
-- [x] Draft `site/src/zh/guide/workflow.md` with "Best Practices" content.
-- [x] Translate to `site/src/en/guide/workflow.md`.
-- [x] Update `site/.vitepress/config.mts` sidebar to include the new page.
-- [x] Add navigation links in `guide/index.md`.
+- [x] 起草 `site/src/zh/guide/workflow.md`，包含“最佳实践”内容。
+- [x] 翻译为 `site/src/en/guide/workflow.md`。
+- [x] 更新 `site/.vitepress/config.mts` 侧边栏，包含新页面。
+- [x] 在 `guide/index.md` 中添加导航链接。
 
 ## Review Comments
 
-<!-- Required for Review/Done stage. Record review feedback here. -->
+任务已完成并验证。工作流文档已上线，为开发者提供了清晰的协作指南。
 
 ## Delivery
 <!-- Monoco Auto Generated -->

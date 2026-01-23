@@ -21,14 +21,15 @@ def _get_targets(root: Path, config, cli_target: Optional[Path]) -> List[Path]:
         return targets
 
     # 2. Config Targets
-    if config.agent.targets:
-        for t in config.agent.targets:
-            targets.append(root / t)
-        return targets
+    # Deprecated: agent config removed
+    # if config.agent.targets:
+    #     for t in config.agent.targets:
+    #         targets.append(root / t)
+    #     return targets
 
     # 3. Registry Defaults (Dynamic Detection)
     integrations = get_active_integrations(
-        root, config_overrides=config.agent.integrations, auto_detect=True
+        root, config_overrides=None, auto_detect=True
     )
 
     if integrations:
@@ -69,16 +70,9 @@ def sync_command(
     # 2. Collect Data
     collected_prompts = {}
 
-    # Filter features based on config if specified
+    # Filter features based on config if specified (Deprecated: agent config removed)
     all_features = registry.get_features()
-    active_features = []
-
-    if config.agent.includes:
-        for f in all_features:
-            if f.name in config.agent.includes:
-                active_features.append(f)
-    else:
-        active_features = all_features
+    active_features = all_features
 
     with console.status("[bold green]Collecting feature integration data...") as status:
         for feature in active_features:
@@ -109,7 +103,7 @@ def sync_command(
 
     # Get active integrations
     integrations = get_active_integrations(
-        root, config_overrides=config.agent.integrations, auto_detect=True
+        root, config_overrides=None, auto_detect=True
     )
 
     if integrations:
