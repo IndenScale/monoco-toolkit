@@ -20,17 +20,8 @@ def _get_targets(root: Path, config, cli_target: Optional[Path]) -> List[Path]:
         targets.append(cli_target)
         return targets
 
-    # 2. Config Targets
-    # Deprecated: agent config removed
-    # if config.agent.targets:
-    #     for t in config.agent.targets:
-    #         targets.append(root / t)
-    #     return targets
-
-    # 3. Registry Defaults (Dynamic Detection)
-    integrations = get_active_integrations(
-        root, config_overrides=None, auto_detect=True
-    )
+    # 2. Registry Defaults (Dynamic Detection)
+    integrations = get_active_integrations(root, config_overrides=None, auto_detect=True)
 
     if integrations:
         for integration in integrations.values():
@@ -224,9 +215,7 @@ def uninstall_command(
     skill_manager = SkillManager(root, active_features)
 
     # Get active integrations
-    integrations = get_active_integrations(
-        root, config_overrides=config.agent.integrations, auto_detect=True
-    )
+    integrations = get_active_integrations(root, config_overrides=None, auto_detect=True)
 
     if integrations:
         for framework_key, integration in integrations.items():
