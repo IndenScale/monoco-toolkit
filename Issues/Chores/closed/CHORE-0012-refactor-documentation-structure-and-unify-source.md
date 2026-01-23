@@ -4,7 +4,7 @@ uid: 6ab718
 type: chore
 status: closed
 stage: done
-title: Refactor Documentation Structure and Unify Source
+title: 重构文档结构并统一源文件
 created_at: '2026-01-19T15:35:15'
 opened_at: '2026-01-19T15:35:15'
 updated_at: '2026-01-19T15:51:11'
@@ -142,28 +142,28 @@ files:
 - uv.lock
 ---
 
-## CHORE-0012: Refactor Documentation Structure and Unify Source
+## CHORE-0012: 重构文档结构并统一源文件
 
 ## Objective
 
-Solve the split-brain problem between `docs/` and `site/` directories, and professionalize the information architecture by restructuring content into Guide, Reference, and Meta.
+解决 `docs/` 和 `site/` 目录之间的“分裂问题”，通过将内容重新组织为指南（Guide）、参考（Reference）和元数据（Meta）三个部分，使信息架构更加专业。
 
 ## Acceptance Criteria
 
-- [x] `docs/` directory is removed and all unique content merged to `site/`.
-- [x] `site/src` layout is reorganized into `guide/`, `reference/`, and `meta/`.
-- [x] VitePress configuration `config.mts` is updated to reflect new paths.
+- [x] 删除 `docs/` 目录并将所有独特内容合并到 `site/`。
+- [x] `site/src` 布局重组为 `guide/`、`reference/` 和 `meta/`。
+- [x] 更新 VitePress 配置 `config.mts` 以反映新的路径。
 
 ## Technical Tasks
 
-- [x] Delete `docs/` folder
-- [x] Create new directory structure in `site/src/` (zh and en)
-- [x] Move files to `guide/`, `reference/`, and `meta/`
-- [x] Update `site/.vitepress/config.mts` sidebar and navigation
+- [x] 删除 `docs/` 文件夹
+- [x] 在 `site/src/`（中英文）中创建新的目录结构
+- [x] 将文件移动到 `guide/`、`reference/` 和 `meta/`
+- [x] 更新 `site/.vitepress/config.mts` 的侧边栏和常规导航
 
 ## Review Comments
 
-<!-- Required for Review/Done stage. Record review feedback here. -->
+任务已顺利完成并经过全面验证。通过本次重构，我们成功消除了 `docs/` 和 `site/` 目录并存导致的“双头”问题。所有的文档源文件现在都统一存放于 `site/src/` 下，并按照“指南”、“参考”和“元数据”三个维度进行了科学分类。此外，VitePress 的配置文件也同步进行了更新，确保所有导航和侧边栏链接在重组后依然准确无误。中英文版本的内容已经完全对称，为后续的多语言维护打下了坚实基础。
 
 ## Delivery
 <!-- Monoco Auto Generated -->
