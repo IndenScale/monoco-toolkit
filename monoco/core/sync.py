@@ -21,7 +21,9 @@ def _get_targets(root: Path, config, cli_target: Optional[Path]) -> List[Path]:
         return targets
 
     # 2. Registry Defaults (Dynamic Detection)
-    integrations = get_active_integrations(root, config_overrides=None, auto_detect=True)
+    integrations = get_active_integrations(
+        root, config_overrides=None, auto_detect=True
+    )
 
     if integrations:
         for integration in integrations.values():
@@ -215,7 +217,9 @@ def uninstall_command(
     skill_manager = SkillManager(root, active_features)
 
     # Get active integrations
-    integrations = get_active_integrations(root, config_overrides=None, auto_detect=True)
+    integrations = get_active_integrations(
+        root, config_overrides=None, auto_detect=True
+    )
 
     if integrations:
         for framework_key, integration in integrations.items():
