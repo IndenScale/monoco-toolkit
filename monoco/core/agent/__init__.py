@@ -1,3 +1,0 @@
-"""
-Monoco Agent Execution Layer.
-"""

@@ -24,24 +24,15 @@ isolation:
 ## FIX-0011: 修复 documentation i18n 结构不一致与性能问题
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+修复文档国际化过程中出现的结构混乱和同步性能低下问题。
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+- [x] 手动同步逻辑已被更高效的自动化脚本取代。
+- [x] 中英文档结构完全对称。
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
-
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
-- [ ] Task 1
+- [x] 重构 `monoco i18n scan` 逻辑。
+- [x] 优化文件 diff 算法。
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+修复已验证。通过引入更严谨的扫描机制，现在能更快速地定位翻译缺失项。
