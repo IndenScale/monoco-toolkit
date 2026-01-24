@@ -1,5 +1,6 @@
 import typer
 import time
+from pathlib import Path
 from typing import Optional
 from monoco.core.output import print_output
 from monoco.core.config import get_config
@@ -10,42 +11,58 @@ app = typer.Typer(name="agent", help="Manage agent sessions")
 
 @app.command()
 def run(
-    issue_id: str = typer.Argument(..., help="The Issue ID to work on"),
+    target: str = typer.Argument(
+        ..., help="Issue ID (e.g. FEAT-101) or a Task Description in quotes."
+    ),
     role: Optional[str] = typer.Option(
-        None, help="Specific role to use (crafter/builder/auditor)"
+        None,
+        help="Specific role to use (crafter/builder/auditor). Default: intelligent selection.",
     ),
     detach: bool = typer.Option(
         False, "--detach", "-d", help="Run in background (Daemon)"
     ),
+    fail: bool = typer.Option(
+        False, "--fail", help="Simulate a crash for testing Apoptosis."
+    ),
 ):
     """
-    Start an agent session for a given Issue.
+    Start an agent session.
+    - If TARGET is an Issue ID: Work on that issue.
+    - If TARGET is a text description: Create a new issue (Crafter).
     """
     settings = get_config()
-    project_root = settings.project_root_path
+    project_root = Path(settings.paths.root).resolve()
 
-    # Load Roles
+    # 1. Smart Intent Recognition
+    import re
+
+    is_id = re.match(r"^[a-zA-Z]+-\d+$", target)
+
+    if is_id:
+        issue_id = target.upper()
+        role_name = role or "builder"
+        description = None
+    else:
+        issue_id = "NEW_TASK"
+        role_name = role or "crafter"
+        description = target
+
+    # 2. Load Roles
     roles = load_scheduler_config(project_root)
-
-    # Determine Role
-    # TODO: Intelligence to pick role based on issue state or tags?
-    # For now, default to 'crafter' if not specified
-    role_name = role or "crafter"
     selected_role = roles.get(role_name)
 
     if not selected_role:
-        print_output(
-            {"error": f"Role '{role_name}' not found. Available: {list(roles.keys())}"},
-            style="red",
-        )
+        from monoco.core.output import print_error
+
+        print_error(f"Role '{role_name}' not found. Available: {list(roles.keys())}")
         raise typer.Exit(code=1)
 
     print_output(
-        f"Starting Agent Session for {issue_id} as {role_name}...",
+        f"Starting Agent Session for '{target}' as {role_name}...",
         title="Agent Scheduler",
     )
 
-    # Initialize Session
+    # 3. Initialize Session
     manager = SessionManager()
     session = manager.create_session(issue_id, selected_role)
 
@@ -53,22 +70,34 @@ def run(
         print_output(
             "Background mode not fully implemented yet. Running in foreground."
         )
-        # In future: send command to daemon
 
     try:
-        session.start()
+        # Pass description if it's a new task
+        context = {"description": description} if description else None
 
-        # Simulation Loop
-        # In a real implementation, this would connect to the LLM backend
-        print("Agent is thinking...")
-        time.sleep(1)
-        print("Agent is exploring context...")
-        time.sleep(1)
-        print(f"Agent running default tools: {selected_role.tools}")
+        if fail:
+            from monoco.core.output import rprint
 
-        # Keep alive
-        while True:
+            rprint("[bold yellow]DEBUG: Simulating immediate crash...[/bold yellow]")
+            session.model.status = "failed"
+        else:
+            session.start(context=context)
+
+        # Monitoring Loop
+        while session.model.status == "running":
             time.sleep(1)
+
+        if session.model.status == "failed":
+            from monoco.core.output import print_error
+
+            print_error(
+                f"Session {session.model.id} FAILED. Use 'monoco agent autopsy {session.model.id}' for analysis."
+            )
+        else:
+            print_output(
+                f"Session finished with status: {session.model.status}",
+                title="Agent Scheduler",
+            )
 
     except KeyboardInterrupt:
         print("\nStopping...")
@@ -76,16 +105,62 @@ def run(
         print_output("Session terminated.")
 
 
+@app.command()
+def kill(session_id: str):
+    """
+    Terminate a session.
+    """
+    manager = SessionManager()
+    session = manager.get_session(session_id)
+    if session:
+        session.terminate()
+        print_output(f"Session {session_id} terminated.")
+    else:
+        print_output(f"Session {session_id} not found.", style="red")
+
+
+@app.command()
+def autopsy(
+    target: str = typer.Argument(..., help="Session ID or Issue ID to analyze."),
+):
+    """
+    Execute Post-Mortem analysis on a failed session or target Issue.
+    """
+    from .reliability import ApoptosisManager
+
+    manager = SessionManager()
+
+    print_output(f"Initiating Autopsy for '{target}'...", title="Coroner")
+
+    # Try to find session
+    session = manager.get_session(target)
+    if not session:
+        # Fallback: Treat target as Issue ID and create a dummy failed session context
+        import re
+
+        if re.match(r"^[a-zA-Z]+-\d+$", target):
+            print_output(f"Session not in memory. Analyzing Issue {target} directly.")
+            # We create a transient session just to trigger the coroner
+            from .defaults import DEFAULT_ROLES
+
+            builder_role = next(r for r in DEFAULT_ROLES if r.name == "builder")
+            session = manager.create_session(target.upper(), builder_role)
+            session.model.status = "failed"
+        else:
+            print_output(
+                f"Could not find session or valid Issue ID for '{target}'", style="red"
+            )
+            raise typer.Exit(code=1)
+
+    apoptosis = ApoptosisManager(manager)
+    apoptosis.trigger_apoptosis(session.model.id)
+
+
 @app.command(name="list")
 def list_sessions():
     """
     List active agent sessions.
     """
-    # NOTE: In a real implementation, this needs to query the Daemon or a persistent Store.
-    # Since SessionManager is currently in-memory only per process, this will report empty
-    # if run from a separate process.
-    # For MVP demonstration, we just show the concept.
-
     manager = SessionManager()
     sessions = manager.list_sessions()
 
