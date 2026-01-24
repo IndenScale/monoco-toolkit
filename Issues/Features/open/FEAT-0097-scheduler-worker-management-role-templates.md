@@ -27,17 +27,17 @@ isolation:
 Implement the foundation of Agent Scheduler: Worker definitions and Role Templates. This allows the system to define different types of agents (Crafter, Builder, Auditor) with specific triggers, goals, and tools, as defined in `RFC/agent-scheduler-design.md`.
 
 ## Acceptance Criteria
-- [ ] **Config Loading**: Support loading role configurations from `.monoco/scheduler.yaml`.
-- [ ] **Default Roles**: Define default roles (Crafter, Builder, Auditor) if config is missing or as defaults.
-- [ ] **Worker Model**: Implement `Worker` class in Python (`monoco.features.scheduler.worker`) that encapsulates the role and runtime state.
-- [ ] **Validation**: Ensure role templates are validated (tools must exist, triggers must be valid).
+- [x] **Config Loading**: Support loading role configurations from `.monoco/scheduler.yaml`.
+- [x] **Default Roles**: Define default roles (Crafter, Builder, Auditor) if config is missing or as defaults.
+- [x] **Worker Model**: Implement `Worker` class in Python (`monoco.features.scheduler.worker`) that encapsulates the role and runtime state.
+- [x] **Validation**: Ensure role templates are validated (tools must exist, triggers must be valid).
 
 ## Technical Tasks
-- [ ] Define `RoleTemplate` Pydantic model (`monoco/features/scheduler/models.py`).
-- [ ] Implement configuration loader allowing overrides from `.monoco/scheduler.yaml` (`monoco/features/scheduler/config.py`).
-- [ ] Create `Worker` class that instantiates based on a `RoleTemplate` (`monoco/features/scheduler/worker.py`).
-- [ ] Create default configuration file or constants.
-- [ ] Add unit tests for loading and worker instantiation.
+- [x] Define `RoleTemplate` Pydantic model (`monoco/features/scheduler/models.py`).
+- [x] Implement configuration loader allowing overrides from `.monoco/scheduler.yaml` (`monoco/features/scheduler/config.py`).
+- [x] Create `Worker` class that instantiates based on a `RoleTemplate` (`monoco/features/scheduler/worker.py`).
+- [x] Create default configuration file or constants.
+- [x] Add unit tests for loading and worker instantiation.
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- Self-review: Implemented core models, config loader, and basic worker class. Tests passed. Ready for review.
