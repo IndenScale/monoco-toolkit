@@ -166,6 +166,10 @@ app.add_typer(config_cmd.app, name="config", help="Manage configuration")
 app.add_typer(project_cmd.app, name="project", help="Manage projects")
 app.add_typer(workspace_cmd.app, name="workspace", help="Manage workspace")
 
+from monoco.features.scheduler import cli as scheduler_cmd
+
+app.add_typer(scheduler_cmd.app, name="agent", help="Manage agent sessions")
+
 
 from monoco.daemon.commands import serve
 
