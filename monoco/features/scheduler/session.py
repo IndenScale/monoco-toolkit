@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, Field
 from .worker import Worker
 
@@ -36,14 +37,28 @@ class RuntimeSession:
         self.model = session_model
         self.worker = worker
 
-    def start(self):
+    def start(self, context: Optional[dict] = None):
         print(
             f"Session {self.model.id}: Starting worker on branch {self.model.branch_name}"
         )
         # In real impl, checking out branch happening here
-        self.worker.start()
         self.model.status = "running"
         self.model.updated_at = datetime.now()
+
+        try:
+            self.worker.start(context)
+            # Sync session model status with worker status
+            if self.worker.status == "completed":
+                self.model.status = "completed"
+            elif self.worker.status == "failed":
+                self.model.status = "failed"
+            elif self.worker.status == "terminated":
+                self.model.status = "terminated"
+        except Exception:
+            self.model.status = "failed"
+            raise
+        finally:
+            self.model.updated_at = datetime.now()
 
     def suspend(self):
         print(f"Session {self.model.id}: Suspending worker")

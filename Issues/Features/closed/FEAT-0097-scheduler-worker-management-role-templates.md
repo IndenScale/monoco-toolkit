@@ -2,12 +2,14 @@
 id: FEAT-0097
 uid: 73e66e
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: 'Scheduler: Worker Management & Role Templates'
 created_at: '2026-01-24T18:45:11'
 opened_at: '2026-01-24T18:45:11'
-updated_at: '2026-01-24T18:50:53'
+updated_at: '2026-01-24T19:01:01'
+closed_at: '2026-01-24T19:01:01'
+solution: implemented
 isolation:
   type: branch
   ref: feat/feat-0097-scheduler-worker-management-role-templates

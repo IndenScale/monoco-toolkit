@@ -2,12 +2,14 @@
 id: FEAT-0098
 uid: 0715b6
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: 'Scheduler: Session Management & Persistent History'
 created_at: '2026-01-24T18:45:12'
 opened_at: '2026-01-24T18:45:12'
-updated_at: '2026-01-24T18:52:51'
+updated_at: '2026-01-24T19:01:01'
+closed_at: '2026-01-24T19:01:01'
+solution: implemented
 isolation:
   type: branch
   ref: feat/feat-0098-scheduler-session-management-persistent-history
