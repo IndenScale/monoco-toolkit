@@ -7,18 +7,31 @@ stage: doing
 title: 'Scheduler: Core Scheduling Logic & CLI'
 created_at: '2026-01-24T18:45:12'
 opened_at: '2026-01-24T18:45:12'
-updated_at: 2026-01-24 18:54:55
+updated_at: '2026-01-24T18:56:05'
+isolation:
+  type: branch
+  ref: feat/feat-0099-scheduler-core-scheduling-logic-cli
+  created_at: '2026-01-24T18:54:55'
 dependencies: []
 related: []
 domains: []
 tags:
 - '#FEAT-0099'
-files: []
-isolation:
-  type: branch
-  ref: feat/feat-0099-scheduler-core-scheduling-logic-cli
-  path: null
-  created_at: '2026-01-24T18:54:55'
+files:
+- Issues/Epics/open/EPIC-0019-implement-agent-scheduler-module.md
+- Issues/Features/open/FEAT-0097-scheduler-worker-management-role-templates.md
+- Issues/Features/open/FEAT-0098-scheduler-session-management-persistent-history.md
+- Issues/Features/open/FEAT-0099-scheduler-core-scheduling-logic-cli.md
+- Issues/Features/open/FEAT-0100-scheduler-reliability-engineering-apoptosis-recove.md
+- monoco/features/scheduler/__init__.py
+- monoco/features/scheduler/config.py
+- monoco/features/scheduler/defaults.py
+- monoco/features/scheduler/manager.py
+- monoco/features/scheduler/models.py
+- monoco/features/scheduler/session.py
+- monoco/features/scheduler/worker.py
+- tests/features/test_scheduler.py
+- tests/features/test_session.py
 ---
 
 ## FEAT-0099: Scheduler: Core Scheduling Logic & CLI
