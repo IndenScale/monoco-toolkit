@@ -3,11 +3,11 @@ id: FEAT-0099
 uid: 6423d2
 type: feature
 status: open
-stage: doing
+stage: review
 title: 'Scheduler: Core Scheduling Logic & CLI'
 created_at: '2026-01-24T18:45:12'
 opened_at: '2026-01-24T18:45:12'
-updated_at: '2026-01-24T18:56:17'
+updated_at: '2026-01-24T18:56:42'
 isolation:
   type: branch
   ref: feat/feat-0099-scheduler-core-scheduling-logic-cli
