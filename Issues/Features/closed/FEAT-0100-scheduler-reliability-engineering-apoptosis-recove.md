@@ -2,12 +2,14 @@
 id: FEAT-0100
 uid: 87a085
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: 'Scheduler: Reliability Engineering (Apoptosis & Recovery)'
 created_at: '2026-01-24T18:45:12'
 opened_at: '2026-01-24T18:45:12'
-updated_at: '2026-01-24T18:59:15'
+updated_at: '2026-01-24T19:01:02'
+closed_at: '2026-01-24T19:01:02'
+solution: implemented
 isolation:
   type: branch
   ref: feat/feat-0100-scheduler-reliability-engineering-apoptosis-recove

@@ -38,47 +38,52 @@ class ApoptosisManager:
             print(f"Session {session_id} not found for apoptosis.")
             return
 
-        print(f"💀 Apoptosis triggered for Session {session_id}")
+        print(f"💀 [Apoptosis] Starting lifecycle for Session {session_id}")
 
         # 1. Kill
         self._kill(session)
 
         # 2. Autopsy
-        self._perform_autopsy(session)
+        try:
+            self._perform_autopsy(session)
+        except Exception as e:
+            print(f"⚠️ Autopsy failed: {e}")
 
         # 3. Reset
         self._reset_environment(session)
 
-        # 4. Retry (Reincarnation)
-        # TODO: Implement retry logic with max_retries check
-        # self._retry(session)
+        print(
+            f"✅ [Apoptosis] Task {session.model.issue_id} has been reset and analyzed."
+        )
 
     def _kill(self, session: RuntimeSession):
         print(f"🔪 Killing worker process for {session.model.id}...")
         session.terminate()
-        # Ensure status is crashed/dead, not just terminated nicely
         session.model.status = "crashed"
 
     def _perform_autopsy(self, victim_session: RuntimeSession):
-        print(f"🔍 Performing autopsy on {victim_session.model.id}...")
+        print(
+            f"🔍 Performing autopsy on {victim_session.model.id} via Coroner agent..."
+        )
+
         # Start a Coroner session
-        # Ideally, this runs in the SAME context (directory) but is a different agent
         coroner_session = self.session_manager.create_session(
             victim_session.model.issue_id, self.coroner_role
         )
-        coroner_session.start()
 
-        # Simulate autopsy work
-        import time
+        # Context for the coroner
+        context = {
+            "description": f"The previous agent session ({victim_session.model.id}) for role '{victim_session.model.role_name}' crashed. Please analyze the environment and the Issue {victim_session.model.issue_id}, then write a ## Post-mortem section in the issue file."
+        }
 
-        time.sleep(0.5)
-        print("📄 Coroner wrote 'post_mortem.md'.")
-
-        coroner_session.terminate()
+        coroner_session.start(context=context)
+        print("📄 Coroner agent finished analysis.")
 
     def _reset_environment(self, session: RuntimeSession):
-        print("🧹 Resetting environment (git reset --hard)...")
-        # In real impl: subprocess.run(["git", "reset", "--hard"], cwd=project_root)
+        print("🧹 Resetting environment (simulated git reset --hard)...")
+        # In real impl:
+        # import subprocess
+        # subprocess.run(["git", "reset", "--hard"], check=True)
         pass
 
     def _retry(self, session: RuntimeSession):
