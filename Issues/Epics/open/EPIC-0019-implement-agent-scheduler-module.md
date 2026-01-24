@@ -34,7 +34,7 @@ files: []
 ## Technical Tasks
 - [/] FEAT-0097: Worker Management & Role Templates (Worker 管理与角色模板)
 - [/] FEAT-0098: Session Management & Persistent History (Session 管理与持久化历史)
-- [ ] FEAT-0099: Scheduler Core Scheduling Logic & CLI (核心调度逻辑与 CLI)
+- [/] FEAT-0099: Scheduler Core Scheduling Logic & CLI (核心调度逻辑与 CLI)
 - [ ] FEAT-0100: Scheduler Reliability Engineering (Apoptosis & Recovery) (可靠性工程：凋亡与恢复)
 
 ## Review Comments
