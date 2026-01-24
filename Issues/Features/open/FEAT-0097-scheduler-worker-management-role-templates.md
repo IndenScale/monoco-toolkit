@@ -23,20 +23,20 @@ files: []
 ## FEAT-0097: Scheduler: Worker Management & Role Templates
 
 ## Objective
-Implement the foundation of Agent Scheduler: Worker definitions and Role Templates. This allows the system to define different types of agents (Crafter, Builder, Auditor) with specific triggers, goals, and tools, as defined in `RFC/agent-scheduler-design.md`.
+实现 Agent Scheduler 的基石：Worker 定义与 Role Templates。这允许系统定义具有特定触发器、目标和工具的不同类型 Agent（如 Crafter, Builder, Auditor），正如 `RFC/agent-scheduler-design.md` 所定义。
 
 ## Acceptance Criteria
-- [x] **Config Loading**: Support loading role configurations from `.monoco/scheduler.yaml`.
-- [x] **Default Roles**: Define default roles (Crafter, Builder, Auditor) if config is missing or as defaults.
-- [x] **Worker Model**: Implement `Worker` class in Python (`monoco.features.scheduler.worker`) that encapsulates the role and runtime state.
-- [x] **Validation**: Ensure role templates are validated (tools must exist, triggers must be valid).
+- [x] **配置加载**: 支持从 `.monoco/scheduler.yaml` 加载角色配置。
+- [x] **默认角色**: 如果缺少配置，则定义默认角色（Crafter, Builder, Auditor）。
+- [x] **Worker 模型**: 在 Python 中实现 `Worker` 类 (`monoco.features.scheduler.worker`)，封装角色和运行时状态。
+- [x] **验证**: 确保角色模板经过验证（工具必须存在，触发器必须有效）。
 
 ## Technical Tasks
-- [x] Define `RoleTemplate` Pydantic model (`monoco/features/scheduler/models.py`).
-- [x] Implement configuration loader allowing overrides from `.monoco/scheduler.yaml` (`monoco/features/scheduler/config.py`).
-- [x] Create `Worker` class that instantiates based on a `RoleTemplate` (`monoco/features/scheduler/worker.py`).
-- [x] Create default configuration file or constants.
-- [x] Add unit tests for loading and worker instantiation.
+- [x] 定义 `RoleTemplate` Pydantic 模型 (`monoco/features/scheduler/models.py`)。
+- [x] 实现配置加载器，允许从 `.monoco/scheduler.yaml` 覆盖 (`monoco/features/scheduler/config.py`)。
+- [x] 创建基于 `RoleTemplate` 实例化的 `Worker` 类 (`monoco/features/scheduler/worker.py`)。
+- [x] 创建默认配置文件或常量。
+- [x] 添加加载和 Worker 实例化的单元测试。
 
 ## Review Comments
-- Self-review: Implemented core models, config loader, and basic worker class. Tests passed. Ready for review.
+- Self-review: 实现了核心模型、配置加载器和基础 Worker 类。测试已通过。准备评审。
