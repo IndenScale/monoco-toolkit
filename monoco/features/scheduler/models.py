@@ -15,6 +15,9 @@ class RoleTemplate(BaseModel):
     system_prompt: str = Field(
         ..., description="The system prompt template for this agent"
     )
+    engine: str = Field(
+        default="gemini", description="CLI agent engine (gemini/claude)"
+    )
 
 
 class SchedulerConfig(BaseModel):
