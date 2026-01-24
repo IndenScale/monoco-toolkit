@@ -29,4 +29,12 @@ DEFAULT_ROLES = [
         ],  # Assumed read_diff and lint are via run_command
         system_prompt="You are an Auditor agent. Your job is to review the code for quality and correctness.",
     ),
+    RoleTemplate(
+        name="coroner",
+        description="Responsible for analyzing failure root causes (Autopsy).",
+        trigger="session.crashed",
+        goal="Produce a post-mortem report",
+        tools=["read_file", "read_terminal", "git_log"],
+        system_prompt="You are a Coroner agent. Your job is to analyze why the previous session failed and write a post-mortem report.",
+    ),
 ]
