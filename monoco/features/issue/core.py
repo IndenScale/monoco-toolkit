@@ -81,6 +81,80 @@ def parse_issue(file_path: Path, raise_error: bool = False) -> Optional[IssueMet
         return None
 
 
+def _serialize_metadata(metadata: IssueMetadata) -> str:
+    """
+    Centralized serialization logic to ensure explicit fields and correct ordering.
+    """
+    # Serialize metadata
+    # We want explicit fields even if None/Empty to enforce schema awareness
+    data = metadata.model_dump(
+        exclude_none=True, mode="json", exclude={"actions", "path"}
+    )
+
+    # Force explicit keys if missing (due to exclude_none or defaults)
+    if "parent" not in data:
+        data["parent"] = None
+    if "dependencies" not in data:
+        data["dependencies"] = []
+    if "related" not in data:
+        data["related"] = []
+    if "domains" not in data:
+        data["domains"] = []
+    if "files" not in data:
+        data["files"] = []
+
+    # Custom YAML Dumper to preserve None as 'null' and order
+    # Helper to order keys: id, uid, type, status, stage, title, ... graph ...
+    # Simple sort isn't enough, we rely on insertion order (Python 3.7+)
+    ordered_data = {
+        k: data[k]
+        for k in [
+            "id",
+            "uid",
+            "type",
+            "status",
+            "stage",
+            "title",
+            "created_at",
+            "updated_at",
+        ]
+        if k in data
+    }
+    # Add graph fields
+    for k in [
+        "priority",
+        "parent",
+        "dependencies",
+        "related",
+        "domains",
+        "tags",
+        "files",
+    ]:
+        if k in data:
+            ordered_data[k] = data[k]
+        elif k in ["dependencies", "related", "domains", "tags", "files"]:
+            ordered_data[k] = []
+        elif k == "parent":
+            ordered_data[k] = None
+
+    # Add remaining
+    for k, v in data.items():
+        if k not in ordered_data:
+            ordered_data[k] = v
+
+    yaml_header = yaml.dump(
+        ordered_data, sort_keys=False, allow_unicode=True, default_flow_style=False
+    )
+
+    # Inject Comments for guidance (replace keys with key+comment)
+    if "parent" in ordered_data and ordered_data["parent"] is None:
+        yaml_header = yaml_header.replace(
+            "parent: null", "parent: null # <EPIC-ID> Optional"
+        )
+
+    return yaml_header
+
+
 def parse_issue_detail(file_path: Path) -> Optional[IssueDetail]:
     if not file_path.suffix == ".md":
         return None
@@ -198,76 +272,7 @@ def create_issue_file(
     get_engine().enforce_policy(metadata)
 
     # Serialize metadata
-    # We want explicit fields even if None/Empty to enforce schema awareness
-    data = metadata.model_dump(
-        exclude_none=True, mode="json", exclude={"actions", "path"}
-    )
-
-    # Force explicit keys if missing (due to exclude_none or defaults)
-    if "parent" not in data:
-        data["parent"] = None
-    if "dependencies" not in data:
-        data["dependencies"] = []
-    if "related" not in data:
-        data["related"] = []
-    if "domains" not in data:
-        data["domains"] = []
-    if "files" not in data:
-        data["files"] = []
-
-    # Custom YAML Dumper to preserve None as 'null' and order
-    # Helper to order keys: id, uid, type, status, stage, title, ... graph ...
-    # Simple sort isn't enough, we rely on insertion order (Python 3.7+)
-    ordered_data = {
-        k: data[k]
-        for k in [
-            "id",
-            "uid",
-            "type",
-            "status",
-            "stage",
-            "title",
-            "created_at",
-            "updated_at",
-        ]
-        if k in data
-    }
-    # Add graph fields
-    for k in [
-        "priority",
-        "parent",
-        "dependencies",
-        "related",
-        "domains",
-        "tags",
-        "files",
-    ]:
-        if k in data:
-            ordered_data[k] = data[k]
-        elif k in ["dependencies", "related", "domains", "tags", "files"]:
-            ordered_data[k] = []
-        elif k == "parent":
-            ordered_data[k] = None
-
-    # Add remaining
-    for k, v in data.items():
-        if k not in ordered_data:
-            ordered_data[k] = v
-
-    yaml_header = yaml.dump(
-        ordered_data, sort_keys=False, allow_unicode=True, default_flow_style=False
-    )
-
-    # Inject Comments for guidance (replace keys with key+comment)
-    # Note: Regex replacement is fragile but functional for simple YAML
-    if parent is None:
-        yaml_header = yaml_header.replace(
-            "parent: null", "parent: null # <EPIC-ID> Optional"
-        )
-
-    # We don't need to inject missing keys anymore because we forced them above.
-    # Just add comments to existing empty lists if desired?
-    # Keeping it simple for now.
+    yaml_header = _serialize_metadata(metadata)
 
     slug = _get_slug(title)
     filename = f"{issue_id}-{slug}.md"
@@ -565,14 +570,7 @@ def update_issue(
         raise ValueError(f"Failed to validate updated metadata: {e}")
 
     # Serialize back
-    # Explicitly exclude actions and path from file persistence
-    new_yaml = yaml.dump(
-        updated_meta.model_dump(
-            exclude_none=True, mode="json", exclude={"actions", "path"}
-        ),
-        sort_keys=False,
-        allow_unicode=True,
-    )
+    new_yaml = _serialize_metadata(updated_meta)
 
     # Reconstruct File
     match_header = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)

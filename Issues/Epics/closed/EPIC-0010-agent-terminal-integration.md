@@ -13,6 +13,7 @@ dependencies:
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0005'
 - '#EPIC-0006'
 - '#EPIC-0010'
@@ -24,6 +25,7 @@ owner: Product Owner
 progress: 4/4
 files_count: 0
 uid: d8a571
+parent: EPIC-0000
 ---
 
 ## EPIC-0010: Agent Terminal Integration (PTY & Console)

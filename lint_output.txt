@@ -1,0 +1,1409 @@
+      Issue Integrity Report
+┏━━━━━━━━┳━━━━━━━━┳━━━━━━┳━━━━━━━┓
+┃ Issue  ┃ Sever… ┃ Line ┃ Mess… ┃
+┡━━━━━━━━╇━━━━━━━━╇━━━━━━╇━━━━━━━┩
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 3     │
+│        │        │      │ vali… │
+│        │        │      │ erro… │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│        │        │      │ depe… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│        │        │      │ rela… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 3     │
+│        │        │      │ vali… │
+│        │        │      │ erro… │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│        │        │      │ depe… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│        │        │      │ rela… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 2     │
+│        │        │      │ vali… │
+│        │        │      │ erro… │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ depe… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│        │        │      │ rela… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 2     │
+│        │        │      │ vali… │
+│        │        │      │ erro… │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ depe… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│        │        │      │ rela… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 2     │
+│        │        │      │ vali… │
+│        │        │      │ erro… │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ depe… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│        │        │      │ rela… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 2     │
+│        │        │      │ vali… │
+│        │        │      │ erro… │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ depe… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│        │        │      │ rela… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 2     │
+│        │        │      │ vali… │
+│        │        │      │ erro… │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ depe… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│        │        │      │ rela… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ System │ ERROR  │    1 │ Sche… │
+│        │        │      │ Erro… │
+│        │        │      │ 1     │
+│        │        │      │ vali… │
+│        │        │      │ error │
+│        │        │      │ for   │
+│        │        │      │ Issu… │
+│        │        │      │ pare… │
+│        │        │      │   Fi… │
+│        │        │      │ requ… │
+│        │        │      │     … │
+│        │        │      │ furt… │
+│        │        │      │ info… │
+│        │        │      │ visit │
+│        │        │      │ http… │
+│ FEAT-… │ ERROR  │   18 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   10 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   11 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │  WARN  │   31 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Issue │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   15 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   13 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   10 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   18 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │    8 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │    9 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Depe… │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   18 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   11 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   10 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │  WARN  │   64 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Issue │
+│        │        │      │ 'CHO… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   10 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   15 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   10 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │  WARN  │   32 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Issue │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   10 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   11 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   13 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Depe… │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   22 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │  WARN  │   31 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Issue │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   10 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   18 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   11 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   11 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │    8 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │    9 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Depe… │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │  WARN  │   27 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Issue │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   10 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   13 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   11 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   13 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Depe… │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   20 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   18 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   17 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │  WARN  │   51 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Issue │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │  WARN  │   58 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Issue │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │  WARN  │   63 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Issue │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FEAT-… │  WARN  │   66 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Issue │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ CHORE… │ ERROR  │   18 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ CHORE… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ CHORE… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ CHORE… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ CHORE… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FIX-0… │ ERROR  │   18 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FIX-0… │ ERROR  │   11 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FIX-0… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FIX-0… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FIX-0… │ ERROR  │   17 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'EPI… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+│ FIX-0… │ ERROR  │   12 │ Brok… │
+│        │        │      │ Refe… │
+│        │        │      │ Pare… │
+│        │        │      │ 'FEA… │
+│        │        │      │ not   │
+│        │        │      │ foun… │
+└────────┴────────┴──────┴───────┘
+
+Tip: Run 'monoco issue lint --fix'
+to attempt automatic repairs.

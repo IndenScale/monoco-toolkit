@@ -16,6 +16,7 @@ dependencies:
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0002'
 - '#EPIC-0005'
 - '#EPIC-0006'
@@ -25,6 +26,7 @@ tags:
 files: []
 progress: 3/3
 files_count: 0
+parent: EPIC-0000
 ---
 
 ## EPIC-0006: Monoco 看板 Web 应用 (Monoco Kanban Web App)
