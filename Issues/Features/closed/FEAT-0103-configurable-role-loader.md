@@ -2,11 +2,11 @@
 id: FEAT-0103
 uid: d4e5f6
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: 实现配置驱动的角色加载机制
 created_at: '2026-01-25T14:30:00'
-updated_at: '2026-01-25T23:15:42'
+updated_at: '2026-01-25T23:19:11'
 priority: high
 parent: null # <EPIC-ID> Optional
 dependencies: []
@@ -19,6 +19,8 @@ files:
 - monoco/features/scheduler/config.py
 - monoco/features/scheduler/defaults.py
 - monoco/features/scheduler/models.py
+closed_at: '2026-01-25T23:19:11'
+solution: implemented
 isolation:
   type: branch
   ref: feat/feat-0103-实现配置驱动的角色加载机制
