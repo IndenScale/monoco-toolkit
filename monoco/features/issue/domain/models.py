@@ -110,10 +110,11 @@ class IssueFrontmatter(BaseModel):
     opened_at: Optional[datetime] = None
     updated_at: datetime = Field(default_factory=current_time)
     closed_at: Optional[datetime] = None
-    parent: Optional[str] = None
-    dependencies: List[str] = Field(default_factory=list)
-    related: List[str] = Field(default_factory=list)
-    tags: List[str] = Field(default_factory=list)
+    parent: Optional[str]
+    dependencies: List[str]
+    related: List[str]
+    domains: List[str]
+    tags: List[str]
     solution: Optional[IssueSolution] = None
     isolation: Optional[IssueIsolation] = None
 

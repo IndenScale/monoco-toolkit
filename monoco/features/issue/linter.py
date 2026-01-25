@@ -7,7 +7,7 @@ import re
 from monoco.core import git
 from . import core
 from .validator import IssueValidator
-from monoco.core.lsp import Diagnostic, DiagnosticSeverity
+from monoco.core.lsp import Diagnostic, DiagnosticSeverity, Range, Position
 
 console = Console()
 
@@ -68,15 +68,29 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                         files.extend(status_dir.rglob("*.md"))
 
                 for f in files:
-                    meta = core.parse_issue(f)
-                    if meta:
-                        local_id = meta.id
-                        full_id = f"{project_name}::{local_id}"
+                    try:
+                        meta = core.parse_issue(f, raise_error=True)
+                        if meta:
+                            local_id = meta.id
+                            full_id = f"{project_name}::{local_id}"
 
-                        all_issue_ids.add(local_id)
-                        all_issue_ids.add(full_id)
+                            all_issue_ids.add(local_id)
+                            all_issue_ids.add(full_id)
 
-                        project_issues.append((f, meta))
+                            project_issues.append((f, meta))
+                    except Exception as e:
+                        # Report parsing failure as diagnostic
+                        d = Diagnostic(
+                            range=Range(
+                                start=Position(line=0, character=0),
+                                end=Position(line=0, character=0),
+                            ),
+                            message=f"Schema Error: {str(e)}",
+                            severity=DiagnosticSeverity.Error,
+                            source="System",
+                        )
+                        d.data = {"path": f}
+                        diagnostics.append(d)
         return project_issues
 
     from monoco.core.config import get_config

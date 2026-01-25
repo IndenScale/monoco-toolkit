@@ -53,25 +53,31 @@ def _get_slug(title: str) -> str:
     return slug
 
 
-def parse_issue(file_path: Path) -> Optional[IssueMetadata]:
+def parse_issue(file_path: Path, raise_error: bool = False) -> Optional[IssueMetadata]:
     if not file_path.suffix == ".md":
         return None
 
     content = file_path.read_text()
     match = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
     if not match:
+        if raise_error:
+            raise ValueError(f"No frontmatter found in {file_path.name}")
         return None
 
     try:
         data = yaml.safe_load(match.group(1))
         if not isinstance(data, dict):
+            if raise_error:
+                raise ValueError(f"Frontmatter is not a dictionary in {file_path.name}")
             return None
 
         data["path"] = str(file_path.absolute())
         meta = IssueMetadata(**data)
         meta.actions = get_available_actions(meta)
         return meta
-    except Exception:
+    except Exception as e:
+        if raise_error:
+            raise e
         return None
 
 
