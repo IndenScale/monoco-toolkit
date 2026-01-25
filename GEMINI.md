@@ -39,10 +39,12 @@
 
 ### 强制规则 (Hard Rules)
 
-1. **标题对齐**: 必须包含 `## {ID}: {Title}` 标题，且与 Frontmatter 一致。
-2. **任务颗粒度**: 至少包含 2 个任务项，使用 `- [ ]` 语法。
-3. **评审义务**: 进入 `review` 或 `done` 阶段时，必须包含 `## Review Comments` 章节。
-4. **分支策略**: 必须使用 `monoco issue start --branch` 创建独立特性分支，**禁止**在 `main` 分支直接提交。
+1. **先有 Issue，后有 Draft**: 开始任何调研、设计或 Draft 阶段之前，必须使用 `monoco issue create` 创建 Issue。禁止在没有 Issue 的情况下开展工作。
+2. **分支隔离 (Build 阶段)**: 进行代码构建或修改时，**必须**使用 `monoco issue start --branch` 创建特有的 Git 分支。禁止在 `main` 分支直接提交。
+3. **环境清理时机**: 环境清理（分支/Worktree 删除）**仅**应在 `monoco issue close --prune` 时执行。**禁止**在 `submit` 阶段清理环境，因为 Review 过程可能需要进一步修改。
+4. **标题对齐**: 必须包含 `## {ID}: {Title}` 标题，且与 Frontmatter 一致。
+5. **任务颗粒度**: 至少包含 2 个任务项，使用 `- [ ]` 语法。
+6. **评审义务**: 进入 `review` 或 `done` 阶段时，必须包含 `## Review Comments` 章节。
 
 ## Spike (研究)
 
