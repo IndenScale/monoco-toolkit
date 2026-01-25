@@ -17,6 +17,9 @@ backlog_app = typer.Typer(help="Manage backlog operations.")
 lsp_app = typer.Typer(help="LSP Server commands.")
 app.add_typer(backlog_app, name="backlog")
 app.add_typer(lsp_app, name="lsp")
+from . import domain_commands
+
+app.add_typer(domain_commands.app, name="domain")
 console = Console()
 
 
