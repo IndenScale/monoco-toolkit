@@ -2,16 +2,14 @@
 id: CHORE-0015
 uid: df018a
 type: chore
-status: open
-stage: doing
+status: closed
+stage: done
 title: Sync Issue Best Practices to Agent Prompts
 created_at: '2026-01-26T00:51:15'
 opened_at: '2026-01-26T00:51:15'
-updated_at: '2026-01-26T00:52:00'
-isolation:
-  type: branch
-  ref: feat/chore-0015-sync-issue-best-practices-to-agent-prompts
-  created_at: '2026-01-26T00:51:25'
+updated_at: 2026-01-26 00:55:25
+closed_at: '2026-01-26T00:54:36'
+solution: implemented
 dependencies: []
 related: []
 domains: []

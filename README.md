@@ -5,45 +5,37 @@
 
 > **The Operating System for Agentic Engineering.**
 >
-> Ground your AI Agents into deterministic workflows. Turn vague "chats" into structured, validatable, and shippable engineering units.
+> Stop chatting. Start building.
+> Monoco grounds your AI Agents into deterministic, validatable, and shippable engineering workflows.
 
 ---
 
-## ⚡️ Why Monoco?
+## ⚡️ The Gap: "Chat" is not Engineering.
 
-In the era of LLMs, the bottleneck isn't **intelligence**—it's **control**.
+Generating code is easy. **Engineering**—managing dependencies, maintaining state, validation, and version control—is hard.
 
-Generating code is easy. Managing the lifecycle of thousands of agent-generated tasks, validating their outputs, and maintaining a coherent project state is hard. **Monoco** is the missing control plane that bridges the gap between raw AI velocity and strict engineering rigor.
+Most Agent workflows today are fragile "chats". Monoco turns them into **Software Engineering Processes**. It acts as the "BizOps" layer for your Agents, ensuring that every line of code generated is tracked, reviewed, and aligned with the project roadmap.
 
-Monoco handles the **"BizOps Logic"** of your development process, allowing you to orchestrate human and AI labor within a unified, version-controlled environment.
+## 🌟 Core Philosophy
 
-## 🌟 Core Features
+### 1. Co-pilot by Design
 
-### 1. Issue as Code (IaaC)
+**Just-enough Automation.**
+Monoco abstracts away the tedious details (Git ops, state tracking) while keeping you securely in the driver's seat. Agents can suggest and build, but **you** always have the final say on what gets merged.
 
-Treat your project management like your code.
+### 2. Battle-Tested Best Practices
 
-- **Markdown Native**: All tasks (Epics, Features, Chores) are stored as structured Markdown files in your repository.
-- **Git Backed**: Version control your roadmap. Review changes to requirements via Pull Requests.
-- **Universal Context**: Provides a standardized, hallucination-free state representation for AI Agents.
+**Senior Engineer Intuition.**
+Monoco enforces **Issue Driven Development (IDD)** and standard **Git Workflows**. We bake the rigorous habits of effective software teams into the Agent's core loop, ensuring every line of code is traceable and reviewed.
 
-### 2. The Agent Cockpit (VS Code Extension)
+### 3. Radical Transparency (Dogfooding)
 
-Stop context switching. Manage your entire agentic workflow directly inside your editor.
-
-- **Native Kanban Board**: Visualize and drag-and-drop tasks without leaving VS Code.
-- **Hierarchical Tree View**: Drill down from high-level Epics to atomic Implementation Tasks.
-- **Agent Integration**: Bind specific Agent Providers (Gemini, Claude, etc.) to specific tasks.
-
-### 3. Traceable Execution
-
-- **Deterministic State Machine**: Every task follows a strict lifecycle (Proposed -> Approved -> Doing -> Review -> Done).
-- **Audit Trails**: Agents log their actions and decisions directly into the task file.
-- **Sanity Checks**: Built-in linters ensure your task definitions are complete and valid before execution.
+**Process as Product.**
+Monoco is built by Monoco. We believe in open-sourcing not just the code, but the engineering process itself. Every design decision, interaction log, and failure is public—providing a live blueprint for Agentic Engineering.
 
 ## 🚀 Quick Start
 
-### Installation
+### 1. Installation
 
 Monoco is available as a Python CLI tool.
 
@@ -51,33 +43,32 @@ Monoco is available as a Python CLI tool.
 pip install monoco-toolkit
 ```
 
-### Initialization
+### 2. Workspace Initialization
 
-Turn any directory into a Monoco workspace.
+Turn any directory into a Monoco Workspace. This creates the `.monoco` config and the `Issues/` directory.
 
 ```bash
 monoco init
 ```
 
-### Workflow
+### 3. Agent Synchronization
 
-1.  **Plan**: Create a new feature request.
-    ```bash
-    monoco issue create feature -t "Implement Dark Mode"
-    ```
-2.  **Start**: Create a feature branch automatically.
-    ```bash
-    monoco issue start FEAT-001 --branch
-    ```
-3.  **Code & Sync**: Track modified files automatically.
-    ```bash
-    monoco issue sync-files
-    ```
-4.  **Visualize**: Open the board in VS Code or via CLI.
-    ```bash
-    # Starts the local server
-    monoco serve
-    ```
+**Crucial Step**: This injects the "Monoco System Neural Network" (System Prompts & Skills) into your agent configuration files (e.g., `GEMINI.md`, `CLAUDE.md`).
+
+```bash
+monoco sync
+```
+
+### 4. The Engineering Loop (Agent-First)
+
+In Monoco, you don't need to memorize CLI commands. **The Agent is your DevOps Engineer.**
+
+1.  **Chat**: Tell your Agent in the chatbox (e.g., _"Implement Dark Mode"_).
+2.  **Plan**: The Agent investigates and proposes an **Issue Ticket** for your review.
+3.  **Build**: Once approved, the Agent creates a branch, writes code, and submits changes.
+4.  **Ship**: You accept the results. The Agent handles the merge and closure.
+
+---
 
 ## 📦 Extension for VS Code
 
