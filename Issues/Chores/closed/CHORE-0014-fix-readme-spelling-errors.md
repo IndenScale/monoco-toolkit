@@ -2,16 +2,14 @@
 id: CHORE-0014
 uid: f8fd18
 type: chore
-status: open
-stage: review
+status: closed
+stage: done
 title: Fix README spelling errors
 created_at: '2026-01-24T19:37:33'
 opened_at: '2026-01-24T19:37:33'
-updated_at: '2026-01-25T22:58:14'
-isolation:
-  type: branch
-  ref: feat/chore-0014-fix-readme-spelling-errors
-  created_at: '2026-01-25T22:56:27'
+updated_at: 2026-01-25 22:58:17
+closed_at: '2026-01-25T22:58:17'
+solution: implemented
 dependencies: []
 related: []
 domains: []
