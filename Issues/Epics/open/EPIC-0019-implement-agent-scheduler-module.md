@@ -3,7 +3,7 @@ id: EPIC-0019
 uid: '638912'
 type: epic
 status: open
-stage: draft
+stage: doing
 title: Implement Agent Scheduler Module
 created_at: '2026-01-24T18:45:05'
 opened_at: '2026-01-24T18:45:05'
@@ -16,6 +16,8 @@ tags:
 - '#EPIC-0019'
 files: []
 parent: EPIC-0000
+progress: 0/1
+files_count: 0
 ---
 
 ## EPIC-0019: Implement Agent Scheduler Module
