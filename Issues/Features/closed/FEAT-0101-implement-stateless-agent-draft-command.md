@@ -2,11 +2,11 @@
 id: FEAT-0101
 uid: 4e0731
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: 实现无状态 Agent Draft 命令
 created_at: '2026-01-24T19:10:47'
-updated_at: 2026-01-25 23:03:10
+updated_at: '2026-01-25T23:19:11'
 parent: EPIC-0019
 dependencies: []
 related: []
@@ -16,10 +16,11 @@ tags:
 - '#FEAT-0101'
 files: []
 opened_at: '2026-01-24T19:10:47'
+closed_at: '2026-01-25T23:19:11'
+solution: implemented
 isolation:
   type: branch
   ref: feat/feat-0101-实现无状态-agent-draft-命令
-  path: null
   created_at: '2026-01-25T23:03:10'
 ---
 
@@ -32,10 +33,10 @@ isolation:
 
 ## 验收标准
 <!-- Define binary conditions for success. -->
-- [ ] **CLI 命令**: `monoco agent draft` 可用。
-- [ ] **输入**: 支持 `--type` 和 `--desc` (description)。
-- [ ] **输出**: 根据描述自动生成结构化的 Issue 文件。
-- [ ] **无状态**: 不需要运行中的 Daemon 或 Session。
+- [x] **CLI 命令**: `monoco agent draft` 可用。
+- [x] **输入**: 支持 `--type` 和 `--desc` (description)。
+- [x] **输出**: 根据描述自动生成结构化的 Issue 文件。
+- [x] **无状态**: 不需要运行中的 Daemon 或 Session。
 
 ## 技术任务
 <!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
