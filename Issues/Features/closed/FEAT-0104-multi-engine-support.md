@@ -2,13 +2,13 @@
 id: FEAT-0104
 uid: g7h8i9
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: 支持多引擎适配 (Gemini, Claude & Qwen)
 created_at: '2026-01-25T14:30:00'
-updated_at: 2026-01-25 23:42:33
+updated_at: '2026-01-25T23:48:01'
 priority: medium
-parent: null
+parent: null # <EPIC-ID> Optional
 dependencies: []
 related: []
 domains: []
@@ -18,10 +18,11 @@ tags:
 files:
 - monoco/features/scheduler/worker.py
 - monoco/features/scheduler/engines.py
+closed_at: '2026-01-25T23:48:01'
+solution: implemented
 isolation:
   type: branch
   ref: feat/feat-0104-支持多引擎适配-gemini-claude
-  path: null
   created_at: '2026-01-25T23:42:33'
 ---
 
