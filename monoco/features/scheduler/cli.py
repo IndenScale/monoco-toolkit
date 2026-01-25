@@ -7,6 +7,34 @@ from monoco.core.config import get_config
 from monoco.features.scheduler import SessionManager, load_scheduler_config
 
 app = typer.Typer(name="agent", help="Manage agent sessions")
+role_app = typer.Typer(name="role", help="Manage agent roles")
+
+
+@role_app.command(name="list")
+def list_roles():
+    """
+    List available agent roles and their sources.
+    """
+    from monoco.features.scheduler.config import RoleLoader
+
+    settings = get_config()
+    project_root = Path(settings.paths.root).resolve()
+
+    loader = RoleLoader(project_root)
+    roles = loader.load_all()
+
+    output = []
+    for name, role in roles.items():
+        output.append(
+            {
+                "role": name,
+                "engine": role.engine,
+                "source": loader.sources.get(name, "unknown"),
+                "description": role.description,
+            }
+        )
+
+    print_output(output, title="Agent Roles")
 
 
 @app.command()
@@ -198,9 +226,15 @@ def autopsy(
         if re.match(r"^[a-zA-Z]+-\d+$", target):
             print_output(f"Session not in memory. Analyzing Issue {target} directly.")
             # We create a transient session just to trigger the coroner
-            from .defaults import DEFAULT_ROLES
+            settings = get_config()
+            project_root = Path(settings.paths.root).resolve()
+            roles = load_scheduler_config(project_root)
+            builder_role = roles.get("builder")
 
-            builder_role = next(r for r in DEFAULT_ROLES if r.name == "builder")
+            if not builder_role:
+                print_output("Builder role not found.", style="red")
+                raise typer.Exit(code=1)
+
             session = manager.create_session(target.upper(), builder_role)
             session.model.status = "failed"
         else:
