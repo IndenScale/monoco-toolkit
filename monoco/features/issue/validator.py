@@ -575,6 +575,7 @@ class IssueValidator:
         has_domains_field = False
         lines = content.splitlines()
         in_fm = False
+        field_line = 0
         for i, line_content in enumerate(lines):
             stripped = line_content.strip()
             if stripped == "---":
@@ -585,6 +586,7 @@ class IssueValidator:
             elif in_fm:
                 if stripped.startswith("domains:"):
                     has_domains_field = True
+                    field_line = i
                     break
 
         # Governance Maturity Check
@@ -606,6 +608,40 @@ class IssueValidator:
                         line=0,
                     )
                 )
+
+        # Domain Content Validation
+        from .domain_service import DomainService
+
+        service = DomainService()
+
+        if hasattr(meta, "domains") and meta.domains:
+            for domain in meta.domains:
+                if service.is_alias(domain):
+                    canonical = service.get_canonical(domain)
+                    diagnostics.append(
+                        self._create_diagnostic(
+                            f"Domain Alias: '{domain}' is an alias for '{canonical}'. Preference: Canonical.",
+                            DiagnosticSeverity.Warning,
+                            line=field_line,
+                        )
+                    )
+                elif not service.is_defined(domain):
+                    if service.config.strict:
+                        diagnostics.append(
+                            self._create_diagnostic(
+                                f"Unknown Domain: '{domain}' is not defined in domain ontology.",
+                                DiagnosticSeverity.Error,
+                                line=field_line,
+                            )
+                        )
+                    else:
+                        diagnostics.append(
+                            self._create_diagnostic(
+                                f"Unknown Domain: '{domain}' is not defined in domain ontology.",
+                                DiagnosticSeverity.Warning,
+                                line=field_line,
+                            )
+                        )
 
         return diagnostics
 
