@@ -13,7 +13,9 @@ closed_at: '2026-01-15T18:30:00'
 solution: implemented
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0013'
+parent: EPIC-0000
 ---
 
 ## EPIC-0013: Architecture Unification: CLI & Daemon

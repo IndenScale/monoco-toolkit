@@ -15,6 +15,7 @@ dependencies:
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0006'
 - '#EPIC-0010'
 - '#EPIC-0011'
@@ -26,6 +27,7 @@ files: []
 owner: Product Owner
 progress: 4/4
 files_count: 0
+parent: EPIC-0000
 ---
 
 ## EPIC-0011: VS Code Cockpit Integration (VS Code 驾驶舱集成)

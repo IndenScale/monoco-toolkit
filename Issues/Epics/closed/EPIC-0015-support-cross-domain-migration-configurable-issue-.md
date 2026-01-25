@@ -14,10 +14,12 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0015'
 path: /Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Epics/closed/EPIC-0015-support-cross-domain-migration-configurable-issue-.md
 progress: 3/3
 files_count: 35
+parent: EPIC-0000
 ---
 
 ## EPIC-0015: 支持跨领域迁移与可配置化 Issue 系统

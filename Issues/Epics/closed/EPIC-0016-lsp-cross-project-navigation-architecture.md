@@ -14,9 +14,11 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0016'
 files: []
 progress: 5/5
+parent: EPIC-0000
 ---
 
 ## EPIC-0016: LSP Cross-Project Navigation Architecture

@@ -14,9 +14,11 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0009'
 progress: 5/5
 files_count: 0
+parent: EPIC-0000
 ---
 
 ## EPIC-0009: CICD 基建

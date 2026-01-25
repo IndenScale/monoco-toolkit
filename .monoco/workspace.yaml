@@ -5,6 +5,20 @@ i18n:
 telemetry:
   enabled: null
 
+domains:
+  items:
+    - name: backend.devops
+      description: DevOps and CI/CD infrastructure
+    - name: infrastructure.container
+      description: Containerization technologies (Docker, K8s)
+    - name: monoco.core
+      description: Monoco core logic
+    - name: monoco.cli
+      description: Monoco CLI interface
+    - name: intelligence
+      description: Artificial Intelligence and Agent capabilities
+  strict: false
+
 issue:
   types:
     - name: epic
