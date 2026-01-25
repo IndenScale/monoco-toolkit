@@ -15,6 +15,17 @@
 - **虚拟环境优先**: 必须使用 `uv run monoco` 来运行当前目录下的源代码。
 - **环境切换**: 修改代码后，应立即在 `Toolkit/` 目录下运行 `uv run monoco issue lint` 验证逻辑。
 
+### 3. 工程流 (Engineering Workflow)
+
+采用 **主干开发 (Trunk Based Development)** 模式。
+
+- **分支策略**:
+  - **Main**: 唯一真理源 (Source of Truth)。
+  - **Feature**: 短命分支 (`feat/ID`, `fix/ID`)，完成后 Squash Merge 并删除。
+- **发布策略**:
+  - **Trigger**: 仅通过 Git Tag (`v*`) 触发发布流水线。
+  - **Constraint**: 严禁维护长周期的 `release` 分支。
+
 ## Issue 管理 (Agent 指引)
 
 使用 `monoco issue` 子命令进行生命周期管理。
