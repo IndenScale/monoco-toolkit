@@ -169,6 +169,7 @@ app.add_typer(workspace_cmd.app, name="workspace", help="Manage workspace")
 from monoco.features.scheduler import cli as scheduler_cmd
 
 app.add_typer(scheduler_cmd.app, name="agent", help="Manage agent sessions")
+app.add_typer(scheduler_cmd.role_app, name="role", help="Manage agent roles")
 
 
 from monoco.daemon.commands import serve
