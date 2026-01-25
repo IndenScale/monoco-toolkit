@@ -39,18 +39,18 @@ isolation:
 - [ ] `monoco issue lint --fix` 能够自动将 Alias 替换为 Canonical Domain。
 
 ## Technical Tasks
-- [ ] **Config Layer**:
-    - [ ] 修改 `monoco/core/config.py`，新增 `DomainConfig` 和 `DomainItem` 模型。
-    - [ ] 扩展 `MonocoConfig` 包含 `domains` 列表。
-- [ ] **Domain Service**:
-    - [ ] 实现 `DomainService` 类，负责解析 Config，构建 Alias -> Canonical 的映射表。
-    - [ ] 实现模糊匹配逻辑（可选）。
-- [ ] **CLI Layer**:
-    - [ ] 新增 `monoco/features/issue/domain_commands.py`。
-    - [ ] 注册 `monoco issue domain` 子命令组 (`list`, `check`).
-- [ ] **Linter Integration**:
-    - [ ] 修改 `IssueValidator`，注入 `DomainService`。
-    - [ ] 实现 `validate_domains` 规则：Unknown Domain (Warn), Alias Usage (Warn + Fixable)。
-    - [ ] 修改 `linter.py` 中的 `run_lint` 支持 Domain Auto-fix。
+- [x] **Config Layer**:
+    - [x] 修改 `monoco/core/config.py`，新增 `DomainConfig` 和 `DomainItem` 模型。
+    - [x] 扩展 `MonocoConfig` 包含 `domains` 列表。
+- [x] **Domain Service**:
+    - [x] 实现 `DomainService` 类，负责解析 Config，构建 Alias -> Canonical 的映射表。
+    - [x] 实现模糊匹配逻辑（可选）。
+- [x] **CLI Layer**:
+    - [x] 新增 `monoco/features/issue/domain_commands.py`。
+    - [x] 注册 `monoco issue domain` 子命令组 (`list`, `check`).
+- [x] **Linter Integration**:
+    - [x] 修改 `IssueValidator`，注入 `DomainService`。
+    - [x] 实现 `validate_domains` 规则：Unknown Domain (Warn), Alias Usage (Warn + Fixable)。
+    - [x] 修改 `linter.py` 中的 `run_lint` 支持 Domain Auto-fix。
 
 ## Review Comments
