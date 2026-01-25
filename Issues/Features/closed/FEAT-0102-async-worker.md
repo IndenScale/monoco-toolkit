@@ -2,13 +2,13 @@
 id: FEAT-0102
 uid: a1b2c3
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: 重构 Worker 为异步执行模式
 created_at: '2026-01-25T14:30:00'
-updated_at: '2026-01-25T14:30:00'
-priority: high
-parent: null
+updated_at: '2026-01-25T22:53:01'
+closed_at: '2026-01-25T22:53:01'
+solution: implemented
 dependencies: []
 related: []
 domains: []
@@ -21,6 +21,7 @@ files:
 - monoco/features/scheduler/manager.py
 - tests/features/test_scheduler.py
 - tests/features/test_session.py
+priority: high
 ---
 
 ## FEAT-0102: 重构 Worker 为异步执行模式
