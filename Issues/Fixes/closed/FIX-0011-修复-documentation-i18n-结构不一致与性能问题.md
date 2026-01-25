@@ -2,23 +2,24 @@
 id: FIX-0011
 uid: 094fb4
 type: fix
-status: open
-stage: doing
+status: closed
+stage: done
 title: 修复 documentation i18n 结构不一致与性能问题
 created_at: '2026-01-19T14:50:17'
 opened_at: '2026-01-19T14:50:17'
-updated_at: 2026-01-19 14:50:24
+updated_at: '2026-01-25T22:53:22'
+closed_at: '2026-01-25T22:53:22'
+solution: implemented
+isolation:
+  type: branch
+  ref: feat/fix-0011-修复-documentation-i18n-结构不一致与性能问题
+  created_at: '2026-01-19T14:50:24'
 dependencies: []
 related: []
 domains: []
 tags:
 - '#FIX-0011'
 files: []
-isolation:
-  type: branch
-  ref: feat/fix-0011-修复-documentation-i18n-结构不一致与性能问题
-  path: null
-  created_at: '2026-01-19T14:50:24'
 ---
 
 ## FIX-0011: 修复 documentation i18n 结构不一致与性能问题

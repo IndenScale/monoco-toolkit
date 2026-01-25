@@ -2,23 +2,24 @@
 id: FEAT-0105
 uid: ef7b66
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: Domain Ontology Management with Aliasing and Linting
 created_at: '2026-01-25T14:45:14'
 opened_at: '2026-01-25T14:45:14'
-updated_at: 2026-01-25 14:45:34
+updated_at: '2026-01-25T22:53:58'
+closed_at: '2026-01-25T22:53:58'
+solution: implemented
+isolation:
+  type: branch
+  ref: feat/feat-0105-domain-ontology-management-with-aliasing-and-linti
+  created_at: '2026-01-25T14:45:34'
 dependencies: []
 related: []
 domains: []
 tags:
 - '#FEAT-0105'
 files: []
-isolation:
-  type: branch
-  ref: feat/feat-0105-domain-ontology-management-with-aliasing-and-linti
-  path: null
-  created_at: '2026-01-25T14:45:34'
 ---
 
 ## FEAT-0105: Domain Ontology Management with Aliasing and Linting
@@ -32,11 +33,11 @@ isolation:
 3. **Linting & Auto-fix**：Linter 扫描 Issue 时，自动检查 `domains` 合法性，并建议或自动将别名替换为规范名。
 
 ## Acceptance Criteria
-- [ ] 能够通过 `monoco issue domain` 命令查看和管理领域词表（至少支持 List）。
-- [ ] 支持在配置中定义 Domain，包含 `name`, `description`, `aliases`。
-- [ ] `monoco issue lint` 能够识别非标准 Domain。
-- [ ] `monoco issue lint` 能够识别 Alias 并警告（建议替换）。
-- [ ] `monoco issue lint --fix` 能够自动将 Alias 替换为 Canonical Domain。
+- [x] 能够通过 `monoco issue domain` 命令查看和管理领域词表（至少支持 List）。
+- [x] 支持在配置中定义 Domain，包含 `name`, `description`, `aliases`。
+- [x] `monoco issue lint` 能够识别非标准 Domain。
+- [x] `monoco issue lint` 能够识别 Alias 并警告（建议替换）。
+- [x] `monoco issue lint --fix` 能够自动将 Alias 替换为 Canonical Domain。
 
 ## Technical Tasks
 - [x] **Config Layer**:
@@ -54,3 +55,6 @@ isolation:
     - [x] 修改 `linter.py` 中的 `run_lint` 支持 Domain Auto-fix。
 
 ## Review Comments
+
+- Verified `monoco issue domain list` command functionality.
+- Domain check and Aliasing feature verified.
