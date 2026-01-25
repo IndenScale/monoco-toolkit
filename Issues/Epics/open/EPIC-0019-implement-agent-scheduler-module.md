@@ -12,10 +12,10 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0019'
 files: []
-# parent: <EPIC-ID>   # Optional: Parent Issue ID
-# solution: null      # Required for Closed state (implemented, cancelled, etc.)
+parent: EPIC-0000
 ---
 
 ## EPIC-0019: Implement Agent Scheduler Module

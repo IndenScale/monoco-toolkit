@@ -12,6 +12,7 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0007'
 - architecture
 - devops
@@ -19,6 +20,7 @@ tags:
 progress: 4/4
 files_count: 0
 uid: 3b4179
+parent: EPIC-0000
 ---
 
 ## EPIC-0007: Toolkit 项目独立化 (Toolkit Independence)

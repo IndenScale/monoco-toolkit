@@ -14,10 +14,12 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0017'
 files: []
 progress: 4/4
 files_count: 0
+parent: EPIC-0000
 ---
 
 ## EPIC-0017: 原生 Git Hooks 集成

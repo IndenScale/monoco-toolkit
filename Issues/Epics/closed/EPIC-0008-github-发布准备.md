@@ -14,9 +14,11 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0008'
 progress: 4/4
 files_count: 0
+parent: EPIC-0000
 ---
 
 ## EPIC-0008: GitHub 发布准备

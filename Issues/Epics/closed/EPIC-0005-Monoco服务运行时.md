@@ -12,6 +12,7 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0005'
 - daemon
 - infrastructure
@@ -20,6 +21,7 @@ tags:
 progress: 3/3
 files_count: 0
 uid: 598eba
+parent: EPIC-0000
 ---
 
 ## EPIC-0005: Monoco 服务运行时 (Monoco Server Runtime)

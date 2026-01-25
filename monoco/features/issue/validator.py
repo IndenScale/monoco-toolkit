@@ -444,6 +444,17 @@ class IssueValidator:
         if not all_ids:
             return diagnostics
 
+        # Logic: Epics must have a parent (unless it is the Sink Root EPIC-0000)
+        if meta.type == "epic" and meta.id != "EPIC-0000" and not meta.parent:
+            line = self._get_field_line(content, "parent")
+            diagnostics.append(
+                self._create_diagnostic(
+                    "Hierarchy Violation: Epics must have a parent (e.g., 'EPIC-0000').",
+                    DiagnosticSeverity.Error,
+                    line=line,
+                )
+            )
+
         if (
             meta.parent
             and meta.parent not in all_ids

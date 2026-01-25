@@ -14,10 +14,12 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0012'
 files: []
 progress: 3/3
 files_count: 0
+parent: EPIC-0000
 ---
 
 ## EPIC-0012: 在 VS Code 扩展中启用代理执行

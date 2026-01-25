@@ -207,7 +207,7 @@ def run_lint(
 
             # Parse and validate file
             try:
-                meta = core.parse_issue(file)
+                meta = core.parse_issue(file, raise_error=True)
                 if not meta:
                     console.print(
                         f"[yellow]Warning:[/yellow] Failed to parse issue metadata from {file_path}. Skipping."
@@ -328,6 +328,36 @@ def run_lint(
                                 lines[line_idx] = new_line
                                 new_content = "\n".join(lines) + "\n"
                                 has_changes = True
+
+                    if (
+                        "Hierarchy Violation" in d.message
+                        and "Epics must have a parent" in d.message
+                    ):
+                        try:
+                            fm_match = re.search(
+                                r"^---(.*?)---", new_content, re.DOTALL | re.MULTILINE
+                            )
+                            if fm_match:
+                                import yaml
+
+                                fm_text = fm_match.group(1)
+                                data = yaml.safe_load(fm_text) or {}
+
+                                # Default to EPIC-0000
+                                data["parent"] = "EPIC-0000"
+
+                                new_fm_text = yaml.dump(
+                                    data, sort_keys=False, allow_unicode=True
+                                )
+                                # Replace FM block
+                                new_content = new_content.replace(
+                                    fm_match.group(1), "\n" + new_fm_text
+                                )
+                                has_changes = True
+                        except Exception as ex:
+                            console.print(
+                                f"[red]Failed to fix parent hierarchy: {ex}[/red]"
+                            )
 
                     if "Tag Check: Missing required context tags" in d.message:
                         # Extract missing tags from message
