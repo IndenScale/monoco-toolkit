@@ -47,18 +47,23 @@ class RuntimeSession:
 
         try:
             self.worker.start(context)
-            # Sync session model status with worker status
-            if self.worker.status == "completed":
-                self.model.status = "completed"
-            elif self.worker.status == "failed":
-                self.model.status = "failed"
-            elif self.worker.status == "terminated":
-                self.model.status = "terminated"
+            # Async mode: we assume it started running.
+            # Use poll or refresh_status to check later.
+            self.model.status = "running"
         except Exception:
             self.model.status = "failed"
             raise
         finally:
             self.model.updated_at = datetime.now()
+
+    def refresh_status(self) -> str:
+        """
+        Polls the worker and updates the session model status.
+        """
+        worker_status = self.worker.poll()
+        self.model.status = worker_status
+        self.model.updated_at = datetime.now()
+        return worker_status
 
     def suspend(self):
         print(f"Session {self.model.id}: Suspending worker")
@@ -70,6 +75,8 @@ class RuntimeSession:
     def resume(self):
         print(f"Session {self.model.id}: Resuming worker")
         self.worker.start()  # In real impl, might need to re-init process
+
+        # Async mode: assume running
         self.model.status = "running"
         self.model.updated_at = datetime.now()
 
