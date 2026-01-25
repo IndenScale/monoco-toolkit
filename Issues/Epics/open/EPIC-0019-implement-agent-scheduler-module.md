@@ -16,7 +16,7 @@ tags:
 - '#EPIC-0019'
 files: []
 parent: EPIC-0000
-progress: 0/1
+progress: 1/1
 files_count: 0
 ---
 
