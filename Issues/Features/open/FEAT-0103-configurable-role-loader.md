@@ -3,12 +3,12 @@ id: FEAT-0103
 uid: d4e5f6
 type: feature
 status: open
-stage: doing
+stage: review
 title: 实现配置驱动的角色加载机制
 created_at: '2026-01-25T14:30:00'
-updated_at: '2026-01-25T14:30:00'
+updated_at: '2026-01-25T23:15:42'
 priority: high
-parent: null
+parent: null # <EPIC-ID> Optional
 dependencies: []
 related: []
 domains: []
@@ -19,6 +19,10 @@ files:
 - monoco/features/scheduler/config.py
 - monoco/features/scheduler/defaults.py
 - monoco/features/scheduler/models.py
+isolation:
+  type: branch
+  ref: feat/feat-0103-实现配置驱动的角色加载机制
+  created_at: '2026-01-25T23:13:37'
 ---
 
 ## FEAT-0103: 实现配置驱动的角色加载机制
@@ -42,7 +46,11 @@ files:
 3. **命令支持**: `monoco role list` 显示当前生效的所有角色及其来源。
 
 ### 任务
-- [ ] 定义 `roles.yaml` Schema (基于 Pydantic Model)。
-- [ ] 实现 `ConfigLoader` 类，支持层级加载和字典合并。
-- [ ] 重构 `SessionManager` 使用 `ConfigLoader` 而非 `DEFAULT_ROLES`。
-- [ ] 添加单测验证覆盖逻辑。
+- [x] 定义 `roles.yaml` Schema (基于 Pydantic Model)。
+- [x] 实现 `RoleLoader` 类，支持层级加载和字典合并。
+- [x] 重构 `ApoptosisManager` 和 CLI 使用 `RoleLoader` 而非硬编码 Defaults。
+- [x] 添加 `monoco role list` 命令。
+- [x] 验证 Level 1-3 覆盖逻辑。
+
+## Review Comments
+- 2026-01-25: Implemented `RoleLoader` with tiered support (builtin, home, project). Added `monoco role list` command. Verified override logic via project-local configuration.

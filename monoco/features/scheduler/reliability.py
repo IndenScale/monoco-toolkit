@@ -1,6 +1,8 @@
+from pathlib import Path
+from monoco.core.config import get_config
 from .manager import SessionManager
 from .session import RuntimeSession
-from .defaults import DEFAULT_ROLES
+from .config import load_scheduler_config
 
 
 class ApoptosisManager:
@@ -11,10 +13,15 @@ class ApoptosisManager:
 
     def __init__(self, session_manager: SessionManager):
         self.session_manager = session_manager
+
+        # Load roles dynamically based on current project context
+        settings = get_config()
+        project_root = Path(settings.paths.root).resolve()
+        roles = load_scheduler_config(project_root)
+
         # Find coroner role
-        self.coroner_role = next(
-            (r for r in DEFAULT_ROLES if r.name == "coroner"), None
-        )
+        self.coroner_role = roles.get("coroner")
+
         if not self.coroner_role:
             raise ValueError("Coroner role not defined!")
 
