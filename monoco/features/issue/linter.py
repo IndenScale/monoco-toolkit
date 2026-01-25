@@ -5,6 +5,7 @@ from rich.table import Table
 import typer
 import re
 from monoco.core import git
+from monoco.core.config import get_config
 from . import core
 from .validator import IssueValidator
 from monoco.core.lsp import Diagnostic, DiagnosticSeverity, Range, Position
@@ -77,7 +78,7 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                             all_issue_ids.add(local_id)
                             all_issue_ids.add(full_id)
 
-                            project_issues.append((f, meta))
+                            project_issues.append((f, meta, project_name))
                     except Exception as e:
                         # Report parsing failure as diagnostic
                         d = Diagnostic(
@@ -93,8 +94,6 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                         diagnostics.append(d)
         return project_issues
 
-    from monoco.core.config import get_config
-
     conf = get_config(str(issues_root.parent))
 
     # Identify local project name
@@ -109,6 +108,17 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
             parent / ".monoco" / "project.yaml"
         ).exists():
             workspace_root = parent
+
+    # Identify local project name
+    local_project_name = "local"
+    if conf and conf.project and conf.project.name:
+        local_project_name = conf.project.name.lower()
+
+    workspace_root_name = local_project_name
+    if workspace_root != issues_root.parent:
+        root_conf = get_config(str(workspace_root))
+        if root_conf and root_conf.project and root_conf.project.name:
+            workspace_root_name = root_conf.project.name.lower()
 
     # Collect from local issues_root
     all_issues.extend(collect_project_issues(issues_root, local_project_name))
@@ -140,11 +150,17 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
             pass
 
     # 2. Validation Phase
-    for path, meta in all_issues:
+    for path, meta, project_name in all_issues:
         content = path.read_text()  # Re-read content for validation
 
         # A. Run Core Validator
-        file_diagnostics = validator.validate(meta, content, all_issue_ids)
+        file_diagnostics = validator.validate(
+            meta,
+            content,
+            all_issue_ids,
+            current_project=project_name,
+            workspace_root=workspace_root_name,
+        )
 
         # Add context to diagnostics (Path)
         for d in file_diagnostics:
@@ -215,7 +231,16 @@ def run_lint(
                     continue
 
                 content = file.read_text()
-                file_diagnostics = validator.validate(meta, content, all_issue_ids)
+
+                # Try to resolve current project name for context
+                current_project_name = "local"
+                conf = get_config(str(issues_root.parent))
+                if conf and conf.project and conf.project.name:
+                    current_project_name = conf.project.name.lower()
+
+                file_diagnostics = validator.validate(
+                    meta, content, all_issue_ids, current_project=current_project_name
+                )
 
                 # Add context
                 for d in file_diagnostics:
