@@ -4,7 +4,7 @@ uid: 4e0731
 type: feature
 status: open
 stage: draft
-title: Implement Stateless Agent Draft Command
+title: 实现无状态 Agent Draft 命令
 created_at: '2026-01-24T19:10:47'
 opened_at: '2026-01-24T19:10:47'
 updated_at: '2026-01-24T19:10:47'
@@ -12,27 +12,28 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0019'
 - '#FEAT-0101'
 files: []
 parent: EPIC-0019
 # solution: null      # Required for Closed state (implemented, cancelled, etc.)
 ---
 
-## FEAT-0101: Implement Stateless Agent Draft Command
+## FEAT-0101: 实现无状态 Agent Draft 命令
 
-## Objective
-Implement a "One-shot" CLI command for Agents to perform atomic tasks without persistent sessions.
-Initial use case: `monoco agent draft` to generate Issue files from a short text description.
-This decouples Agent intelligence from the Daemon runtime, allowing for quick, scriptable usage.
+## 目标
+实现一个 Agent 的 "One-shot" CLI 命令，用于执行原子任务而无需持久化 Session。
+初始用例：`monoco agent draft` 用于根据简短的文本描述生成 Issue 文件。
+这将 Agent 智能与 Daemon 运行时解耦，允许快速、可脚本化的使用。
 
-## Acceptance Criteria
+## 验收标准
 <!-- Define binary conditions for success. -->
-- [ ] **CLI Command**: `monoco agent draft` available.
-- [ ] **Inputs**: Supports `--type` and `--desc` (description).
-- [ ] **Output**: Automatically creates a structured Issue file based on the description.
-- [ ] **Stateless**: Does not require a running Daemon or Session.
+- [ ] **CLI 命令**: `monoco agent draft` 可用。
+- [ ] **输入**: 支持 `--type` 和 `--desc` (description)。
+- [ ] **输出**: 根据描述自动生成结构化的 Issue 文件。
+- [ ] **无状态**: 不需要运行中的 Daemon 或 Session。
 
-## Technical Tasks
+## 技术任务
 <!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
 
 <!-- Status Syntax: -->
@@ -43,10 +44,10 @@ This decouples Agent intelligence from the Daemon runtime, allowing for quick, s
 <!-- - [ ] Parent Task -->
 <!--   - [ ] Sub Task -->
 
-- [ ] CLI Command Implementation (`monoco agent draft`)
-- [x] Mock Generation Logic (Template-based for MVP)
-- [ ] Session-based Integration (Run as a short-lived Agent Session)
-- [x] Integration with Issue Core (create_issue_file)
+- [ ] CLI 命令实现 (`monoco agent draft`)
+- [x] Mock 生成逻辑 (Template-based for MVP)
+- [ ] 基于 Session 的集成 (作为短生命周期的 Agent Session 运行)
+- [x] 与 Issue Core 集成 (create_issue_file)
 
 ## Review Comments
 <!-- Required for Review/Done stage. Record review feedback here. -->
@@ -55,16 +56,16 @@ This decouples Agent intelligence from the Daemon runtime, allowing for quick, s
 **Date**: 2026-01-24
 **Author**: Coroner (System)
 
-### Issue Analysis
-The previous session terminated unexpectedly while working on this feature.
-Upon inspection, the `monoco agent draft` command was marked as "Done", but the implementation is missing from `monoco/features/scheduler/cli.py`.
+### 问题分析
+在处理此 Feature 时，前一个 Session 意外终止。
+经检查，`monoco agent draft` 命令被标记为 "Done"，但 `monoco/features/scheduler/cli.py` 中缺失实现。
 
-### Findings
-1.  **Missing CLI Entry Point**: `monoco/features/scheduler/cli.py` only contains `run`, `kill`, `autopsy`, `list`, and `logs`. The `draft` command is not defined.
-2.  **Core Logic Exists**: `monoco/features/issue/core.py` correctly defines `create_issue_file`, and `monoco/features/scheduler/worker.py` appears to have `drafter` role logic.
-3.  **Inconsistent State**: The tasks were marked as completed in the Issue file, but the code does not reflect this.
+### 发现
+1.  **缺少 CLI 入口**: `monoco/features/scheduler/cli.py` 仅包含 `run`, `kill`, `autopsy`, `list`, 和 `logs`。`draft` 命令未定义。
+2.  **核心逻辑存在**: `monoco/features/issue/core.py` 正确定义了 `create_issue_file`，且 `monoco/features/scheduler/worker.py` 似乎包含 `drafter` 角色逻辑。
+3.  **状态不一致**: 任务在 Issue 文件中被标记为完成，但代码未反映这一点。
 
-### Recovery Plan
--   Reset tasks: "CLI Command Implementation" and "Session-based Integration".
--   Next agent must implement the `draft` command in `monoco/features/scheduler/cli.py`.
--   Verify that `monoco agent draft --desc "..."` correctly invokes the logic to create an issue file.
+### 恢复计划
+-   重置任务: "CLI 命令实现" 和 "基于 Session 的集成"。
+-   下一个 Agent 必须在 `monoco/features/scheduler/cli.py` 中实现 `draft` 命令。
+-   验证 `monoco agent draft --desc "..."` 正确调用逻辑以创建 issue 文件。
