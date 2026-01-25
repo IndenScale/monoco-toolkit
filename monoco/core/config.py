@@ -133,6 +133,40 @@ class IssueSchemaConfig(BaseModel):
         return self
 
 
+class DomainItem(BaseModel):
+    name: str = Field(..., description="Canonical domain name (e.g. backend.auth)")
+    description: Optional[str] = Field(None, description="Description of the domain")
+    aliases: List[str] = Field(default_factory=list, description="List of aliases")
+
+
+class DomainConfig(BaseModel):
+    items: List[DomainItem] = Field(
+        default_factory=list, description="List of defined domains"
+    )
+    strict: bool = Field(
+        default=False, description="If True, only allow defined domains"
+    )
+
+    def merge(self, other: "DomainConfig") -> "DomainConfig":
+        if not other:
+            return self
+
+        # Merge items by name
+        if other.items:
+            item_map = {item.name: item for item in self.items}
+            for item in other.items:
+                # Overwrite or merge aliases? Let's overwrite for simplicity/consistency
+                item_map[item.name] = item
+            self.items = list(item_map.values())
+
+        # Strict mode: logic? maybe strict overrides?
+        # Let's say if ANY config asks for strict, it is strict? Or last one wins (project)?
+        # Default merge is usually override.
+        self.strict = other.strict
+
+        return self
+
+
 class StateMachineConfig(BaseModel):
     transitions: List[TransitionConfig]
 
@@ -155,6 +189,7 @@ class MonocoConfig(BaseModel):
     )
 
     issue: IssueSchemaConfig = Field(default_factory=IssueSchemaConfig)
+    domains: DomainConfig = Field(default_factory=DomainConfig)
 
     @staticmethod
     def _deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
