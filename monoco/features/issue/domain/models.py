@@ -113,6 +113,7 @@ class IssueFrontmatter(BaseModel):
     parent: Optional[str] = None
     dependencies: List[str] = Field(default_factory=list)
     related: List[str] = Field(default_factory=list)
+    domains: List[str] = Field(default_factory=list)
     tags: List[str] = Field(default_factory=list)
     solution: Optional[IssueSolution] = None
     isolation: Optional[IssueIsolation] = None
