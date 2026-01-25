@@ -32,22 +32,12 @@ isolation:
 这将 Agent 智能与 Daemon 运行时解耦，允许快速、可脚本化的使用。
 
 ## 验收标准
-<!-- Define binary conditions for success. -->
 - [x] **CLI 命令**: `monoco agent draft` 可用。
 - [x] **输入**: 支持 `--type` 和 `--desc` (description)。
 - [x] **输出**: 根据描述自动生成结构化的 Issue 文件。
 - [x] **无状态**: 不需要运行中的 Daemon 或 Session。
 
 ## 技术任务
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
-
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
 
 - [x] CLI 命令实现 (`monoco agent draft`)
 - [x] Mock 生成逻辑 (Template-based for MVP)
@@ -55,7 +45,6 @@ isolation:
 - [x] 与 Issue Core 集成 (create_issue_file)
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
 - 2026-01-25: Implemented `draft` command in CLI. Fixed role name mismatch (crafter vs drafter). Fixed session monitoring loop to correctly poll worker status.
 
 ## Post-mortem (Session ae71e4f9)
