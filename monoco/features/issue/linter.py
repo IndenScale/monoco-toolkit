@@ -7,7 +7,7 @@ import re
 from monoco.core import git
 from . import core
 from .validator import IssueValidator
-from monoco.core.lsp import Diagnostic, DiagnosticSeverity
+from monoco.core.lsp import Diagnostic, DiagnosticSeverity, Range, Position
 
 console = Console()
 
@@ -68,15 +68,29 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                         files.extend(status_dir.rglob("*.md"))
 
                 for f in files:
-                    meta = core.parse_issue(f)
-                    if meta:
-                        local_id = meta.id
-                        full_id = f"{project_name}::{local_id}"
+                    try:
+                        meta = core.parse_issue(f, raise_error=True)
+                        if meta:
+                            local_id = meta.id
+                            full_id = f"{project_name}::{local_id}"
 
-                        all_issue_ids.add(local_id)
-                        all_issue_ids.add(full_id)
+                            all_issue_ids.add(local_id)
+                            all_issue_ids.add(full_id)
 
-                        project_issues.append((f, meta))
+                            project_issues.append((f, meta))
+                    except Exception as e:
+                        # Report parsing failure as diagnostic
+                        d = Diagnostic(
+                            range=Range(
+                                start=Position(line=0, character=0),
+                                end=Position(line=0, character=0),
+                            ),
+                            message=f"Schema Error: {str(e)}",
+                            severity=DiagnosticSeverity.Error,
+                            source="System",
+                        )
+                        d.data = {"path": f}
+                        diagnostics.append(d)
         return project_issues
 
     from monoco.core.config import get_config
@@ -425,6 +439,70 @@ def run_lint(
 
             except Exception as e:
                 console.print(f"[red]Failed to fix domains for {path.name}: {e}[/red]")
+
+            # Domain Alias Fix
+            try:
+                alias_fixes = [
+                    d for d in current_file_diags if "Domain Alias:" in d.message
+                ]
+                if alias_fixes:
+                    fm_match = re.search(
+                        r"^---(.*?)---", new_content, re.DOTALL | re.MULTILINE
+                    )
+                    if fm_match:
+                        import yaml
+
+                        fm_text = fm_match.group(1)
+                        data = yaml.safe_load(fm_text) or {}
+
+                        domain_changed = False
+                        if "domains" in data and isinstance(data["domains"], list):
+                            domains = data["domains"]
+                            for d in alias_fixes:
+                                # Parse message: Domain Alias: 'alias' is an alias for 'canonical'.
+                                m = re.search(
+                                    r"Domain Alias: '([^']+)' is an alias for '([^']+)'",
+                                    d.message,
+                                )
+                                if m:
+                                    old_d = m.group(1)
+                                    new_d = m.group(2)
+
+                                    if old_d in domains:
+                                        domains = [
+                                            new_d if x == old_d else x for x in domains
+                                        ]
+                                        domain_changed = True
+
+                            if domain_changed:
+                                data["domains"] = domains
+                                new_fm_text = yaml.dump(
+                                    data, sort_keys=False, allow_unicode=True
+                                )
+                                new_content = new_content.replace(
+                                    fm_match.group(1), "\n" + new_fm_text
+                                )
+                                has_changes = True
+
+                                # Write immediately if not handled by previous block?
+                                # We are in standard flow where has_changes flag handles write at end of loop?
+                                # Wait, the previous block (Missing domains) logic wrote internally ONLY if has_changes.
+                                # AND it reset has_changes=False at start of try?
+                                # Actually the previous block structure was separate try-except blocks.
+                                # But here I am inserting AFTER the Missing Domains try-except (which was lines 390-442).
+                                # But I need to write if I changed it.
+                                path.write_text(new_content)
+                                if not any(path == p for p in processed_paths):
+                                    fixed_count += 1
+                                    processed_paths.add(path)
+                                console.print(
+                                    f"[dim]Fixed (Domain Alias): {path.name}[/dim]"
+                                )
+
+            except Exception as e:
+                console.print(
+                    f"[red]Failed to fix domain aliases for {path.name}: {e}[/red]"
+                )
 
         console.print(f"[green]Applied auto-fixes to {fixed_count} files.[/green]")
 

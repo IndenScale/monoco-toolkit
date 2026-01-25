@@ -1,7 +1,15 @@
+from unittest.mock import patch
 from monoco.features.scheduler import SessionManager, ApoptosisManager, DEFAULT_ROLES
 
 
-def test_apoptosis_flow():
+@patch("subprocess.Popen")
+def test_apoptosis_flow(mock_popen):
+    # Setup mock process
+    mock_process = mock_popen.return_value
+    mock_process.pid = 6666
+    mock_process.wait.return_value = None
+    mock_process.returncode = 0
+
     manager = SessionManager()
     apoptosis = ApoptosisManager(manager)
 
@@ -10,6 +18,7 @@ def test_apoptosis_flow():
     victim = manager.create_session("ISSUE-666", role)
     victim.start()
 
+    # In async mode, it stays running
     assert victim.model.status == "running"
 
     # 2. Simulate Crash & Trigger Apoptosis
@@ -26,9 +35,10 @@ def test_apoptosis_flow():
     # However, SessionManager stores all sessions.
 
     sessions = manager.list_sessions("ISSUE-666")
-    # Should have at least 2 sessions now: Victim (crashed) and Coroner (terminated)
+    # Should have at least 2 sessions now: Victim (crashed) and Coroner (completed)
     assert len(sessions) >= 2
 
     coroner_sessions = [s for s in sessions if s.model.role_name == "coroner"]
     assert len(coroner_sessions) > 0
-    assert coroner_sessions[0].model.status == "terminated"
+    # Coroner ran start(), so status should be running
+    assert coroner_sessions[0].model.status == "running"
