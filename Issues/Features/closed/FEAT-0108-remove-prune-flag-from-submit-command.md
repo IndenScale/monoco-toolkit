@@ -2,12 +2,12 @@
 id: FEAT-0108
 uid: 0bb83e
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: Remove prune flag from submit command
 created_at: '2026-01-26T00:01:40'
-updated_at: '2026-01-26T00:12:09'
-parent: null # <EPIC-ID> Optional
+updated_at: 2026-01-26 00:13:11
+parent: null
 dependencies: []
 related: []
 domains: []
@@ -15,10 +15,8 @@ tags:
 - '#FEAT-0108'
 files: []
 opened_at: '2026-01-26T00:01:40'
-isolation:
-  type: branch
-  ref: feat/feat-0108-remove-prune-flag-from-submit-command
-  created_at: '2026-01-26T00:09:07'
+closed_at: '2026-01-26T00:13:06'
+solution: implemented
 ---
 
 ## FEAT-0108: Remove prune flag from submit command
