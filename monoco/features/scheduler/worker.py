@@ -1,5 +1,6 @@
 from typing import Optional
 from .models import RoleTemplate
+from .engines import EngineFactory
 
 
 class Worker:
@@ -65,10 +66,9 @@ class Worker:
         print(f"[{self.role.name}] Goal: {self.role.goal}")
 
         try:
-            # Execute CLI agent with YOLO mode
-            engine_args = (
-                [engine, "-y", prompt] if engine == "gemini" else [engine, prompt]
-            )
+            # Use factory to get the appropriate engine adapter
+            adapter = EngineFactory.create(engine)
+            engine_args = adapter.build_command(prompt)
 
             self._process = subprocess.Popen(
                 engine_args, stdout=sys.stdout, stderr=sys.stderr, text=True
@@ -78,6 +78,9 @@ class Worker:
             # DO NOT WAIT HERE.
             # The scheduler/monitoring loop is responsible for checking status.
 
+        except ValueError as e:
+            # Engine not supported by factory
+            raise RuntimeError(f"Unsupported engine '{engine}'. {str(e)}")
         except FileNotFoundError:
             raise RuntimeError(
                 f"Agent engine '{engine}' not found. Please ensure it is installed and in PATH."
