@@ -1,15 +1,26 @@
 ---
+id: FEAT-0102
+uid: a1b2c3
 type: feature
 status: open
+stage: review
+title: 重构 Worker 为异步执行模式
+created_at: '2026-01-25T14:30:00'
+updated_at: '2026-01-25T14:30:00'
 priority: high
+parent: null
+dependencies: []
+related: []
+domains: []
 tags:
-  - "#EPIC-0008"
+- '#EPIC-0008'
+- '#FEAT-0102'
 files:
-  - monoco/features/scheduler/worker.py
-  - monoco/features/scheduler/session.py
-  - monoco/features/scheduler/manager.py
-  - tests/features/test_scheduler.py
-  - tests/features/test_session.py
+- monoco/features/scheduler/worker.py
+- monoco/features/scheduler/session.py
+- monoco/features/scheduler/manager.py
+- tests/features/test_scheduler.py
+- tests/features/test_session.py
 ---
 
 ## FEAT-0102: 重构 Worker 为异步执行模式
