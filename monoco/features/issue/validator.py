@@ -8,6 +8,7 @@ from monoco.features.i18n.core import detect_language
 from .models import IssueMetadata
 from .domain.parser import MarkdownParser
 from .domain.models import ContentBlock
+from .resolver import ReferenceResolver, ResolutionContext
 
 
 class IssueValidator:
@@ -20,9 +21,19 @@ class IssueValidator:
         self.issue_root = issue_root
 
     def validate(
-        self, meta: IssueMetadata, content: str, all_issue_ids: Set[str] = set()
+        self,
+        meta: IssueMetadata,
+        content: str,
+        all_issue_ids: Set[str] = set(),
+        current_project: Optional[str] = None,
+        workspace_root: Optional[str] = None,
     ) -> List[Diagnostic]:
+        """
+        Validate an issue and return diagnostics.
+        """
         diagnostics = []
+        self._current_project = current_project
+        self._workspace_root = workspace_root
 
         # Parse Content into Blocks (Domain Layer)
         # Handle case where content might be just body (from update_issue) or full file
@@ -406,6 +417,16 @@ class IssueValidator:
     ) -> List[Diagnostic]:
         diagnostics = []
 
+        # Initialize Resolver
+        resolver = None
+        if all_ids:
+            context = ResolutionContext(
+                current_project=self._current_project or "local",
+                workspace_root=self._workspace_root,
+                available_ids=all_ids,
+            )
+            resolver = ReferenceResolver(context)
+
         # Malformed ID Check
         if meta.parent and meta.parent.startswith("#"):
             line = self._get_field_line(content, "parent")
@@ -441,7 +462,7 @@ class IssueValidator:
                         )
                     )
 
-        if not all_ids:
+        if not all_ids or not resolver:
             return diagnostics
 
         # Logic: Epics must have a parent (unless it is the Sink Root EPIC-0000)
@@ -457,8 +478,8 @@ class IssueValidator:
 
         if (
             meta.parent
-            and meta.parent not in all_ids
             and not meta.parent.startswith("#")
+            and not resolver.is_valid_reference(meta.parent)
         ):
             line = self._get_field_line(content, "parent")
             diagnostics.append(
@@ -470,7 +491,7 @@ class IssueValidator:
             )
 
         for dep in meta.dependencies:
-            if dep not in all_ids:
+            if not resolver.is_valid_reference(dep):
                 line = self._get_field_line(content, "dependencies")
                 diagnostics.append(
                     self._create_diagnostic(
@@ -503,24 +524,27 @@ class IssueValidator:
             matches = re.finditer(r"\b((?:EPIC|FEAT|CHORE|FIX)-\d{4})\b", line)
             for match in matches:
                 ref_id = match.group(1)
-                if ref_id != meta.id and ref_id not in all_ids:
-                    # Check if it's a namespaced ID? The regex only catches local IDs.
-                    # If users use MON::FEAT-0001, the regex might catch FEAT-0001.
-                    # But all_ids contains full IDs (potentially namespaced).
-                    # Simple logic: if ref_id isn't in all_ids, check if any id ENDS with ref_id
+                # Check for namespaced ID before this match?
+                # The regex above only catches the ID part.
+                # Let's adjust regex to optionally catch namespace::
+                full_match = re.search(
+                    r"\b(?:([a-z0-9_-]+)::)?(" + re.escape(ref_id) + r")\b",
+                    line[max(0, match.start() - 50) : match.end()],
+                )
 
-                    found_namespaced = any(
-                        known.endswith(f"::{ref_id}") for known in all_ids
-                    )
+                check_id = ref_id
+                if full_match and full_match.group(1):
+                    check_id = f"{full_match.group(1)}::{ref_id}"
 
-                    if not found_namespaced:
-                        diagnostics.append(
-                            self._create_diagnostic(
-                                f"Broken Reference: Issue '{ref_id}' not found.",
-                                DiagnosticSeverity.Warning,
-                                line=i,
-                            )
+                if ref_id != meta.id and not resolver.is_valid_reference(check_id):
+                    diagnostics.append(
+                        self._create_diagnostic(
+                            f"Broken Reference: Issue '{check_id}' not found.",
+                            DiagnosticSeverity.Warning,
+                            line=i,
                         )
+                    )
+        return diagnostics
         return diagnostics
 
     def _validate_time_consistency(
