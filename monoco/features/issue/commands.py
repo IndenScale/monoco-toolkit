@@ -17,6 +17,9 @@ backlog_app = typer.Typer(help="Manage backlog operations.")
 lsp_app = typer.Typer(help="LSP Server commands.")
 app.add_typer(backlog_app, name="backlog")
 app.add_typer(lsp_app, name="lsp")
+from . import domain_commands
+
+app.add_typer(domain_commands.app, name="domain")
 console = Console()
 
 
@@ -45,12 +48,12 @@ def create(
     ),
     sprint: Optional[str] = typer.Option(None, "--sprint", help="Sprint ID"),
     tags: List[str] = typer.Option([], "--tag", help="Tags"),
+    domains: List[str] = typer.Option([], "--domain", help="Domains"),
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
     json: AgentOutput = False,
 ):
-    """Create a new issue."""
     """Create a new issue."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
@@ -79,6 +82,7 @@ def create(
             stage=stage,
             dependencies=dependencies,
             related=related,
+            domains=domains,
             subdir=subdir,
             sprint=sprint,
             tags=tags,
@@ -98,6 +102,25 @@ def create(
                 f"[green]✔ Created {issue.id} in status {issue.status}.[/green]"
             )
             console.print(f"Path: {rel_path}")
+
+            # Prompt for Language
+            target_langs = config.i18n.target_langs
+            primary_lang = target_langs[0] if target_langs else "en"
+
+            # Simple mapping for display
+            lang_display = {
+                "zh": "Chinese (Simplified)",
+                "en": "English",
+                "ja": "Japanese",
+            }.get(primary_lang, primary_lang)
+
+            console.print(
+                f"\n[bold yellow]Agent Hint:[/bold yellow] Please fill the ticket content in [bold cyan]{lang_display}[/bold cyan]."
+            )
+
+    except ValueError as e:
+        OutputManager.error(str(e))
+        raise typer.Exit(code=1)
 
     except ValueError as e:
         OutputManager.error(str(e))

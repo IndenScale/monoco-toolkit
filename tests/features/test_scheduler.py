@@ -53,10 +53,31 @@ def test_worker_init():
     assert worker.role.name == "crafter"
 
 
-def test_worker_lifecycle():
+@patch("subprocess.Popen")
+def test_worker_lifecycle(mock_popen):
+    # Setup mock process
+    mock_process = mock_popen.return_value
+    mock_process.pid = 12345
+    # Remove wait setup here, check poll
+    mock_process.poll.return_value = None
+    mock_process.returncode = 0
+
     role = DEFAULT_ROLES[0]
     worker = Worker(role, "ISSUE-123")
+
+    # Start calls _execute_work which launches Popen and returns.
     worker.start()
+
+    # Async: should be running
     assert worker.status == "running"
+
+    # Check poll()
+    assert worker.poll() == "running"
+
+    # Simulate completion
+    mock_process.poll.return_value = 0
+    assert worker.poll() == "completed"
+    assert worker.status == "completed"
+
     worker.stop()
     assert worker.status == "terminated"
