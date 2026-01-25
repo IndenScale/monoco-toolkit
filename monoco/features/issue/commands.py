@@ -267,10 +267,6 @@ def start(
 @app.command("submit")
 def submit(
     issue_id: str = typer.Argument(..., help="Issue ID to submit"),
-    prune: bool = typer.Option(
-        False, "--prune", help="Delete branch/worktree after submit"
-    ),
-    force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
@@ -292,22 +288,11 @@ def submit(
         except Exception as e:
             report_status = f"failed: {e}"
 
-        pruned_resources = []
-        if prune:
-            try:
-                pruned_resources = core.prune_issue_resources(
-                    issues_root, issue_id, force, project_root
-                )
-            except Exception as e:
-                OutputManager.error(f"Prune Error: {e}")
-                raise typer.Exit(code=1)
-
         OutputManager.print(
             {
                 "issue": issue,
                 "status": "submitted",
                 "report": report_status,
-                "pruned": pruned_resources,
             }
         )
 
