@@ -12,22 +12,23 @@ class Worker:
         self.issue_id = issue_id
         self.status = "pending"  # pending, running, suspended, terminated
         self.process_id: Optional[int] = None
+        self._process = None
 
     def start(self, context: Optional[dict] = None):
         """
-        Start the worker session.
+        Start the worker session asynchronously.
         """
-        if self.status != "pending":
+        # Allow restart if not currently running
+        if self.status == "running":
             return
 
         print(f"Starting worker {self.role.name} for issue {self.issue_id}")
-        self.status = "running"
 
         try:
             self._execute_work(context)
-            self.status = "completed"
+            self.status = "running"
         except Exception as e:
-            print(f"Worker failed: {e}")
+            print(f"Worker failed to start: {e}")
             self.status = "failed"
             raise
 
@@ -68,18 +69,13 @@ class Worker:
                 [engine, "-y", prompt] if engine == "gemini" else [engine, prompt]
             )
 
-            process = subprocess.Popen(
+            self._process = subprocess.Popen(
                 engine_args, stdout=sys.stdout, stderr=sys.stderr, text=True
             )
-            self.process_id = process.pid
+            self.process_id = self._process.pid
 
-            # Wait for completion
-            process.wait()
-
-            if process.returncode != 0:
-                raise RuntimeError(
-                    f"Agent engine {engine} failed (exit code {process.returncode})"
-                )
+            # DO NOT WAIT HERE.
+            # The scheduler/monitoring loop is responsible for checking status.
 
         except FileNotFoundError:
             raise RuntimeError(
@@ -88,6 +84,33 @@ class Worker:
         except Exception as e:
             print(f"[{self.role.name}] Process Error: {e}")
             raise
+
+    def poll(self) -> str:
+        """
+        Check process status. Returns current worker status.
+        Updates self.status if process has finished.
+        """
+        if not self._process:
+            return self.status
+
+        returncode = self._process.poll()
+        if returncode is None:
+            return "running"
+
+        if returncode == 0:
+            self.status = "completed"
+        else:
+            self.status = "failed"
+
+        return self.status
+
+    def wait(self):
+        """
+        Block until process finishes.
+        """
+        if self._process:
+            self._process.wait()
+            self.poll()  # Update status
 
     def stop(self):
         """
