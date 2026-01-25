@@ -67,12 +67,6 @@ monoco init
     monoco issue create feature -t "实现深色模式"
     ```
 
-    monoco issue create feature -t "实现深色模式"
-
-    ```
-
-    ```
-
 2.  **启动**: 自动创建分支。
     ```bash
     monoco issue start FEAT-001 --branch
