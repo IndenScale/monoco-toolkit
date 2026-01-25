@@ -101,7 +101,7 @@ def test_validator_incomplete_tasks():
 def test_validator_domains_maturity():
     validator = IssueValidator()
     # Content without domains
-    content = SAMPLE_ISSUE_CONTENT
+    content = SAMPLE_ISSUE_CONTENT.replace("domains: []\n", "")
 
     issue = MarkdownParser.parse(content)
     from monoco.features.issue.models import IssueMetadata
