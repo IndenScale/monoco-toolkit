@@ -10,6 +10,62 @@ app = typer.Typer(name="agent", help="Manage agent sessions")
 
 
 @app.command()
+def draft(
+    desc: str = typer.Option(..., "--desc", "-d", help="Description of the task"),
+    type: str = typer.Option(
+        "feature", "--type", "-t", help="Issue type (feature/chore/fix)"
+    ),
+):
+    """
+    Draft a new issue based on a natural language description.
+    This creates a temporary 'drafter' agent session.
+    """
+    from monoco.core.output import print_error
+
+    settings = get_config()
+    project_root = Path(settings.paths.root).resolve()
+
+    # Load Roles
+    roles = load_scheduler_config(project_root)
+    # Use 'crafter' as the role for drafting (it handles new tasks)
+    role_name = "crafter"
+    selected_role = roles.get(role_name)
+
+    if not selected_role:
+        print_error(f"Role '{role_name}' not found.")
+        raise typer.Exit(code=1)
+
+    print_output(
+        f"Drafting {type} from description: '{desc}'",
+        title="Agent Drafter",
+    )
+
+    manager = SessionManager()
+    # We use a placeholder ID as we don't know the ID yet.
+    # The agent is expected to create the file, so the ID will be generated then.
+    session = manager.create_session("NEW_TASK", selected_role)
+
+    context = {"description": desc, "type": type}
+
+    try:
+        session.start(context=context)
+
+        # Monitoring Loop
+        while session.refresh_status() == "running":
+            time.sleep(1)
+
+        if session.model.status == "failed":
+            print_error("Drafting failed.")
+        else:
+            print_output("Drafting completed.", title="Agent Drafter")
+
+    except KeyboardInterrupt:
+        print("\nStopping...")
+        session.terminate()
+        print_output("Drafting cancelled.")
+
+
+@app.command()
 def run(
     target: str = typer.Argument(
         ..., help="Issue ID (e.g. FEAT-101) or a Task Description in quotes."
@@ -43,6 +99,7 @@ def run(
         role_name = role or "builder"
         description = None
     else:
+        # Implicit Draft Mode via run command
         issue_id = "NEW_TASK"
         role_name = role or "crafter"
         description = target
@@ -84,7 +141,7 @@ def run(
             session.start(context=context)
 
         # Monitoring Loop
-        while session.model.status == "running":
+        while session.refresh_status() == "running":
             time.sleep(1)
 
         if session.model.status == "failed":
@@ -192,13 +249,3 @@ def logs(session_id: str):
     # Placeholder
     print("[12:00:00] Session started")
     print("[12:00:01] Worker initialized")
-
-
-@app.command()
-def kill(session_id: str):
-    """
-    Terminate a session.
-    """
-    print_output(f"Killing session {session_id}...", title="Kill Session")
-    # Placeholder
-    print("Signal sent.")
