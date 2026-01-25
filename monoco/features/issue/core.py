@@ -133,6 +133,7 @@ def create_issue_file(
     stage: Optional[IssueStage] = None,
     dependencies: List[str] = [],
     related: List[str] = [],
+    domains: List[str] = [],
     subdir: Optional[str] = None,
     sprint: Optional[str] = None,
     tags: List[str] = [],
@@ -155,8 +156,7 @@ def create_issue_file(
 
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    # Auto-Populate Tags with required IDs (Requirement: Maintain tags field with parent/deps/related/self IDs)
-    # Ensure they are prefixed with '#' for tagging convention if not present (usually tags are just strings, but user asked for #ID)
+    # Auto-Populate Tags with required IDs
     auto_tags = set(tags) if tags else set()
 
     # 1. Add Parent
@@ -171,15 +171,14 @@ def create_issue_file(
     for rel in related:
         auto_tags.add(f"#{rel}")
 
-    # 4. Add Self (as per instruction "auto add this issue... number")
-    # Note: issue_id is generated just above
+    # 4. Add Self
     auto_tags.add(f"#{issue_id}")
 
     final_tags = sorted(list(auto_tags))
 
     metadata = IssueMetadata(
         id=issue_id,
-        uid=generate_uid(),  # Generate global unique identifier
+        uid=generate_uid(),
         type=issue_type,
         status=status,
         stage=stage,
@@ -187,43 +186,92 @@ def create_issue_file(
         parent=parent,
         dependencies=dependencies,
         related=related,
+        domains=domains,
         sprint=sprint,
         tags=final_tags,
         opened_at=current_time() if status == IssueStatus.OPEN else None,
     )
 
-    # Enforce lifecycle policies (defaults, auto-corrections)
+    # Enforce lifecycle policies
     from .engine import get_engine
 
     get_engine().enforce_policy(metadata)
 
     # Serialize metadata
-    # Explicitly exclude actions and path from file persistence
-    yaml_header = yaml.dump(
-        metadata.model_dump(
-            exclude_none=True, mode="json", exclude={"actions", "path"}
-        ),
-        sort_keys=False,
-        allow_unicode=True,
+    # We want explicit fields even if None/Empty to enforce schema awareness
+    data = metadata.model_dump(
+        exclude_none=True, mode="json", exclude={"actions", "path"}
     )
 
-    # Inject Self-Documenting Hints (Interactive Frontmatter)
-    if "parent:" not in yaml_header:
-        yaml_header += "# parent: <EPIC-ID>   # Optional: Parent Issue ID\n"
-    if "solution:" not in yaml_header:
-        yaml_header += "# solution: null      # Required for Closed state (implemented, cancelled, etc.)\n"
+    # Force explicit keys if missing (due to exclude_none or defaults)
+    if "parent" not in data:
+        data["parent"] = None
+    if "dependencies" not in data:
+        data["dependencies"] = []
+    if "related" not in data:
+        data["related"] = []
+    if "domains" not in data:
+        data["domains"] = []
+    if "files" not in data:
+        data["files"] = []
 
-    if "dependencies:" not in yaml_header:
-        yaml_header += "# dependencies: []    # List of dependency IDs\n"
-    if "related:" not in yaml_header:
-        yaml_header += "# related: []         # List of related issue IDs\n"
-    if "files:" not in yaml_header:
-        yaml_header += "# files: []           # List of modified files\n"
+    # Custom YAML Dumper to preserve None as 'null' and order
+    # Helper to order keys: id, uid, type, status, stage, title, ... graph ...
+    # Simple sort isn't enough, we rely on insertion order (Python 3.7+)
+    ordered_data = {
+        k: data[k]
+        for k in [
+            "id",
+            "uid",
+            "type",
+            "status",
+            "stage",
+            "title",
+            "created_at",
+            "updated_at",
+        ]
+        if k in data
+    }
+    # Add graph fields
+    for k in [
+        "priority",
+        "parent",
+        "dependencies",
+        "related",
+        "domains",
+        "tags",
+        "files",
+    ]:
+        if k in data:
+            ordered_data[k] = data[k]
+        elif k in ["dependencies", "related", "domains", "tags", "files"]:
+            ordered_data[k] = []
+        elif k == "parent":
+            ordered_data[k] = None
+
+    # Add remaining
+    for k, v in data.items():
+        if k not in ordered_data:
+            ordered_data[k] = v
+
+    yaml_header = yaml.dump(
+        ordered_data, sort_keys=False, allow_unicode=True, default_flow_style=False
+    )
+
+    # Inject Comments for guidance (replace keys with key+comment)
+    # Note: Regex replacement is fragile but functional for simple YAML
+    if parent is None:
+        yaml_header = yaml_header.replace(
+            "parent: null", "parent: null # <EPIC-ID> Optional"
+        )
+
+    # We don't need to inject missing keys anymore because we forced them above.
+    # Just add comments to existing empty lists if desired?
+    # Keeping it simple for now.
 
     slug = _get_slug(title)
     filename = f"{issue_id}-{slug}.md"
 
-    # Enhanced Template with Instructional Comments
     file_content = f"""---
 {yaml_header}---
 
@@ -255,7 +303,6 @@ def create_issue_file(
     file_path = target_dir / filename
     file_path.write_text(file_content)
 
-    # Inject path into returned metadata
     metadata.path = str(file_path.absolute())
 
     return metadata, file_path
