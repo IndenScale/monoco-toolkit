@@ -10,8 +10,7 @@ priority: high
 parent: EPIC-0000
 dependencies: []
 related: []
-domains:
-- intelligence
+domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0106'
