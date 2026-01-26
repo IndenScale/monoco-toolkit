@@ -25,6 +25,7 @@
 - **发布策略**:
   - **Trigger**: 仅通过 Git Tag (`v*`) 触发发布流水线。
   - **Constraint**: 严禁维护长周期的 `release` 分支。
+  - **Version Update**: 必须使用 `python Toolkit/scripts/set_version.py <version>` 更新版本号，严禁手动修改配置文件。
 
 ## Issue 管理 (Agent 指引)
 
