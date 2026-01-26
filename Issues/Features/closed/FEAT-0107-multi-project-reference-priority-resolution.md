@@ -10,8 +10,7 @@ updated_at: 2026-01-26 00:23:42
 parent: EPIC-0001
 dependencies: []
 related: []
-domains:
-- intelligence
+domains: []
 tags:
 - '#EPIC-0001'
 - '#FEAT-0107'

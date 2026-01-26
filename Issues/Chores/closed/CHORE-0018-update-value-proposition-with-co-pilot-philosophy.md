@@ -4,7 +4,7 @@ uid: c7337a
 type: chore
 status: closed
 stage: done
-title: Update Value Proposition with Co-pilot Philosophy
+title: 更新价值主张为 Co-pilot 哲学
 created_at: '2026-01-26T01:11:50'
 opened_at: '2026-01-26T01:11:50'
 updated_at: '2026-01-26T01:12:45'
@@ -18,20 +18,20 @@ tags:
 files: []
 ---
 
-## CHORE-0018: Update Value Proposition with Co-pilot Philosophy
+## CHORE-0018: 更新价值主张为 Co-pilot 哲学
 
-## Objective
-Enhance the value proposition in the READMEs to emphasize the "Co-pilot" nature of Monoco: Just-enough automation (user in control), adherence to SWE best practices (IDD, Git), and the "Process as Product" (Dogfooding) philosophy.
+## 目标 (Objective)
+增强 README 中的价值主张，强调 Monoco 的 "Co-pilot" 本质：恰到好处的自动化（用户掌控）、遵循 SWE 最佳实践（IDD, Git）以及 "过程即产品" (Dogfooding) 哲学。
 
-## Acceptance Criteria
-- [x] README_ZH.md "Core Concepts" replaced with 3 new pillars: Co-pilot, Best Practices, Dogfooding.
-- [x] README.md "Core Concepts" replaced with equivalent English pillars.
-- [x] The tone emphasizes "Assisted Driving" over "Full Self-Driving".
+## 验收标准 (Acceptance Criteria)
+- [x] README_ZH.md "核心概念" 替换为 3 个新支柱：Co-pilot, Best Practices, Dogfooding。
+- [x] README.md "Core Concepts" 替换为等效的英文支柱。
+- [x] 语调强调 "辅助驾驶" 胜过 "全自动驾驶"。
 
-## Technical Tasks
-- [x] Update `Toolkit/README_ZH.md`.
-- [x] Update `Toolkit/README.md`.
+## 技术任务 (Technical Tasks)
+- [x] 更新 `Toolkit/README_ZH.md`。
+- [x] 更新 `Toolkit/README.md`。
 
-## Review Comments
-- Documentation now clearly positions Monoco as a tool for "Agentic Engineering" with human oversight, rather than a black-box automation tool.
-- The "Dogfooding" point is critical for building trust.
+## 评审备注 (Review Comments)
+- 文档现在清楚地将 Monoco 定位为具有人类监督的 "Agentic Engineering" 工具，而不是黑盒自动化工具。
+- "Dogfooding" 点对于建立信任至关重要。
