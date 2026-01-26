@@ -29,7 +29,7 @@ tags:
 
 - [x] **Project Namespace Support**:
   - `monoco.yaml` 支持定义 Workspace 成员项目。
-  - 支持 `project::ID` (例如 `toolkit::FEAT-0004`) 的引用语法。
+  - 支持 `project::ID` (例如 `FEAT-0004`) 的引用语法。
 - [x] **Identity Stabilization (UID)**:
   - 在 Issue 元数据中引入全局唯一的 `uid` (Short Hash)。
   - 当 Issue 跨项目移动导致物理 ID 冲突时，系统能根据 `uid` 进行唯一性识别。

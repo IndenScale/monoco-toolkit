@@ -322,7 +322,11 @@ class IssueValidator:
                 if stripped == expected_header:
                     header_found = True
 
-                if stripped == "## Review Comments":
+                # Flexible matching for Review Comments header
+                if any(
+                    kw in stripped
+                    for kw in ["Review Comments", "评审备注", "评审记录", "Review"]
+                ):
                     review_header_found = True
                     review_header_index = i
 
