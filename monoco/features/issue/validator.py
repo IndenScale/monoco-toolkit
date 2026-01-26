@@ -478,6 +478,7 @@ class IssueValidator:
 
         if (
             meta.parent
+            and meta.parent != "EPIC-0000"
             and not meta.parent.startswith("#")
             and not resolver.is_valid_reference(meta.parent)
         ):
