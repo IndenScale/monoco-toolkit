@@ -4,7 +4,7 @@ uid: df018a
 type: chore
 status: closed
 stage: done
-title: Sync Issue Best Practices to Agent Prompts
+title: 同步 Issue 最佳实践到 Agent 提示词
 created_at: '2026-01-26T00:51:15'
 opened_at: '2026-01-26T00:51:15'
 updated_at: 2026-01-26 00:55:25
@@ -21,22 +21,22 @@ files:
 - monoco/features/issue/resources/zh/AGENTS.md
 ---
 
-## CHORE-0015: Sync Issue Best Practices to Agent Prompts
+## CHORE-0015: 同步 Issue 最佳实践到 Agent 提示词
 
-## Objective
-Ensure that the Agent Guidance (AGENTS.md) in both English and Chinese accurately reflects the strict Issue Driven Development best practices, specifically the "Issue First" rule and the precise timing for environment cleanup.
+## 目标 (Objective)
+确保英汉双语的 Agent 指南 (AGENTS.md) 准确反映严格的 Issue 驱动开发最佳实践，特别是 "Issue First" 规则和环境清理的精确时机。
 
-## Acceptance Criteria
-- [x] English AGENTS.md includes "Issue First" rule.
-- [x] English AGENTS.md includes correct prune timing (close only).
-- [x] Chinese AGENTS.md includes "Issue First" rule.
-- [x] Chinese AGENTS.md includes correct prune timing (close only).
+## 验收标准 (Acceptance Criteria)
+- [x] 英文 AGENTS.md 包含 "Issue First" 规则。
+- [x] 英文 AGENTS.md 包含正确的 prune 时机 (仅 close 时)。
+- [x] 中文 AGENTS.md 包含 "Issue First" 规则。
+- [x] 中文 AGENTS.md 包含正确的 prune 时机 (仅 close 时)。
 
-## Technical Tasks
+## 技术任务 (Technical Tasks)
 
-- [x] Update `monoco/features/issue/resources/en/AGENTS.md`
-- [x] Update `monoco/features/issue/resources/zh/AGENTS.md`
+- [x] 更新 `monoco/features/issue/resources/en/AGENTS.md`
+- [x] 更新 `monoco/features/issue/resources/zh/AGENTS.md`
 
-## Review Comments
+## 评审备注 (Review Comments)
 <!-- Required for Review/Done stage. Record review feedback here. -->
 Self-reviewed. Changes align with GEMINI.md core principles.

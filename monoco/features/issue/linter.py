@@ -4,7 +4,6 @@ from rich.console import Console
 from rich.table import Table
 import typer
 import re
-from monoco.core import git
 from monoco.core.config import get_config
 from . import core
 from .validator import IssueValidator
@@ -13,36 +12,8 @@ from monoco.core.lsp import Diagnostic, DiagnosticSeverity, Range, Position
 console = Console()
 
 
-def check_environment_policy(project_root: Path):
-    """
-    Guardrail: Prevent direct modifications on protected branches (main/master).
-    """
-    # Only enforce if it is a git repo
-    try:
-        if not git.is_git_repo(project_root):
-            return
-
-        current_branch = git.get_current_branch(project_root)
-        # Standard protected branches
-        if current_branch in ["main", "master", "production"]:
-            # Check if dirty (uncommitted changes)
-            changed_files = git.get_git_status(project_root)
-            if changed_files:
-                console.print("\n[bold red]🛑 Environment Policy Violation[/bold red]")
-                console.print(
-                    f"You are modifying code directly on protected branch: [bold cyan]{current_branch}[/bold cyan]"
-                )
-                console.print(f"Found {len(changed_files)} uncommitted changes.")
-                console.print(
-                    "[yellow]Action Required:[/yellow] Please stash your changes and switch to a feature branch."
-                )
-                console.print("  > git stash")
-                console.print("  > monoco issue start <ID> --branch")
-                console.print("  > git stash pop")
-                raise typer.Exit(code=1)
-    except Exception:
-        # Fail safe: Do not block linting if git check fails unexpectedly
-        pass
+# Removed check_environment_policy as per project philosophy:
+# Toolkit should not interfere with Git operations.
 
 
 def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnostic]:
@@ -188,9 +159,8 @@ def run_lint(
         format: Output format (table, json)
         file_paths: Optional list of paths to files to validate (LSP/Pre-commit mode)
     """
-    # 0. Environment Policy Check (Guardrail)
-    # We assume issues_root.parent is the project root or close enough for git context
-    check_environment_policy(issues_root.parent)
+    # No environment policy check here.
+    # Toolkit should remain focused on Issue integrity.
 
     diagnostics = []
 

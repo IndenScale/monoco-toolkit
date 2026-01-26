@@ -14,8 +14,7 @@ tags:
 - '#EPIC-0000'
 - root
 - toolkit
-domains:
-- intelligence
+domains: []
 progress: 18/20
 files_count: 1
 ---

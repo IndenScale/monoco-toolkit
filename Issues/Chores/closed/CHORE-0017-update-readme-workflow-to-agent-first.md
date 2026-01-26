@@ -4,7 +4,7 @@ uid: eb92ec
 type: chore
 status: closed
 stage: done
-title: Update README Workflow to Agent-First
+title: 更新 README 工作流为 Agent 优先
 created_at: '2026-01-26T01:05:52'
 opened_at: '2026-01-26T01:05:52'
 updated_at: '2026-01-26T01:06:42'
@@ -18,20 +18,20 @@ tags:
 files: []
 ---
 
-## CHORE-0017: Update README Workflow to Agent-First
+## CHORE-0017: 更新 README 工作流为 Agent 优先
 
-## Objective
-Update the "Engineering Loop" section in READMEs to reflect the Agent-First workflow (Chat -> Plan -> Build -> Ship) instead of manual CLI usage. The user shouldn't need to learn CLI APIs for daily work.
+## 目标 (Objective)
+更新 README 中的 "工程闭环" 章节，以反映 Agent 优先的工作流 (Chat -> Plan -> Build -> Ship)，而非手动 CLI 使用。用户不应需要为日常工作学习 CLI API。
 
-## Acceptance Criteria
-- [x] README.md Step 4 simplified to Agent Interaction.
-- [x] README_ZH.md Step 4 simplified to Agent Interaction.
-- [x] CLI commands removed from the execution loop description.
+## 验收标准 (Acceptance Criteria)
+- [x] README.md 步骤 4 简化为 Agent 交互。
+- [x] README_ZH.md 步骤 4 简化为 Agent 交互。
+- [x] 从执行循环描述中移除了 CLI 命令。
 
-## Technical Tasks
-- [x] Rewrite "The Engineering Loop" in `Toolkit/README.md`.
-- [x] Rewrite "工程闭环" in `Toolkit/README_ZH.md`.
+## 技术任务 (Technical Tasks)
+- [x] 重写 `Toolkit/README.md` 中的 "The Engineering Loop"。
+- [x] 重写 `Toolkit/README_ZH.md` 中的 "工程闭环"。
 
-## Review Comments
-- Updated the documentation to emphasize that the Agent acts as the DevOps engineer, handling the underlying CLI commands.
-- The flow is now: Chat -> Plan (Ticket) -> Review -> Build (Branch/Code) -> Ship (Merge/Close).
+## 评审备注 (Review Comments)
+- 更新了文档以强调 Agent 充当 DevOps 工程师，处理底层 CLI 命令。
+- 流程现在是：Chat -> Plan (Ticket) -> Review -> Build (Branch/Code) -> Ship (Merge/Close)。
