@@ -47,5 +47,5 @@ Manage internationalization.
 Manage release lifecycle and versioning.
 
 - **Protocol**: Releases must be pushed from a dedicated branch `release/vX.Y.Z` matching the version in `pyproject.toml`.
-- **Set Version**: `python Toolkit/scripts/set_version.py <version>` (Update version in all manifests)
+- **Set Version**: **MUST** use `python Toolkit/scripts/set_version.py <version>` to update version in all manifests. **DO NOT** edit version numbers manually.
 - **Release Check**: `Toolkit/scripts/run_release_checks.sh <version>` (Run full validation suite)

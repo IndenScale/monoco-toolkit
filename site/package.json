@@ -1,6 +1,6 @@
 {
   "name": "monoco-docs",
-  "version": "0.3.2",
+  "version": "0.3.4",
   "description": "Monoco Toolkit Documentation",
   "main": "index.js",
   "scripts": {

@@ -50,6 +50,7 @@ def main():
         "WebUI": root / "Kanban/apps/webui/package.json",
         "KanbanCore": root / "Kanban/packages/core/package.json",
         "KanbanCLI": root / "Kanban/packages/monoco-kanban/package.json",
+        "Documentation": root / "site/package.json",
     }
 
     versions = {}

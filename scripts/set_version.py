@@ -58,6 +58,7 @@ def main():
         root / "Kanban/apps/webui/package.json",
         root / "Kanban/packages/core/package.json",
         root / "Kanban/packages/monoco-kanban/package.json",
+        root / "site/package.json",
     ]
 
     print(f"🚀 Setting version to: {new_version}\n")
