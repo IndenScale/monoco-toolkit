@@ -63,6 +63,7 @@ class TestIssueMatcher:
             status=IssueStatus.OPEN,
             title="Implement User Login System",
             tags=["auth", "security", "high-priority"],
+            parent="EPIC-0000",
         )
 
     def test_match_simple_term(self, mock_issue):

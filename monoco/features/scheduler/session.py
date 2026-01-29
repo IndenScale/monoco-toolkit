@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from .worker import Worker
 
 
@@ -9,6 +9,8 @@ class Session(BaseModel):
     Represents a runtime session of a worker.
     Persisted state of the session.
     """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     id: str = Field(..., description="Unique session ID (likely UUID)")
     issue_id: str = Field(..., description="The Issue ID this session is working on")
@@ -23,9 +25,6 @@ class Session(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.now)
     # History could be a list of logs or pointers to git commits
     # For now, let's keep it simple. The git log IS the history.
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 class RuntimeSession:
