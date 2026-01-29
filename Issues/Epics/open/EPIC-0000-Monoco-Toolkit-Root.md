@@ -15,8 +15,8 @@ tags:
 - root
 - toolkit
 domains: []
-progress: 18/21
-files_count: 1
+progress: 63/67
+files_count: 7
 ---
 
 ## EPIC-0000: Monoco Toolkit 核心根节点
