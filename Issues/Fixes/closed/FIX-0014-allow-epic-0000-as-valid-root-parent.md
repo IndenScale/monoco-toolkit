@@ -7,11 +7,12 @@ stage: done
 title: 允许 EPIC-0000 作为有效根父节点
 created_at: '2026-01-26T22:14:48'
 updated_at: '2026-01-26T22:21:48'
-parent: null # <EPIC-ID> Optional
+parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FIX-0014'
 files: []
 opened_at: '2026-01-26T22:14:48'

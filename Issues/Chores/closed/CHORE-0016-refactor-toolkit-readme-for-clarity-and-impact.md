@@ -1,5 +1,6 @@
 ---
 id: CHORE-0016
+parent: EPIC-0000
 uid: 751c88
 type: chore
 status: closed
@@ -15,6 +16,7 @@ related: []
 domains: []
 tags:
 - '#CHORE-0016'
+- '#EPIC-0000'
 files: []
 ---
 

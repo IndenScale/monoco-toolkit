@@ -1,6 +1,7 @@
 ---
 id: FEAT-0090
 uid: cca9d1
+parent: EPIC-0000
 type: feature
 status: closed
 stage: done
@@ -12,12 +13,12 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FEAT-0090'
 - architecture
 - refactoring
 - vscode
-solution: Core refactoring (Phase 1-4) completed. Webview and LSP are now modular
-  and type-safe. Testing coverage is deferred to a separate chore.
+solution: implemented
 ---
 
 ## FEAT-0090: VSCode Extension 组件化模块化重构

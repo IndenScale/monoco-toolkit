@@ -1,5 +1,6 @@
 ---
 id: CHORE-0005
+parent: EPIC-0000
 uid: d42e3c
 type: chore
 status: closed
@@ -15,6 +16,7 @@ related: []
 domains: []
 tags:
 - '#CHORE-0005'
+- '#EPIC-0000'
 ---
 
 ## CHORE-0005: Update VS Code Extension Documentation

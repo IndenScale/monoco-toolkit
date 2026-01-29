@@ -1,5 +1,6 @@
 ---
 id: FIX-0004
+parent: EPIC-0000
 type: fix
 status: closed
 stage: done
@@ -13,6 +14,7 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FIX-0004'
 uid: 38f911
 ---

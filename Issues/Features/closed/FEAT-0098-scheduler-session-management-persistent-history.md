@@ -1,6 +1,7 @@
 ---
 id: FEAT-0098
 uid: 0715b6
+parent: EPIC-0000
 type: feature
 status: closed
 stage: done
@@ -18,6 +19,7 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FEAT-0098'
 files:
 - Issues/Epics/open/EPIC-0019-implement-agent-scheduler-module.md

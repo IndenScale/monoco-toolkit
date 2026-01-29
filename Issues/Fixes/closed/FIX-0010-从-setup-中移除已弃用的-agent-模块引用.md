@@ -1,5 +1,6 @@
 ---
 id: FIX-0010
+parent: EPIC-0000
 uid: 0f8174
 type: fix
 status: closed
@@ -14,6 +15,7 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FIX-0010'
 ---
 

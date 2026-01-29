@@ -1,5 +1,6 @@
 ---
 id: CHORE-0015
+parent: EPIC-0000
 uid: df018a
 type: chore
 status: closed
@@ -15,6 +16,7 @@ related: []
 domains: []
 tags:
 - '#CHORE-0015'
+- '#EPIC-0000'
 files:
 - Issues/Chores/open/CHORE-0015-sync-issue-best-practices-to-agent-prompts.md
 - monoco/features/issue/resources/en/AGENTS.md
