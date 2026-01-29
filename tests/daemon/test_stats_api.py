@@ -65,6 +65,7 @@ type: feature
 status: backlog
 title: Backlog Feature
 created_at: '2023-01-01T00:00:00'
+parent: EPIC-0000
 ---
 """,
         )
@@ -81,9 +82,12 @@ created_at: '2023-01-01T00:00:00'
 id: FIX-001
 type: fix
 status: closed
+stage: done
 title: Fixed This Week
 created_at: '2023-01-01T00:00:00'
 closed_at: '{this_week_date}'
+solution: implemented
+parent: EPIC-0000
 ---
 """,
         )
@@ -99,9 +103,12 @@ closed_at: '{this_week_date}'
 id: FIX-002
 type: fix
 status: closed
+stage: done
 title: Fixed Last Week
 created_at: '2023-01-01T00:00:00'
 closed_at: '{last_week_date}'
+solution: implemented
+parent: EPIC-0000
 ---
 """,
         )
@@ -119,6 +126,7 @@ type: feature
 status: open
 title: Blocking Feature
 created_at: '2023-01-01T00:00:00'
+parent: EPIC-0000
 ---
 """,
         )
@@ -135,6 +143,7 @@ status: open
 title: Blocked Feature
 dependencies: ['FEAT-002']
 created_at: '2023-01-01T00:00:00'
+parent: EPIC-0000
 ---
 """,
         )
@@ -151,6 +160,7 @@ type: feature
 status: open
 title: Normal Feature
 created_at: '2023-01-01T00:00:00'
+parent: EPIC-0000
 ---
 """,
         )

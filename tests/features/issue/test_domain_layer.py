@@ -12,7 +12,7 @@ SAMPLE_ISSUE_CONTENT = (
     "status: open\n"
     "stage: doing\n"
     "created_at: 2023-01-01 10:00:00\n"
-    "parent: null\n"
+    "parent: EPIC-0000\n"
     "dependencies: []\n"
     "related: []\n"
     "domains: []\n"

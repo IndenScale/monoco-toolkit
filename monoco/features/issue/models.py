@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List, Optional, Any, Dict
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 from datetime import datetime
 import hashlib
 import secrets
@@ -105,7 +105,7 @@ class IssueAction(BaseModel):
 
 
 class IssueMetadata(BaseModel):
-    model_config = {"extra": "allow"}
+    model_config = ConfigDict(extra="allow", validate_assignment=True)
 
     id: str
     uid: Optional[str] = None  # Global unique identifier for cross-project identity

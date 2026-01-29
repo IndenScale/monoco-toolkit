@@ -19,6 +19,7 @@ def test_engine_available_transitions():
         title="Test",
         status=IssueStatus.OPEN,
         stage=IssueStage.DRAFT,
+        parent="EPIC-0000",
     )
     transitions = engine.get_available_transitions(draft_meta)
     transition_names = [t.name for t in transitions]
@@ -36,6 +37,7 @@ def test_engine_available_transitions():
         title="Test",
         status=IssueStatus.OPEN,
         stage=IssueStage.DOING,
+        parent="EPIC-0000",
     )
     transitions = engine.get_available_transitions(doing_meta)
     transition_names = [t.name for t in transitions]
@@ -52,6 +54,7 @@ def test_engine_available_transitions():
         title="Test",
         status=IssueStatus.BACKLOG,
         stage=IssueStage.FREEZED,
+        parent="EPIC-0000",
     )
     transitions = engine.get_available_transitions(backlog_meta)
     transition_names = [t.name for t in transitions]
@@ -119,6 +122,8 @@ def test_engine_enforce_policy():
         title="Test",
         status=IssueStatus.CLOSED,
         stage=IssueStage.DOING,
+        parent="EPIC-0000",
+        solution=IssueSolution.IMPLEMENTED,
     )
     engine.enforce_policy(meta)
     assert meta.stage == IssueStage.DONE
@@ -132,6 +137,7 @@ def test_engine_enforce_policy():
         title="Test",
         status=IssueStatus.BACKLOG,
         stage=IssueStage.DRAFT,
+        parent="EPIC-0000",
     )
     engine.enforce_policy(meta)
     assert meta.stage == IssueStage.FREEZED
