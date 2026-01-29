@@ -169,35 +169,6 @@ class StateMachine:
             if meta.stage is None:
                 meta.stage = "draft"
 
-    def validate_transition(
-        self,
-        from_status: str,
-        from_stage: Optional[str],
-        to_status: str,
-        to_stage: Optional[str],
-        solution: Optional[str] = None,
-    ) -> None:
-        """
-        Validate if a transition is allowed. Raises ValueError if not.
-        """
-        if from_status == to_status and from_stage == to_stage:
-            return  # No change is always allowed (unless we want to enforce specific updates)
-
-        transition = self.find_transition(
-            from_status, from_stage, to_status, to_stage, solution
-        )
-
-        if not transition:
-            raise ValueError(
-                f"Lifecycle Policy: Transition from {from_status}({from_stage if from_stage else 'None'}) "
-                f"to {to_status}({to_stage if to_stage else 'None'}) is not defined."
-            )
-
-        if transition.required_solution and solution != transition.required_solution:
-            raise ValueError(
-                f"Lifecycle Policy: Transition '{transition.label}' requires solution '{transition.required_solution}'."
-            )
-
     def enforce_policy(self, meta: IssueMetadata) -> None:
         """
         Apply consistency rules to IssueMetadata.

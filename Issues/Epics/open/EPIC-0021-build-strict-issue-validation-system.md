@@ -1,6 +1,6 @@
 ---
 id: EPIC-0021
-uid: '772b8c'
+uid: 772b8c
 type: epic
 status: open
 stage: doing
@@ -17,6 +17,8 @@ tags:
 - '#EPIC-0021'
 - '#Quality'
 files: []
+progress: 1/1
+files_count: 0
 ---
 
 ## EPIC-0021: 构建测试体系：严密的 Issue Ticket 验证机制
