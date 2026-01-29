@@ -20,26 +20,26 @@ opened_at: '2026-01-29T18:41:05'
 
 ## FEAT-0111: Add force-prune option for issue close command
 
-## Objective
+## 目标
 
-When using squash merge workflow, Git cannot automatically detect that a feature branch has been merged into main. This causes `monoco issue close` to fail when trying to prune the branch, as Git's safety check prevents deletion of "unmerged" branches.
+使用 squash merge 工作流时，Git 无法自动检测到功能分支已合并到 main。这会导致 `monoco issue close` 在尝试修剪分支时失败，因为 Git 的安全检查会阻止删除"未合并"的分支。
 
-We need a `--force-prune` option that allows users to override Git's merge detection and forcefully delete the branch after confirming the issue is truly closed.
+我们需要一个 `--force-prune` 选项，允许用户覆盖 Git 的合并检测，在确认 issue 确实已关闭后强制删除分支。
 
-## Acceptance Criteria
+## 验收标准
 
-- [ ] `monoco issue close <id> --force-prune` successfully deletes squash-merged branches
-- [ ] Command shows clear warning before force deletion
-- [ ] Without `--force-prune`, behavior remains unchanged (safe default)
-- [ ] Documentation updated to explain when to use this option
+- [ ] `monoco issue close <id> --force-prune` 成功删除 squash-merged 分支
+- [ ] 命令在强制删除前显示明确的警告
+- [ ] 不使用 `--force-prune` 时，行为保持不变（安全默认）
+- [ ] 文档已更新，解释何时使用此选项
 
-## Technical Tasks
+## 技术任务
 
-- [ ] Add `--force-prune` flag to `issue close` command
-- [ ] Implement force deletion logic using `git branch -D` instead of `git branch -d`
-- [ ] Add confirmation prompt warning users about force deletion
-- [ ] Update command help text and documentation
-- [ ] Add test cases for squash-merge scenarios
+- [ ] 为 `issue close` 命令添加 `--force-prune` 标志
+- [ ] 使用 `git branch -D` 而非 `git branch -d` 实现强制删除逻辑
+- [ ] 添加确认提示，警告用户关于强制删除的风险
+- [ ] 更新命令帮助文本和文档
+- [ ] 为 squash-merge 场景添加测试用例
 
 ## Review Comments
 <!-- Required for Review/Done stage. Record review feedback here. -->

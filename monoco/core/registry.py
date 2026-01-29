@@ -30,8 +30,10 @@ class FeatureRegistry:
         from monoco.features.issue.adapter import IssueFeature
         from monoco.features.spike.adapter import SpikeFeature
         from monoco.features.i18n.adapter import I18nFeature
+        from monoco.features.memo.adapter import MemoFeature
 
         cls.register(IssueFeature())
         cls.register(SpikeFeature())
         cls.register(I18nFeature())
+        cls.register(MemoFeature())
         pass
