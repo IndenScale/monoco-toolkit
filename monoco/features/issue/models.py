@@ -161,15 +161,34 @@ class IssueMetadata(BaseModel):
             # Normalize type and status to lowercase for compatibility
             if "type" in v and isinstance(v["type"], str):
                 v["type"] = v["type"].lower()
+                try:
+                    v["type"] = IssueType(v["type"])
+                except ValueError:
+                    pass
+
             if "status" in v and isinstance(v["status"], str):
                 v["status"] = v["status"].lower()
+                try:
+                    v["status"] = IssueStatus(v["status"])
+                except ValueError:
+                    pass
+
             if "solution" in v and isinstance(v["solution"], str):
                 v["solution"] = v["solution"].lower()
+                try:
+                    v["solution"] = IssueSolution(v["solution"])
+                except ValueError:
+                    pass
+
             # Stage normalization
             if "stage" in v and isinstance(v["stage"], str):
                 v["stage"] = v["stage"].lower()
                 if v["stage"] == "todo":
                     v["stage"] = "draft"
+                try:
+                    v["stage"] = IssueStage(v["stage"])
+                except ValueError:
+                    pass
         return v
 
     @model_validator(mode="after")
