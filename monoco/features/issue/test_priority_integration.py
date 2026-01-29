@@ -16,6 +16,7 @@ def test_validator_namespaced_reference_in_body():
         opened_at=datetime.now(),
         updated_at=datetime.now(),
         domains=["intelligence"],
+        parent="EPIC-0000",
     )
 
     # Context: toolkit project, monoco workspace

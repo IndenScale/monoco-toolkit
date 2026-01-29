@@ -221,6 +221,10 @@ def create_issue_file(
         if not find_issue_path(issues_root, rel_id):
             raise ValueError(f"Related issue {rel_id} not found.")
 
+    # Auto-assign default parent for non-epic types if not provided
+    if issue_type != IssueType.EPIC and not parent:
+        parent = "EPIC-0000"
+
     issue_id = find_next_id(issue_type, issues_root)
     base_type_dir = get_issue_dir(issue_type, issues_root)
     target_dir = base_type_dir / status

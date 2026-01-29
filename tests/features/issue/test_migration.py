@@ -25,6 +25,7 @@ type: story
 status: open
 stage: todo
 title: Legacy Story
+parent: EPIC-0000
 ---
 
 ## STORY-101: Legacy Story
