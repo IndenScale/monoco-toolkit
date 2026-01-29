@@ -196,10 +196,15 @@ def move_open(
 def start(
     issue_id: str = typer.Argument(..., help="Issue ID to start"),
     branch: bool = typer.Option(
-        False,
-        "--branch",
+        True,
+        "--branch/--no-branch",
         "-b",
-        help="[Recommended] Start in a new git branch (feat/<id>-<slug>)",
+        help="[Default] Start in a new git branch (feat/<id>-<slug>). Use --no-branch to disable.",
+    ),
+    direct: bool = typer.Option(
+        False,
+        "--direct",
+        help="Privileged: Work directly on current branch (equivalent to --no-branch).",
     ),
     worktree: bool = typer.Option(
         False,
@@ -215,11 +220,16 @@ def start(
     """
     Start working on an issue (Stage -> Doing).
 
-    AGENTS: You SHOULD almost always use --branch to isolate your changes.
+    Default behavior is to create a feature branch.
+    Use --direct or --no-branch to work on current branch.
     """
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     project_root = _resolve_project_root(config)
+
+    # Handle direct flag override
+    if direct:
+        branch = False
 
     if branch and worktree:
         OutputManager.error("Cannot specify both --branch and --worktree.")
@@ -254,6 +264,10 @@ def start(
             except Exception as e:
                 OutputManager.error(f"Failed to create worktree: {e}")
                 raise typer.Exit(code=1)
+
+        if not branch and not worktree:
+            # Direct mode message
+            isolation_info = {"type": "direct", "ref": "current"}
 
         OutputManager.print(
             {"issue": issue, "status": "started", "isolation": isolation_info}
