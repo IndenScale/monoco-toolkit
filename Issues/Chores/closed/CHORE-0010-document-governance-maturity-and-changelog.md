@@ -5,18 +5,18 @@ type: chore
 status: closed
 stage: done
 title: Document Governance Maturity and Changelog
-created_at: "2026-01-19T11:12:33"
-opened_at: "2026-01-19T11:12:33"
-updated_at: "2026-01-19T14:45:00"
-solution: Implemented
+created_at: '2026-01-19T11:12:33'
+opened_at: '2026-01-19T11:12:33'
+updated_at: '2026-01-19T14:45:00'
+solution: implemented
 domains: []
 dependencies: []
 related: []
 tags:
-  - "#CHORE-0010"
+- '#CHORE-0010'
+- '#EPIC-0000'
 files: []
-# parent: <EPIC-ID>   # 可选：父级 Issue ID
-# solution: null      # 关闭状态（已实现、已取消等）必填
+parent: EPIC-0000
 ---
 
 ## CHORE-0010: Document Governance Maturity and Changelog

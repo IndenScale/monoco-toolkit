@@ -1,5 +1,6 @@
 ---
 id: CHORE-0003
+parent: EPIC-0000
 uid: ee962c
 type: chore
 status: closed
@@ -15,6 +16,7 @@ related: []
 domains: []
 tags:
 - '#CHORE-0003'
+- '#EPIC-0000'
 ---
 
 ## CHORE-0003: 重构配置加载以统一上下文

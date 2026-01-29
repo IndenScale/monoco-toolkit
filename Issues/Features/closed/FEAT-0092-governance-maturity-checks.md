@@ -1,22 +1,22 @@
 ---
 id: FEAT-0092
 uid: bf8436
+parent: EPIC-0000
 type: feature
 status: closed
 stage: done
 title: Governance Maturity Checks
-created_at: "2026-01-19T11:12:33"
-opened_at: "2026-01-19T11:12:33"
-updated_at: "2026-01-19T14:40:00"
-solution: Implemented
+created_at: '2026-01-19T11:12:33'
+opened_at: '2026-01-19T11:12:33'
+updated_at: '2026-01-19T14:40:00'
+solution: implemented
 domains: []
 dependencies: []
 related: []
 tags:
-  - "#FEAT-0092"
+- '#EPIC-0000'
+- '#FEAT-0092'
 files: []
-# parent: <EPIC-ID>   # 可选：父级 Issue ID
-# solution: null      # 关闭状态（已实现、已取消等）必填
 ---
 
 ## FEAT-0092: Governance Maturity Checks
