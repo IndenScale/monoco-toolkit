@@ -1,0 +1,222 @@
+[
+  {
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    },
+    "severity": 1,
+    "code": null,
+    "source": "System",
+    "message": "Schema Error: 1 validation error for IssueMetadata\nid\n  Value error, Invalid Issue ID format: 'FEAT-0099-1'. Expected 'TYPE-XXXX' (e.g., FEAT-1234). For sub-features or sub-tasks, please use the 'parent' field instead of adding suffixes to the ID. [type=value_error, input_value='FEAT-0099-1', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/value_error",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/FEAT-0099-1-test-invalid-id.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FEAT-0111",
+    "message": "Language Mismatch: Project source language is 'zh' but content appears to be 'en'.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/open/FEAT-0111-add-force-prune-option-for-issue-close-command.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FEAT-0110",
+    "message": "Language Mismatch: Project source language is 'zh' but content appears to be 'en'.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Features/closed/FEAT-0110-implement-memo-system-for-loose-idea-capture.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 29,
+        "character": 0
+      },
+      "end": {
+        "line": 29,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FIX-0017",
+    "message": "Invalid ID Format: 'FEAT-0007-1' has an invalid suffix. Use 'parent' field for hierarchy.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Fixes/open/FIX-0017-issue-lint-incorrectly-accepts-invalid-id-formats-.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 29,
+        "character": 0
+      },
+      "end": {
+        "line": 29,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FIX-0017",
+    "message": "Invalid ID Format: 'FEAT-0007-2' has an invalid suffix. Use 'parent' field for hierarchy.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Fixes/open/FIX-0017-issue-lint-incorrectly-accepts-invalid-id-formats-.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 37,
+        "character": 0
+      },
+      "end": {
+        "line": 37,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FIX-0017",
+    "message": "Invalid ID Format: 'FEAT-0007-1' has an invalid suffix. Use 'parent' field for hierarchy.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Fixes/open/FIX-0017-issue-lint-incorrectly-accepts-invalid-id-formats-.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 48,
+        "character": 0
+      },
+      "end": {
+        "line": 48,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FIX-0017",
+    "message": "Invalid ID Format: 'FEAT-0007-1' has an invalid suffix. Use 'parent' field for hierarchy.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Fixes/open/FIX-0017-issue-lint-incorrectly-accepts-invalid-id-formats-.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 18,
+        "character": 0
+      },
+      "end": {
+        "line": 18,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FIX-0017",
+    "message": "Invalid ID Format: 'FEAT-0099-1' has an invalid suffix. Use 'parent' field for hierarchy.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Fixes/open/FIX-0017-test-id-ref.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FIX-0017",
+    "message": "Governance Maturity: Project scale (Epics>8 or Issues>50) requires 'domains' field in frontmatter.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Fixes/open/FIX-0017-test-id-ref.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FIX-0017",
+    "message": "Language Mismatch: Project source language is 'zh' but content appears to be 'en'.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Fixes/open/FIX-0017-test-id-ref.md"
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 100
+      }
+    },
+    "severity": 2,
+    "code": null,
+    "source": "FIX-0016",
+    "message": "Language Mismatch: Project source language is 'zh' but content appears to be 'en'.",
+    "related_information": null,
+    "data": {
+      "path": "/Users/indenscale/Documents/Projects/Monoco/Toolkit/Issues/Fixes/closed/FIX-0016-fix-pydantic-v2-migration-warnings.md"
+    }
+  }
+]

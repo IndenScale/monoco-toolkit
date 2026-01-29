@@ -2,11 +2,11 @@
 id: FIX-0018
 uid: ca7afd
 type: fix
-status: open
-stage: review
+status: closed
+stage: done
 title: Issue create command gives incorrect language hint
 created_at: '2026-01-29T18:44:15'
-updated_at: '2026-01-29T18:46:28'
+updated_at: 2026-01-29 18:48:43
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -18,10 +18,8 @@ files:
 - monoco/features/issue/commands.py
 - tests/features/issue/test_issue_hint_lang.py
 opened_at: '2026-01-29T18:44:15'
-isolation:
-  type: branch
-  ref: feat/fix-0018-issue-create-command-gives-incorrect-language-hint
-  created_at: '2026-01-29T18:44:58'
+closed_at: '2026-01-29T18:48:42'
+solution: implemented
 ---
 
 ## FIX-0018: Issue create command gives incorrect language hint
