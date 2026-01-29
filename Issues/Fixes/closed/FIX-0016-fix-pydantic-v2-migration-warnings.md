@@ -22,22 +22,26 @@ solution: implemented
 
 ## FIX-0016: Fix Pydantic V2 migration warnings
 
-## Objective
-Remove Pydantic V2 warnings during pytest execution in Toolkit.
-Key warnings to fix:
-1. `PydanticDeprecatedSince20`: Class-based config in `Session` model.
-2. `PydanticSerializationUnexpectedValue`: Enum serialization warnings for `IssueMetadata`.
+## 目标
+移除 Toolkit 中 pytest 执行期间的 Pydantic V2 警告。
+需要修复的关键警告：
+1. `PydanticDeprecatedSince20`: `Session` 模型中基于类的配置。
+2. `PydanticSerializationUnexpectedValue`: `IssueMetadata` 的枚举序列化警告。
 
-## Acceptance Criteria
-- [x] All Pydantic warnings are resolved when running `pytest`.
-- [x] No regressions in tests.
+## 验收标准
+- [x] 运行 `pytest` 时所有 Pydantic 警告已解决。
+- [x] 测试中没有回归。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Replace `class Config` with `model_config = ConfigDict(...)` in `monoco/features/scheduler/session.py`.
-- [x] Force Enum coercion in `IssueMetadata.normalize_fields` to prevent `PydanticSerializationUnexpectedValue` warnings.
-- [x] Enable `validate_assignment=True` in `IssueMetadata` model config.
+- [x] 在 `monoco/features/scheduler/session.py` 中将 `class Config` 替换为 `model_config = ConfigDict(...)`。
+- [x] 在 `IssueMetadata.normalize_fields` 中强制枚举强制转换，以防止 `PydanticSerializationUnexpectedValue` 警告。
+- [x] 在 `IssueMetadata` 模型配置中启用 `validate_assignment=True`。
+
+## 评审意见
+- 验证了警告在本地已消失。
+- 验证了 `repro_warning.py` 行为正确。
 
 ## Review Comments
-- Verified that warnings are gone locally.
-- Verified that `repro_warning.py` behaves correctly.
+
+- [x] Self-Review
