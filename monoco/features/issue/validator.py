@@ -431,7 +431,7 @@ class IssueValidator:
             )
             resolver = ReferenceResolver(context)
 
-        # Malformed ID Check
+        # 1. Malformed ID Check (Syntax)
         if meta.parent and meta.parent.startswith("#"):
             line = self._get_field_line(content, "parent")
             diagnostics.append(
@@ -466,7 +466,63 @@ class IssueValidator:
                         )
                     )
 
-        if not all_ids or not resolver:
+        # 2. Body Reference Check (Format and Existence)
+        lines = content.split("\n")
+        in_fm = False
+        fm_end = 0
+        for i, line in enumerate(lines):
+            if line.strip() == "---":
+                if not in_fm:
+                    in_fm = True
+                else:
+                    fm_end = i
+                    break
+
+        for i, line in enumerate(lines):
+            if i <= fm_end:
+                continue  # Skip frontmatter
+
+            # Find all matches, including those with invalid suffixes to report them properly
+            matches = re.finditer(r"\b((?:EPIC|FEAT|CHORE|FIX)-\d{4}(?:-\d+)?)\b", line)
+            for match in matches:
+                full_raw_id = match.group(1)
+
+                # Check if it has an invalid suffix (e.g. FEAT-0099-1)
+                if len(full_raw_id.split("-")) > 2:
+                    diagnostics.append(
+                        self._create_diagnostic(
+                            f"Invalid ID Format: '{full_raw_id}' has an invalid suffix. Use 'parent' field for hierarchy.",
+                            DiagnosticSeverity.Warning,
+                            line=i,
+                        )
+                    )
+                    continue
+
+                ref_id = full_raw_id
+
+                # Knowledge Check (Only if resolver is available)
+                if resolver:
+                    # Check for namespaced ID before this match?
+                    full_match = re.search(
+                        r"\b(?:([a-z0-9_-]+)::)?(" + re.escape(ref_id) + r")\b",
+                        line[max(0, match.start() - 50) : match.end()],
+                    )
+
+                    check_id = ref_id
+                    if full_match and full_match.group(1):
+                        check_id = f"{full_match.group(1)}::{ref_id}"
+
+                    if ref_id != meta.id and not resolver.is_valid_reference(check_id):
+                        diagnostics.append(
+                            self._create_diagnostic(
+                                f"Broken Reference: Issue '{check_id}' not found.",
+                                DiagnosticSeverity.Warning,
+                                line=i,
+                            )
+                        )
+
+        # 3. Hierarchy and Graph Integrity (Requires Resolver)
+        if not resolver:
             return diagnostics
 
         # Logic: Epics must have a parent (unless it is the Sink Root EPIC-0000)
@@ -506,49 +562,6 @@ class IssueValidator:
                     )
                 )
 
-        # Body Reference Check
-        # Regex for generic issue ID: (EPIC|FEAT|CHORE|FIX)-\d{4}
-        # We scan line by line to get line numbers
-        lines = content.split("\n")
-        # Skip frontmatter for body check to avoid double counting (handled above)
-        in_fm = False
-        fm_end = 0
-        for i, line in enumerate(lines):
-            if line.strip() == "---":
-                if not in_fm:
-                    in_fm = True
-                else:
-                    fm_end = i
-                    break
-
-        for i, line in enumerate(lines):
-            if i <= fm_end:
-                continue  # Skip frontmatter
-
-            # Find all matches
-            matches = re.finditer(r"\b((?:EPIC|FEAT|CHORE|FIX)-\d{4})\b", line)
-            for match in matches:
-                ref_id = match.group(1)
-                # Check for namespaced ID before this match?
-                # The regex above only catches the ID part.
-                # Let's adjust regex to optionally catch namespace::
-                full_match = re.search(
-                    r"\b(?:([a-z0-9_-]+)::)?(" + re.escape(ref_id) + r")\b",
-                    line[max(0, match.start() - 50) : match.end()],
-                )
-
-                check_id = ref_id
-                if full_match and full_match.group(1):
-                    check_id = f"{full_match.group(1)}::{ref_id}"
-
-                if ref_id != meta.id and not resolver.is_valid_reference(check_id):
-                    diagnostics.append(
-                        self._create_diagnostic(
-                            f"Broken Reference: Issue '{check_id}' not found.",
-                            DiagnosticSeverity.Warning,
-                            line=i,
-                        )
-                    )
         return diagnostics
         return diagnostics
 

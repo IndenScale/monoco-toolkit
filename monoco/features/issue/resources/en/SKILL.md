@@ -113,3 +113,9 @@ The `status` (folder) and `stage` (front matter) must be compatible:
 Linter includes environment-aware guardrails:
 
 - 🛑 **Dirty Main Protection**: Fails if uncommitted changes are detected on protected branches (`main`/`master`).
+
+### 6. ID Format & Hierarchy
+
+- **ID Specification**: Issue IDs must strictly follow the `TYPE-XXXX` format, where `XXXX` are 4 digits (e.g., `FEAT-0001`, `FIX-9999`).
+- **No Suffixes**: IDs with suffixes like `FEAT-0001-1` are strictly prohibited.
+- **Hierarchy Expression**: Sub-features or sub-tasks must be expressed using the `parent` field in the Front Matter. Do NOT use ID naming conventions (like hierarchical suffixes) to express relationships.
