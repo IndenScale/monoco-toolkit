@@ -1,6 +1,7 @@
 ---
 id: FEAT-0096
 uid: 382b6b
+parent: EPIC-0000
 type: feature
 status: closed
 stage: done
@@ -18,6 +19,7 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FEAT-0096'
 files:
 - '"Issues/Epics/closed/EPIC-0002-\346\231\272\350\203\275\344\273\273\345\212\241\345\206\205\346\240\270\344\270\216\347\212\266\346\200\201\346\234\272.md"'

@@ -1,19 +1,21 @@
 ---
 id: FEAT-0085
 uid: e0bd61
+parent: EPIC-0000
 type: feature
 status: closed
 stage: done
 title: 更新 VS Code 扩展以支持优化的动作系统
-created_at: "2026-01-16T23:45:53"
-opened_at: "2026-01-16T23:45:53"
-updated_at: "2026-01-19T14:40:00"
-solution: Cancelled - Agent functionality removed from VS Code extension.
+created_at: '2026-01-16T23:45:53'
+opened_at: '2026-01-16T23:45:53'
+updated_at: '2026-01-19T14:40:00'
+solution: cancelled
 dependencies: []
 related: []
 domains: []
 tags:
-  - "#FEAT-0085"
+- '#EPIC-0000'
+- '#FEAT-0085'
 ---
 
 ## FEAT-0085: 更新 VS Code 扩展以支持优化的动作系统

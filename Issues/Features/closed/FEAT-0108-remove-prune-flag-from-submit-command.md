@@ -7,11 +7,12 @@ stage: done
 title: 从 submit 命令中移除 prune 标志
 created_at: '2026-01-26T00:01:40'
 updated_at: 2026-01-26 00:13:11
-parent: null
+parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FEAT-0108'
 files: []
 opened_at: '2026-01-26T00:01:40'

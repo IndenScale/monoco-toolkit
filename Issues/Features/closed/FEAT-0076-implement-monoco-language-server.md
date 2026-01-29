@@ -1,6 +1,7 @@
 ---
 id: FEAT-0076
 uid: dbecda
+parent: EPIC-0000
 type: feature
 status: closed
 stage: done
@@ -10,15 +11,10 @@ opened_at: '2026-01-15T20:57:14'
 updated_at: '2026-01-15T20:57:14'
 dependencies: []
 related: []
-solution: 'Implemented a dual-project structure (client/server) within `extensions/vscode`.
-  The core logic was migrated to a TypeScript-based LSP server that validates Markdown
-  frontmatter against JSON Schemas exported from the Python core. This decoupled architecture
-  removes the runtime dependency on Python for basic editor features and improves
-  performance.
-
-  '
+solution: implemented
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FEAT-0076'
 ---
 

@@ -9,13 +9,14 @@ created_at: '2026-01-17T09:55:05'
 opened_at: '2026-01-17T09:55:05'
 updated_at: '2026-01-17T10:25:00'
 closed_at: '2026-01-17T10:25:00'
-parent: null
+parent: EPIC-0000
 solution: implemented
 dependencies: []
 related: []
 domains: []
 tags:
 - '#CHORE-0006'
+- '#EPIC-0000'
 ---
 
 ## CHORE-0006: 调研增强型 Issue 模板

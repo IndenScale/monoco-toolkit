@@ -8,7 +8,7 @@ title: Cockpit Navigation Bridge (Webview to Editor)
 created_at: "2026-01-14T14:05:00"
 opened_at: "2026-01-14T14:05:00"
 updated_at: "2026-01-19T14:32:00"
-solution: Implemented
+solution: implemented
 parent: EPIC-0011
 dependencies:
   - FEAT-0059

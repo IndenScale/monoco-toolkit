@@ -5,7 +5,7 @@ status: closed
 stage: done
 title: 完善 monoco i18n 命令文档 (Complete i18n Docs)
 created_at: '2026-01-09'
-solution: completed
+solution: implemented
 domains: []
 tags:
 - '#CHORE-0002'
