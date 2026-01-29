@@ -55,7 +55,7 @@ repos:
 
       - id: vitepress-build
         name: VitePress Site Build
-        entry: bash -c "cd site && npm run build"
+        entry: bash -c "cd site && npm install --silent && npm run build"
         language: system
         stages: [pre-push]
         files: ^site/
