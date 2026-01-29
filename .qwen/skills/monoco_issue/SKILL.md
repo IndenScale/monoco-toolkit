@@ -136,3 +136,9 @@ Monoco 强制采用 **Feature Branch** 模式。
 Linter 包含环境感知防护：
 
 - 🛑 **Dirty Main Protection**: 当检测到处于受保护分支 (`main`/`master`) 且存在未提交变更时，Lint 将失败并阻止操作。
+
+### 6. ID 格式与层级 (ID Format & Hierarchy)
+
+- **ID 规范**: Issue ID 必须严格遵循 `TYPE-XXXX` 格式，其中 `XXXX` 必须是 4 位数字（示例: `FEAT-0001`, `FIX-9999`）。
+- **禁止后缀**: 禁止使用类似 `FEAT-0001-1` 这样带后缀的 ID。
+- **层级表达**: 子功能或子任务应通过 `parent` 字段（在 Front Matter 中）来关联父级 Issue，严禁通过 ID 命名约定（如加分级后缀）来表达层级关系。

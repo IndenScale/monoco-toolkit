@@ -22,22 +22,26 @@ solution: implemented
 
 ## FEAT-0110: Implement Memo System for loose idea capture
 
-## Objective
-Provide a low-friction CLI mechanism to capture fleeting ideas (Memos) into a simple Markdown inbox (`Memos/inbox.md`) without the overhead of creating structured issues.
+## 目标
+提供一个低摩擦的 CLI 机制，将转瞬即逝的想法（Memos）捕捉到简单的 Markdown 收件箱（`Memos/inbox.md`）中，无需创建结构化 issue 的开销。
 
-## Acceptance Criteria
-- [x] CLI `monoco memo add <content>` appends a new memo to `Memos/inbox.md`.
-- [x] CLI `monoco memo list` displays the most recent memos.
-- [x] Data persistence uses simple Markdown Append-Only structure.
+## 验收标准
+- [x] CLI `monoco memo add <content>` 将新备忘录追加到 `Memos/inbox.md`。
+- [x] CLI `monoco memo list` 显示最近的备忘录。
+- [x] 数据持久化使用简单的 Markdown 仅追加结构。
 
-## Technical Tasks
+## 技术任务
 
-- [x] Implement `monoco/features/memo` package structure.
-- [x] Implement `core.py`: Add/List logic using regex parsing.
-- [x] Implement `cli.py`: Typer commands for `add` and `list`.
-- [x] Integrate with `monoco/main.py` CLI registry.
-- [x] Verify context/config resolution logic handles `issues_root` correctly.
+- [x] 实现 `monoco/features/memo` 包结构。
+- [x] 实现 `core.py`：使用正则解析的添加/列表逻辑。
+- [x] 实现 `cli.py`：`add` 和 `list` 的 Typer 命令。
+- [x] 集成到 `monoco/main.py` CLI 注册表。
+- [x] 验证上下文/配置解析逻辑正确处理 `issues_root`。
+
+## 评审意见
+- 手动测试了 `monoco memo add` 和 `monoco memo list`。
+- 验证了 `Memos/inbox.md` 中的存储文件格式。
 
 ## Review Comments
-- Manually tested `monoco memo add` and `monoco memo list`.
-- Verified storage file format in `Memos/inbox.md`.
+
+- [x] Self-Review
