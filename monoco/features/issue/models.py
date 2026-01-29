@@ -109,9 +109,9 @@ class IssueMetadata(BaseModel):
 
     id: str
     uid: Optional[str] = None  # Global unique identifier for cross-project identity
-    type: str
-    status: str = "open"
-    stage: Optional[str] = None
+    type: IssueType
+    status: IssueStatus = IssueStatus.OPEN
+    stage: Optional[IssueStage] = None
     title: str
 
     # Time Anchors
@@ -122,7 +122,7 @@ class IssueMetadata(BaseModel):
 
     parent: Optional[str] = None
     sprint: Optional[str] = None
-    solution: Optional[str] = None
+    solution: Optional[IssueSolution] = None
     isolation: Optional[IssueIsolation] = None
     dependencies: List[str] = []
     related: List[str] = []
@@ -174,13 +174,24 @@ class IssueMetadata(BaseModel):
 
     @model_validator(mode="after")
     def validate_lifecycle(self) -> "IssueMetadata":
-        # Logic Definition:
-        # status: backlog -> stage: freezed
-        # status: closed -> stage: done
-        # status: open -> stage: draft | doing | review | done (default draft)
+        # 1. Solution Consistency: Closed issues MUST have a solution
+        if self.status == IssueStatus.CLOSED and not self.solution:
+            raise ValueError(f"Issue '{self.id}' is closed but 'solution' is missing.")
 
-        # NOTE: We do NOT auto-correct state here anymore to allow Linter to detect inconsistencies.
-        # Auto-correction should be applied explicitly by 'create' or 'update' commands via core logic.
+        # 2. Hierarchy Consistency: non-epic types MUST have a parent (except specific root seeds)
+        if self.type != IssueType.EPIC and not self.parent:
+            # We allow exceptions for very specific bootstrap cases if needed, but currently enforce it.
+            if self.id not in ["FEAT-BOOTSTRAP"]:  # Example exception
+                raise ValueError(
+                    f"Issue '{self.id}' of type '{self.type}' must have a 'parent' reference."
+                )
+
+        # 3. State/Stage Consistency (Warnings or Errors)
+        # Note: In Monoco, status: closed is tightly coupled with stage: done
+        if self.status == IssueStatus.CLOSED and self.stage != IssueStage.DONE:
+            # We could auto-fix here, but let's be strict for Validation purposes
+            # raise ValueError(f"Issue '{self.id}' is closed but stage is '{self.stage}' (expected 'done').")
+            pass
 
         return self
 
