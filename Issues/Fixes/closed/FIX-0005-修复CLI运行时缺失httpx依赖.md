@@ -10,11 +10,12 @@ opened_at: '2026-01-13T16:35:15'
 updated_at: '2026-01-13T16:41:12'
 closed_at: '2026-01-13T16:41:12'
 solution: implemented
-parent: null
+parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FIX-0005'
 - bug
 - cli

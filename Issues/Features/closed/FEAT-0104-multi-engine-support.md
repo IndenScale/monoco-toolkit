@@ -8,11 +8,12 @@ title: 支持多引擎适配 (Gemini, Claude & Qwen)
 created_at: '2026-01-25T14:30:00'
 updated_at: '2026-01-25T23:48:01'
 priority: medium
-parent: null # <EPIC-ID> Optional
+parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0008'
 - '#FEAT-0104'
 files:

@@ -8,11 +8,12 @@ title: 实现配置驱动的角色加载机制
 created_at: '2026-01-25T14:30:00'
 updated_at: '2026-01-25T23:19:11'
 priority: high
-parent: null # <EPIC-ID> Optional
+parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0008'
 - '#FEAT-0103'
 files:

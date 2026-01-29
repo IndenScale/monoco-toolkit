@@ -8,7 +8,7 @@ title: 文档内容与 CLI 参考
 created_at: "2026-01-19T13:47:03"
 opened_at: "2026-01-19T13:47:03"
 updated_at: "2026-01-19T14:42:00"
-solution: Implemented - Core documentation pages (Manifesto, CLI Reference, Landing Page) populated and verified.
+solution: implemented
 parent: EPIC-0018
 dependencies: []
 related: []

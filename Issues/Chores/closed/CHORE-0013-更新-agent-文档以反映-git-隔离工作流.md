@@ -1,5 +1,6 @@
 ---
 id: CHORE-0013
+parent: EPIC-0000
 uid: 6f0ea3
 type: chore
 status: closed
@@ -19,6 +20,7 @@ related: []
 domains: []
 tags:
 - '#CHORE-0013'
+- '#EPIC-0000'
 files:
 - '"Issues/Epics/closed/EPIC-0002-\346\231\272\350\203\275\344\273\273\345\212\241\345\206\205\346\240\270\344\270\216\347\212\266\346\200\201\346\234\272.md"'
 - '"Issues/Epics/closed/EPIC-0006-Monoco\347\234\213\346\235\277Web\345\272\224\347\224\250.md"'

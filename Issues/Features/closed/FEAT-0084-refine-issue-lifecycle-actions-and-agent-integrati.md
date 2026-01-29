@@ -1,19 +1,21 @@
 ---
 id: FEAT-0084
 uid: fd7853
+parent: EPIC-0000
 type: feature
 status: closed
 stage: done
 title: 优化 Issue 生命周期动作与 Agent 集成
-created_at: "2026-01-16T23:32:20"
-opened_at: "2026-01-16T23:32:20"
-updated_at: "2026-01-19T14:40:00"
-solution: Cancelled - Agent functionality removed from Monoco core.
+created_at: '2026-01-16T23:32:20'
+opened_at: '2026-01-16T23:32:20'
+updated_at: '2026-01-19T14:40:00'
+solution: cancelled
 dependencies: []
 related: []
 domains: []
 tags:
-  - "#FEAT-0084"
+- '#EPIC-0000'
+- '#FEAT-0084'
 ---
 
 ## FEAT-0084: 优化 Issue 生命周期动作与 Agent 集成

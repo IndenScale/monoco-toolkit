@@ -1,6 +1,7 @@
 ---
 id: FEAT-0102
 uid: a1b2c3
+parent: EPIC-0000
 type: feature
 status: closed
 stage: done
@@ -13,6 +14,7 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0008'
 - '#FEAT-0102'
 files:

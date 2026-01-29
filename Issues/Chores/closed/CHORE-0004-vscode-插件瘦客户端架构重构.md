@@ -1,5 +1,6 @@
 ---
 id: CHORE-0004
+parent: EPIC-0000
 uid: d31189
 type: chore
 status: closed
@@ -15,6 +16,7 @@ related: []
 domains: []
 tags:
 - '#CHORE-0004'
+- '#EPIC-0000'
 ---
 
 ## CHORE-0004: VSCode 插件瘦客户端架构重构

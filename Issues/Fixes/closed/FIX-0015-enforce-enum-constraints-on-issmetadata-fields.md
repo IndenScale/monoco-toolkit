@@ -17,6 +17,7 @@ tags:
 - '#Quality'
 files:
 - Toolkit/monoco/features/issue/models.py
+solution: implemented
 ---
 
 ## FIX-0015: 修正 IssueMetadata 字段约束为枚举类型
@@ -32,8 +33,8 @@ files:
 - [x] 确保 `normalize_fields` 校验器仍然保留，以处理输入时的自动纠偏（如大小写）。
 
 ## Technical Tasks
-- [ ] 修改 `Toolkit/monoco/features/issue/models.py` 中的类型定义。
-- [ ] 验证 `monoco issue lint` 是否能正确检测出非法字符串。
+- [x] 修改 `Toolkit/monoco/features/issue/models.py` 中的类型定义。
+- [x] 验证 `monoco issue lint` 是否能正确检测出非法字符串。
 
 ## Review Comments
 <!-- Required for Review/Done stage. Record review feedback here. -->

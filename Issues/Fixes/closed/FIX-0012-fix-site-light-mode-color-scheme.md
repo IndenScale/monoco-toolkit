@@ -1,5 +1,6 @@
 ---
 id: FIX-0012
+parent: EPIC-0000
 uid: 76b2e3
 type: fix
 status: closed
@@ -18,6 +19,7 @@ dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#FIX-0012'
 files: []
 ---
