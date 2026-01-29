@@ -1,11 +1,11 @@
 ---
 id: FEAT-0112
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: 标准化 Monoco Issue 工作流
 created_at: '2026-01-29T23:05:07'
-updated_at: '2026-01-29T23:11:58'
+updated_at: 2026-01-29 23:12:59
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,10 +14,8 @@ tags:
 - '#EPIC-0000'
 - '#FEAT-0112'
 files: []
-isolation:
-  type: branch
-  ref: feat/feat-0112-标准化-monoco-issue-工作流
-  created_at: '2026-01-29T23:05:08'
+closed_at: '2026-01-29T23:12:58'
+solution: implemented
 ---
 
 ## FEAT-0112: 标准化 Monoco Issue 工作流
