@@ -171,6 +171,10 @@ from monoco.features.scheduler import cli as scheduler_cmd
 app.add_typer(scheduler_cmd.app, name="agent", help="Manage agent sessions")
 app.add_typer(scheduler_cmd.role_app, name="role", help="Manage agent roles")
 
+from monoco.features.memo import app as memo_app
+
+app.add_typer(memo_app, name="memo", help="Manage fleeting notes (memos)")
+
 
 from monoco.daemon.commands import serve
 
