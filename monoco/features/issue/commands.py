@@ -104,19 +104,18 @@ def create(
             console.print(f"Path: {rel_path}")
 
             # Prompt for Language
-            target_langs = config.i18n.target_langs
-            primary_lang = target_langs[0] if target_langs else "en"
+            source_lang = config.i18n.source_lang or "en"
 
-            # Simple mapping for display
-            lang_display = {
-                "zh": "Chinese (Simplified)",
-                "en": "English",
-                "ja": "Japanese",
-            }.get(primary_lang, primary_lang)
+            hint_msgs = {
+                "zh": "请使用中文填写 Issue 内容。",
+                "en": "Please fill the ticket content in English.",
+            }
 
-            console.print(
-                f"\n[bold yellow]Agent Hint:[/bold yellow] Please fill the ticket content in [bold cyan]{lang_display}[/bold cyan]."
+            hint_msg = hint_msgs.get(
+                source_lang, f"Please fill the ticket content in {source_lang.upper()}."
             )
+
+            console.print(f"\n[bold yellow]Agent Hint:[/bold yellow] {hint_msg}")
 
     except ValueError as e:
         OutputManager.error(str(e))
