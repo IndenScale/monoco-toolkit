@@ -1,9 +1,10 @@
 from enum import Enum
 from typing import List, Optional, Any, Dict
-from pydantic import BaseModel, Field, model_validator, ConfigDict
+from pydantic import BaseModel, Field, model_validator, ConfigDict, field_validator
 from datetime import datetime
 import hashlib
 import secrets
+import re
 
 
 class IssueID:
@@ -107,7 +108,18 @@ class IssueAction(BaseModel):
 class IssueMetadata(BaseModel):
     model_config = ConfigDict(extra="allow", validate_assignment=True)
 
-    id: str
+    id: str = Field()
+
+    @field_validator("id")
+    @classmethod
+    def validate_id_format(cls, v: str) -> str:
+        if not re.match(r"^[A-Z]+-\d{4}$", v):
+            raise ValueError(
+                f"Invalid Issue ID format: '{v}'. Expected 'TYPE-XXXX' (e.g., FEAT-1234). "
+                "For sub-features or sub-tasks, please use the 'parent' field instead of adding suffixes to the ID."
+            )
+        return v
+
     uid: Optional[str] = None  # Global unique identifier for cross-project identity
     type: IssueType
     status: IssueStatus = IssueStatus.OPEN

@@ -1,5 +1,5 @@
 from typing import List, Optional, Any, Dict
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, field_validator
 from datetime import datetime
 from ..models import (
     IssueType,
@@ -100,8 +100,21 @@ class IssueFrontmatter(BaseModel):
     Contains metadata and validation logic.
     """
 
-    id: str
+    id: str = Field()
     uid: Optional[str] = None
+
+    @field_validator("id")
+    @classmethod
+    def validate_id_format(cls, v: str) -> str:
+        import re
+
+        if not re.match(r"^[A-Z]+-\d{4}$", v):
+            raise ValueError(
+                f"Invalid Issue ID format: '{v}'. Expected 'TYPE-XXXX' (e.g., FEAT-1234). "
+                "For sub-features or sub-tasks, please use the 'parent' field instead of adding suffixes to the ID."
+            )
+        return v
+
     type: IssueType
     status: IssueStatus = IssueStatus.OPEN
     stage: Optional[IssueStage] = None
