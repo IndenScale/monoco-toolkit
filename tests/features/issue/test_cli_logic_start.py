@@ -24,17 +24,9 @@ def test_start_command_default_branch(issues_root):
         mock_issue.isolation.ref = "feat/test-branch"
         mock_isolation.return_value = mock_issue
 
-        # Invoke command with --no-commit to avoid git issues in temp directories
-        result = runner.invoke(app, ["start", meta.id, "--root", str(issues_root), "--no-commit"])
-
-        # Debug output
-        if result.exit_code != 0:
-            print(f"DEBUG: Exit code: {result.exit_code}")
-            print(f"DEBUG: Stdout: {result.stdout}")
-            print(f"DEBUG: Stderr: {result.stderr}")
-            if result.exc_info:
-                import traceback
-                traceback.print_exception(*result.exc_info)
+        # Invoke command with --no-commit and --force to avoid git issues in temp directories
+        # --force is needed because CI may be in detached HEAD state
+        result = runner.invoke(app, ["start", meta.id, "--root", str(issues_root), "--no-commit", "--force"])
 
         assert result.exit_code == 0
 
