@@ -97,3 +97,13 @@ CHORE-0023 已创建：Rename scheduler module to agent for semantic consistency
 > **Context**: `task-completed`
 
 CHORE-0023 验收通过：scheduler → agent 重命名完成，FEAT-0122 已更新路径引用
+
+## [b6fb7a] 2026-01-30 18:10:36
+> **Context**: `task-completed`
+
+FEAT-0123 已完成：所有核心 Feature 已迁移到 Flow Skills 模式 (7个 Flow Skills)
+
+## [3cf012] 2026-01-30 18:13:09
+> **Context**: `skill-architecture-analysis`
+
+分析：传统 Skills (monoco_i18n, monoco_issue 等) 与 Flow Skills 的职责对比

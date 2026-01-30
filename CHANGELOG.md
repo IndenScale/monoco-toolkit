@@ -1,6 +1,44 @@
 # Changelog
 
-Generated on 2026-01-19
+Generated on 2026-01-30
+
+## [v0.3.9] - 2026-01-30
+
+### Flow Skills 架构升级
+
+- **FEAT-0121**: Define Standard Agent Workflows via Flow Skills
+  - 为 Engineer、Manager、Reviewer 角色定义标准化 Flow Skills
+  - 使用 Mermaid 状态机定义工作流程
+  - 支持 Kimi CLI `/flow:*` 命令
+
+- **FEAT-0122**: Enhance SkillManager to Support Multi-Skill Architecture
+  - 重构 SkillManager 支持 1 Feature : N Skills 架构
+  - 统一标准 Skill 和 Flow Skill 注入机制
+  - 支持 `type: flow` 和 `role` 元数据字段
+
+- **FEAT-0123**: Migrate Core Features to Flow Skills Pattern
+  - i18n: `i18n_scan_workflow` - 扫描 → 识别 → 生成任务
+  - Spike: `research_workflow` - 添加 → 同步 → 分析 → 提取 → 归档
+  - Issue: `issue_lifecycle_workflow` - Open → Start → Develop → Submit → Review → Close
+  - Memo: `note_processing_workflow` - Capture → Process → Organize → Archive/Convert
+
+### Agent 架构优化
+
+- **CHORE-0023**: Rename scheduler module to agent
+  - `monoco/features/scheduler/` → `monoco/features/agent/`
+  - `SchedulerConfig` → `AgentConfig`（保留向后兼容别名）
+  - 与 CLI 命令 `monoco agent` 保持一致
+
+- **FEAT-0120**: Implement Agent Session Lifecycle Hooks
+  - 实现 Session 生命周期钩子机制
+  - 内置 `GitCleanupHook` 自动清理分支
+  - 内置 `LoggingHook` 记录 Session 事件
+
+### 双模式 Skill 架构
+
+- 传统 Skills: Command Reference（命令参考、配置说明）
+- Flow Skills: SOP 工作流（状态机、检查点、合规要求）
+- 两者互补，服务不同场景
 
 ## [v0.3.2] - Recent Releases
 
