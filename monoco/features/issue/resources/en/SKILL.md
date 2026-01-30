@@ -37,6 +37,48 @@ Monoco enforces a **Feature Branch** model.
   - This moves the issue to `Review` stage and generates a Delivery Report.
   - **Note**: This does **not** merge the code. You (or the user) must handle the Merge/PR process.
 
+## Standardized Workflow
+
+### Workflow Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> Plan
+    Plan --> Build: monoco issue start
+    Build --> Submit: monoco issue submit
+    state "Oracle Loop" as Oracle {
+        Submit --> Review: Auto/Manual Review
+        Review --> Fix: Reject
+        Fix --> Submit: Retry
+    }
+    Review --> Merge: Approve
+    Merge --> [*]: monoco issue close
+```
+
+### Action Steps
+
+1.  **Plan Phase**:
+    - Ensure Issue exists and is in `Open` status.
+    - Verify requirements and tasks.
+
+2.  **Build Phase**:
+    - Run `monoco issue start <ID> --branch` (Verification: ensures branch is created).
+    - Implement features/fixes.
+    - Run `monoco issue sync-files` to track changes.
+
+3.  **Submit Phase (Oracle Loop)**:
+    - Run tests to ensure quality.
+    - Run `monoco issue lint`.
+    - Run `monoco issue submit <ID>`.
+    - **IF** errors/feedback received:
+      - Fix issues.
+      - Re-run tests.
+      - Re-submit.
+
+4.  **Merge Phase**:
+    - Once approved:
+    - Run `monoco issue close <ID> --solution completed --prune`.
+
 ### 2. File Tracking
 
 Agents must track modified files to maintain Self-Contained Context.
