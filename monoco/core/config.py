@@ -234,6 +234,10 @@ class MonocoConfig(BaseModel):
         default_factory=dict,
         description="Git hooks configuration (hook_name -> command)",
     )
+    session_hooks: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Session lifecycle hooks configuration (hook_name -> config)",
+    )
 
     issue: IssueSchemaConfig = Field(default_factory=IssueSchemaConfig)
     domains: DomainConfig = Field(default_factory=DomainConfig)
