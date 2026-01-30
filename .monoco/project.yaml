@@ -9,6 +9,7 @@ project:
     SWE-bench: https://github.com/SWE-bench/SWE-bench
     agentskills: https://github.com/agentskills/agentskills
     claude-agent-sdk-python: https://github.com/anthropics/claude-agent-sdk-python
+    claude-code: https://github.com/anthropics/claude-code
     gemini-cli: https://github.com/google-gemini/gemini-cli
     monoco-toolkit: https://github.com/IndenScale/monoco-toolkit
     qwen-code: https://github.com/QwenLM/qwen-code
