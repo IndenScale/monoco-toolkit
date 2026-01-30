@@ -677,10 +677,38 @@ class IssueValidator:
             if valid_domains:
                 # Use File-based validation
                 for domain in meta.domains:
+                    # 1. Format Check: PascalCase
+                    is_pascal = re.match(r"^[A-Z][a-zA-Z0-9]+$", domain) is not None
+
+                    if not is_pascal:
+                        # Suggest conversion
+                        normalized = "".join(
+                            word.capitalize()
+                            for word in re.findall(r"[a-zA-Z0-9]+", domain)
+                        )
+                        if normalized in valid_domains:
+                            diagnostics.append(
+                                self._create_diagnostic(
+                                    f"Domain Format Error: '{domain}' must be PascalCase (e.g., '{normalized}').",
+                                    DiagnosticSeverity.Error,
+                                    line=field_line,
+                                )
+                            )
+                        else:
+                            diagnostics.append(
+                                self._create_diagnostic(
+                                    f"Domain Format Error: '{domain}' must be PascalCase (no spaces/symbols).",
+                                    DiagnosticSeverity.Error,
+                                    line=field_line,
+                                )
+                            )
+                        continue
+
+                    # 2. Existence Check
                     if domain not in valid_domains:
                         diagnostics.append(
                             self._create_diagnostic(
-                                f"Unknown Domain: '{domain}' is not found in Issues/Domains/. Expected one of: {', '.join(sorted(valid_domains))}",
+                                f"Unknown Domain: '{domain}' not found. Available: {', '.join(sorted(valid_domains))}",
                                 DiagnosticSeverity.Error,
                                 line=field_line,
                             )
