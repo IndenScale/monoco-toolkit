@@ -75,6 +75,11 @@ def test_feature_0012_workflow(issues_root):
     # Complete tasks to satisfy validator
     content = f_path.read_text()
     new_content = content.replace("- [ ]", "- [x]")
+    # Remove placeholder comment and add actual review content
+    new_content = new_content.replace(
+        "<!-- Required for Review/Done stage. Record review feedback here. -->",
+        ""
+    )
     new_content += "\n\n## Review Comments\n\n- [x] Self-Review\n"
     f_path.write_text(new_content)
 
