@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 class RoleTemplate(BaseModel):
     name: str = Field(
-        ..., description="Unique identifier for the role (e.g., 'crafter')"
+        ..., description="Unique identifier for the role (e.g., 'Planner')"
     )
     description: str = Field(..., description="Human-readable description of the role")
     trigger: str = Field(
