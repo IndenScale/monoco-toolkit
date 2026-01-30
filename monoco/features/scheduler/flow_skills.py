@@ -4,6 +4,9 @@ Flow Skills Manager for Monoco Scheduler.
 This module provides management and injection of standard Agent workflow skills
 (Flow Skills) following the Kimi CLI Flow Skill format.
 
+Note: This module is now a thin wrapper around SkillManager for backward compatibility.
+New code should use SkillManager directly for multi-skill architecture support.
+
 Key Responsibilities:
 1. Discover flow skills from resources/skills/ directory
 2. Inject flow skills to target agent framework directories

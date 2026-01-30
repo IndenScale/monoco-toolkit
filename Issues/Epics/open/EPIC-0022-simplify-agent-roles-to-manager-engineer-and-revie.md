@@ -3,7 +3,7 @@ id: EPIC-0022
 uid: 5e0f82
 type: epic
 status: open
-stage: draft
+stage: doing
 title: 简化 Agent 角色为 Manager, Engineer 和 Reviewer
 created_at: '2026-01-30T16:42:46'
 updated_at: '2026-01-30T16:42:46'
@@ -17,6 +17,8 @@ tags:
 - '#EPIC-0000'
 files: []
 opened_at: '2026-01-30T16:42:46'
+progress: 2/4
+files_count: 0
 ---
 
 ## EPIC-0022: 简化 Agent 角色为 Manager, Engineer 和 Reviewer
