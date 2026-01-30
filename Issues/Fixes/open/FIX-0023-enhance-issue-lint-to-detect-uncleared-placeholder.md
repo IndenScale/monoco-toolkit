@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Enhance issue lint to detect uncleared placeholders
 created_at: '2026-01-30T15:24:26'
-updated_at: '2026-01-30T15:29:22'
+updated_at: '2026-01-30T15:30:57'
 parent: EPIC-0000
 dependencies: []
 related: []
