@@ -15,6 +15,11 @@ from .models import (
     current_time,
     generate_uid,
 )
+from .criticality import (
+    CriticalityLevel,
+    CriticalityTypeMapping,
+    CriticalityInheritanceService,
+)
 from monoco.core import git
 from monoco.core.config import get_config, MonocoConfig
 from monoco.core.lsp import DiagnosticSeverity
@@ -137,6 +142,10 @@ def _serialize_metadata(metadata: IssueMetadata) -> str:
         elif k == "parent":
             ordered_data[k] = None
 
+    # Add criticality if present
+    if "criticality" in data:
+        ordered_data["criticality"] = data["criticality"]
+
     # Add remaining
     for k, v in data.items():
         if k not in ordered_data:
@@ -211,6 +220,7 @@ def create_issue_file(
     subdir: Optional[str] = None,
     sprint: Optional[str] = None,
     tags: List[str] = [],
+    criticality: Optional[CriticalityLevel] = None,
 ) -> Tuple[IssueMetadata, Path]:
     # Validation
     for dep_id in dependencies:
@@ -224,6 +234,38 @@ def create_issue_file(
     # Auto-assign default parent for non-epic types if not provided
     if issue_type != IssueType.EPIC and not parent:
         parent = "EPIC-0000"
+
+    # Determine criticality
+    # 1. Use provided criticality if specified
+    # 2. Check parent for inheritance
+    # 3. Apply type-based default
+    effective_criticality = criticality
+
+    # Get issue type string for mapping lookup
+    issue_type_str = (
+        issue_type.value if isinstance(issue_type, IssueType) else str(issue_type)
+    )
+
+    if effective_criticality is None:
+        # Check parent inheritance
+        if parent:
+            parent_path = find_issue_path(issues_root, parent)
+            if parent_path:
+                parent_meta = parse_issue(parent_path)
+                if parent_meta and parent_meta.criticality:
+                    # Child must inherit at least parent's criticality
+                    default_type_criticality = CriticalityTypeMapping.get_default(
+                        issue_type_str
+                    )
+                    effective_criticality = (
+                        CriticalityInheritanceService.resolve_child_criticality(
+                            parent_meta.criticality, default_type_criticality
+                        )
+                    )
+
+        # Fall back to type-based default
+        if effective_criticality is None:
+            effective_criticality = CriticalityTypeMapping.get_default(issue_type_str)
 
     issue_id = find_next_id(issue_type, issues_root)
     base_type_dir = get_issue_dir(issue_type, issues_root)
@@ -268,6 +310,7 @@ def create_issue_file(
         sprint=sprint,
         tags=final_tags,
         opened_at=current_time() if status == IssueStatus.OPEN else None,
+        criticality=effective_criticality,
     )
 
     # Enforce lifecycle policies
@@ -403,6 +446,7 @@ def update_issue(
     related: Optional[List[str]] = None,
     tags: Optional[List[str]] = None,
     files: Optional[List[str]] = None,
+    criticality: Optional[CriticalityLevel] = None,
 ) -> IssueMetadata:
     path = find_issue_path(issues_root, issue_id)
     if not path:
@@ -464,6 +508,9 @@ def update_issue(
         except ValueError:
             pass
 
+    # Reconstruct temporary metadata for policy validation
+    temp_meta = IssueMetadata(**data)
+
     # Use engine to validate the transition
     engine.validate_transition(
         from_status=current_status,
@@ -471,6 +518,7 @@ def update_issue(
         to_status=target_status,
         to_stage=target_stage,
         solution=effective_solution,
+        meta=temp_meta,
     )
 
     if target_status == "closed":
@@ -535,6 +583,23 @@ def update_issue(
 
     if files is not None:
         data["files"] = files
+
+    # Criticality update (only through escalation workflow)
+    if criticality is not None:
+        current_criticality = data.get("criticality")
+        if current_criticality:
+            current_level = CriticalityLevel(current_criticality)
+            # Only allow escalation (increase), never lowering
+            if criticality > current_level:
+                data["criticality"] = criticality.value
+            elif criticality < current_level:
+                raise ValueError(
+                    f"Cannot lower criticality from {current_level.value} to {criticality.value}. "
+                    "Criticality is immutable and can only be increased through escalation workflow."
+                )
+        else:
+            # Set if not previously set
+            data["criticality"] = criticality.value
 
     # Lifecycle Hooks
     # 1. Opened At: If transitioning to OPEN
