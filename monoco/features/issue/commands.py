@@ -257,6 +257,9 @@ def start(
         None, "--root", help="Override issues root directory"
     ),
     force: bool = typer.Option(False, "--force", help="Bypass branch context checks"),
+    no_commit: bool = typer.Option(
+        False, "--no-commit", help="Skip auto-commit of issue file"
+    ),
     json: AgentOutput = False,
 ):
     """
@@ -287,7 +290,14 @@ def start(
 
     try:
         # Implicitly ensure status is Open
-        issue = core.update_issue(issues_root, issue_id, status="open", stage="doing")
+        issue = core.update_issue(
+            issues_root,
+            issue_id,
+            status="open",
+            stage="doing",
+            no_commit=no_commit,
+            project_root=project_root,
+        )
 
         isolation_info = None
 
@@ -334,6 +344,9 @@ def submit(
         None, "--root", help="Override issues root directory"
     ),
     force: bool = typer.Option(False, "--force", help="Bypass branch context checks"),
+    no_commit: bool = typer.Option(
+        False, "--no-commit", help="Skip auto-commit of issue file"
+    ),
     json: AgentOutput = False,
 ):
     """Submit issue for review (Stage -> Review) and generate delivery report."""
@@ -348,7 +361,14 @@ def submit(
 
     try:
         # Implicitly ensure status is Open
-        issue = core.update_issue(issues_root, issue_id, status="open", stage="review")
+        issue = core.update_issue(
+            issues_root,
+            issue_id,
+            status="open",
+            stage="review",
+            no_commit=no_commit,
+            project_root=project_root,
+        )
 
         # Delivery Report Generation
         report_status = "skipped"
@@ -388,6 +408,9 @@ def move_close(
     ),
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
+    ),
+    no_commit: bool = typer.Option(
+        False, "--no-commit", help="Skip auto-commit of issue file"
     ),
     json: AgentOutput = False,
 ):
@@ -431,7 +454,12 @@ def move_close(
 
     try:
         issue = core.update_issue(
-            issues_root, issue_id, status="closed", solution=solution
+            issues_root,
+            issue_id,
+            status="closed",
+            solution=solution,
+            no_commit=no_commit,
+            project_root=project_root,
         )
 
         pruned_resources = []
@@ -459,13 +487,23 @@ def push(
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
+    no_commit: bool = typer.Option(
+        False, "--no-commit", help="Skip auto-commit of issue file"
+    ),
     json: AgentOutput = False,
 ):
     """Push issue to backlog."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
+    project_root = _resolve_project_root(config)
     try:
-        issue = core.update_issue(issues_root, issue_id, status="backlog")
+        issue = core.update_issue(
+            issues_root,
+            issue_id,
+            status="backlog",
+            no_commit=no_commit,
+            project_root=project_root,
+        )
         OutputManager.print({"issue": issue, "status": "pushed_to_backlog"})
     except Exception as e:
         OutputManager.error(str(e))
@@ -478,13 +516,24 @@ def pull(
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
+    no_commit: bool = typer.Option(
+        False, "--no-commit", help="Skip auto-commit of issue file"
+    ),
     json: AgentOutput = False,
 ):
     """Pull issue from backlog (Open & Draft)."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
+    project_root = _resolve_project_root(config)
     try:
-        issue = core.update_issue(issues_root, issue_id, status="open", stage="draft")
+        issue = core.update_issue(
+            issues_root,
+            issue_id,
+            status="open",
+            stage="draft",
+            no_commit=no_commit,
+            project_root=project_root,
+        )
         OutputManager.print({"issue": issue, "status": "pulled_from_backlog"})
     except Exception as e:
         OutputManager.error(str(e))
@@ -497,14 +546,23 @@ def cancel(
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
+    no_commit: bool = typer.Option(
+        False, "--no-commit", help="Skip auto-commit of issue file"
+    ),
     json: AgentOutput = False,
 ):
     """Cancel issue."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
+    project_root = _resolve_project_root(config)
     try:
         issue = core.update_issue(
-            issues_root, issue_id, status="closed", solution="cancelled"
+            issues_root,
+            issue_id,
+            status="closed",
+            solution="cancelled",
+            no_commit=no_commit,
+            project_root=project_root,
         )
         OutputManager.print({"issue": issue, "status": "cancelled"})
     except Exception as e:
