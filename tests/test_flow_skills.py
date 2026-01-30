@@ -145,6 +145,51 @@ class TestDiscoverFlowSkills:
         assert len(skills) == 1
         assert skills[0].name == "flow_valid"
 
+    def test_discover_new_pattern_type_flow(self, temp_project):
+        """Test discovering skills with 'type: flow' front matter (new pattern)."""
+        resources_dir = temp_project / "resources"
+
+        # Create skill with new pattern (not starting with flow_)
+        new_pattern_dir = resources_dir / "skills" / "i18n_workflow"
+        new_pattern_dir.mkdir(parents=True)
+        (new_pattern_dir / "SKILL.md").write_text(
+            "---\nname: i18n-workflow\ntype: flow\ndomain: i18n\n---\n\n# I18n Workflow\n"
+        )
+
+        # Create skill with legacy pattern
+        legacy_dir = resources_dir / "skills" / "flow_engineer"
+        legacy_dir.mkdir(parents=True)
+        (legacy_dir / "SKILL.md").write_text("---\ntype: flow\n---\n")
+
+        # Create non-flow skill
+        non_flow_dir = resources_dir / "skills" / "regular_skill"
+        non_flow_dir.mkdir(parents=True)
+        (non_flow_dir / "SKILL.md").write_text("---\ntype: command\n---\n")
+
+        skills = discover_flow_skills(resources_dir)
+
+        assert len(skills) == 2
+        skill_names = {s.name for s in skills}
+        assert skill_names == {"i18n_workflow", "flow_engineer"}
+
+    def test_discover_new_pattern_without_front_matter_ignored(self, temp_project):
+        """Test that skills without 'type: flow' front matter are ignored."""
+        resources_dir = temp_project / "resources"
+
+        # Create skill without front matter
+        no_front_dir = resources_dir / "skills" / "no_front_matter"
+        no_front_dir.mkdir(parents=True)
+        (no_front_dir / "SKILL.md").write_text("# Just a regular skill\n")
+
+        # Create skill with front matter but wrong type
+        wrong_type_dir = resources_dir / "skills" / "wrong_type"
+        wrong_type_dir.mkdir(parents=True)
+        (wrong_type_dir / "SKILL.md").write_text("---\ntype: command\n---\n")
+
+        skills = discover_flow_skills(resources_dir)
+
+        assert len(skills) == 0
+
 
 class TestInjectFlowSkill:
     """Tests for inject_flow_skill function."""
