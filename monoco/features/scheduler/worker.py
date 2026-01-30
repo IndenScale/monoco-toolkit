@@ -38,8 +38,8 @@ class Worker:
         import sys
 
         # Prepare the prompt
-        # We treat 'crafter' as a drafter when context is provided (Draft Mode)
-        if (self.role.name == "drafter" or self.role.name == "crafter") and context:
+        # We treat 'Planner' as a drafter when context is provided (Draft Mode)
+        if (self.role.name == "drafter" or self.role.name == "Planner") and context:
             issue_type = context.get("type", "feature")
             description = context.get("description", "No description")
             prompt = (
