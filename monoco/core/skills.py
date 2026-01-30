@@ -9,12 +9,13 @@ Key Responsibilities:
 2. Validate skill structure and metadata (YAML frontmatter)
 3. Distribute skills to target agent framework directories
 4. Support i18n for skill content
+5. Support multi-skill architecture (1 Feature : N Skills)
 """
 
 import shutil
 import hashlib
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 from pydantic import BaseModel, Field, ValidationError
 from rich.console import Console
 import yaml
@@ -37,6 +38,12 @@ class SkillMetadata(BaseModel):
     tags: Optional[List[str]] = Field(
         default=None, description="Skill tags for categorization"
     )
+    type: Optional[str] = Field(
+        default="standard", description="Skill type: standard, flow, etc."
+    )
+    role: Optional[str] = Field(
+        default=None, description="Role identifier for Flow Skills (e.g., engineer, manager)"
+    )
 
 
 class Skill:
@@ -44,18 +51,26 @@ class Skill:
     Represents a single skill with its metadata and file paths.
     """
 
-    def __init__(self, root_dir: Path, skill_dir: Path):
+    def __init__(
+        self,
+        root_dir: Path,
+        skill_dir: Path,
+        name: Optional[str] = None,
+        skill_file: Optional[Path] = None,
+    ):
         """
         Initialize a Skill instance.
 
         Args:
             root_dir: Project root directory
             skill_dir: Path to the skill directory (e.g., Toolkit/skills/issues-management)
+            name: Optional custom skill name (overrides directory name)
+            skill_file: Optional specific SKILL.md path (for multi-skill architecture)
         """
         self.root_dir = root_dir
         self.skill_dir = skill_dir
-        self.name = skill_dir.name
-        self.skill_file = skill_dir / "SKILL.md"
+        self.name = name or skill_dir.name
+        self.skill_file = skill_file or (skill_dir / "SKILL.md")
         self.metadata: Optional[SkillMetadata] = None
         self._load_metadata()
 
@@ -102,6 +117,14 @@ class Skill:
     def is_valid(self) -> bool:
         """Check if the skill has valid metadata."""
         return self.metadata is not None
+
+    def get_type(self) -> str:
+        """Get skill type, defaults to 'standard'."""
+        return self.metadata.type if self.metadata and self.metadata.type else "standard"
+
+    def get_role(self) -> Optional[str]:
+        """Get skill role (for Flow Skills)."""
+        return self.metadata.role if self.metadata else None
 
     def get_languages(self) -> List[str]:
         """
@@ -158,21 +181,32 @@ class SkillManager:
     Central manager for Monoco skills.
 
     Responsibilities:
-    - Collect skills from Feature resources
+    - Collect skills from Feature resources (standard + multi-skill architecture)
     - Validate skill structure
     - Distribute skills to agent framework directories
+    - Support Flow Skills with custom prefixes
     """
 
-    def __init__(self, root: Path, features: Optional[List] = None):
+    # Default prefix for flow skills
+    FLOW_SKILL_PREFIX = "monoco_flow_"
+
+    def __init__(
+        self,
+        root: Path,
+        features: Optional[List] = None,
+        flow_skill_prefix: str = FLOW_SKILL_PREFIX,
+    ):
         """
         Initialize SkillManager.
 
         Args:
             root: Project root directory
             features: List of MonocoFeature instances (if None, will load from registry)
+            flow_skill_prefix: Prefix for flow skill directory names
         """
         self.root = root
         self.features = features or []
+        self.flow_skill_prefix = flow_skill_prefix
         self.skills: Dict[str, Skill] = {}
 
         if self.features:
@@ -211,8 +245,9 @@ class SkillManager:
         """
         Discover skills from Feature resources.
 
-        Each feature should have:
-        - monoco/features/{feature}/resources/{lang}/SKILL.md
+        Supports two patterns:
+        1. Legacy: monoco/features/{feature}/resources/{lang}/SKILL.md
+        2. Multi-skill: monoco/features/{feature}/resources/skills/{skill-name}/SKILL.md
         """
         from monoco.core.feature import MonocoFeature
 
@@ -221,7 +256,6 @@ class SkillManager:
                 continue
 
             # Determine feature module path
-            # feature.__class__.__module__ is like 'monoco.features.issue.adapter'
             module_parts = feature.__class__.__module__.split(".")
             if (
                 len(module_parts) >= 3
@@ -231,27 +265,82 @@ class SkillManager:
                 feature_name = module_parts[2]
 
                 # Construct path to feature resources
-                # monoco/features/{feature}/resources/
                 feature_dir = self.root / "monoco" / "features" / feature_name
                 resources_dir = feature_dir / "resources"
 
                 if not resources_dir.exists():
                     continue
 
-                # Check for SKILL.md in language directories
-                for lang_dir in resources_dir.iterdir():
-                    if lang_dir.is_dir() and (lang_dir / "SKILL.md").exists():
-                        # Create a Skill instance
-                        # We need to adapt the Skill class to work with feature resources
-                        skill = self._create_skill_from_feature(
-                            feature_name, resources_dir
-                        )
-                        if skill and skill.is_valid():
-                            # Use feature name as skill identifier
-                            skill_key = f"{feature_name}"
-                            if skill_key not in self.skills:
-                                self.skills[skill_key] = skill
-                        break  # Only need to detect once per feature
+                # First, discover multi-skill architecture (resources/skills/*)
+                self._discover_multi_skills(resources_dir, feature_name)
+
+                # Second, discover legacy pattern (resources/{lang}/SKILL.md)
+                self._discover_legacy_skill(resources_dir, feature_name)
+
+    def _discover_multi_skills(self, resources_dir: Path, feature_name: str) -> None:
+        """
+        Discover skills from resources/skills/ directory (multi-skill architecture).
+
+        Args:
+            resources_dir: Path to the feature's resources directory
+            feature_name: Name of the feature
+        """
+        skills_dir = resources_dir / "skills"
+        if not skills_dir.exists():
+            return
+
+        for skill_subdir in skills_dir.iterdir():
+            if not skill_subdir.is_dir():
+                continue
+
+            skill_file = skill_subdir / "SKILL.md"
+            if not skill_file.exists():
+                continue
+
+            # Create skill instance
+            skill = Skill(
+                root_dir=self.root,
+                skill_dir=skill_subdir,
+                name=skill_subdir.name,
+                skill_file=skill_file,
+            )
+
+            if not skill.is_valid():
+                continue
+
+            # Determine skill key based on type
+            skill_type = skill.get_type()
+            if skill_type == "flow":
+                # Flow skills get prefixed (e.g., monoco_flow_engineer)
+                skill_key = f"{self.flow_skill_prefix}{skill_subdir.name}"
+            else:
+                # Standard skills use feature-scoped name to avoid conflicts
+                # e.g., scheduler_config, scheduler_utils
+                skill_key = f"{feature_name}_{skill_subdir.name}"
+
+            # Override name for distribution
+            skill.name = skill_key
+            self.skills[skill_key] = skill
+
+    def _discover_legacy_skill(self, resources_dir: Path, feature_name: str) -> None:
+        """
+        Discover legacy single skill from resources/{lang}/SKILL.md.
+
+        Args:
+            resources_dir: Path to the feature's resources directory
+            feature_name: Name of the feature
+        """
+        # Check for SKILL.md in language directories
+        for lang_dir in resources_dir.iterdir():
+            if lang_dir.is_dir() and (lang_dir / "SKILL.md").exists():
+                # Create a Skill instance
+                skill = self._create_skill_from_feature(feature_name, resources_dir)
+                if skill and skill.is_valid():
+                    # Use feature name as skill identifier
+                    skill_key = f"{feature_name}"
+                    if skill_key not in self.skills:
+                        self.skills[skill_key] = skill
+                break  # Only need to detect once per feature
 
     def _create_skill_from_feature(
         self, feature_name: str, resources_dir: Path
@@ -267,7 +356,6 @@ class SkillManager:
             Skill instance or None if creation fails
         """
         # Use the resources directory as the skill directory
-        # The Skill class expects a directory with SKILL.md or {lang}/SKILL.md
         skill = Skill(self.root, resources_dir)
 
         # Use the skill's metadata name if available (e.g., 'monoco-issue')
@@ -290,6 +378,18 @@ class SkillManager:
         """
         return list(self.skills.values())
 
+    def list_skills_by_type(self, skill_type: str) -> List[Skill]:
+        """
+        Get skills filtered by type.
+
+        Args:
+            skill_type: Skill type to filter by (e.g., 'flow', 'standard')
+
+        Returns:
+            List of Skill instances matching the type
+        """
+        return [s for s in self.skills.values() if s.get_type() == skill_type]
+
     def get_skill(self, name: str) -> Optional[Skill]:
         """
         Get a specific skill by name.
@@ -301,6 +401,15 @@ class SkillManager:
             Skill instance or None if not found
         """
         return self.skills.get(name)
+
+    def get_flow_skills(self) -> List[Skill]:
+        """
+        Get all Flow Skills.
+
+        Returns:
+            List of Flow Skill instances
+        """
+        return self.list_skills_by_type("flow")
 
     def distribute(
         self, target_dir: Path, lang: str, force: bool = False
@@ -323,19 +432,28 @@ class SkillManager:
 
         for skill_name, skill in self.skills.items():
             try:
-                # Check if this skill has the requested language
-                available_languages = skill.get_languages()
+                # Handle different skill types
+                skill_type = skill.get_type()
 
-                if lang not in available_languages:
-                    console.print(
-                        f"[yellow]Skill {skill_name} does not have {lang} version, skipping[/yellow]"
+                if skill_type == "flow":
+                    # Flow skills: copy entire directory (no language filtering)
+                    success = self._distribute_flow_skill(skill, target_dir, force)
+                else:
+                    # Standard skills: distribute specific language version
+                    available_languages = skill.get_languages()
+
+                    if lang not in available_languages:
+                        console.print(
+                            f"[yellow]Skill {skill_name} does not have {lang} version, skipping[/yellow]"
+                        )
+                        results[skill_name] = False
+                        continue
+
+                    success = self._distribute_standard_skill(
+                        skill, target_dir, lang, force
                     )
-                    results[skill_name] = False
-                    continue
 
-                # Distribute the specific language version
-                self._distribute_skill_language(skill, target_dir, lang, force)
-                results[skill_name] = True
+                results[skill_name] = success
 
             except Exception as e:
                 console.print(
@@ -345,17 +463,56 @@ class SkillManager:
 
         return results
 
-    def _distribute_skill_language(
-        self, skill: Skill, target_dir: Path, lang: str, force: bool
-    ) -> None:
+    def _distribute_flow_skill(
+        self, skill: Skill, target_dir: Path, force: bool
+    ) -> bool:
         """
-        Distribute a specific language version of a skill.
+        Distribute a Flow Skill to target directory.
+
+        Flow skills are copied as entire directories (including subdirectories).
 
         Args:
-            skill: Skill instance
-            target_dir: Target directory (e.g., .cursor/skills/)
+            skill: Flow Skill instance
+            target_dir: Target directory
+            force: Force overwrite
+
+        Returns:
+            True if distribution successful
+        """
+        target_skill_dir = target_dir / skill.name
+
+        # Check if update is needed (compare SKILL.md mtime)
+        if target_skill_dir.exists() and not force:
+            source_mtime = skill.skill_file.stat().st_mtime
+            target_skill_file = target_skill_dir / "SKILL.md"
+            if target_skill_file.exists():
+                target_mtime = target_skill_file.stat().st_mtime
+                if source_mtime <= target_mtime:
+                    console.print(f"[dim]  = {skill.name}/ is up to date[/dim]")
+                    return True
+
+        # Remove existing and copy fresh
+        if target_skill_dir.exists():
+            shutil.rmtree(target_skill_dir)
+
+        shutil.copytree(skill.skill_dir, target_skill_dir)
+        console.print(f"[green]  ✓ Distributed {skill.name}/[/green]")
+        return True
+
+    def _distribute_standard_skill(
+        self, skill: Skill, target_dir: Path, lang: str, force: bool
+    ) -> bool:
+        """
+        Distribute a standard skill to target directory.
+
+        Args:
+            skill: Standard Skill instance
+            target_dir: Target directory
             lang: Language code
             force: Force overwrite
+
+        Returns:
+            True if distribution successful
         """
         # Determine source file (try language subdirectory first)
         source_file = skill.skill_dir / lang / "SKILL.md"
@@ -368,7 +525,7 @@ class SkillManager:
             console.print(
                 f"[yellow]Source file not found for {skill.name}/{lang}[/yellow]"
             )
-            return
+            return False
 
         # Target path: {target_dir}/{skill_name}/SKILL.md (no language subdirectory)
         target_skill_dir = target_dir / skill.name
@@ -385,7 +542,7 @@ class SkillManager:
 
             if source_checksum == target_checksum:
                 console.print(f"[dim]  = {skill.name}/SKILL.md is up to date[/dim]")
-                return
+                return True
 
         # Copy the file
         shutil.copy2(source_file, target_file)
@@ -393,6 +550,8 @@ class SkillManager:
 
         # Copy additional resources if they exist
         self._copy_skill_resources(skill.skill_dir, target_skill_dir, lang)
+
+        return True
 
     def _copy_skill_resources(
         self, source_dir: Path, target_dir: Path, lang: str
@@ -456,3 +615,28 @@ class SkillManager:
 
         if removed_count == 0:
             console.print(f"[dim]No skills to remove from {target_dir}[/dim]")
+
+    def get_flow_skill_commands(self) -> List[str]:
+        """
+        Get list of available flow skill commands.
+
+        In Kimi CLI, flow skills are invoked via /flow:<role> command.
+        This function extracts the role names from flow skills.
+
+        Returns:
+            List of available /flow:<role> commands
+        """
+        commands = []
+        for skill in self.get_flow_skills():
+            role = skill.get_role()
+            if role:
+                commands.append(f"/flow:{role}")
+            else:
+                # Extract role from skill name
+                # e.g., monoco_flow_engineer -> engineer
+                name = skill.name
+                if name.startswith(self.flow_skill_prefix):
+                    role = name[len(self.flow_skill_prefix) + 5:]  # Remove prefix + "flow_"
+                    if role:
+                        commands.append(f"/flow:{role}")
+        return sorted(commands)
