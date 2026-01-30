@@ -102,3 +102,45 @@ def list_memos(issues_root: Path) -> List[Dict[str, str]]:
         memos.append({"id": uid, "timestamp": timestamp, "content": body})
 
     return memos
+
+
+def delete_memo(issues_root: Path, memo_id: str) -> bool:
+    """
+    Delete a memo by its ID.
+    Returns True if deleted, False if not found.
+    """
+    inbox_path = get_inbox_path(issues_root)
+    if not inbox_path.exists():
+        return False
+
+    content = inbox_path.read_text(encoding="utf-8")
+    pattern = re.compile(r"^## \[([a-f0-9]+)\] (.*?)$", re.MULTILINE)
+
+    matches = list(pattern.finditer(content))
+    target_idx = -1
+    for i, m in enumerate(matches):
+        if m.group(1) == memo_id:
+            target_idx = i
+            break
+
+    if target_idx == -1:
+        return False
+
+    # Find boundaries
+    start = matches[target_idx].start()
+    # Include the potential newline before the header if it exists
+    if start > 0 and content[start - 1] == "\n":
+        start -= 1
+
+    if target_idx + 1 < len(matches):
+        end = matches[target_idx + 1].start()
+        # Back up if there's a newline before the next header that we should keep?
+        # Actually, if we delete a memo, we should probably remove one "entry block".
+        # Entry blocks are format_memo: \n## header\nbody\n
+        # So we want to remove the leading \n and the trailing parts.
+    else:
+        end = len(content)
+
+    new_content = content[:start] + content[end:]
+    inbox_path.write_text(new_content, encoding="utf-8")
+    return True

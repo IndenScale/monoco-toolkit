@@ -4,7 +4,7 @@ from typing import Optional
 from rich.console import Console
 from rich.table import Table
 from monoco.core.config import get_config
-from .core import add_memo, list_memos, get_inbox_path, validate_content_language
+from .core import add_memo, list_memos, delete_memo, get_inbox_path, validate_content_language
 
 app = typer.Typer(help="Manage memos (fleeting notes).")
 console = Console()
@@ -94,3 +94,19 @@ def open_command():
         return
 
     typer.launch(str(inbox_path))
+
+
+@app.command("delete")
+def delete_command(
+    memo_id: str = typer.Argument(..., help="The ID of the memo to delete.")
+):
+    """
+    Delete a memo from the inbox by its ID.
+    """
+    issues_root = get_issues_root()
+
+    if delete_memo(issues_root, memo_id):
+        console.print(f"[green]✔ Memo [bold]{memo_id}[/bold] deleted successfully.[/green]")
+    else:
+        console.print(f"[red]Error: Memo with ID [bold]{memo_id}[/bold] not found.[/red]")
+        raise typer.Exit(code=1)
