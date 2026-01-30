@@ -19,6 +19,11 @@ def test_force_prune_confirmation(project_env):
     # Satisfy AC
     path = Path(meta.path)
     content = path.read_text().replace("- [ ]", "- [x]")
+    # Remove placeholder comment and add review content
+    content = content.replace(
+        "<!-- Required for Review/Done stage. Record review feedback here. -->",
+        "Review completed."
+    )
     path.write_text(content)
 
     # Transition to Review to allow closing
@@ -66,6 +71,11 @@ def test_force_prune_json_no_prompt(project_env):
 
     path = Path(meta.path)
     content = path.read_text().replace("- [ ]", "- [x]")
+    # Remove placeholder comment and add review content
+    content = content.replace(
+        "<!-- Required for Review/Done stage. Record review feedback here. -->",
+        "Review completed."
+    )
     path.write_text(content)
 
     # Transition to Review
