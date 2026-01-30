@@ -3,10 +3,10 @@ id: FEAT-0123
 uid: 6ad2dd
 type: feature
 status: open
-stage: draft
+stage: doing
 title: Migrate Core Features to Flow Skills Pattern
 created_at: '2026-01-30T17:45:07'
-updated_at: '2026-01-30T17:45:07'
+updated_at: '2026-01-30T18:03:06'
 parent: EPIC-0022
 dependencies:
 - FEAT-0122
@@ -23,6 +23,7 @@ files:
 - monoco/features/spike/resources/skills/
 - monoco/features/issue/resources/skills/
 - monoco/features/memo/resources/skills/
+criticality: medium
 opened_at: '2026-01-30T17:45:07'
 ---
 

@@ -17,7 +17,7 @@ tags:
 - '#EPIC-0000'
 files: []
 opened_at: '2026-01-30T16:42:46'
-progress: 2/4
+progress: 3/5
 files_count: 0
 ---
 
