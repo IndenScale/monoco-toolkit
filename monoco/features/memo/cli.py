@@ -4,25 +4,16 @@ from typing import Optional
 from rich.console import Console
 from rich.table import Table
 from monoco.core.config import get_config
-from .core import add_memo, list_memos, get_inbox_path
+from .core import add_memo, list_memos, get_inbox_path, validate_content_language
 
 app = typer.Typer(help="Manage memos (fleeting notes).")
 console = Console()
 
 
-def get_issues_root() -> Path:
-    config = get_config()
+def get_issues_root(config=None) -> Path:
+    if config is None:
+        config = get_config()
     # Resolve absolute path for issues
-    root = Path(config.paths.root).resolve()
-    # If config.paths.root is '.', it means current or discovered root.
-    # We should trust get_config's loading mechanism, but find_monoco_root might be safer to base off.
-    # Update: config is loaded relative to where it was found.
-    # Let's rely on config.paths.root if it's absolute, or relative to CWD?
-    # Actually, the ConfigLoader doesn't mutate paths.root based on location.
-    # It defaults to "."
-
-    # Better approach:
-    # Use find_monoco_root() to get base, then append config.paths.issues
     from monoco.core.config import find_monoco_root
 
     project_root = find_monoco_root()
@@ -35,11 +26,26 @@ def add_command(
     context: Optional[str] = typer.Option(
         None, "--context", "-c", help="Context reference (e.g. file:line)."
     ),
+    force: bool = typer.Option(
+        False, "--force", "-f", help="Bypass i18n language validation."
+    ),
 ):
     """
     Capture a new idea or thought into the Memo Inbox.
     """
-    issues_root = get_issues_root()
+    config = get_config()
+    issues_root = get_issues_root(config)
+
+    # Language Validation
+    source_lang = config.i18n.source_lang
+    if not force and not validate_content_language(content, source_lang):
+        console.print(
+            f"[red]Error: Content language mismatch.[/red] Content does not match configured source language: [bold]{source_lang}[/bold]."
+        )
+        console.print(
+            "[yellow]Tip: Use --force to bypass this check if you really want to add this content.[/yellow]"
+        )
+        raise typer.Exit(code=1)
 
     uid = add_memo(issues_root, content, context)
 
