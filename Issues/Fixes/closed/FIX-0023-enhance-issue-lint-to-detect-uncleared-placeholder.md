@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Enhance issue lint to detect uncleared placeholders
 created_at: '2026-01-30T15:24:26'
-updated_at: '2026-01-30T15:32:13'
+updated_at: 2026-01-30 15:32:14
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -20,10 +20,6 @@ criticality: high
 opened_at: '2026-01-30T15:24:26'
 closed_at: '2026-01-30T15:32:13'
 solution: implemented
-isolation:
-  type: branch
-  ref: feat/fix-0023-enhance-issue-lint-to-detect-uncleared-placeholder
-  created_at: '2026-01-30T15:30:57'
 ---
 
 ## FIX-0023: Enhance issue lint to detect uncleared placeholders

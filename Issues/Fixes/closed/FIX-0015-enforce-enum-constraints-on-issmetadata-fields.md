@@ -37,4 +37,4 @@ solution: implemented
 - [x] 验证 `monoco issue lint` 是否能正确检测出非法字符串。
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+Verified.

@@ -46,7 +46,7 @@ solution: implemented
 - [x] 为 squash-merge 场景添加测试用例
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+Verified.
 
 ### Self Review
 - Implemented `--force-prune` option in `commands.py`.
