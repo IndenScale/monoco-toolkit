@@ -92,3 +92,8 @@ FEAT-0120 已关闭 (implemented)：Agent Session Lifecycle Hooks 功能完成�
 > **Context**: `issue-tracking`
 
 CHORE-0023 已创建：Rename scheduler module to agent for semantic consistency (AgentOnboarding)
+
+## [23ef5f] 2026-01-30 17:59:23
+> **Context**: `task-completed`
+
+CHORE-0023 验收通过：scheduler → agent 重命名完成，FEAT-0122 已更新路径引用
