@@ -3,10 +3,10 @@ id: FEAT-0122
 uid: 71d1d8
 type: feature
 status: open
-stage: review
+stage: doing
 title: Enhance SkillManager to Support Multi-Skill Architecture
 created_at: '2026-01-30T17:45:07'
-updated_at: '2026-01-30T17:45:07'
+updated_at: '2026-01-30T18:02:54'
 parent: EPIC-0022
 dependencies: []
 related:
@@ -21,6 +21,7 @@ files:
 - monoco/core/skills.py
 - monoco/core/sync.py
 - monoco/features/scheduler/flow_skills.py
+criticality: medium
 opened_at: '2026-01-30T17:45:07'
 ---
 
