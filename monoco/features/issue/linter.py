@@ -30,39 +30,131 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
     # Helper to collect issues from a project
     def collect_project_issues(project_issues_root: Path, project_name: str = "local"):
         project_issues = []
-        for subdir in ["Epics", "Features", "Chores", "Fixes"]:
+        for subdir in ["Epics", "Features", "Chores", "Fixes", "Domains"]:
             d = project_issues_root / subdir
             if d.exists():
-                files = []
-                for status in ["open", "closed", "backlog"]:
-                    status_dir = d / status
-                    if status_dir.exists():
-                        files.extend(status_dir.rglob("*.md"))
+                if subdir == "Domains":
+                    # Special handling for Domains (not Issue tickets)
+                    for f in d.rglob("*.md"):
+                        # Domain validation happens here inline or via separate validator
+                        # For now, we just index them for reference validation
+                        domain_key = f.stem
+                        # Ensure H1 matches filename
+                        try:
+                            content = f.read_text(encoding="utf-8")
 
-                for f in files:
-                    try:
-                        meta = core.parse_issue(f, raise_error=True)
-                        if meta:
-                            local_id = meta.id
-                            full_id = f"{project_name}::{local_id}"
+                            # 1. H1 Check
+                            h1_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
+                            if not h1_match:
+                                diagnostics.append(
+                                    Diagnostic(
+                                        range=Range(
+                                            start=Position(line=0, character=0),
+                                            end=Position(line=0, character=0),
+                                        ),
+                                        message=f"Domain '{f.name}' missing H1 title.",
+                                        severity=DiagnosticSeverity.Error,
+                                        source="DomainValidator",
+                                    )
+                                )
+                            else:
+                                h1_title = h1_match.group(1).strip()
+                                # Allow exact match or "Domain: Name" pattern? User said "Title should be same as filename"
+                                # But let's be strict: Filename stem MUST match H1
+                                # User spec: "标题应该和文件名相同" -> The H1 content (after #) must equal filename stem (spaces sensitive).
+                                # But wait, user example "Domain: Agent Onboarding" (bad) vs "Agent Onboarding" (good?).
+                                # Actually user said "Attribute key in yaml" should match.
+                                # Let's enforce: Filename 'Agent Onboarding.md' -> H1 '# Agent Onboarding'
 
-                            all_issue_ids.add(local_id)
-                            all_issue_ids.add(full_id)
+                                # Check for "Domain: " prefix which is forbidden
+                                if h1_title.lower().startswith("domain:"):
+                                    diagnostics.append(
+                                        Diagnostic(
+                                            range=Range(
+                                                start=Position(line=0, character=0),
+                                                end=Position(line=0, character=0),
+                                            ),
+                                            message=f"Domain H1 must not use 'Domain:' prefix. Found '{h1_title}'.",
+                                            severity=DiagnosticSeverity.Error,
+                                            source="DomainValidator",
+                                        )
+                                    )
+                                elif h1_title != f.stem:
+                                    diagnostics.append(
+                                        Diagnostic(
+                                            range=Range(
+                                                start=Position(line=0, character=0),
+                                                end=Position(line=0, character=0),
+                                            ),
+                                            message=f"Domain H1 '{h1_title}' does not match filename '{f.stem}'.",
+                                            severity=DiagnosticSeverity.Error,
+                                            source="DomainValidator",
+                                        )
+                                    )
 
-                            project_issues.append((f, meta, project_name))
-                    except Exception as e:
-                        # Report parsing failure as diagnostic
-                        d = Diagnostic(
-                            range=Range(
-                                start=Position(line=0, character=0),
-                                end=Position(line=0, character=0),
-                            ),
-                            message=f"Schema Error: {str(e)}",
-                            severity=DiagnosticSeverity.Error,
-                            source="System",
-                        )
-                        d.data = {"path": f}
-                        diagnostics.append(d)
+                            # 2. Source Language Check
+                            # We import the check from i18n core if not available in validator yet
+                            # But linter.py imports core... issue core.
+
+                            # Need source lang. Conf is available below, let's grab it or pass it.
+                            # We are inside a helper func, need to access outer scope or pass config.
+                            # We'll do it in validation phase? Or here?
+                            # 'conf' is defined in outer scope but not passed to this helper.
+                            # Let's resolve config inside loop or pass it.
+                            # To keep it simple, we do light check here.
+
+                            # Actually, we should collect Domains into a list to pass to Validator
+                            # so Validator can check if Issue 'domains' field references valid domains.
+                            # We'll use a special set for this.
+                            project_issues.append(
+                                (f, "DOMAIN", f.stem)
+                            )  # Marker for later
+
+                        except Exception as e:
+                            diagnostics.append(
+                                Diagnostic(
+                                    range=Range(
+                                        start=Position(line=0, character=0),
+                                        end=Position(line=0, character=0),
+                                    ),
+                                    message=f"Domain Read Error: {e}",
+                                    severity=DiagnosticSeverity.Error,
+                                    source="DomainValidator",
+                                )
+                            )
+
+                else:
+                    # Standard Issues (Epics/Features/etc)
+                    files = []
+                    for status in ["open", "closed", "backlog"]:
+                        status_dir = d / status
+                        if status_dir.exists():
+                            files.extend(status_dir.rglob("*.md"))
+
+                    for f in files:
+                        try:
+                            meta = core.parse_issue(f, raise_error=True)
+                            if meta:
+                                local_id = meta.id
+                                full_id = f"{project_name}::{local_id}"
+
+                                all_issue_ids.add(local_id)
+                                all_issue_ids.add(full_id)
+
+                                project_issues.append((f, meta, project_name))
+                        except Exception as e:
+                            # Report parsing failure as diagnostic
+                            d = Diagnostic(
+                                range=Range(
+                                    start=Position(line=0, character=0),
+                                    end=Position(line=0, character=0),
+                                ),
+                                message=f"Schema Error: {str(e)}",
+                                severity=DiagnosticSeverity.Error,
+                                source="System",
+                            )
+                            d.data = {"path": f}
+                            diagnostics.append(d)
         return project_issues
 
     conf = get_config(str(issues_root.parent))
@@ -121,16 +213,71 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
             pass
 
     # 2. Validation Phase
+    # 2. Validation Phase
+    # First, collect all valid domains from the scanned items
+    valid_domains = set()
+    for _, meta_or_type, _ in all_issues:
+        if meta_or_type == "DOMAIN":
+            # The third element in tuple was f.stem which we stored in 'project_name' slot?
+            # Wait, append was: project_issues.append((f, "DOMAIN", f.stem))
+            # But the loop unwrappig is: for path, meta, project_name in all_issues:
+            # So meta="DOMAIN", project_name=f.stem (domain key)
+            pass
+            # We access the third element which is assigned to 'project_name' variable in loop
+            # But let's check the loop vars again.
+            # collect_project_issues returns list of (f, meta, project_name) normally.
+            # For domains we did: (f, "DOMAIN", f.stem)
+            # So 'project_name' variable holds the domain key.
+            # This is a bit hacky reuse of types, but efficient.
+
+    # Let's extract domains cleaner
+    for path, meta, extra in all_issues:
+        if meta == "DOMAIN":
+            valid_domains.add(extra)
+
+    # Now validate
     for path, meta, project_name in all_issues:
+        if meta == "DOMAIN":
+            # Track B: Domain Validation
+            # Already did semantic checks in collection phase (H1 etc)
+            # Now do Source Language Check
+            try:
+                from monoco.features.i18n import core as i18n_core
+
+                # We need source_lang from config.
+                # We have 'conf' object from earlier.
+                source_lang = "en"
+                if conf and conf.i18n and conf.i18n.source_lang:
+                    source_lang = conf.i18n.source_lang
+
+                if not i18n_core.is_content_source_language(path, source_lang):
+                    diagnostics.append(
+                        Diagnostic(
+                            range=Range(
+                                start=Position(line=0, character=0),
+                                end=Position(line=0, character=0),
+                            ),
+                            message=f"Language Mismatch: Domain definition appears not to be in source language '{source_lang}'.",
+                            severity=DiagnosticSeverity.Warning,
+                            source="DomainValidator",
+                        )
+                    )
+            except Exception:
+                pass
+            continue
+
+        # Track A: Issue Validation
         content = path.read_text()  # Re-read content for validation
 
         # A. Run Core Validator
+        # Pass valid_domains kwarg (Validator needs update to accept it)
         file_diagnostics = validator.validate(
             meta,
             content,
             all_issue_ids,
             current_project=project_name,
             workspace_root=workspace_root_name,
+            valid_domains=valid_domains,
         )
 
         # Add context to diagnostics (Path)
