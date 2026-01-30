@@ -142,3 +142,9 @@ Linter 包含环境感知防护：
 - **ID 规范**: Issue ID 必须严格遵循 `TYPE-XXXX` 格式，其中 `XXXX` 必须是 4 位数字（示例: `FEAT-0001`, `FIX-9999`）。
 - **禁止后缀**: 禁止使用类似 `FEAT-0001-1` 这样带后缀的 ID。
 - **层级表达**: 子功能或子任务应通过 `parent` 字段（在 Front Matter 中）来关联父级 Issue，严禁通过 ID 命名约定（如加分级后缀）来表达层级关系。
+
+### 7. Domain 命名规范 (Domain Naming)
+
+- **格式强制**: Domain 名称必须使用 **PascalCase** (无空格、无特殊符号)。
+- **一致性**: Domain 名称必须与 `Issues/Domains/` 下的文件名（不含扩展名）严格一致。
+- **示例**: `IssueTracing`, `AgentOnboarding`。

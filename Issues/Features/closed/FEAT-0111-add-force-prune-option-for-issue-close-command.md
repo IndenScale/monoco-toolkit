@@ -2,11 +2,11 @@
 id: FEAT-0111
 uid: d2df83
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: Add force-prune option for issue close command
 created_at: '2026-01-29T18:41:05'
-updated_at: '2026-01-30T08:22:25'
+updated_at: 2026-01-30 08:23:11
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -18,10 +18,8 @@ files:
 - monoco/features/issue/commands.py
 - tests/features/issue/test_prune.py
 opened_at: '2026-01-29T18:41:05'
-isolation:
-  type: branch
-  ref: feat/feat-0111-add-force-prune-option-for-issue-close-command
-  created_at: '2026-01-30T08:17:49'
+closed_at: '2026-01-30T08:23:10'
+solution: implemented
 ---
 
 ## FEAT-0111: Add force-prune option for issue close command
