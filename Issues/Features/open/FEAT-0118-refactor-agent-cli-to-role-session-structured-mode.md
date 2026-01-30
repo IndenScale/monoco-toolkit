@@ -6,7 +6,7 @@ status: open
 stage: review
 title: Refactor Agent CLI to Role-Session Structured Mode
 created_at: '2026-01-30T14:11:10'
-updated_at: '2026-01-30T14:18:00'
+updated_at: '2026-01-30T14:21:44'
 parent: EPIC-0019
 dependencies: []
 related: []
@@ -17,6 +17,10 @@ tags:
 files:
 - Issues/Features/open/FEAT-0118-refactor-agent-cli-to-role-session-structured-mode.md
 - monoco/features/scheduler/cli.py
+- monoco/features/scheduler/defaults.py
+- monoco/features/scheduler/models.py
+- monoco/features/scheduler/reliability.py
+- monoco/features/scheduler/worker.py
 - monoco/main.py
 criticality: medium
 opened_at: '2026-01-30T14:11:10'
