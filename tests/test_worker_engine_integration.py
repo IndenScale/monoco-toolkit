@@ -4,8 +4,8 @@ Integration tests for Worker with multi-engine support.
 
 import pytest
 from unittest.mock import patch, MagicMock
-from monoco.features.scheduler.worker import Worker
-from monoco.features.scheduler.models import RoleTemplate
+from monoco.features.agent.worker import Worker
+from monoco.features.agent.models import RoleTemplate
 
 
 class TestWorkerEngineIntegration:

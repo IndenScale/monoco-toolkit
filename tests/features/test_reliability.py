@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from monoco.features.scheduler import SessionManager, ApoptosisManager, DEFAULT_ROLES
+from monoco.features.agent import SessionManager, ApoptosisManager, DEFAULT_ROLES
 
 
 @patch("subprocess.Popen")
@@ -14,7 +14,7 @@ def test_apoptosis_flow(mock_popen):
     apoptosis = ApoptosisManager(manager)
 
     # 1. Start a victim session
-    role = DEFAULT_ROLES[0]  # crafter
+    role = DEFAULT_ROLES[0]  # Planner
     victim = manager.create_session("ISSUE-666", role)
     victim.start()
 
@@ -38,7 +38,7 @@ def test_apoptosis_flow(mock_popen):
     # Should have at least 2 sessions now: Victim (crashed) and Coroner (completed)
     assert len(sessions) >= 2
 
-    coroner_sessions = [s for s in sessions if s.model.role_name == "coroner"]
+    coroner_sessions = [s for s in sessions if s.model.role_name == "Coroner"]
     assert len(coroner_sessions) > 0
     # Coroner ran start(), so status should be running
     assert coroner_sessions[0].model.status == "running"
