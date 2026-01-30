@@ -57,6 +57,41 @@ Lightweight note-taking for ideas and quick thoughts.
 - **Open**: `monoco memo open` (Edit in default editor)
 - **Guideline**: Use Memos for ideas; use Issues for actionable tasks.
 
+### Standard Agent Flows (Flow Skills)
+
+标准化 Agent 工作流，通过 Flow Skills (Mermaid 状态机) 定义核心角色的 SOP。
+
+**可用 Flows**:
+
+| Flow | 角色 | 命令 | 描述 |
+|------|------|------|------|
+| Engineer | 工程师 | `/flow:engineer` | Investigate → Code → Test → Report → Submit |
+| Manager | 经理 | `/flow:manager` | Inbox → Clarify → Decompose → Assign |
+| Reviewer | 评审员 | `/flow:reviewer` | Checkout → Test → Review → Decide → Cleanup |
+
+**存储位置**: `monoco/features/scheduler/resources/skills/`
+- `flow_engineer/SKILL.md`
+- `flow_manager/SKILL.md`
+- `flow_reviewer/SKILL.md`
+
+**注入机制**:
+- Flow Skills 会被同步到 `.agent/skills/` 目录，前缀为 `monoco_flow_`
+- Kimi CLI 可通过 `/flow:<role>` 命令调用
+- `.gitignore` 自动忽略 `monoco_flow_*/` 目录
+
+**使用方式**:
+```python
+from monoco.features.scheduler.flow_skills import sync_flow_skills, update_gitignore
+
+# 同步 Flow Skills
+resources_dir = Path("monoco/features/scheduler/resources")
+target_dir = Path(".agent/skills")
+sync_flow_skills(resources_dir, target_dir)
+
+# 更新 .gitignore
+update_gitignore(Path("."))
+```
+
 # Issue 管理 (Agent 指引)
 
 ## Issue 管理
