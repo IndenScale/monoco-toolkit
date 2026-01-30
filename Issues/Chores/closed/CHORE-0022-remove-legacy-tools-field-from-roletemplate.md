@@ -2,8 +2,8 @@
 id: CHORE-0022
 uid: 3759a1
 type: chore
-status: open
-stage: review
+status: closed
+stage: done
 title: Remove legacy 'tools' field from RoleTemplate
 created_at: '2026-01-30T15:24:26'
 updated_at: '2026-01-30T15:30:00'
