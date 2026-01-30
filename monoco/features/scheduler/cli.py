@@ -9,9 +9,11 @@ from monoco.features.scheduler import SessionManager, load_scheduler_config
 app = typer.Typer(name="agent", help="Manage agent sessions and roles")
 session_app = typer.Typer(name="session", help="Manage active agent sessions")
 role_app = typer.Typer(name="role", help="Manage agent roles (CRUD)")
+provider_app = typer.Typer(name="provider", help="Manage agent providers (Engines)")
 
 app.add_typer(session_app, name="session")
 app.add_typer(role_app, name="role")
+app.add_typer(provider_app, name="provider")
 
 
 @role_app.command(name="list")
@@ -39,6 +41,56 @@ def list_roles():
         )
 
     print_output(output, title="Agent Roles")
+
+
+@provider_app.command(name="list")
+def list_providers():
+    """
+    List available agent providers and their status.
+    """
+    from monoco.core.integrations import get_all_integrations
+
+    settings = get_config()
+    # Ideally we'd pass project-specific integrations here if they existed in config objects
+    integrations = get_all_integrations(enabled_only=False)
+
+    output = []
+    for key, integration in integrations.items():
+        output.append(
+            {
+                "key": key,
+                "name": integration.name,
+                "binary": integration.bin_name or "-",
+                "enabled": integration.enabled,
+                "rules": integration.system_prompt_file,
+            }
+        )
+
+    print_output(output, title="Agent Providers")
+
+
+@provider_app.command(name="check")
+def check_providers():
+    """
+    Run health checks on available providers.
+    """
+    from monoco.core.integrations import get_all_integrations
+
+    integrations = get_all_integrations(enabled_only=True)
+
+    output = []
+    for key, integration in integrations.items():
+        health = integration.check_health()
+        output.append(
+            {
+                "provider": integration.name,
+                "available": "✅" if health.available else "❌",
+                "latency": f"{health.latency_ms}ms" if health.latency_ms else "-",
+                "error": health.error or "-",
+            }
+        )
+
+    print_output(output, title="Provider Health Check")
 
 
 @app.command()
