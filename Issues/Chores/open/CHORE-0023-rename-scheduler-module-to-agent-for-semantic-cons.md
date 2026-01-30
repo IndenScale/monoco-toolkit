@@ -3,10 +3,10 @@ id: CHORE-0023
 uid: 2fcfe9
 type: chore
 status: open
-stage: draft
+stage: doing
 title: Rename scheduler module to agent for semantic consistency
 created_at: '2026-01-30T17:52:15'
-updated_at: '2026-01-30T17:52:15'
+updated_at: '2026-01-30T17:55:47'
 parent: EPIC-0022
 dependencies: []
 related:
@@ -22,6 +22,7 @@ files:
 - monoco/main.py
 - monoco/core/skills.py
 - tests/
+criticality: low
 opened_at: '2026-01-30T17:52:15'
 ---
 
