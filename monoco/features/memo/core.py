@@ -5,6 +5,23 @@ from typing import List, Dict, Optional
 import secrets
 
 
+def is_chinese(text: str) -> bool:
+    """Check if the text contains at least one Chinese character."""
+    return any("\u4e00" <= char <= "\u9fff" for char in text)
+
+
+def validate_content_language(content: str, source_lang: str) -> bool:
+    """
+    Check if content matches source language using simple heuristics.
+    Returns True if matched or if detection is not supported for the lang.
+    """
+    if source_lang == "zh":
+        return is_chinese(content)
+    # For 'en', we generally allow everything but could be more strict.
+    # Requirement is mainly about enforcing 'zh' when configured.
+    return True
+
+
 def get_memos_dir(issues_root: Path) -> Path:
     """
     Get the directory for memos.
