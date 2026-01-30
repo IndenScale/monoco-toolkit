@@ -6,6 +6,8 @@ import hashlib
 import secrets
 import re
 
+from .criticality import CriticalityLevel, Policy, PolicyResolver
+
 
 class IssueID:
     """
@@ -143,9 +145,23 @@ class IssueMetadata(BaseModel):
     files: List[str] = []
     path: Optional[str] = None  # Absolute path to the issue file
 
+    # Criticality System (FEAT-0114)
+    criticality: Optional[CriticalityLevel] = Field(
+        default=None,
+        description="Issue criticality level (low, medium, high, critical)",
+    )
+
     # Proxy UI Actions (Excluded from file persistence)
     # Modified: Remove exclude=True to allow API/CLI inspection. Must be manually excluded during YAML Dump.
     actions: List[IssueAction] = Field(default=[])
+
+    @property
+    def resolved_policy(self) -> Policy:
+        """Get the resolved policy based on criticality level."""
+        if self.criticality:
+            return PolicyResolver.resolve(self.criticality)
+        # Default to medium policy if not set
+        return PolicyResolver.resolve(CriticalityLevel.MEDIUM)
 
     @model_validator(mode="before")
     @classmethod
@@ -199,6 +215,14 @@ class IssueMetadata(BaseModel):
                     v["stage"] = "draft"
                 try:
                     v["stage"] = IssueStage(v["stage"])
+                except ValueError:
+                    pass
+
+            # Criticality normalization
+            if "criticality" in v and isinstance(v["criticality"], str):
+                v["criticality"] = v["criticality"].lower()
+                try:
+                    v["criticality"] = CriticalityLevel(v["criticality"])
                 except ValueError:
                     pass
         return v

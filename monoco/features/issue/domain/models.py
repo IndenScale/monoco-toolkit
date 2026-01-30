@@ -9,6 +9,7 @@ from ..models import (
     IssueIsolation,
     current_time,
 )
+from ..criticality import CriticalityLevel
 from monoco.core.lsp import Range
 
 
@@ -131,6 +132,12 @@ class IssueFrontmatter(BaseModel):
     solution: Optional[IssueSolution] = None
     isolation: Optional[IssueIsolation] = None
 
+    # Criticality System (FEAT-0114)
+    criticality: Optional[CriticalityLevel] = Field(
+        default=None,
+        description="Issue criticality level (low, medium, high, critical)",
+    )
+
     model_config = {"extra": "allow"}
 
     @model_validator(mode="before")
@@ -142,6 +149,8 @@ class IssueFrontmatter(BaseModel):
                 v["type"] = v["type"].lower()
             if "status" in v and isinstance(v["status"], str):
                 v["status"] = v["status"].lower()
+            if "criticality" in v and isinstance(v["criticality"], str):
+                v["criticality"] = v["criticality"].lower()
         return v
 
 
@@ -210,6 +219,10 @@ class Issue(BaseModel):
             ordered_dump["solution"] = data["solution"]
         if data.get("isolation"):
             ordered_dump["isolation"] = data["isolation"]
+
+        # 7. Criticality (Optional but recommended)
+        if data.get("criticality"):
+            ordered_dump["criticality"] = data["criticality"]
 
         fm_str = yaml.dump(ordered_dump, sort_keys=False, allow_unicode=True).strip()
         body_str = self.body.to_markdown()

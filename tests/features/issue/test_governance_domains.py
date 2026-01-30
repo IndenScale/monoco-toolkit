@@ -91,15 +91,13 @@ tags: ["#FEAT-0001", "#EPIC-0000"]
 
     diagnostics = validator.validate(meta, content, valid_domains=valid_domains)
 
-    errors = [
-        d
-        for d in diagnostics
-        if "Unknown Domain: 'UnknownDomain' is not found" in d.message
-    ]
+    errors = [d for d in diagnostics if "Unknown Domain: 'UnknownDomain'" in d.message]
     assert len(errors) == 1
 
     # Check that 'UX' didn't trigger an error
-    ux_errors = [d for d in diagnostics if "'UX' is not found" in d.message]
+    ux_errors = [
+        d for d in diagnostics if "'UX'" in d.message and "Unknown Domain" in d.message
+    ]
     assert len(ux_errors) == 0
 
 
