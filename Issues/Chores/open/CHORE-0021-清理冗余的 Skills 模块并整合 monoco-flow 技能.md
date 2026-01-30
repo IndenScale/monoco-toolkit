@@ -3,10 +3,10 @@ id: CHORE-0021
 uid: 797c31
 type: chore
 status: open
-stage: draft
+stage: doing
 title: 清理冗余的 Skills 模块并整合 monoco-flow 技能
 created_at: '2026-01-30T14:38:17'
-updated_at: '2026-01-30T14:40:55'
+updated_at: '2026-01-30T14:41:09'
 parent: EPIC-0000
 dependencies: []
 related: []
