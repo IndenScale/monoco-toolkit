@@ -1,4 +1,3 @@
-from typing import List
 from pydantic import BaseModel, Field
 
 
@@ -11,7 +10,6 @@ class RoleTemplate(BaseModel):
         ..., description="Event that triggers this agent (e.g., 'issue.created')"
     )
     goal: str = Field(..., description="The primary goal/output of this agent")
-    tools: List[str] = Field(default_factory=list, description="List of allowed tools")
     system_prompt: str = Field(
         ..., description="The system prompt template for this agent"
     )
