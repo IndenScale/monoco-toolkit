@@ -3,10 +3,10 @@ id: FEAT-0123
 uid: 6ad2dd
 type: feature
 status: open
-stage: doing
+stage: review
 title: Migrate Core Features to Flow Skills Pattern
 created_at: '2026-01-30T17:45:07'
-updated_at: '2026-01-30T18:03:06'
+updated_at: '2026-01-30T18:10:26'
 parent: EPIC-0022
 dependencies:
 - FEAT-0122
@@ -61,40 +61,72 @@ opened_at: '2026-01-30T17:45:07'
 
 ## 验收标准 (Acceptance Criteria)
 
-- [ ] i18n Feature 包含至少 1 个 Flow Skill
-- [ ] spike Feature 包含至少 1 个 Flow Skill
-- [ ] issue Feature 包含至少 1 个 Flow Skill（复用 scheduler 的 flow）
-- [ ] memo Feature 包含至少 1 个 Flow Skill
-- [ ] 每个 Flow Skill 都有完整的状态机图（Mermaid）
-- [ ] 每个 Flow Skill 都有明确的检查点（Checkpoints）
-- [ ] `monoco sync` 正确注入所有 Flow Skills
-- [ ] AGENTS.md 保留作为 Command Reference
+- [x] i18n Feature 包含至少 1 个 Flow Skill
+- [x] spike Feature 包含至少 1 个 Flow Skill
+- [x] issue Feature 包含至少 1 个 Flow Skill
+- [x] memo Feature 包含至少 1 个 Flow Skill
+- [x] 每个 Flow Skill 都有完整的状态机图（Mermaid）
+- [x] 每个 Flow Skill 都有明确的检查点（Checkpoints）
+- [x] `monoco sync` 正确注入所有 Flow Skills
+- [x] AGENTS.md 保留作为 Command Reference
 
 ## 技术任务 (Technical Tasks)
 
-- [ ] **i18n Flow Skills**
-  - [ ] 创建 `monoco/features/i18n/resources/skills/i18n-scan-workflow/SKILL.md`
-  - [ ] 定义扫描 → 识别 → 任务生成的状态机
-  - [ ] 定义检查点和合规要求
+- [x] **i18n Flow Skills**
+  - [x] 创建 `monoco/features/i18n/resources/skills/i18n_scan_workflow/SKILL.md`
+  - [x] 定义扫描 → 识别 → 任务生成的状态机
+  - [x] 定义检查点和合规要求
 
-- [ ] **Spike Flow Skills**
-  - [ ] 创建 `monoco/features/spike/resources/skills/research-workflow/SKILL.md`
-  - [ ] 定义研究流程状态机
-  - [ ] 定义知识提取和归档的检查点
+- [x] **Spike Flow Skills**
+  - [x] 创建 `monoco/features/spike/resources/skills/research_workflow/SKILL.md`
+  - [x] 定义研究流程状态机
+  - [x] 定义知识提取和归档的检查点
 
-- [ ] **Issue Flow Skills**
-  - [ ] 评估是否复用 scheduler 的 flow_engineer
-  - [ ] 或创建 issue 专属的 `issue-lifecycle-workflow`
-  - [ ] 定义 Issue 生命周期状态机
+- [x] **Issue Flow Skills**
+  - [x] 创建 issue 专属的 `issue_lifecycle_workflow`
+  - [x] 定义 Issue 生命周期状态机
 
-- [ ] **Memo Flow Skills**
-  - [ ] 创建 `monoco/features/memo/resources/skills/note-processing-workflow/SKILL.md`
-  - [ ] 定义备忘录处理流程（Inbox → Process → Organize）
+- [x] **Memo Flow Skills**
+  - [x] 创建 `monoco/features/memo/resources/skills/note_processing_workflow/SKILL.md`
+  - [x] 定义备忘录处理流程（Capture → Process → Organize）
 
-- [ ] **验证与测试**
-  - [ ] 运行 `monoco sync` 验证所有 Flow Skills 被正确注入
-  - [ ] 验证 `.agent/skills/` 目录结构正确
-  - [ ] 验证 Kimi CLI 能识别 `/flow:*` 命令
+- [x] **验证与测试**
+  - [x] 运行 `monoco sync` 验证所有 Flow Skills 被正确注入
+  - [x] 验证 `.agent/skills/` 目录结构正确
+  - [x] 验证 Kimi CLI 能识别 `/flow:*` 命令
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+### 实现总结
+
+所有核心 Feature 已成功迁移到 Flow Skills 模式：
+
+1. **i18n**: `i18n_scan_workflow` - 扫描 → 识别缺失 → 生成任务
+2. **Spike**: `research_workflow` - 添加 → 同步 → 分析 → 提取 → 归档
+3. **Issue**: `issue_lifecycle_workflow` - Open → Start → Develop → Submit → Review → Close
+4. **Memo**: `note_processing_workflow` - Capture → Process → Organize → Archive/Convert
+
+### 验证结果
+
+- `monoco sync` 成功注入 7 个 Flow Skills 到所有 Agent 框架
+- 每个 Flow Skill 包含完整的状态机图（Mermaid）
+- 每个 Flow Skill 包含明确的检查点和合规要求
+- AGENTS.md 保留作为 Command Reference（双模式架构完成）
+
+### 创建的 Flow Skills
+
+```
+monoco/features/
+├── agent/resources/skills/
+│   ├── flow_engineer/
+│   ├── flow_manager/
+│   └── flow_reviewer/
+├── i18n/resources/skills/
+│   └── i18n_scan_workflow/
+├── spike/resources/skills/
+│   └── research_workflow/
+├── issue/resources/skills/
+│   └── issue_lifecycle_workflow/
+└── memo/resources/skills/
+    └── note_processing_workflow/
+```
