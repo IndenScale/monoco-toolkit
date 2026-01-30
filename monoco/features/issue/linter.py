@@ -24,12 +24,14 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
     validator = IssueValidator(issues_root)
 
     all_issue_ids = set()
+    id_to_path = {}
     all_issues = []
 
     # 1. Collection Phase (Build Index)
     # Helper to collect issues from a project
     def collect_project_issues(project_issues_root: Path, project_name: str = "local"):
         project_issues = []
+        project_diagnostics = []
         for subdir in ["Epics", "Features", "Chores", "Fixes", "Domains"]:
             d = project_issues_root / subdir
             if d.exists():
@@ -46,7 +48,7 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                             # 1. H1 Check
                             h1_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
                             if not h1_match:
-                                diagnostics.append(
+                                project_diagnostics.append(
                                     Diagnostic(
                                         range=Range(
                                             start=Position(line=0, character=0),
@@ -68,7 +70,7 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
 
                                 # Check for "Domain: " prefix which is forbidden
                                 if h1_title.lower().startswith("domain:"):
-                                    diagnostics.append(
+                                    project_diagnostics.append(
                                         Diagnostic(
                                             range=Range(
                                                 start=Position(line=0, character=0),
@@ -80,7 +82,7 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                                         )
                                     )
                                 elif h1_title != f.stem:
-                                    diagnostics.append(
+                                    project_diagnostics.append(
                                         Diagnostic(
                                             range=Range(
                                                 start=Position(line=0, character=0),
@@ -111,7 +113,7 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                             )  # Marker for later
 
                         except Exception as e:
-                            diagnostics.append(
+                            project_diagnostics.append(
                                 Diagnostic(
                                     range=Range(
                                         start=Position(line=0, character=0),
@@ -138,8 +140,69 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                                 local_id = meta.id
                                 full_id = f"{project_name}::{local_id}"
 
+                                if local_id in id_to_path:
+                                    other_path = id_to_path[local_id]
+                                    # Report on current file
+                                    d_dup = Diagnostic(
+                                        range=Range(
+                                            start=Position(line=0, character=0),
+                                            end=Position(line=0, character=0),
+                                        ),
+                                        message=f"Duplicate ID Violation: ID '{local_id}' is already used by {other_path.name}",
+                                        severity=DiagnosticSeverity.Error,
+                                        source=local_id,
+                                    )
+                                    d_dup.data = {"path": f}
+                                    project_diagnostics.append(d_dup)
+                                else:
+                                    id_to_path[local_id] = f
+
                                 all_issue_ids.add(local_id)
                                 all_issue_ids.add(full_id)
+
+                                # Filename Consistency Check
+                                # Pattern: {ID}-{slug}.md
+                                expected_slug = meta.title.lower().replace(" ", "-")
+                                # Remove common symbols from slug for matching
+                                expected_slug = re.sub(
+                                    r"[^a-z0-9\-]", "", expected_slug
+                                )
+                                # Trim double dashes
+                                expected_slug = re.sub(r"-+", "-", expected_slug).strip(
+                                    "-"
+                                )
+
+                                filename_stem = f.stem
+                                # Check if it starts with ID-
+                                if not filename_stem.startswith(f"{meta.id}-"):
+                                    project_diagnostics.append(
+                                        Diagnostic(
+                                            range=Range(
+                                                start=Position(line=0, character=0),
+                                                end=Position(line=0, character=0),
+                                            ),
+                                            message=f"Filename Error: Filename '{f.name}' must start with ID '{meta.id}-'",
+                                            severity=DiagnosticSeverity.Error,
+                                            source=meta.id,
+                                            data={"path": f},
+                                        )
+                                    )
+                                else:
+                                    # Check slug matching (loose match, ensuring it's present)
+                                    actual_slug = filename_stem[len(meta.id) + 1 :]
+                                    if not actual_slug:
+                                        project_diagnostics.append(
+                                            Diagnostic(
+                                                range=Range(
+                                                    start=Position(line=0, character=0),
+                                                    end=Position(line=0, character=0),
+                                                ),
+                                                message=f"Filename Error: Filename '{f.name}' missing title slug. Expected: '{meta.id}-{expected_slug}.md'",
+                                                severity=DiagnosticSeverity.Error,
+                                                source=meta.id,
+                                                data={"path": f},
+                                            )
+                                        )
 
                                 project_issues.append((f, meta, project_name))
                         except Exception as e:
@@ -154,8 +217,8 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                                 source="System",
                             )
                             d.data = {"path": f}
-                            diagnostics.append(d)
-        return project_issues
+                            project_diagnostics.append(d)
+        return project_issues, project_diagnostics
 
     conf = get_config(str(issues_root.parent))
 
@@ -184,7 +247,11 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
             workspace_root_name = root_conf.project.name.lower()
 
     # Collect from local issues_root
-    all_issues.extend(collect_project_issues(issues_root, local_project_name))
+    proj_issues, proj_diagnostics = collect_project_issues(
+        issues_root, local_project_name
+    )
+    all_issues.extend(proj_issues)
+    diagnostics.extend(proj_diagnostics)
 
     if recursive:
         try:
@@ -195,47 +262,34 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
             if workspace_root != issues_root.parent:
                 root_issues_dir = workspace_root / "Issues"
                 if root_issues_dir.exists():
-                    all_issues.extend(
-                        collect_project_issues(
-                            root_issues_dir, ws_conf.project.name.lower()
-                        )
+                    r_issues, r_diags = collect_project_issues(
+                        root_issues_dir, ws_conf.project.name.lower()
                     )
+                    all_issues.extend(r_issues)
+                    diagnostics.extend(r_diags)
 
             # Index all members
             for member_name, rel_path in ws_conf.project.members.items():
                 member_root = (workspace_root / rel_path).resolve()
                 member_issues_dir = member_root / "Issues"
                 if member_issues_dir.exists() and member_issues_dir != issues_root:
-                    all_issues.extend(
-                        collect_project_issues(member_issues_dir, member_name.lower())
+                    m_issues, m_diags = collect_project_issues(
+                        member_issues_dir, member_name.lower()
                     )
+                    all_issues.extend(m_issues)
+                    diagnostics.extend(m_diags)
         except Exception:
             pass
 
     # 2. Validation Phase
-    # 2. Validation Phase
-    # First, collect all valid domains from the scanned items
     valid_domains = set()
-    for _, meta_or_type, _ in all_issues:
-        if meta_or_type == "DOMAIN":
-            # The third element in tuple was f.stem which we stored in 'project_name' slot?
-            # Wait, append was: project_issues.append((f, "DOMAIN", f.stem))
-            # But the loop unwrappig is: for path, meta, project_name in all_issues:
-            # So meta="DOMAIN", project_name=f.stem (domain key)
-            pass
-            # We access the third element which is assigned to 'project_name' variable in loop
-            # But let's check the loop vars again.
-            # collect_project_issues returns list of (f, meta, project_name) normally.
-            # For domains we did: (f, "DOMAIN", f.stem)
-            # So 'project_name' variable holds the domain key.
-            # This is a bit hacky reuse of types, but efficient.
-
-    # Let's extract domains cleaner
-    for path, meta, extra in all_issues:
-        if meta == "DOMAIN":
-            valid_domains.add(extra)
-
     # Now validate
+    for path, meta, project_name in all_issues:
+        if meta == "DOMAIN":
+            valid_domains.add(
+                project_name
+            )  # Record the domain name (which was stored in project_name slot)
+
     for path, meta, project_name in all_issues:
         if meta == "DOMAIN":
             # Track B: Domain Validation
@@ -330,6 +384,13 @@ def run_lint(
                             except Exception:
                                 pass
 
+        # Collect valid domains
+        valid_domains = set()
+        domains_dir = issues_root / "Domains"
+        if domains_dir.exists():
+            for f in domains_dir.rglob("*.md"):
+                valid_domains.add(f.stem)
+
         validator = IssueValidator(issues_root)
 
         for file_path in file_paths:
@@ -356,7 +417,11 @@ def run_lint(
                     current_project_name = conf.project.name.lower()
 
                 file_diagnostics = validator.validate(
-                    meta, content, all_issue_ids, current_project=current_project_name
+                    meta,
+                    content,
+                    all_issue_ids,
+                    current_project=current_project_name,
+                    valid_domains=valid_domains,
                 )
 
                 # Add context
@@ -612,12 +677,15 @@ def run_lint(
             except Exception as e:
                 console.print(f"[red]Failed to fix domains for {path.name}: {e}[/red]")
 
-            # Domain Alias Fix
+            # Domain Alias and Format Fix
             try:
-                alias_fixes = [
-                    d for d in current_file_diags if "Domain Alias:" in d.message
+                format_fixes = [
+                    d
+                    for d in current_file_diags
+                    if "Domain Format Error:" in d.message
+                    or "Domain Alias:" in d.message
                 ]
-                if alias_fixes:
+                if format_fixes:
                     fm_match = re.search(
                         r"^---(.*?)---", new_content, re.DOTALL | re.MULTILINE
                     )
@@ -630,24 +698,41 @@ def run_lint(
                         domain_changed = False
                         if "domains" in data and isinstance(data["domains"], list):
                             domains = data["domains"]
-                            for d in alias_fixes:
-                                # Parse message: Domain Alias: 'alias' is an alias for 'canonical'.
-                                m = re.search(
-                                    r"Domain Alias: '([^']+)' is an alias for '([^']+)'",
-                                    d.message,
-                                )
+                            for d in format_fixes:
+                                if "Domain Format Error:" in d.message:
+                                    # Message: Domain Format Error: 'alias' must be PascalCase (e.g., 'canonical').
+                                    m = re.search(
+                                        r"Domain Format Error: '([^']+)' must be PascalCase \(e.g\., '([^']+)'\)",
+                                        d.message,
+                                    )
+                                else:
+                                    # Message: Domain Alias: 'alias' is an alias for 'canonical'.
+                                    m = re.search(
+                                        r"Domain Alias: '([^']+)' is an alias for '([^']+)'",
+                                        d.message,
+                                    )
+
                                 if m:
                                     old_d = m.group(1)
                                     new_d = m.group(2)
 
                                     if old_d in domains:
+                                        # Replace exact match
                                         domains = [
                                             new_d if x == old_d else x for x in domains
                                         ]
                                         domain_changed = True
 
                             if domain_changed:
-                                data["domains"] = domains
+                                # Deduplicate while preserving order if needed, but set is easier
+                                seen = set()
+                                unique_domains = []
+                                for dom in domains:
+                                    if dom not in seen:
+                                        unique_domains.append(dom)
+                                        seen.add(dom)
+
+                                data["domains"] = unique_domains
                                 new_fm_text = yaml.dump(
                                     data, sort_keys=False, allow_unicode=True
                                 )
@@ -655,25 +740,17 @@ def run_lint(
                                     fm_match.group(1), "\n" + new_fm_text
                                 )
                                 has_changes = True
-
-                                # Write immediately if not handled by previous block?
-                                # We are in standard flow where has_changes flag handles write at end of loop?
-                                # Wait, the previous block (Missing domains) logic wrote internally ONLY if has_changes.
-                                # AND it reset has_changes=False at start of try?
-                                # Actually the previous block structure was separate try-except blocks.
-                                # But here I am inserting AFTER the Missing Domains try-except (which was lines 390-442).
-                                # But I need to write if I changed it.
                                 path.write_text(new_content)
                                 if not any(path == p for p in processed_paths):
                                     fixed_count += 1
                                     processed_paths.add(path)
                                 console.print(
-                                    f"[dim]Fixed (Domain Alias): {path.name}[/dim]"
+                                    f"[dim]Fixed (Domain Normalization): {path.name}[/dim]"
                                 )
 
             except Exception as e:
                 console.print(
-                    f"[red]Failed to fix domain aliases for {path.name}: {e}[/red]"
+                    f"[red]Failed to fix domain normalization for {path.name}: {e}[/red]"
                 )
 
         console.print(f"[green]Applied auto-fixes to {fixed_count} files.[/green]")
@@ -695,7 +772,12 @@ def run_lint(
                 try:
                     meta = core.parse_issue(file)
                     content = file.read_text()
-                    file_diagnostics = validator.validate(meta, content, all_issue_ids)
+                    file_diagnostics = validator.validate(
+                        meta,
+                        content,
+                        all_issue_ids,
+                        valid_domains=valid_domains,
+                    )
                     for d in file_diagnostics:
                         d.source = meta.id
                         d.data = {"path": file}
