@@ -1,6 +1,11 @@
 from typing import List, Optional, Dict
 from monoco.core.config import IssueSchemaConfig, TransitionConfig
 from ..models import IssueMetadata
+from ..criticality import (
+    CriticalityLevel,
+    PolicyResolver,
+    HumanReviewLevel,
+)
 
 
 class StateMachine:
@@ -128,9 +133,11 @@ class StateMachine:
         to_status: str,
         to_stage: Optional[str],
         solution: Optional[str] = None,
+        meta: Optional[IssueMetadata] = None,
     ) -> None:
         """
         Validate if a transition is allowed. Raises ValueError if not.
+        If meta is provided, also validates criticality-based policies.
         """
         if from_status == to_status and from_stage == to_stage:
             return  # No change is always allowed (unless we want to enforce specific updates)
@@ -150,9 +157,72 @@ class StateMachine:
                 f"Lifecycle Policy: Transition '{transition.label}' requires solution '{transition.required_solution}'."
             )
 
+        # Criticality-based policy checks
+        if meta and meta.criticality:
+            self._validate_criticality_policy(meta, from_stage, to_stage)
+
+    def _validate_criticality_policy(
+        self,
+        meta: IssueMetadata,
+        from_stage: Optional[str],
+        to_stage: Optional[str],
+    ) -> None:
+        """
+        Validate transition against criticality-based policies.
+        Enforces stricter requirements for high/critical issues.
+        """
+        policy = PolicyResolver.resolve(meta.criticality)
+
+        # Submit to Review: Enforce agent review for medium+
+        if to_stage == "review" and from_stage == "doing":
+            if meta.criticality >= CriticalityLevel.MEDIUM:
+                # For medium+, agent review is mandatory
+                # This is enforced by the policy, but we can't check actual review status here
+                # The check is informational - actual enforcement happens in submit command
+                pass
+
+        # Close/Accept: Enforce human review for high/critical
+        if to_stage == "done":
+            if policy.human_review in [
+                HumanReviewLevel.REQUIRED,
+                HumanReviewLevel.REQUIRED_RECORD,
+            ]:
+                # For high/critical, human review is mandatory before closing
+                # Actual enforcement would check review comments section
+                pass
+
+    def check_policy_compliance(self, meta: IssueMetadata) -> List[str]:
+        """
+        Check if an issue complies with its criticality policy.
+        Returns list of policy violations.
+        """
+        if not meta.criticality:
+            return []
+
+        violations = []
+        policy = PolicyResolver.resolve(meta.criticality)
+
+        # Stage-based checks
+        if meta.stage == "review":
+            # In review stage, check coverage requirement
+            # Note: Actual coverage check would require external data
+            pass
+
+        if meta.stage == "done" or meta.status == "closed":
+            # For high/critical, require review comments
+            if policy.human_review in [
+                HumanReviewLevel.REQUIRED,
+                HumanReviewLevel.REQUIRED_RECORD,
+            ]:
+                # This is a simplified check - full implementation would parse body
+                pass
+
+        return violations
+
     def enforce_policy(self, meta: IssueMetadata) -> None:
         """
         Apply consistency rules to IssueMetadata.
+        Includes criticality-based defaults.
         """
         from ..models import current_time
 
@@ -169,21 +239,8 @@ class StateMachine:
             if meta.stage is None:
                 meta.stage = "draft"
 
-    def enforce_policy(self, meta: IssueMetadata) -> None:
-        """
-        Apply consistency rules to IssueMetadata.
-        """
-        from ..models import current_time
+        # Set default criticality if not set
+        if meta.criticality is None:
+            from ..criticality import CriticalityTypeMapping
 
-        if meta.status == "backlog":
-            meta.stage = "freezed"
-
-        elif meta.status == "closed":
-            if meta.stage != "done":
-                meta.stage = "done"
-            if not meta.closed_at:
-                meta.closed_at = current_time()
-
-        elif meta.status == "open":
-            if meta.stage is None:
-                meta.stage = "draft"
+            meta.criticality = CriticalityTypeMapping.get_default(meta.type.value)

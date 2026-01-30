@@ -1,6 +1,7 @@
 import typer
 from pathlib import Path
 from typing import Optional, List
+from datetime import datetime
 from rich.console import Console
 from rich.tree import Tree
 from rich.panel import Panel
@@ -10,7 +11,9 @@ import typer
 from monoco.core.config import get_config
 from monoco.core.output import OutputManager, AgentOutput
 from .models import IssueType, IssueStatus, IssueMetadata
+from .criticality import CriticalityLevel
 from . import core
+from monoco.core import git
 
 app = typer.Typer(help="Agent-Native Issue Management.")
 backlog_app = typer.Typer(help="Manage backlog operations.")
@@ -40,6 +43,7 @@ def create(
     related: List[str] = typer.Option(
         [], "--related", "-r", help="Related Issue ID(s)"
     ),
+    force: bool = typer.Option(False, "--force", help="Bypass branch context checks"),
     subdir: Optional[str] = typer.Option(
         None,
         "--subdir",
@@ -49,6 +53,12 @@ def create(
     sprint: Optional[str] = typer.Option(None, "--sprint", help="Sprint ID"),
     tags: List[str] = typer.Option([], "--tag", help="Tags"),
     domains: List[str] = typer.Option([], "--domain", help="Domains"),
+    criticality: Optional[str] = typer.Option(
+        None,
+        "--criticality",
+        "-c",
+        help="Criticality level (low, medium, high, critical). Auto-derived from type if not specified.",
+    ),
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
@@ -57,6 +67,13 @@ def create(
     """Create a new issue."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
+    project_root = _resolve_project_root(config)
+
+    # Context Check
+    _validate_branch_context(
+        project_root, allowed=["TRUNK"], force=force, command_name="create"
+    )
+
     status = "backlog" if is_backlog else "open"
 
     # Sanitize inputs (strip #)
@@ -70,6 +87,18 @@ def create(
         parent_path = core.find_issue_path(issues_root, parent)
         if not parent_path:
             OutputManager.error(f"Parent issue {parent} not found.")
+            raise typer.Exit(code=1)
+
+    # Parse criticality if provided
+    criticality_level = None
+    if criticality:
+        try:
+            criticality_level = CriticalityLevel(criticality.lower())
+        except ValueError:
+            valid_levels = [e.value for e in CriticalityLevel]
+            OutputManager.error(
+                f"Invalid criticality: '{criticality}'. Valid: {', '.join(valid_levels)}"
+            )
             raise typer.Exit(code=1)
 
     try:
@@ -86,6 +115,7 @@ def create(
             subdir=subdir,
             sprint=sprint,
             tags=tags,
+            criticality=criticality_level,
         )
 
         try:
@@ -215,6 +245,7 @@ def start(
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
+    force: bool = typer.Option(False, "--force", help="Bypass branch context checks"),
     json: AgentOutput = False,
 ):
     """
@@ -230,6 +261,14 @@ def start(
     # Handle direct flag override
     if direct:
         branch = False
+
+    # Context Check
+    # If creating a new branch (default), we MUST be on trunk to avoid nesting.
+    # If direct/no-branch, we don't care.
+    if branch:
+        _validate_branch_context(
+            project_root, allowed=["TRUNK"], force=force, command_name="start"
+        )
 
     if branch and worktree:
         OutputManager.error("Cannot specify both --branch and --worktree.")
@@ -283,12 +322,19 @@ def submit(
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
+    force: bool = typer.Option(False, "--force", help="Bypass branch context checks"),
     json: AgentOutput = False,
 ):
     """Submit issue for review (Stage -> Review) and generate delivery report."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     project_root = _resolve_project_root(config)
+
+    # Context Check: Submit should happen on feature branch, not trunk
+    _validate_branch_context(
+        project_root, forbidden=["TRUNK"], force=force, command_name="submit"
+    )
+
     try:
         # Implicitly ensure status is Open
         issue = core.update_issue(issues_root, issue_id, status="open", stage="review")
@@ -350,6 +396,14 @@ def move_close(
             f"Closing an issue requires a solution. Options: {', '.join(valid_solutions)}"
         )
         raise typer.Exit(code=1)
+
+    # Context Check: Close should happen on trunk (after merge)
+    _validate_branch_context(
+        project_root,
+        allowed=["TRUNK"],
+        force=(force or force_prune),
+        command_name="close",
+    )
 
     # Handle force-prune logic
     if force_prune:
@@ -1185,3 +1239,255 @@ def lsp_definition(
 
     # helper to serialize
     print(json.dumps([l.model_dump(mode="json") for l in locations]))
+
+
+@app.command("escalate")
+def escalate(
+    issue_id: str = typer.Argument(..., help="Issue ID to escalate"),
+    to_level: str = typer.Option(
+        ..., "--to", help="Target criticality level (low, medium, high, critical)"
+    ),
+    reason: str = typer.Option(..., "--reason", help="Reason for escalation"),
+    root: Optional[str] = typer.Option(
+        None, "--root", help="Override issues root directory"
+    ),
+    json: AgentOutput = False,
+):
+    """
+    Request escalation of issue criticality.
+    Requires approval before taking effect.
+    """
+    from .criticality import (
+        CriticalityLevel,
+        EscalationApprovalWorkflow,
+        CriticalityValidator,
+    )
+    from monoco.core.workspace import find_monoco_root
+
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+
+    # Parse target level
+    try:
+        target_level = CriticalityLevel(to_level.lower())
+    except ValueError:
+        valid_levels = [e.value for e in CriticalityLevel]
+        OutputManager.error(
+            f"Invalid level: '{to_level}'. Valid: {', '.join(valid_levels)}"
+        )
+        raise typer.Exit(code=1)
+
+    # Find issue
+    issue_path = core.find_issue_path(issues_root, issue_id)
+    if not issue_path:
+        OutputManager.error(f"Issue {issue_id} not found.")
+        raise typer.Exit(code=1)
+
+    issue = core.parse_issue(issue_path)
+    if not issue:
+        OutputManager.error(f"Could not parse issue {issue_id}.")
+        raise typer.Exit(code=1)
+
+    current_level = issue.criticality or CriticalityLevel.MEDIUM
+
+    # Validate escalation direction
+    can_modify, error_msg = CriticalityValidator.can_modify_criticality(
+        current_level, target_level, is_escalation_approved=False
+    )
+
+    if not can_modify:
+        OutputManager.error(error_msg or "Escalation not allowed")
+        raise typer.Exit(code=1)
+
+    # Create escalation request
+    project_root = find_monoco_root()
+    storage_path = project_root / ".monoco" / "escalations.yaml"
+    workflow = EscalationApprovalWorkflow(storage_path)
+
+    import getpass
+
+    request = workflow.create_request(
+        issue_id=issue_id,
+        from_level=current_level,
+        to_level=target_level,
+        reason=reason,
+        requested_by=getpass.getuser(),
+    )
+
+    OutputManager.print(
+        {
+            "status": "escalation_requested",
+            "escalation_id": request.id,
+            "issue_id": issue_id,
+            "from": current_level.value,
+            "to": target_level.value,
+            "message": f"Escalation request {request.id} created. Awaiting approval.",
+        }
+    )
+
+
+@app.command("approve-escalation")
+def approve_escalation(
+    escalation_id: str = typer.Argument(..., help="Escalation request ID"),
+    root: Optional[str] = typer.Option(
+        None, "--root", help="Override issues root directory"
+    ),
+    json: AgentOutput = False,
+):
+    """
+    Approve a pending escalation request.
+    Updates the issue's criticality upon approval.
+    """
+    from .criticality import (
+        EscalationApprovalWorkflow,
+        EscalationStatus,
+    )
+    from monoco.core.workspace import find_monoco_root
+
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+
+    # Load workflow
+    project_root = find_monoco_root()
+    storage_path = project_root / ".monoco" / "escalations.yaml"
+    workflow = EscalationApprovalWorkflow(storage_path)
+
+    request = workflow.get_request(escalation_id)
+    if not request:
+        OutputManager.error(f"Escalation request {escalation_id} not found.")
+        raise typer.Exit(code=1)
+
+    if request.status != EscalationStatus.PENDING:
+        OutputManager.error(f"Request is already {request.status.value}.")
+        raise typer.Exit(code=1)
+
+    # Approve
+    import getpass
+
+    approved = workflow.approve(escalation_id, getpass.getuser())
+
+    # Update issue criticality
+    try:
+        core.update_issue(
+            issues_root,
+            request.issue_id,
+            # Pass criticality through extra fields mechanism or update directly
+        )
+        # We need to update criticality directly
+        issue_path = core.find_issue_path(issues_root, request.issue_id)
+        if issue_path:
+            content = issue_path.read_text()
+            import yaml
+            import re
+
+            match = re.search(r"^---(.*?)---", content, re.DOTALL | re.MULTILINE)
+            if match:
+                yaml_str = match.group(1)
+                data = yaml.safe_load(yaml_str) or {}
+                data["criticality"] = request.to_level.value
+                data["updated_at"] = datetime.now().isoformat()
+
+                new_yaml = yaml.dump(data, sort_keys=False, allow_unicode=True)
+                body = content[match.end() :]
+                new_content = f"---\n{new_yaml}---{body}"
+                issue_path.write_text(new_content)
+
+        OutputManager.print(
+            {
+                "status": "escalation_approved",
+                "escalation_id": escalation_id,
+                "issue_id": request.issue_id,
+                "new_criticality": request.to_level.value,
+            }
+        )
+    except Exception as e:
+        OutputManager.error(f"Failed to update issue: {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("show")
+def show(
+    issue_id: str = typer.Argument(..., help="Issue ID to show"),
+    policy: bool = typer.Option(False, "--policy", help="Show resolved policy"),
+    root: Optional[str] = typer.Option(
+        None, "--root", help="Override issues root directory"
+    ),
+    json: AgentOutput = False,
+):
+    """
+    Show issue details, optionally with resolved policy.
+    """
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+
+    issue_path = core.find_issue_path(issues_root, issue_id)
+    if not issue_path:
+        OutputManager.error(f"Issue {issue_id} not found.")
+        raise typer.Exit(code=1)
+
+    issue = core.parse_issue(issue_path)
+    if not issue:
+        OutputManager.error(f"Could not parse issue {issue_id}.")
+        raise typer.Exit(code=1)
+
+    result = {
+        "issue": issue.model_dump(),
+    }
+
+    if policy:
+        resolved_policy = issue.resolved_policy
+        result["policy"] = {
+            "criticality": issue.criticality.value
+            if issue.criticality
+            else "medium (default)",
+            "agent_review": resolved_policy.agent_review.value,
+            "human_review": resolved_policy.human_review.value,
+            "min_coverage": resolved_policy.min_coverage,
+            "rollback_on_failure": resolved_policy.rollback_on_failure.value,
+            "require_security_scan": resolved_policy.require_security_scan,
+            "require_performance_check": resolved_policy.require_performance_check,
+            "max_reviewers": resolved_policy.max_reviewers,
+        }
+
+    OutputManager.print(result)
+
+
+def _validate_branch_context(
+    project_root: Path,
+    allowed: Optional[List[str]] = None,
+    forbidden: Optional[List[str]] = None,
+    force: bool = False,
+    command_name: str = "Command",
+):
+    """
+    Enforce branch context rules.
+    """
+    if force:
+        return
+
+    try:
+        current = git.get_current_branch(project_root)
+    except Exception:
+        # If git fails (not a repo?), skip check or fail?
+        # Let's assume strictness.
+        return
+
+    is_trunk = current in ["main", "master"]
+
+    if allowed:
+        if "TRUNK" in allowed and not is_trunk:
+            # Check if current is strictly in allowed list otherwise
+            if current not in allowed:
+                OutputManager.error(
+                    f"❌ {command_name} restricted to 'main' branch. Current: {current}\n"
+                    f"   Use --force to bypass if necessary."
+                )
+                raise typer.Exit(code=1)
+
+    if forbidden:
+        if "TRUNK" in forbidden and is_trunk:
+            OutputManager.error(
+                f"❌ {command_name} cannot be run on 'main' branch.\n"
+                f"   Please checkout your feature branch first."
+            )
+            raise typer.Exit(code=1)
