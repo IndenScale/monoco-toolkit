@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from monoco.features.scheduler.flow_skills import (
+from monoco.features.agent.flow_skills import (
     discover_flow_skills,
     inject_flow_skill,
     sync_flow_skills,

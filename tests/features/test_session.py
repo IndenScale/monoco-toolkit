@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from monoco.features.scheduler import SessionManager, DEFAULT_ROLES
+from monoco.features.agent import SessionManager, DEFAULT_ROLES
 
 
 def test_create_session():
@@ -8,7 +8,7 @@ def test_create_session():
     runtime = manager.create_session("ISSUE-456", role)
 
     assert runtime.model.issue_id == "ISSUE-456"
-    assert runtime.model.role_name == "crafter"
+    assert runtime.model.role_name == "Planner"
     assert runtime.model.status == "pending"
     assert runtime.model.branch_name.startswith("agent/ISSUE-456/")
 
