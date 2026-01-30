@@ -67,6 +67,50 @@ Monoco 强制采用 **Feature Branch** 模式。
 - **禁止主干开发**: **严禁** 直接在 `main`, `master`, `production` 分支上修改代码。Linter 会拦截此类行为。
 - **Submit**: 在提交 PR 前，运行 `monoco issue submit <ID>` 进行清理和预发布检查。
 
+## 标准化工作流 (Standardized Workflow)
+
+本指南引导 Agent 遵循 Monoco 标准 Issue 工作流。
+
+### 工作流图示
+
+```mermaid
+stateDiagram-v2
+    [*] --> Plan
+    Plan --> Build: monoco issue start
+    Build --> Submit: monoco issue submit
+    state "Oracle Loop" as Oracle {
+        Submit --> Review: Auto/Manual Review
+        Review --> Fix: Reject
+        Fix --> Submit: Retry
+    }
+    Review --> Merge: Approve
+    Merge --> [*]: monoco issue close
+```
+
+### 执行步骤
+
+1.  **Plan (计划阶段)**:
+    - 确保 Issue 已创作且处于 `Open` 状态。
+    - 验证需求描述与任务清单 (Acceptance Criteria)。
+
+2.  **Build (构建阶段)**:
+    - 运行 `monoco issue start <ID> --branch` (强制分支隔离)。
+    - 实现功能或修复缺陷。
+    - 运行 `monoco issue sync-files` 更新修改文件追踪。
+
+3.  **Submit (提交阶段 - Oracle 循环)**:
+    - 运行测试确保质量。
+    - 运行 `monoco issue lint` 检查合规性。
+    - 运行 `monoco issue submit <ID>` 触发评审。
+    - **如果** 收到报错或反馈：
+      - 修复问题。
+      - 重新运行测试。
+      - 重新运行提交。
+
+4.  **Merge (合并/关闭阶段)**:
+    - 一旦获得批准 (人工或自动)：
+    - 运行 `monoco issue close <ID> --solution completed --prune` 清理环境并下线。
+
 ### 2. 文件追踪 (File Tracking)
 
 为了保证上下文的自包含性 (Self-Contained Context)，Agent 必须记录修改过的文件。
@@ -142,9 +186,3 @@ Linter 包含环境感知防护：
 - **ID 规范**: Issue ID 必须严格遵循 `TYPE-XXXX` 格式，其中 `XXXX` 必须是 4 位数字（示例: `FEAT-0001`, `FIX-9999`）。
 - **禁止后缀**: 禁止使用类似 `FEAT-0001-1` 这样带后缀的 ID。
 - **层级表达**: 子功能或子任务应通过 `parent` 字段（在 Front Matter 中）来关联父级 Issue，严禁通过 ID 命名约定（如加分级后缀）来表达层级关系。
-
-### 7. Domain 命名规范 (Domain Naming)
-
-- **格式强制**: Domain 名称必须使用 **PascalCase** (无空格、无特殊符号)。
-- **一致性**: Domain 名称必须与 `Issues/Domains/` 下的文件名（不含扩展名）严格一致。
-- **示例**: `IssueTracing`, `AgentOnboarding`。

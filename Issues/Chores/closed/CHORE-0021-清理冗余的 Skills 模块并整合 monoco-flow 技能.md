@@ -2,12 +2,13 @@
 id: CHORE-0021
 uid: 797c31
 type: chore
-status: open
-stage: doing
+status: closed
+stage: done
 title: 清理冗余的 Skills 模块并整合 monoco-flow 技能
 created_at: '2026-01-30T14:38:17'
 updated_at: '2026-01-30T14:41:09'
 parent: EPIC-0000
+solution: implemented
 dependencies: []
 related: []
 domains: []
@@ -34,10 +35,10 @@ isolation:
 清理项目中的遗留冗余模块 `monoco/features/skills`，并将其功能与 `monoco-flow` 技能整合到现有的 `monoco-issue` 系统中，以符合当前的 Workspace 架构。
 
 ## Acceptance Criteria
-- [ ] `monoco/features/skills` 目录及其内容完全删除。
-- [ ] `monoco/skills/monoco-flow` 的核心内容（流程图与核心概念）已合并至 `monoco/features/issue/resources/{lang}/SKILL.md`。
-- [ ] `monoco/skills` 目录清理干净。
-- [ ] 运行 `uv run monoco issue lint` 无报错。
+- [x] `monoco/features/skills` 目录及其内容完全删除。
+- [x] `monoco/skills/monoco-flow` 的核心内容（流程图与核心概念）已合并至 `monoco/features/issue/resources/{lang}/SKILL.md`。
+- [x] `monoco/skills` 目录清理干净。
+- [x] 运行 `uv run monoco issue lint` 无报错。
 
 ## Technical Tasks
 - [x] 删除冗余模块
