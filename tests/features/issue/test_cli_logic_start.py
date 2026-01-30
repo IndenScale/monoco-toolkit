@@ -27,6 +27,15 @@ def test_start_command_default_branch(issues_root):
         # Invoke command with --no-commit to avoid git issues in temp directories
         result = runner.invoke(app, ["start", meta.id, "--root", str(issues_root), "--no-commit"])
 
+        # Debug output
+        if result.exit_code != 0:
+            print(f"DEBUG: Exit code: {result.exit_code}")
+            print(f"DEBUG: Stdout: {result.stdout}")
+            print(f"DEBUG: Stderr: {result.stderr}")
+            if result.exc_info:
+                import traceback
+                traceback.print_exception(*result.exc_info)
+
         assert result.exit_code == 0
 
         # Verify isolation was called with "branch"
