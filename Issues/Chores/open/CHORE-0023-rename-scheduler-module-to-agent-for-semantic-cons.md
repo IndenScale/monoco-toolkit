@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Rename scheduler module to agent for semantic consistency
 created_at: '2026-01-30T17:52:15'
-updated_at: '2026-01-30T17:55:47'
+updated_at: '2026-01-30T17:57:20'
 parent: EPIC-0022
 dependencies: []
 related:
@@ -17,13 +17,13 @@ domains:
 tags:
 - '#CHORE-0023'
 - '#EPIC-0022'
-files:
-- monoco/features/scheduler/ → monoco/features/agent/
-- monoco/main.py
-- monoco/core/skills.py
-- tests/
+files: []
 criticality: low
 opened_at: '2026-01-30T17:52:15'
+isolation:
+  type: branch
+  ref: feat/chore-0023-rename-scheduler-module-to-agent-for-semantic-cons
+  created_at: '2026-01-30T17:55:48'
 ---
 
 ## CHORE-0023: Rename scheduler module to agent for semantic consistency
