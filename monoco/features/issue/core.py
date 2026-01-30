@@ -26,6 +26,7 @@ from monoco.core.lsp import DiagnosticSeverity
 from .validator import IssueValidator
 
 from .engine import get_engine
+from .git_service import IssueGitService
 
 
 def get_prefix_map(issues_root: Path) -> Dict[str, str]:
@@ -447,6 +448,8 @@ def update_issue(
     tags: Optional[List[str]] = None,
     files: Optional[List[str]] = None,
     criticality: Optional[CriticalityLevel] = None,
+    no_commit: bool = False,
+    project_root: Optional[Path] = None,
 ) -> IssueMetadata:
     path = find_issue_path(issues_root, issue_id)
     if not path:
@@ -682,6 +685,38 @@ def update_issue(
     # Hook: Recursive Aggregation (FEAT-0003)
     if updated_meta.parent:
         recalculate_parent(issues_root, updated_meta.parent)
+
+    # Auto-commit issue file changes (FEAT-0115)
+    if not no_commit:
+        # Determine the action type for commit message
+        action = "update"
+        if status and status != current_status:
+            action = status  # "open", "closed", "backlog"
+        elif stage and stage != current_stage:
+            action = stage  # "draft", "doing", "review", "done"
+
+        # Resolve project root if not provided
+        if project_root is None:
+            project_root = issues_root.parent
+
+        # Only auto-commit if we're in a git repo
+        git_service = IssueGitService(project_root)
+        if git_service.is_git_repository():
+            # Determine old path if status changed (file was moved)
+            old_path_for_git = None
+            if status and status != current_status:
+                # The original path before move
+                old_path_for_git = find_issue_path(issues_root, issue_id)
+
+            commit_result = git_service.commit_issue_change(
+                issue_id=issue_id,
+                action=action,
+                issue_file_path=path,
+                old_file_path=old_path_for_git if old_path_for_git != path else None,
+                no_commit=no_commit,
+            )
+            # Attach commit result to metadata for optional inspection
+            updated_meta.commit_result = commit_result
 
     # Update returned metadata with final absolute path
     updated_meta.path = str(path.absolute())

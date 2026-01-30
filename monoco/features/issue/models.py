@@ -9,6 +9,13 @@ import re
 from .criticality import CriticalityLevel, Policy, PolicyResolver
 
 
+# Forward reference for type hints
+class CommitResult:
+    """Result of a commit operation (defined in git_service)."""
+
+    pass
+
+
 class IssueID:
     """
     Helper for parsing Issue IDs that might be namespaced (e.g. 'toolkit::FEAT-0001').
@@ -154,6 +161,10 @@ class IssueMetadata(BaseModel):
     # Proxy UI Actions (Excluded from file persistence)
     # Modified: Remove exclude=True to allow API/CLI inspection. Must be manually excluded during YAML Dump.
     actions: List[IssueAction] = Field(default=[])
+
+    # Runtime-only field for commit result (FEAT-0115)
+    # Not persisted to YAML, only available in memory after update_issue
+    commit_result: Optional[Any] = Field(default=None, exclude=True)
 
     @property
     def resolved_policy(self) -> Policy:
