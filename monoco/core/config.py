@@ -93,12 +93,55 @@ class TransitionConfig(BaseModel):
     command_template: Optional[str] = None
 
 
+class CriticalityRuleConfig(BaseModel):
+    """Configuration for auto-escalation rules."""
+
+    name: str
+    description: str = ""
+    path_patterns: List[str] = Field(default_factory=list)
+    tag_patterns: List[str] = Field(default_factory=list)
+    target_level: str = "medium"  # low, medium, high, critical
+
+
+class CriticalityConfig(BaseModel):
+    """Configuration for issue criticality system."""
+
+    enabled: bool = Field(default=True)
+    # Type to criticality default mapping
+    type_defaults: Dict[str, str] = Field(
+        default_factory=lambda: {
+            "epic": "high",
+            "feature": "medium",
+            "chore": "low",
+            "fix": "high",
+        }
+    )
+    # Auto-escalation rules
+    auto_rules: List[CriticalityRuleConfig] = Field(default_factory=list)
+
+    def merge(self, other: "CriticalityConfig") -> "CriticalityConfig":
+        if not other:
+            return self
+        if other.enabled is not None:
+            self.enabled = other.enabled
+        if other.type_defaults:
+            self.type_defaults.update(other.type_defaults)
+        if other.auto_rules:
+            # Merge by name
+            existing = {r.name: r for r in self.auto_rules}
+            for rule in other.auto_rules:
+                existing[rule.name] = rule
+            self.auto_rules = list(existing.values())
+        return self
+
+
 class IssueSchemaConfig(BaseModel):
     types: List[IssueTypeConfig] = Field(default_factory=list)
     statuses: List[str] = Field(default_factory=list)
     stages: List[str] = Field(default_factory=list)
     solutions: List[str] = Field(default_factory=list)
     workflows: List[TransitionConfig] = Field(default_factory=list)
+    criticality: CriticalityConfig = Field(default_factory=CriticalityConfig)
 
     def merge(self, other: "IssueSchemaConfig") -> "IssueSchemaConfig":
         if not other:
@@ -129,6 +172,10 @@ class IssueSchemaConfig(BaseModel):
             for ow in other.workflows:
                 wf_map[ow.name] = ow
             self.workflows = list(wf_map.values())
+
+        # Criticality config
+        if other.criticality:
+            self.criticality = self.criticality.merge(other.criticality)
 
         return self
 
