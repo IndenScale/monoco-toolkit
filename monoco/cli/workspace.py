@@ -4,7 +4,7 @@ from rich.console import Console
 import yaml
 
 from monoco.core.output import AgentOutput, OutputManager
-from monoco.core.hooks import install_hooks
+from monoco.core.githooks import install_hooks
 
 app = typer.Typer(help="Manage Monoco Workspace")
 console = Console()

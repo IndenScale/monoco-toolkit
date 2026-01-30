@@ -1,7 +1,11 @@
 from datetime import datetime
 from typing import Optional
+from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
+
 from .worker import Worker
+from monoco.core.hooks import HookContext, HookRegistry, get_registry
+from monoco.core.config import find_monoco_root
 
 
 class Session(BaseModel):
@@ -32,9 +36,21 @@ class RuntimeSession:
     The in-memory wrapper around the Session model and the active Worker.
     """
 
-    def __init__(self, session_model: Session, worker: Worker):
+    def __init__(
+        self, 
+        session_model: Session, 
+        worker: Worker,
+        hook_registry: Optional[HookRegistry] = None,
+        project_root: Optional[Path] = None,
+    ):
         self.model = session_model
         self.worker = worker
+        self.hook_registry = hook_registry or get_registry()
+        self.project_root = project_root or find_monoco_root()
+
+    def _create_hook_context(self) -> HookContext:
+        """Create a HookContext from the current session state."""
+        return HookContext.from_runtime_session(self, self.project_root)
 
     def start(self, context: Optional[dict] = None):
         print(
@@ -45,6 +61,10 @@ class RuntimeSession:
         self.model.updated_at = datetime.now()
 
         try:
+            # Execute on_session_start hooks
+            hook_context = self._create_hook_context()
+            self.hook_registry.execute_on_session_start(hook_context)
+            
             self.worker.start(context)
             # Async mode: we assume it started running.
             # Use poll or refresh_status to check later.
@@ -81,6 +101,21 @@ class RuntimeSession:
 
     def terminate(self):
         print(f"Session {self.model.id}: Terminating")
+        
+        # Execute on_session_end hooks before stopping worker
+        # This allows hooks to perform cleanup while session context is still valid
+        try:
+            hook_context = self._create_hook_context()
+            results = self.hook_registry.execute_on_session_end(hook_context)
+            
+            # Log hook results
+            for result in results:
+                if result.status == "failure":
+                    print(f"  Hook warning: {result.message}")
+        except Exception as e:
+            # Don't let hook errors prevent session termination
+            print(f"  Hook execution error: {e}")
+        
         self.worker.stop()
         self.model.status = "terminated"
         self.model.updated_at = datetime.now()

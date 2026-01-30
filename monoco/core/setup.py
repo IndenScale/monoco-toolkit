@@ -321,7 +321,7 @@ def init_cli(
 
     # Initialize Hooks
     try:
-        from monoco.core.hooks import install_hooks
+        from monoco.core.githooks import install_hooks
 
         # Re-load config to get the just-written hooks (or default ones)
         # Actually we have the dict right here in workspace_config['hooks']
