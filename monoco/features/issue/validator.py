@@ -27,6 +27,7 @@ class IssueValidator:
         all_issue_ids: Set[str] = set(),
         current_project: Optional[str] = None,
         workspace_root: Optional[str] = None,
+        valid_domains: Set[str] = set(),
     ) -> List[Diagnostic]:
         """
         Validate an issue and return diagnostics.
@@ -77,7 +78,11 @@ class IssueValidator:
         diagnostics.extend(self._validate_references(meta, content, all_issue_ids))
 
         # 5.5 Domain Integrity
-        diagnostics.extend(self._validate_domains(meta, content, all_issue_ids))
+        diagnostics.extend(
+            self._validate_domains(
+                meta, content, all_issue_ids, valid_domains=valid_domains
+            )
+        )
 
         # 6. Time Consistency
         diagnostics.extend(self._validate_time_consistency(meta, content))
@@ -616,7 +621,11 @@ class IssueValidator:
         return diagnostics
 
     def _validate_domains(
-        self, meta: IssueMetadata, content: str, all_ids: Set[str] = set()
+        self,
+        meta: IssueMetadata,
+        content: str,
+        all_ids: Set[str] = set(),
+        valid_domains: Set[str] = set(),
     ) -> List[Diagnostic]:
         diagnostics = []
         # Check if 'domains' field exists in frontmatter text
@@ -663,38 +672,51 @@ class IssueValidator:
                 )
 
         # Domain Content Validation
-        from .domain_service import DomainService
-
-        service = DomainService()
-
+        # If valid_domains is provided (from file scan), use it as strict source of truth
         if hasattr(meta, "domains") and meta.domains:
-            for domain in meta.domains:
-                if service.is_alias(domain):
-                    canonical = service.get_canonical(domain)
-                    diagnostics.append(
-                        self._create_diagnostic(
-                            f"Domain Alias: '{domain}' is an alias for '{canonical}'. Preference: Canonical.",
-                            DiagnosticSeverity.Warning,
-                            line=field_line,
-                        )
-                    )
-                elif not service.is_defined(domain):
-                    if service.config.strict:
+            if valid_domains:
+                # Use File-based validation
+                for domain in meta.domains:
+                    if domain not in valid_domains:
                         diagnostics.append(
                             self._create_diagnostic(
-                                f"Unknown Domain: '{domain}' is not defined in domain ontology.",
+                                f"Unknown Domain: '{domain}' is not found in Issues/Domains/. Expected one of: {', '.join(sorted(valid_domains))}",
                                 DiagnosticSeverity.Error,
                                 line=field_line,
                             )
                         )
-                    else:
+            else:
+                # Fallback to legacy DomainService (hardcoded list)
+                from .domain_service import DomainService
+
+                service = DomainService()
+                for domain in meta.domains:
+                    if service.is_alias(domain):
+                        canonical = service.get_canonical(domain)
                         diagnostics.append(
                             self._create_diagnostic(
-                                f"Unknown Domain: '{domain}' is not defined in domain ontology.",
+                                f"Domain Alias: '{domain}' is an alias for '{canonical}'. Preference: Canonical.",
                                 DiagnosticSeverity.Warning,
                                 line=field_line,
                             )
                         )
+                    elif not service.is_defined(domain):
+                        if service.config.strict:
+                            diagnostics.append(
+                                self._create_diagnostic(
+                                    f"Unknown Domain: '{domain}' is not defined in domain ontology.",
+                                    DiagnosticSeverity.Error,
+                                    line=field_line,
+                                )
+                            )
+                        else:
+                            diagnostics.append(
+                                self._create_diagnostic(
+                                    f"Unknown Domain: '{domain}' is not defined in domain ontology.",
+                                    DiagnosticSeverity.Warning,
+                                    line=field_line,
+                                )
+                            )
 
         return diagnostics
 
