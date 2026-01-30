@@ -3,10 +3,10 @@ id: FIX-0023
 uid: a8daad
 type: fix
 status: open
-stage: doing
+stage: review
 title: Enhance issue lint to detect uncleared placeholders
 created_at: '2026-01-30T15:24:26'
-updated_at: 2026-01-30 15:30:57
+updated_at: '2026-01-30T15:32:02'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -21,7 +21,6 @@ opened_at: '2026-01-30T15:24:26'
 isolation:
   type: branch
   ref: feat/fix-0023-enhance-issue-lint-to-detect-uncleared-placeholder
-  path: null
   created_at: '2026-01-30T15:30:57'
 ---
 
