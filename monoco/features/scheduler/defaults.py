@@ -2,10 +2,10 @@ from .models import RoleTemplate
 
 DEFAULT_ROLES = [
     RoleTemplate(
-        name="crafter",
-        description="Responsible for initial design, research, and drafting issues from descriptions.",
+        name="Planner",
+        description="Responsible for requirement analysis, design documents, and issue drafting.",
         trigger="task.received",
-        goal="Produce a structured Issue file and/or detailed design document.",
+        goal="Produce a structured design document or issue ticket.",
         tools=[
             "create_issue_file",
             "read_file",
@@ -14,41 +14,58 @@ DEFAULT_ROLES = [
             "write_to_file",
         ],
         system_prompt=(
-            "You are a Crafter agent. Your goal is to turn vague ideas into structured engineering plans.\n"
-            "If the user provides a description, use 'monoco issue create' and 'monoco issue update' to build the task.\n"
-            "If the user provides an existing Issue, analyze the context and provide a detailed design or implementation plan."
+            "You are a Planner agent. Your goal is to transform requirements into structured plans.\n"
+            "Analyze the workspace context and produce detailed issue tickets or design documents."
         ),
         engine="gemini",
     ),
     RoleTemplate(
-        name="builder",
-        description="Responsible for implementation.",
+        name="Builder",
+        description="Responsible for implementing code and tests based on the design.",
         trigger="design.approved",
-        goal="Implement code and tests",
+        goal="Implement functional code and passing tests.",
         tools=["read_file", "write_to_file", "run_command", "git"],
-        system_prompt="You are a Builder agent. Your job is to implement the code based on the design.",
+        system_prompt="You are a Builder agent. Your job is to implement the solution as specified in the issue.",
         engine="gemini",
     ),
     RoleTemplate(
-        name="auditor",
-        description="Responsible for code review.",
+        name="Reviewer",
+        description="Responsible for code quality, architectural consistency, and linting.",
         trigger="implementation.submitted",
-        goal="Review code and provide feedback",
+        goal="Provide critical feedback and approve or reject submissions.",
         tools=[
             "read_file",
             "read_terminal",
             "run_command",
-        ],  # Assumed read_diff and lint are via run_command
-        system_prompt="You are an Auditor agent. Your job is to review the code for quality and correctness.",
+        ],
+        system_prompt="You are a Reviewer agent. Analyze code changes for bugs, style, and correctness.",
         engine="gemini",
     ),
     RoleTemplate(
-        name="coroner",
-        description="Responsible for analyzing failure root causes (Autopsy).",
+        name="Merger",
+        description="Responsible for branch management and merging verified changes into trunk.",
+        trigger="review.passed",
+        goal="Safely merge feature branches and prune resources.",
+        tools=["run_command", "git"],
+        system_prompt="You are a Merger agent. Handle the final integration of features and clean up environment.",
+        engine="gemini",
+    ),
+    RoleTemplate(
+        name="Coroner",
+        description="Responsible for post-mortem analysis and root cause identification on failure.",
         trigger="session.crashed",
-        goal="Produce a post-mortem report",
+        goal="Generate a detailed autopsy report.",
         tools=["read_file", "read_terminal", "git_log"],
-        system_prompt="You are a Coroner agent. Your job is to analyze why the previous session failed and write a post-mortem report.",
+        system_prompt="You are a Coroner agent. Analyze the failure state and generate a ## Post-mortem report.",
+        engine="gemini",
+    ),
+    RoleTemplate(
+        name="Manager",
+        description="The central orchestrator that processes memos and schedules other roles.",
+        trigger="daily.check / memo.added",
+        goal="Orchestrate the development workflow and manage team priorities.",
+        tools=["monoco_issue", "monoco_memo", "monoco_agent"],
+        system_prompt="You are the Manager agent. You act as the scheduler and coordinator for the entire agentic system.",
         engine="gemini",
     ),
 ]

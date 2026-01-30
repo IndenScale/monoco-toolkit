@@ -20,7 +20,7 @@ class ApoptosisManager:
         roles = load_scheduler_config(project_root)
 
         # Find coroner role
-        self.coroner_role = roles.get("coroner")
+        self.coroner_role = roles.get("Coroner")
 
         if not self.coroner_role:
             raise ValueError("Coroner role not defined!")
