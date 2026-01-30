@@ -24,8 +24,8 @@ def test_start_command_default_branch(issues_root):
         mock_issue.isolation.ref = "feat/test-branch"
         mock_isolation.return_value = mock_issue
 
-        # Invoke command
-        result = runner.invoke(app, ["start", meta.id, "--root", str(issues_root)])
+        # Invoke command with --no-commit to avoid git issues in temp directories
+        result = runner.invoke(app, ["start", meta.id, "--root", str(issues_root), "--no-commit"])
 
         assert result.exit_code == 0
 
