@@ -5,7 +5,7 @@ type: feature
 status: closed
 stage: done
 closed_at: '2026-01-30T17:15:00'
-solution: completed
+solution: implemented
 title: Define Standard Agent Workflows via Flow Skills
 created_at: '2026-01-30T16:55:10'
 updated_at: '2026-01-30T16:55:10'
