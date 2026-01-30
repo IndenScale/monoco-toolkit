@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Add delete command to monoco memo
 created_at: '2026-01-30T15:16:04'
-updated_at: '2026-01-30T15:44:58'
+updated_at: 2026-01-30 15:44:58
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,10 +19,6 @@ criticality: medium
 opened_at: '2026-01-30T15:16:04'
 closed_at: '2026-01-30T15:20:35'
 solution: implemented
-isolation:
-  type: branch
-  ref: feat/feat-0119-add-delete-command-to-monoco-memo
-  created_at: '2026-01-30T15:18:03'
 ---
 
 ## FEAT-0119: Add delete command to monoco memo

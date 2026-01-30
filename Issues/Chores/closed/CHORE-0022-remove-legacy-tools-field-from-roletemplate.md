@@ -19,6 +19,7 @@ files:
 - monoco/features/scheduler/defaults.py
 criticality: low
 opened_at: '2026-01-30T15:24:26'
+solution: implemented
 ---
 
 ## CHORE-0022: Remove legacy 'tools' field from RoleTemplate

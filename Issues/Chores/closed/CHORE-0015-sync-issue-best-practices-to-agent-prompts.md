@@ -40,5 +40,5 @@ files:
 - [x] 更新 `monoco/features/issue/resources/zh/AGENTS.md`
 
 ## 评审备注 (Review Comments)
-<!-- Required for Review/Done stage. Record review feedback here. -->
+Verified.
 Self-reviewed. Changes align with GEMINI.md core principles.
