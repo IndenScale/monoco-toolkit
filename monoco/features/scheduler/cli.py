@@ -48,7 +48,7 @@ def run(
     ),
     role: Optional[str] = typer.Option(
         None,
-        help="Specific role to use (crafter/builder/auditor). Default: intelligent selection.",
+        help="Specific role to use (Planner/Builder/Reviewer). Default: intelligent selection.",
     ),
     type: str = typer.Option(
         "feature", "--type", "-t", help="Issue type for new tasks (feature/chore/fix)."
@@ -64,7 +64,7 @@ def run(
     Start an agent session.
 
     If TARGET is an Issue ID, it starts a session for that issue.
-    If TARGET is a description, it starts a 'crafter' session to draft a new issue.
+    If TARGET is a description, it starts a 'Planner' session to draft a new issue.
     """
     from monoco.core.output import print_error
 
@@ -83,12 +83,12 @@ def run(
 
     if is_id:
         issue_id = target.upper()
-        role_name = role or "builder"
+        role_name = role or "Builder"
         description = None
     else:
         # Implicit Draft Mode via run command (target is description)
         issue_id = "NEW_TASK"
-        role_name = role or "crafter"
+        role_name = role or "Planner"
         description = target
 
     # 2. Load Roles
@@ -186,7 +186,7 @@ def _run_autopsy(target: str):
             settings = get_config()
             project_root = Path(settings.paths.root).resolve()
             roles = load_scheduler_config(project_root)
-            builder_role = roles.get("builder")
+            builder_role = roles.get("Builder")
 
             if not builder_role:
                 print_error("Builder role not found.")
@@ -211,8 +211,8 @@ def _run_draft(desc: str, type: str, detach: bool):
 
     # Load Roles
     roles = load_scheduler_config(project_root)
-    # Use 'crafter' as the role for drafting (it handles new tasks)
-    role_name = "crafter"
+    # Use 'Planner' as the role for drafting (it handles new tasks)
+    role_name = "Planner"
     selected_role = roles.get(role_name)
 
     if not selected_role:
