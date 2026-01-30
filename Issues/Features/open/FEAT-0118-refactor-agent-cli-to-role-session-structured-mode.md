@@ -3,10 +3,10 @@ id: FEAT-0118
 uid: d4b49d
 type: feature
 status: open
-stage: doing
+stage: review
 title: Refactor Agent CLI to Role-Session Structured Mode
 created_at: '2026-01-30T14:11:10'
-updated_at: 2026-01-30 14:11:23
+updated_at: '2026-01-30T14:12:41'
 parent: EPIC-0019
 dependencies: []
 related: []
@@ -20,7 +20,6 @@ opened_at: '2026-01-30T14:11:10'
 isolation:
   type: branch
   ref: feat/feat-0118-refactor-agent-cli-to-role-session-structured-mode
-  path: null
   created_at: '2026-01-30T14:11:23'
 ---
 
