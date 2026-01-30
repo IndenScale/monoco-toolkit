@@ -324,6 +324,11 @@ def move_close(
         False, "--prune", help="Delete branch/worktree after close"
     ),
     force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
+    force_prune: bool = typer.Option(
+        False,
+        "--force-prune",
+        help="Force delete branch/worktree with checking bypassed (includes warning)",
+    ),
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
@@ -345,6 +350,19 @@ def move_close(
             f"Closing an issue requires a solution. Options: {', '.join(valid_solutions)}"
         )
         raise typer.Exit(code=1)
+
+    # Handle force-prune logic
+    if force_prune:
+        # Use OutputManager to check mode, as `json` arg might not be reliable with Typer Annotated
+        if not OutputManager.is_agent_mode() and not force:
+            confirm = typer.confirm(
+                "⚠️  [Bold Red]Warning:[/Bold Red] You are about to FORCE prune issue resources. Git merge checks will be bypassed.\nAre you sure you want to proceed?",
+                default=False,
+            )
+            if not confirm:
+                raise typer.Abort()
+        prune = True
+        force = True
 
     try:
         issue = core.update_issue(
