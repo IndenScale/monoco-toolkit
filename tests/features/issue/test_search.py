@@ -58,7 +58,7 @@ class TestIssueMatcher:
     @pytest.fixture
     def mock_issue(self):
         return IssueMetadata(
-            id="FEAT-001",
+            id="FEAT-0001",
             type=IssueType.FEATURE,
             status=IssueStatus.OPEN,
             title="Implement User Login System",
@@ -110,6 +110,6 @@ class TestIssueMatcher:
 
     def test_all_fields_search(self, mock_issue):
         """Search across ID, Status, Tags"""
-        assert check_issue_match(mock_issue, [], ["feat-001"], []) is True  # ID
+        assert check_issue_match(mock_issue, [], ["feat-0001"], []) is True  # ID
         assert check_issue_match(mock_issue, [], ["open"], []) is True  # Status
         assert check_issue_match(mock_issue, [], ["security"], []) is True  # Tag

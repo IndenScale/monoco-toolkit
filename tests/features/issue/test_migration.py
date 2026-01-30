@@ -20,7 +20,7 @@ def test_issue_migration():
         stories_dir.mkdir(parents=True)
 
         legacy_content = """---
-id: STORY-101
+id: STORY-1001
 type: story
 status: open
 stage: todo
@@ -28,9 +28,9 @@ title: Legacy Story
 parent: EPIC-0000
 ---
 
-## STORY-101: Legacy Story
+## STORY-1001: Legacy Story
 """
-        legacy_file = stories_dir / "STORY-101-legacy.md"
+        legacy_file = stories_dir / "STORY-1001-legacy.md"
         legacy_file.write_text(legacy_content)
 
         # 2. Run Migration
@@ -44,18 +44,18 @@ parent: EPIC-0000
         assert (issues_root / "Features").exists()
 
         # Check File rename
-        new_file = issues_root / "Features" / "open" / "FEAT-101-legacy.md"
+        new_file = issues_root / "Features" / "open" / "FEAT-1001-legacy.md"
         assert new_file.exists()
 
         # Check Content update
         meta = core.parse_issue(new_file)
-        assert meta.id == "FEAT-101"
+        assert meta.id == "FEAT-1001"
         assert meta.type == IssueType.FEATURE
         assert meta.stage == IssueStage.DRAFT
         assert meta.uid is not None
 
         content = new_file.read_text()
-        assert "## FEAT-101" in content
+        assert "## FEAT-1001" in content
 
 
 if __name__ == "__main__":
