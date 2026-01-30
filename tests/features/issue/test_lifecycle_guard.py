@@ -52,6 +52,11 @@ def test_guard_conditions(issues_root):
     # Complete tasks to satisfy validator
     content = f_path.read_text()
     new_content = content.replace("- [ ]", "- [x]")
+    # Remove placeholder comment and add actual review content
+    new_content = new_content.replace(
+        "<!-- Required for Review/Done stage. Record review feedback here. -->",
+        ""
+    )
     new_content += "\n\n## Review Comments\n\n- [x] Self-Review\n"
     f_path.write_text(new_content)
 
@@ -86,6 +91,11 @@ def test_guard_conditions(issues_root):
     f_path2 = core.find_issue_path(issues_root, fid2)
     content2 = f_path2.read_text()
     new_content2 = content2.replace("- [ ]", "- [x]")
+    # Remove placeholder comment and add actual review content
+    new_content2 = new_content2.replace(
+        "<!-- Required for Review/Done stage. Record review feedback here. -->",
+        ""
+    )
     new_content2 += "\n\n## Review Comments\n\n- [x] Cancelled\n"
     f_path2.write_text(new_content2)
 

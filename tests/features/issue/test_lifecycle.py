@@ -66,6 +66,11 @@ def test_update_issue_status_transition(issues_root):
     # Resolve all tasks and AC to allow moving to REVIEW/DONE
     path = Path(meta.path)
     content = path.read_text().replace("- [ ]", "- [x]")
+    # Remove placeholder comment and add actual review content
+    content = content.replace(
+        "<!-- Required for Review/Done stage. Record review feedback here. -->",
+        "Review completed successfully."
+    )
     path.write_text(content)
 
     # 4. Submit for Review (Review)
@@ -104,6 +109,11 @@ def test_issue_dependencies_blocking_closure(issues_root):
 
     path = Path(main_meta.path)
     content = path.read_text().replace("- [ ]", "- [x]")
+    # Remove placeholder comment and add actual review content
+    content = content.replace(
+        "<!-- Required for Review/Done stage. Record review feedback here. -->",
+        "Review completed successfully."
+    )
     path.write_text(content)
 
     core.update_issue(issues_root, main_meta.id, stage=IssueStage.REVIEW)
@@ -121,6 +131,11 @@ def test_issue_dependencies_blocking_closure(issues_root):
     # 准备依赖项并关闭之
     dep_path = Path(dep_meta.path)
     dep_content = dep_path.read_text().replace("- [ ]", "- [x]")
+    # Remove placeholder comment and add actual review content
+    dep_content = dep_content.replace(
+        "<!-- Required for Review/Done stage. Record review feedback here. -->",
+        "Review completed successfully."
+    )
     dep_path.write_text(dep_content)
 
     # Fix: Draft -> Doing -> Review -> Closed
