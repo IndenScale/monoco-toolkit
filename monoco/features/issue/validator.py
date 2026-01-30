@@ -93,6 +93,9 @@ class IssueValidator:
         # 8. Language Consistency
         diagnostics.extend(self._validate_language_consistency(meta, content))
 
+        # 9. Placeholder Detection
+        diagnostics.extend(self._validate_placeholders(meta, content))
+
         return diagnostics
 
     def _validate_language_consistency(
@@ -778,4 +781,58 @@ class IssueValidator:
                             )
                         )
 
+        return diagnostics
+
+    def _validate_placeholders(
+        self, meta: IssueMetadata, content: str
+    ) -> List[Diagnostic]:
+        """
+        Detect uncleared placeholders in issue content.
+        
+        Placeholders are template hints that should be removed before submission.
+        Examples:
+        - <!-- Required for Review/Done stage. Record review feedback here. -->
+        - <!-- TODO: Add implementation details -->
+        - <!-- Placeholder: ... -->
+        
+        Severity depends on stage:
+        - review/done: ERROR (must be cleared before submission)
+        - draft/open/doing: WARNING (should be cleared)
+        """
+        diagnostics = []
+        
+        # Define placeholder patterns
+        placeholder_patterns = [
+            # HTML comments with common placeholder keywords
+            (r"<!--\s*Required for Review/Done stage.*?-->", "Review/Done placeholder"),
+            (r"<!--\s*TODO:.*?-->", "TODO placeholder"),
+            (r"<!--\s*FIXME:.*?-->", "FIXME placeholder"),
+            (r"<!--\s*Placeholder:.*?-->", "Generic placeholder"),
+            (r"<!--\s*Template:.*?-->", "Template placeholder"),
+            (r"<!--\s*Example:.*?-->", "Example placeholder"),
+            # Generic instruction patterns (English and Chinese)
+            (r"<!--\s*Record review feedback here.*?-->", "Review placeholder"),
+            (r"<!--\s*在此记录评审反馈.*?-->", "Review placeholder (Chinese)"),
+        ]
+        
+        lines = content.splitlines()
+        
+        # Determine severity based on stage
+        if meta.stage in ["review", "done"]:
+            severity = DiagnosticSeverity.Error
+        else:
+            severity = DiagnosticSeverity.Warning
+        
+        for line_idx, line in enumerate(lines):
+            for pattern, desc in placeholder_patterns:
+                if re.search(pattern, line, re.IGNORECASE):
+                    diagnostics.append(
+                        self._create_diagnostic(
+                            f"Uncleared Placeholder: {desc} found. Remove template hints before submission.",
+                            severity,
+                            line_idx,
+                        )
+                    )
+                    break  # Only report once per line
+        
         return diagnostics
