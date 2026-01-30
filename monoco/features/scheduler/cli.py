@@ -6,8 +6,12 @@ from monoco.core.output import print_output
 from monoco.core.config import get_config
 from monoco.features.scheduler import SessionManager, load_scheduler_config
 
-app = typer.Typer(name="agent", help="Manage agent sessions")
-role_app = typer.Typer(name="role", help="Manage agent roles")
+app = typer.Typer(name="agent", help="Manage agent sessions and roles")
+session_app = typer.Typer(name="session", help="Manage active agent sessions")
+role_app = typer.Typer(name="role", help="Manage agent roles (CRUD)")
+
+app.add_typer(session_app, name="session")
+app.add_typer(role_app, name="role")
 
 
 @role_app.command(name="list")
@@ -46,21 +50,8 @@ def run(
         None,
         help="Specific role to use (crafter/builder/auditor). Default: intelligent selection.",
     ),
-    draft: bool = typer.Option(
-        False,
-        "--draft",
-        help="Draft a new issue from natural language description (requires --desc).",
-    ),
-    desc: Optional[str] = typer.Option(
-        None, "--desc", help="Description for drafting a new issue (used with --draft)."
-    ),
     type: str = typer.Option(
-        "feature", "--type", "-t", help="Issue type for draft (feature/chore/fix)."
-    ),
-    autopsy: Optional[str] = typer.Option(
-        None,
-        "--autopsy",
-        help="Run post-mortem analysis on a failed session or Issue ID.",
+        "feature", "--type", "-t", help="Issue type for new tasks (feature/chore/fix)."
     ),
     detach: bool = typer.Option(
         False, "--detach", "-d", help="Run in background (Daemon)"
@@ -72,32 +63,17 @@ def run(
     """
     Start an agent session.
 
-    Modes:
-    - Default: TARGET is Issue ID or description
-    - --draft --desc "...": Draft a new issue from description
-    - --autopsy <ID>: Run post-mortem analysis on failed session
+    If TARGET is an Issue ID, it starts a session for that issue.
+    If TARGET is a description, it starts a 'crafter' session to draft a new issue.
     """
     from monoco.core.output import print_error
 
-    settings = get_config()
-    project_root = Path(settings.paths.root).resolve()
-
-    # Handle --autopsy mode
-    if autopsy:
-        _run_autopsy(autopsy)
-        return
-
-    # Handle --draft mode
-    if draft:
-        if not desc:
-            print_error("--draft requires --desc to specify the task description.")
-            raise typer.Exit(code=1)
-        _run_draft(desc, type, detach)
-        return
-
     # Normal run mode - target is required
     if not target:
-        print_error("TARGET is required unless using --draft or --autopsy.")
+        from monoco.core.output import print_error
+
+        print_error("TARGET (Issue ID or Task Description) is required.")
+        raise typer.Exit(code=1)
         raise typer.Exit(code=1)
 
     # 1. Smart Intent Recognition
@@ -155,7 +131,7 @@ def run(
 
         if session.model.status == "failed":
             print_error(
-                f"Session {session.model.id} FAILED. Use 'monoco agent run --autopsy {session.model.id}' for analysis."
+                f"Session {session.model.id} FAILED. Use 'monoco agent session autopsy {session.model.id}' for analysis."
             )
         else:
             print_output(
@@ -169,10 +145,10 @@ def run(
         print_output("Session terminated.")
 
 
-@app.command()
-def kill(session_id: str):
+@session_app.command(name="kill")
+def kill_session(session_id: str):
     """
-    Terminate a session.
+    Terminate a specific session.
     """
     manager = SessionManager()
     session = manager.get_session(session_id)
@@ -181,6 +157,12 @@ def kill(session_id: str):
         print_output(f"Session {session_id} terminated.")
     else:
         print_output(f"Session {session_id} not found.", style="red")
+
+
+@session_app.command(name="autopsy")
+def autopsy_command(target: str):
+    """Execute Post-Mortem analysis on a failed session or target Issue."""
+    _run_autopsy(target)
 
 
 def _run_autopsy(target: str):
@@ -267,7 +249,7 @@ def _run_draft(desc: str, type: str, detach: bool):
         print_output("Drafting cancelled.")
 
 
-@app.command(name="list")
+@session_app.command(name="list")
 def list_sessions():
     """
     List active agent sessions.
@@ -294,8 +276,8 @@ def list_sessions():
     )
 
 
-@app.command()
-def logs(session_id: str):
+@session_app.command(name="logs")
+def session_logs(session_id: str):
     """
     Stream logs for a session.
     """
