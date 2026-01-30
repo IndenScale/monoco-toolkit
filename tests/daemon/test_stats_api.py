@@ -58,9 +58,9 @@ def test_dashboard_stats(mock_project_manager, mock_project):
             mock_project.issues_root,
             "Features",
             "backlog",
-            "FEAT-001.md",
+            "FEAT-0001.md",
             """---
-id: FEAT-001
+id: FEAT-0001
 type: feature
 status: backlog
 title: Backlog Feature
@@ -77,9 +77,9 @@ parent: EPIC-0000
             mock_project.issues_root,
             "Fixes",
             "closed",
-            "FIX-001.md",
+            "FIX-0001.md",
             f"""---
-id: FIX-001
+id: FIX-0001
 type: fix
 status: closed
 stage: done
@@ -98,9 +98,9 @@ parent: EPIC-0000
             mock_project.issues_root,
             "Fixes",
             "closed",
-            "FIX-002.md",
+            "FIX-0002.md",
             f"""---
-id: FIX-002
+id: FIX-0002
 type: fix
 status: closed
 stage: done
@@ -119,9 +119,9 @@ parent: EPIC-0000
             mock_project.issues_root,
             "Features",
             "open",
-            "FEAT-002.md",
+            "FEAT-0002.md",
             """---
-id: FEAT-002
+id: FEAT-0002
 type: feature
 status: open
 title: Blocking Feature
@@ -135,13 +135,13 @@ parent: EPIC-0000
             mock_project.issues_root,
             "Features",
             "open",
-            "FEAT-003.md",
+            "FEAT-0003.md",
             """---
-id: FEAT-003
+id: FEAT-0003
 type: feature
 status: open
 title: Blocked Feature
-dependencies: ['FEAT-002']
+dependencies: ['FEAT-0002']
 created_at: '2023-01-01T00:00:00'
 parent: EPIC-0000
 ---
@@ -153,9 +153,9 @@ parent: EPIC-0000
             mock_project.issues_root,
             "Features",
             "open",
-            "FEAT-004.md",
+            "FEAT-0004.md",
             """---
-id: FEAT-004
+id: FEAT-0004
 type: feature
 status: open
 title: Normal Feature
@@ -184,6 +184,6 @@ parent: EPIC-0000
         closed_activities = [
             a
             for a in activities
-            if a["type"] == "closed" and a["issue_id"] == "FIX-001"
+            if a["type"] == "closed" and a["issue_id"] == "FIX-0001"
         ]
         assert len(closed_activities) == 1
