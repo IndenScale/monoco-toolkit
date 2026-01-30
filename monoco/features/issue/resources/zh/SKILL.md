@@ -67,6 +67,50 @@ Monoco 强制采用 **Feature Branch** 模式。
 - **禁止主干开发**: **严禁** 直接在 `main`, `master`, `production` 分支上修改代码。Linter 会拦截此类行为。
 - **Submit**: 在提交 PR 前，运行 `monoco issue submit <ID>` 进行清理和预发布检查。
 
+## 标准化工作流 (Standardized Workflow)
+
+本指南引导 Agent 遵循 Monoco 标准 Issue 工作流。
+
+### 工作流图示
+
+```mermaid
+stateDiagram-v2
+    [*] --> Plan
+    Plan --> Build: monoco issue start
+    Build --> Submit: monoco issue submit
+    state "Oracle Loop" as Oracle {
+        Submit --> Review: Auto/Manual Review
+        Review --> Fix: Reject
+        Fix --> Submit: Retry
+    }
+    Review --> Merge: Approve
+    Merge --> [*]: monoco issue close
+```
+
+### 执行步骤
+
+1.  **Plan (计划阶段)**:
+    - 确保 Issue 已创作且处于 `Open` 状态。
+    - 验证需求描述与任务清单 (Acceptance Criteria)。
+
+2.  **Build (构建阶段)**:
+    - 运行 `monoco issue start <ID> --branch` (强制分支隔离)。
+    - 实现功能或修复缺陷。
+    - 运行 `monoco issue sync-files` 更新修改文件追踪。
+
+3.  **Submit (提交阶段 - Oracle 循环)**:
+    - 运行测试确保质量。
+    - 运行 `monoco issue lint` 检查合规性。
+    - 运行 `monoco issue submit <ID>` 触发评审。
+    - **如果** 收到报错或反馈：
+      - 修复问题。
+      - 重新运行测试。
+      - 重新运行提交。
+
+4.  **Merge (合并/关闭阶段)**:
+    - 一旦获得批准 (人工或自动)：
+    - 运行 `monoco issue close <ID> --solution completed --prune` 清理环境并下线。
+
 ### 2. 文件追踪 (File Tracking)
 
 为了保证上下文的自包含性 (Self-Contained Context)，Agent 必须记录修改过的文件。
