@@ -26,3 +26,13 @@ Issue 命令分支上下文检查规则讨论
 - workspace.yaml 是否可配置开关
 
 建议：认同实施，添加配置选项
+
+## [1a1263] 2026-01-30 14:13:24
+> **Context**: `Quality Control`
+
+改进点：monoco issue lint 应该检查并确保所有占位符（如 <- - pytest -q tests/integration/test_rpc_interface_evolution.py Required for Review/Done stage... -->）已被清除或替换，防止空内容提交。
+
+## [f4abfc] 2026-01-30 14:13:59
+> **Context**: `Quality Control`
+
+改进点：monoco issue lint 应该检查并确保所有占位符（如 <- - pytest -q tests/integration/test_rpc_interface_evolution.py Required for Review/Done stage... -->）已被清除或替换，防止空内容提交。
