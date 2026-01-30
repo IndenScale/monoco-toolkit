@@ -208,14 +208,25 @@ def move_open(
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
+    no_commit: bool = typer.Option(
+        False, "--no-commit", help="Skip auto-commit of issue file"
+    ),
     json: AgentOutput = False,
 ):
     """Move issue to open status and set stage to Draft."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
+    project_root = _resolve_project_root(config)
     try:
         # Pull operation: Force stage to TODO
-        issue = core.update_issue(issues_root, issue_id, status="open", stage="draft")
+        issue = core.update_issue(
+            issues_root,
+            issue_id,
+            status="open",
+            stage="draft",
+            no_commit=no_commit,
+            project_root=project_root,
+        )
         OutputManager.print({"issue": issue, "status": "opened"})
     except Exception as e:
         OutputManager.error(str(e))
