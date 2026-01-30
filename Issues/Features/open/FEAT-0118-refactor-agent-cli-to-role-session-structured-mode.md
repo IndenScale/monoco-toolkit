@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Refactor Agent CLI to Role-Session Structured Mode
 created_at: '2026-01-30T14:11:10'
-updated_at: '2026-01-30T14:11:22'
+updated_at: 2026-01-30 14:11:23
 parent: EPIC-0019
 dependencies: []
 related: []
@@ -17,6 +17,11 @@ tags:
 files: []
 criticality: medium
 opened_at: '2026-01-30T14:11:10'
+isolation:
+  type: branch
+  ref: feat/feat-0118-refactor-agent-cli-to-role-session-structured-mode
+  path: null
+  created_at: '2026-01-30T14:11:23'
 ---
 
 ## FEAT-0118: Refactor Agent CLI to Role-Session Structured Mode
