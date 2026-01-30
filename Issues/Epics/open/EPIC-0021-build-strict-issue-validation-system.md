@@ -17,7 +17,7 @@ tags:
 - '#EPIC-0021'
 - '#Quality'
 files: []
-progress: 1/1
+progress: 3/3
 files_count: 0
 ---
 
