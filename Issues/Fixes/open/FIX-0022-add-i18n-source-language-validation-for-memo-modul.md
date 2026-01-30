@@ -2,10 +2,10 @@
 id: FIX-0022
 type: fix
 status: open
-stage: doing
+stage: review
 title: Add i18n source language validation for Memo module
 created_at: '2026-01-30T15:13:57'
-updated_at: '2026-01-30T15:13:57'
+updated_at: '2026-01-30T15:15:55'
 priority: normal
 parent: EPIC-0000
 dependencies: []
@@ -15,8 +15,15 @@ domains:
 tags:
 - '#FIX-0022'
 - '#EPIC-0000'
-files: []
+files:
+- monoco/features/memo/cli.py
+- monoco/features/memo/core.py
+- tests/features/memo/test_memo_i18n.py
 criticality: high
+isolation:
+  type: branch
+  ref: feat/fix-0022-add-i18n-source-language-validation-for-memo-modul
+  created_at: '2026-01-30T15:13:57'
 author: IndenScale
 created: '2026-01-30'
 ---
@@ -39,13 +46,19 @@ created: '2026-01-30'
     - 提供 `--force` 参数允许绕过检查（Escape Hatch）。
 
 **Acceptance Criteria**:
-- [ ] 当 `source_lang: zh` 时，`monoco memo add "Hello world"` 应失败并提示语言不匹配。
-- [ ] `monoco memo add "你好世界"` 应成功。
-- [ ] `monoco memo add "Hello world" --force` 应成功。
-- [ ] 实现不应引入过重的依赖（如大型 ML 模型）。
+- [x] 当 `source_lang: zh` 时，`monoco memo add "Hello world"` 应失败并提示语言不匹配。
+- [x] `monoco memo add "你好世界"` 应成功。
+- [x] `monoco memo add "Hello world" --force` 应成功。
+- [x] 实现不应引入过重的依赖（如大型 ML 模型）。
 
-**Tasks**:
-- [ ] 调研 Python 轻量级语言检测方案。
-- [ ] 在 `monoco/features/memo/cli.py` 或 `core.py` 中实现检测逻辑。
-- [ ] 添加 `--force` 选项支持。
-- [ ] 编写测试用例验证拦截和绕过逻辑。
+## Technical Tasks:
+- [x] 调研 Python 轻量级语言检测方案。
+- [x] 在 `monoco/features/memo/cli.py` 或 `core.py` 中实现检测逻辑。
+- [x] 添加 `--force` 选项支持。
+- [x] 编写测试用例验证拦截和绕过逻辑。
+
+## Review Comments
+- 2026-01-30:
+  - 采用了轻量级的 Unicode 字符范围检测方法，符合 KISS 原则，避免了引入大型 NLP 依赖。
+  - 在 CLI 层实现了校验逻辑，并通过 `--force` 提供了逃生舱。
+  - 已添加充足的单元测试覆盖中/英、强制通过等场景。
