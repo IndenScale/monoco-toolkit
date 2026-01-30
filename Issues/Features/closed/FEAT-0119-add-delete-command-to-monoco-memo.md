@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Add delete command to monoco memo
 created_at: '2026-01-30T15:16:04'
-updated_at: '2026-01-30T15:20:35'
+updated_at: '2026-01-30T15:44:58'
 parent: EPIC-0000
 dependencies: []
 related: []
