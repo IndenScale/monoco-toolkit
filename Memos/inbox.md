@@ -144,3 +144,20 @@ ACP 调查结论：
 - 保持当前的 EngineAdapter + CLI 调用模式
 - 如果未来需要 'Editor 调用 Monoco'，可以考虑让 Monoco 本身实现 ACP Server
 - ACP 更适合作为 Monoco 的 **北向接口** (暴露给 IDE)，而非 **南向接口** (调用底层 Agent)
+
+## [20cac7] 2026-01-31 20:17:43
+> **Context**: `issue-system`
+
+强化 monoco issue lint：检测非法 status 值和目录不匹配
+
+问题发现：
+1. FEAT-0129 使用了非法 status: done（应为 open/closed）
+2. 存在非法目录 Issues/Features/done/（应为 open/closed/backlog）
+3. FEAT-0129 文件在 done/ 目录但 status 也写错
+4. linter 没有检测出这些问题
+
+需要增加的检查规则：
+- status 必须是 enum: [open, closed, backlog]
+- 文件所在目录必须与 status 匹配
+- stage 必须是 enum: [draft, doing, review, done]
+- 检查非法目录名
