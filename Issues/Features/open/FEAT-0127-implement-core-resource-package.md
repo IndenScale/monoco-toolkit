@@ -6,7 +6,7 @@ status: open
 stage: review
 title: Implement Core Resource Package
 created_at: '2026-01-31T17:36:28'
-updated_at: '2026-01-31T17:46:37'
+updated_at: '2026-01-31T17:48:16'
 parent: EPIC-0023
 dependencies: []
 related: []
