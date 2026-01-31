@@ -55,10 +55,15 @@ def list_providers():
 
     output = []
     for key, integration in integrations.items():
+        # Perform health check
+        health = integration.check_health()
+        status_icon = "✅" if health.available else "❌"
+        
         output.append(
             {
                 "key": key,
                 "name": integration.name,
+                "status": status_icon,
                 "binary": integration.bin_name or "-",
                 "enabled": integration.enabled,
                 "rules": integration.system_prompt_file,
@@ -137,9 +142,55 @@ def run(
         print_error(f"Role '{role}' not found. Available: {list(roles.keys())}")
         raise typer.Exit(code=1)
 
-    # Override engine if provider is specified
-    if provider:
-        # We modify the instance in memory for this session only
+    # 3. Provider Override & Fallback Logic
+    target_engine = provider or selected_role.engine
+    from monoco.core.integrations import get_integration, get_all_integrations
+    
+    integration = get_integration(target_engine)
+    
+    # If integration is found, check health
+    is_available = False
+    if integration:
+        health = integration.check_health()
+        is_available = health.available
+        if not is_available and provider:
+            # If user explicitly requested this provider, fail hard
+            print_error(f"Requested provider '{target_engine}' is not available.")
+            print_error(f"Error: {health.error}")
+            raise typer.Exit(code=1)
+            
+    # Auto-fallback if default provider is unavailable
+    if not is_available:
+        print_output(f"⚠️  Provider '{target_engine}' is not available. Searching for fallback...", style="yellow")
+        
+        all_integrations = get_all_integrations(enabled_only=True)
+        fallback_found = None
+        
+        # Priority list for fallback
+        priority = ["cursor", "claude", "gemini", "qwen", "kimi"]
+        
+        # Try priority matches first
+        for key in priority:
+            if key in all_integrations:
+                if all_integrations[key].check_health().available:
+                    fallback_found = key
+                    break
+        
+        # Determine strict fallback
+        if fallback_found:
+             print_output(f"🔄 Falling back to available provider: [bold green]{fallback_found}[/bold green]")
+             selected_role.engine = fallback_found
+        else:
+             # If NO CLI tools available, maybe generic agent?
+             if "agent" in all_integrations:
+                 print_output("🔄 Falling back to Generic Agent (No CLI execution).", style="yellow")
+                 selected_role.engine = "agent"
+             else:
+                 print_error("❌ No available agent providers found on this system.")
+                 print_error("Please install Cursor, Claude Code, or Gemini CLI.")
+                 raise typer.Exit(code=1)
+    elif provider:
+        # If available and user overrode it
         print_output(f"Overriding provider: {selected_role.engine} -> {provider}")
         selected_role.engine = provider
 
@@ -148,7 +199,7 @@ def run(
         title="Agent Framework",
     )
 
-    # 3. Initialize Session
+    # 4. Initialize Session
     manager = SessionManager()
     session = manager.create_session(issue_id, selected_role)
 
