@@ -129,8 +129,8 @@ DEFAULT_INTEGRATIONS: Dict[str, AgentIntegration] = {
     "kimi": AgentIntegration(
         key="kimi",
         name="Kimi CLI",
-        system_prompt_file="KIMI.md",
-        skill_root_dir=".kimi/skills/",
+        system_prompt_file="AGENTS.md",
+        skill_root_dir=".agent/skills/",
         bin_name="kimi",
         version_cmd="--version",
     ),
