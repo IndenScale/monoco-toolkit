@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Implement Core Resource Package
 created_at: '2026-01-31T17:36:28'
-updated_at: '2026-01-31T17:37:08'
+updated_at: 2026-01-31 17:37:09
 parent: EPIC-0023
 dependencies: []
 related: []
@@ -17,6 +17,11 @@ tags:
 files: []
 criticality: high
 opened_at: '2026-01-31T17:36:28'
+isolation:
+  type: branch
+  ref: feat/feat-0127-implement-core-resource-package
+  path: null
+  created_at: '2026-01-31T17:37:09'
 ---
 
 ## FEAT-0127: Implement Core Resource Package
@@ -33,10 +38,10 @@ opened_at: '2026-01-31T17:36:28'
 - [ ] 包含完整的单元测试，覆盖常见场景（文件存在、文件缺失、语言回退等）。
 
 ## Technical Tasks
-- [ ] 初始化 `monoco/core/resource` 包结构
-- [ ] 实现 `ResourceFinder`：利用 `importlib.resources` (Python 3.9+) 遍历包资源
-- [ ] 实现 `ResourceManager`：封装上层业务逻辑（语言过滤、类型过滤）
-- [ ] 编写单元测试 `tests/core/test_resource.py`
+- [x] 初始化 `monoco/core/resource` 包结构
+- [x] 实现 `ResourceFinder`：利用 `importlib.resources` (Python 3.9+) 遍历包资源
+- [x] 实现 `ResourceManager`：封装上层业务逻辑（语言过滤、类型过滤）
+- [x] 编写单元测试 `tests/core/test_resource.py`
 
 ## Review Comments
 - Initial creation.
