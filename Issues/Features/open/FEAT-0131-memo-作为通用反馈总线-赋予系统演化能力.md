@@ -2,8 +2,8 @@
 id: FEAT-0131
 uid: '114665'
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: Memo 作为通用反馈总线：赋予系统演化能力
 created_at: '2026-01-31T22:23:26'
 updated_at: '2026-01-31T22:51:36'
