@@ -3,10 +3,10 @@ id: FEAT-0131
 uid: b2c3d4
 type: feature
 status: open
-stage: doing
+stage: review
 title: Enhanced Memo Bus as Feedback Loop
 created_at: '2026-02-01T00:56:00'
-updated_at: '2026-02-01T01:00:58'
+updated_at: '2026-02-01T01:01:15'
 parent: EPIC-0025
 dependencies: []
 related:
@@ -66,3 +66,7 @@ Memo 必须具备结构化的元数据能力，准确记录 **谁 (Source)** 在
 - [x] **CLI Metadata**: `monoco memo add` 增加 `--type` (bug/feature/insight) 和 `--source` (默认为 current user) 参数。
 - [x] **Agent API**: 供 `Daemon` 和 `Worker` 调用的 Python API，用于写入尸检报告或运行日志。
 
+
+## Review Comments
+
+No comments yet.
