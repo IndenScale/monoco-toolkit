@@ -515,7 +515,7 @@ def update_issue(
     temp_meta = IssueMetadata(**data)
 
     # Use engine to validate the transition
-    engine.validate_transition(
+    transition = engine.validate_transition(
         from_status=current_status,
         from_stage=current_stage,
         to_status=target_status,
@@ -721,7 +721,45 @@ def update_issue(
     # Update returned metadata with final absolute path
     updated_meta.path = str(path.absolute())
     updated_meta.actions = get_available_actions(updated_meta)
+
+    # Execute Post Actions (Trigger)
+    if transition and hasattr(transition, "post_actions") and transition.post_actions:
+        _execute_post_actions(transition.post_actions, updated_meta)
+
     return updated_meta
+
+
+def _execute_post_actions(actions: List[str], meta: IssueMetadata):
+    """
+    Execute a list of shell commands as post-actions.
+    Supports template substitution with issue metadata.
+    """
+    import shlex
+    import subprocess
+    from rich.console import Console
+    
+    console = Console()
+    data = meta.model_dump(mode="json")
+    
+    for action in actions:
+        try:
+            # Safe template substitution
+            cmd = action.format(**data)
+        except KeyError as e:
+            console.print(f"[yellow]Trigger Warning:[/yellow] Missing key for template '{action}': {e}")
+            continue
+            
+        console.print(f"[bold cyan]Triggering:[/bold cyan] {cmd}")
+        
+        args = shlex.split(cmd)
+        
+        try:
+            # Run in foreground to allow interaction if needed (e.g. agent output)
+            subprocess.run(args, check=True)
+        except subprocess.CalledProcessError as e:
+            console.print(f"[red]Trigger Failed:[/red] Command '{cmd}' exited with code {e.returncode}")
+        except Exception as e:
+            console.print(f"[red]Trigger Error:[/red] {e}")
 
 
 def start_issue_isolation(

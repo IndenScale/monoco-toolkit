@@ -31,7 +31,7 @@ class GitCleanupHook(SessionLifecycleHook):
         
         # Configuration with defaults
         self.auto_switch_to_main = self.config.get("auto_switch_to_main", True)
-        self.auto_delete_merged_branches = self.config.get("auto_delete_merged_branches", True)
+        self.auto_delete_merged_branches = self.config.get("auto_delete_merged_branches", False)
         self.main_branch = self.config.get("main_branch", "main")
         self.require_clean_worktree = self.config.get("require_clean_worktree", True)
 

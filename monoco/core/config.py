@@ -91,6 +91,7 @@ class TransitionConfig(BaseModel):
     required_solution: Optional[str] = None
     description: str = ""
     command_template: Optional[str] = None
+    post_actions: List[str] = Field(default_factory=list)
 
 
 class CriticalityRuleConfig(BaseModel):

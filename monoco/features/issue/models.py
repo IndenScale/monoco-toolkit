@@ -67,6 +67,7 @@ class IssueType(str, Enum):
     FEATURE = "feature"
     CHORE = "chore"
     FIX = "fix"
+    ARCH = "arch"
 
 
 class IssueStatus(str, Enum):
