@@ -84,7 +84,39 @@ def sync_command(
         f"[blue]Collected {len(collected_prompts)} prompts from {len(active_features)} features.[/blue]"
     )
 
-    # 3. Distribute Skills
+
+
+    # 3. Distribute Roles
+    console.print("[bold blue]Distributing agent roles...[/bold blue]")
+    
+    # Source: Builtin Resource Dir
+    # monoco/core/sync.py -> monoco/core -> monoco -> features/agent/resources/roles
+    resource_dir = Path(__file__).parent.parent / "features" / "agent" / "resources" / "roles"
+    
+    # Target: .monoco/roles
+    target_roles_dir = root / ".monoco" / "roles"
+    # Only create if we have sources
+    if resource_dir.exists():
+        target_roles_dir.mkdir(parents=True, exist_ok=True)
+        import shutil
+        
+        count = 0
+        for yaml_file in resource_dir.glob("*.yaml"):
+            target_file = target_roles_dir / yaml_file.name
+            try:
+                # Copy only if different or new? For now, nice and simple overwrite.
+                shutil.copy2(yaml_file, target_file)
+                console.print(f"[dim]  ✓ Synced role {yaml_file.name}[/dim]")
+                count += 1
+            except Exception as e:
+                console.print(f"[red]  Failed to sync role {yaml_file.name}: {e}[/red]")
+        
+        if count > 0:
+             console.print(f"[green]  ✓ Updated {count} roles in .monoco/roles/[/green]")
+    else:
+        console.print("[yellow]  No builtin roles found to sync.[/yellow]")
+
+    # 4. Distribute Skills
     console.print("[bold blue]Distributing skills to agent frameworks...[/bold blue]")
 
     # Determine language from config

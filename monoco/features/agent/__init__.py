@@ -4,7 +4,6 @@ from .config import load_scheduler_config, load_agent_config
 from .defaults import DEFAULT_ROLES
 from .session import Session, RuntimeSession
 from .manager import SessionManager
-from .reliability import ApoptosisManager
 
 __all__ = [
     "RoleTemplate",
@@ -17,5 +16,4 @@ __all__ = [
     "Session",
     "RuntimeSession",
     "SessionManager",
-    "ApoptosisManager",
 ]
