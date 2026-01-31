@@ -19,9 +19,9 @@ class RoleTemplate(BaseModel):
     )
 
 
-class AgentConfig(BaseModel):
+class AgentRoleConfig(BaseModel):
     roles: List[RoleTemplate] = Field(default_factory=list)
 
 
 # Backward compatibility alias
-SchedulerConfig = AgentConfig
+SchedulerConfig = AgentRoleConfig

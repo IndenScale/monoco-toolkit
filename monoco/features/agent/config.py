@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 import yaml
 from pathlib import Path
-from .models import RoleTemplate, AgentConfig
+from .models import RoleTemplate, AgentRoleConfig as AgentConfig
 from .defaults import DEFAULT_ROLES
 
 

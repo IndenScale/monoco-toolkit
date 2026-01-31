@@ -136,6 +136,11 @@ class CriticalityConfig(BaseModel):
         return self
 
 
+class AgentConfig(BaseModel):
+    """Configuration for AI Agents."""
+    timeout_seconds: int = Field(default=900, description="Global timeout for agent sessions")
+
+
 class IssueSchemaConfig(BaseModel):
     types: List[IssueTypeConfig] = Field(default_factory=list)
     statuses: List[str] = Field(default_factory=list)
@@ -242,6 +247,7 @@ class MonocoConfig(BaseModel):
 
     issue: IssueSchemaConfig = Field(default_factory=IssueSchemaConfig)
     domains: DomainConfig = Field(default_factory=DomainConfig)
+    agent: AgentConfig = Field(default_factory=AgentConfig)
 
     @staticmethod
     def _deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:

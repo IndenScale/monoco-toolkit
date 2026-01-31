@@ -25,6 +25,9 @@ domains:
       description: Artificial Intelligence and Agent capabilities
   strict: false
 
+agent:
+  timeout_seconds: 900
+
 issue:
   types:
     - name: epic
