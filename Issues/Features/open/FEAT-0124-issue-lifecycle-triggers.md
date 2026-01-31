@@ -3,10 +3,10 @@ id: FEAT-0124
 uid: f31835
 type: feature
 status: open
-stage: doing
+stage: review
 title: Issue Lifecycle Triggers
 created_at: '2026-01-31T10:36:48'
-updated_at: '2026-01-31T10:42:36'
+updated_at: '2026-01-31T10:46:23'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -45,8 +45,9 @@ isolation:
     - [x] 实现命令模板替换逻辑（支持 `{id}`, `{title}` 等变量）。
 - [x] **Integration & Config**:
     - [x] 更新 `.monoco/workspace.yaml`，为 `start` 和 `submit` 转换添加示例 Trigger 配置。
-- [ ] **Verification**:
-    - [ ] 创建测试 Issue，验证 `monoco issue start` 是否正确唤起 Agent。
+- [x] **Verification**:
+    - [x] 创建测试 Issue，验证 `monoco issue start` 是否正确唤起 Agent。
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- Self-verified: Commands trigger correctly and pass context.
+- Verified detach mode works as expected.
