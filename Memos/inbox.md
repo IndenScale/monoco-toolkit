@@ -107,3 +107,6 @@ FEAT-0123 已完成：所有核心 Feature 已迁移到 Flow Skills 模式 (7个
 > **Context**: `skill-architecture-analysis`
 
 分析：传统 Skills (monoco_i18n, monoco_issue 等) 与 Flow Skills 的职责对比
+
+## [0b15f1] 2026-01-31 17:47:54
+增强 i18n 检查: 支持 Block 级别的语言检测，避免在混合语言 Markdown（如中文 Issue 中的英文 Review Comments）中出现误报。
