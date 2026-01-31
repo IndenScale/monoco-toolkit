@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Optimize Git Hook Defaults
 created_at: '2026-01-31T10:29:47'
-updated_at: '2026-01-31T10:30:04'
+updated_at: 2026-01-31 10:30:05
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,9 +14,16 @@ domains: []
 tags:
 - '#CHORE-0024'
 - '#EPIC-0000'
-files: []
+files:
+  - monoco/core/hooks/builtin/git_cleanup.py
+  - .monoco/workspace.yaml
 criticality: low
 opened_at: '2026-01-31T10:29:47'
+isolation:
+  type: branch
+  ref: feat/chore-0024-optimize-git-hook-defaults
+  path: null
+  created_at: '2026-01-31T10:30:05'
 ---
 
 ## CHORE-0024: Optimize Git Hook Defaults
@@ -32,8 +39,8 @@ opened_at: '2026-01-31T10:29:47'
 - [ ] 验证 Hook 可以在 Session 结束时正确触发。
 
 ## Technical Tasks
-- [ ] 修改 `monoco/core/hooks/builtin/git_cleanup.py`，更新默认参数。
-- [ ] 更新 `.monoco/workspace.yaml`，添加 `session_hooks` 配置。
+- [x] 修改 `monoco/core/hooks/builtin/git_cleanup.py`，更新默认参数。
+- [x] 更新 `.monoco/workspace.yaml`，添加 `session_hooks` 配置。
 
 ## Review Comments
 <!-- Required for Review/Done stage. Record review feedback here. -->

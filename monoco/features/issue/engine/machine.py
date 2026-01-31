@@ -134,13 +134,14 @@ class StateMachine:
         to_stage: Optional[str],
         solution: Optional[str] = None,
         meta: Optional[IssueMetadata] = None,
-    ) -> None:
+    ) -> Optional[TransitionConfig]:
         """
         Validate if a transition is allowed. Raises ValueError if not.
         If meta is provided, also validates criticality-based policies.
+        Returns the TransitionConfig if a transition occurred, None if no change.
         """
         if from_status == to_status and from_stage == to_stage:
-            return  # No change is always allowed (unless we want to enforce specific updates)
+            return None  # No change is always allowed (unless we want to enforce specific updates)
 
         transition = self.find_transition(
             from_status, from_stage, to_status, to_stage, solution
@@ -160,6 +161,8 @@ class StateMachine:
         # Criticality-based policy checks
         if meta and meta.criticality:
             self._validate_criticality_policy(meta, from_stage, to_stage)
+            
+        return transition
 
     def _validate_criticality_policy(
         self,
