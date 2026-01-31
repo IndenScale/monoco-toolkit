@@ -335,8 +335,10 @@ class SkillManager:
     # Three-Level Architecture API
     # ========================================================================
 
-    def get_atom(self, name: str) -> Optional[AtomSkillMetadata]:
+    def get_atom(self, name: Optional[str]) -> Optional[AtomSkillMetadata]:
         """Get an atom skill by name."""
+        if not name:
+            return None
         # Handle both prefixed and unprefixed names
         if not name.startswith(self.ATOM_PREFIX):
             name = f"{self.ATOM_PREFIX}{name}"
@@ -385,10 +387,16 @@ class SkillManager:
                 errors.append(f"Missing atom skill dependency: {dep}")
 
         for stage in workflow.stages:
+            # Skip virtual stages (decision points without atom skills)
+            if not stage.atom_skill:
+                continue
+                
             atom = self.get_atom(stage.atom_skill)
             if not atom:
                 errors.append(f"Stage '{stage.name}' uses unknown atom skill: {stage.atom_skill}")
-            else:
+                continue
+                
+            if stage.operation:
                 op_names = [op.name for op in atom.operations]
                 if stage.operation not in op_names:
                     errors.append(
@@ -583,28 +591,29 @@ class SkillManager:
                     lines.append(stage.description)
                     lines.append("")
                 
-                # Atom operation details
-                atom = self.get_atom(stage.atom_skill)
-                if atom:
-                    operation = next(
-                        (op for op in atom.operations if op.name == stage.operation),
-                        None
-                    )
-                    if operation:
-                        lines.append(f"**Operation**: `{atom.name}.{operation.name}`")
-                        lines.append("")
-                        lines.append(f"{operation.description}")
-                        lines.append("")
-                        
-                        if operation.reminder:
-                            lines.append(f"> 💡 **Reminder**: {operation.reminder}")
+                # Atom operation details (skip for virtual stages)
+                if stage.atom_skill and stage.operation:
+                    atom = self.get_atom(stage.atom_skill)
+                    if atom:
+                        operation = next(
+                            (op for op in atom.operations if op.name == stage.operation),
+                            None
+                        )
+                        if operation:
+                            lines.append(f"**Operation**: `{atom.name}.{operation.name}`")
                             lines.append("")
-                        
-                        if operation.checkpoints:
-                            lines.append("**Checkpoints**:")
-                            for checkpoint in operation.checkpoints:
-                                lines.append(f"- [ ] {checkpoint}")
+                            lines.append(f"{operation.description}")
                             lines.append("")
+                            
+                            if operation.reminder:
+                                lines.append(f"> 💡 **Reminder**: {operation.reminder}")
+                                lines.append("")
+                            
+                            if operation.checkpoints:
+                                lines.append("**Checkpoints**:")
+                                for checkpoint in operation.checkpoints:
+                                    lines.append(f"- [ ] {checkpoint}")
+                                lines.append("")
                 
                 if stage.reminder:
                     lines.append(f"> ⚠️ **Stage Reminder**: {stage.reminder}")
