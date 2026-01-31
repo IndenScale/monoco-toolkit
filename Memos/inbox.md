@@ -110,3 +110,37 @@ FEAT-0123 已完成：所有核心 Feature 已迁移到 Flow Skills 模式 (7个
 
 ## [0b15f1] 2026-01-31 17:47:54
 增强 i18n 检查: 支持 Block 级别的语言检测，避免在混合语言 Markdown（如中文 Issue 中的英文 Review Comments）中出现误报。
+
+## [6f50db] 2026-01-31 18:16:52
+ACP 调查结论：
+
+**ACP 是什么**
+- Agent Client Protocol (ACP) 是一个开放标准，类似于 LSP (Language Server Protocol)
+- 目的：标准化 AI Agent 与代码编辑器/IDE 之间的通信协议
+- 通信方式：JSON-RPC over stdio (本地) 或 HTTP/WebSocket (远程)
+- 由 Zed 等编辑器推动，目标是解决 Agent-Editor 集成的碎片化问题
+
+**Kimi CLI 的 ACP 支持**
+- Kimi CLI 完全支持 ACP，通过 'kimi acp' 命令启动 ACP 服务器
+- 可以作为后端 Agent 被 Zed、JetBrains 等 ACP 兼容的编辑器调用
+- 这是 Agent-to-Editor 的协议，不是 Agent-to-Agent 的协议
+
+**当前 Monoco Agent 模块架构**
+- 使用 EngineAdapter 模式，通过 CLI 命令行直接调用各个 Agent (gemini, claude, kimi, qwen)
+- Worker 通过 subprocess.Popen 启动 Agent 进程，传递 prompt
+- 当前是 'Monoco 调用 Agent CLI' 的单向模式
+
+**是否应该使用 ACP 接入 Kimi CLI？**
+
+**不应该**。原因如下：
+
+1. **架构不匹配**：ACP 是为 'Editor 调用 Agent' 设计的，而 Monoco 的需求是 'Orchestrator 调用 Agent'
+2. **复杂度增加**：引入 ACP 需要启动 ACP 服务器、实现 JSON-RPC 客户端，远比当前的 CLI 调用复杂
+3. **功能冗余**：Kimi CLI 的 '-p prompt --print' 模式已经满足 Monoco 的需求（非交互式、自动执行）
+4. **维护成本**：需要适配 ACP 协议的变化，而 CLI 接口更稳定
+5. **通用性降低**：其他 Agent (gemini, claude) 可能不支持 ACP，会导致架构不一致
+
+**建议**
+- 保持当前的 EngineAdapter + CLI 调用模式
+- 如果未来需要 'Editor 调用 Monoco'，可以考虑让 Monoco 本身实现 ACP Server
+- ACP 更适合作为 Monoco 的 **北向接口** (暴露给 IDE)，而非 **南向接口** (调用底层 Agent)
