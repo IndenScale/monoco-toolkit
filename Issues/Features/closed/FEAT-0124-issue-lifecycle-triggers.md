@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Issue Lifecycle Triggers
 created_at: '2026-01-31T10:36:48'
-updated_at: '2026-01-31T10:47:01'
+updated_at: '2026-01-31T10:47:45'
 parent: EPIC-0000
 dependencies: []
 related: []
