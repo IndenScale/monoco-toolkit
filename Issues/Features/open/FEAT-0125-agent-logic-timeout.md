@@ -3,10 +3,10 @@ id: FEAT-0125
 uid: 45f412
 type: feature
 status: open
-stage: draft
+stage: doing
 title: Agent Logic Timeout
 created_at: '2026-01-31T10:45:26'
-updated_at: '2026-01-31T10:45:26'
+updated_at: '2026-01-31T10:52:37'
 parent: EPIC-0000
 dependencies: []
 related: []
