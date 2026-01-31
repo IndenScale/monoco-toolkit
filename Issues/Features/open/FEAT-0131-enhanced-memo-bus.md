@@ -69,4 +69,10 @@ Memo 必须具备结构化的元数据能力，准确记录 **谁 (Source)** 在
 
 ## Review Comments
 
-No comments yet.
+- [x] Manual Verification:
+  - `monoco memo add`: Verified with Chinese content and force flag.
+  - `monoco memo list`: Verified listing with new columns.
+  - `monoco memo link`: Verified linking to Issue.
+  - `monoco memo resolve`: Verified resolution status.
+  - Unit Tests: (Skipped, manual CLI test performed).
+
