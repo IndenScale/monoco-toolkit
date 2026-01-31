@@ -193,3 +193,18 @@ monoco sync 扩展建议：
 
 优先级：medium
 影响：防止不合规 Issue 进入仓库
+
+## [4d19e0] 2026-01-31 22:19:10
+> **Context**: `kimi-cli research`
+
+kimi-cli hooks系统调研：社区Issue #785已提出User-Configurable Lifecycle Hooks System需求，官方暂无计划但可通过Wire模式实现。Wire模式是kimi-cli的headless运行方式，通过JSON-RPC 2.0 over stdin/stdout与外部程序双向通信，支持监听TurnBegin/StepBegin/ToolCall/TurnEnd等生命周期事件。与Claude Code hooks的区别：kimi-cli需外部包装器实现，非内置配置。参考：docs/en/customization/wire-mode.md
+
+## [8bcfc1] 2026-01-31 22:19:17
+> **Context**: `kimi-cli tech`
+
+kimi-cli Wire模式事件类型：TurnBegin(用户输入开始), TurnEnd(2026-01-26新增), StepBegin(步骤开始), StepInterrupted(步骤中断), CompactionBegin/End(上下文压缩), StatusUpdate(状态更新含token使用), ContentPart(AI输出), ToolCall/ToolResult(工具调用), ApprovalRequest(需响应), SubagentEvent(子代理事件)。基于这些事件可实现pre/post hooks
+
+## [56842d] 2026-01-31 22:19:18
+> **Context**: `kimi-cli concept`
+
+kimi-cli Agent Flow vs Hooks区别：Agent Flow通过/flow:name执行Mermaid/D2流程图，每步需AI参与消耗token；Hooks是事件触发的确定性脚本，零token开销。官方推荐Agent Flow替代Hooks，但社区认为两者适用场景不同
