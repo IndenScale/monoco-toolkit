@@ -26,11 +26,13 @@ isolation:
 ## CHORE-0025: Update Documentation to Reflect Linux Distro Strategy
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+Use the "Linux Distro" metaphor to clarify Monoco's positioning as a Headless Agent OS.
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+- [x] GLOSSARY.md defines core terms (Distro, Kernel, Unit)
+- [x] GEMINI.md provides clear policy guidance
+- [x] README.md and README_ZH.md reflect the new strategy
+
 
 ## Technical Tasks
 <!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
