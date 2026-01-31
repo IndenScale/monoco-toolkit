@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Implement Glossary Feature Module
 created_at: '2026-01-31T16:57:27'
-updated_at: '2026-01-31T16:57:50'
+updated_at: '2026-01-31T17:10:19'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,9 +14,14 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0126'
-files: []
+files:
+- Issues/Epics/open/EPIC-0023-unify-resource-management-to-package-based-archite.md
 criticality: medium
 opened_at: '2026-01-31T16:57:27'
+isolation:
+  type: branch
+  ref: feat/feat-0126-implement-glossary-feature-module
+  created_at: '2026-01-31T16:57:51'
 ---
 
 ## FEAT-0126: Implement Glossary Feature Module
