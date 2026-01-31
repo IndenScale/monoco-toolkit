@@ -180,12 +180,15 @@ class SkillLoader:
         self._load_roles()
     
     def _load_atoms(self) -> None:
-        """Load atom skills from resources/atoms/."""
+        """Load atom skills from resources/atoms/.
+        
+        Only loads files starting with 'atom-' prefix.
+        """
         atoms_dir = self.resources_dir / "atoms"
         if not atoms_dir.exists():
             return
         
-        for skill_file in atoms_dir.glob("*.yaml"):
+        for skill_file in atoms_dir.glob("atom-*.yaml"):
             try:
                 data = yaml.safe_load(skill_file.read_text())
                 atom = AtomSkillMetadata(**data)
@@ -194,12 +197,15 @@ class SkillLoader:
                 print(f"Failed to load atom skill {skill_file}: {e}")
     
     def _load_workflows(self) -> None:
-        """Load workflow skills from resources/workflows/."""
+        """Load workflow skills from resources/workflows/.
+        
+        Only loads files starting with 'workflow-' prefix.
+        """
         workflows_dir = self.resources_dir / "workflows"
         if not workflows_dir.exists():
             return
         
-        for skill_file in workflows_dir.glob("*.yaml"):
+        for skill_file in workflows_dir.glob("workflow-*.yaml"):
             try:
                 data = yaml.safe_load(skill_file.read_text())
                 workflow = WorkflowSkillMetadata(**data)
@@ -208,12 +214,16 @@ class SkillLoader:
                 print(f"Failed to load workflow skill {skill_file}: {e}")
     
     def _load_roles(self) -> None:
-        """Load role skills from resources/roles/."""
+        """Load role skills from resources/roles/.
+        
+        Only loads files starting with 'role-' prefix to avoid conflicts
+        with legacy role definitions.
+        """
         roles_dir = self.resources_dir / "roles"
         if not roles_dir.exists():
             return
         
-        for skill_file in roles_dir.glob("*.yaml"):
+        for skill_file in roles_dir.glob("role-*.yaml"):
             try:
                 data = yaml.safe_load(skill_file.read_text())
                 role = RoleSkillMetadata(**data)
