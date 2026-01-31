@@ -99,8 +99,9 @@ def check_providers():
 
 @app.command()
 def run(
-    target: str = typer.Argument(
-        ..., help="Issue ID (e.g. FEAT-101) or a Task Description in quotes."
+    prompt: Optional[list[str]] = typer.Argument(None, help="Instructions for the agent (e.g. 'Fix the bug')."),
+    issue: Optional[str] = typer.Option(
+        None, "--issue", "-i", help="Link to a specific Issue ID (e.g. FEAT-101)."
     ),
     role: str = typer.Option(
         "Default", "--role", "-r", help="Specific role to use."
@@ -115,24 +116,31 @@ def run(
     """
     Start an agent session.
 
-    Logic is completely role-agnostic.
-    - Loads the specified ROLE configuration.
-    - Starts a session for TARGET.
+    Usage:
+      monoco agent run "Check memos"
+      monoco agent run -i FEAT-101 "Implement feature"
     """
     settings = get_config()
     project_root = Path(settings.paths.root).resolve()
-
-    # 1. Identify Target
-    import re
-    is_id = re.match(r"^[a-zA-Z]+-\d+$", target)
     
-    if is_id:
-        issue_id = target.upper()
-        description = None
+    # 1. Resolve Inputs
+    full_prompt = " ".join(prompt) if prompt else ""
+    
+    if issue:
+        # User explicitly linked an issue
+        issue_id = issue.upper()
+        description = full_prompt or None
     else:
-        # Treat as description for a new task
+        # Ad-hoc task check
+        import re
+        # Heuristic: if prompt looks like an ID and is short, maybe they meant ID?
+        # But explicit is better. Let's assume everything in prompt is instructions.
         issue_id = "NEW_TASK"
-        description = target
+        description = full_prompt
+
+    if not description and not issue:
+        print_error("Please provide either a PROMPT or an --issue ID.")
+        raise typer.Exit(code=1)
 
     # 2. Load Roles
     roles = load_scheduler_config(project_root)
@@ -194,8 +202,9 @@ def run(
         print_output(f"Overriding provider: {selected_role.engine} -> {provider}")
         selected_role.engine = provider
 
+    display_target = issue if issue else (full_prompt[:50] + "..." if len(full_prompt) > 50 else full_prompt)
     print_output(
-        f"Starting Agent Session for '{target}' as {role} (via {selected_role.engine})...",
+        f"Starting Agent Session for '{display_target}' as {role} (via {selected_role.engine})...",
         title="Agent Framework",
     )
 
@@ -203,15 +212,17 @@ def run(
     manager = SessionManager()
     session = manager.create_session(issue_id, selected_role)
 
-    if detach:
-        print_output(
-            "Background mode not fully implemented yet. Running in foreground."
-        )
 
     try:
         # Pass description if it's a new task
         context = {"description": description} if description else None
         session.start(context=context)
+
+        if detach:
+            print_output(
+                 f"Session {session.model.id} started in background (detached)."
+            )
+            return
 
         # Monitoring Loop
         while session.refresh_status() == "running":

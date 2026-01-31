@@ -30,11 +30,11 @@ isolation:
 核心目的是通过 `post_actions` 机制，将 Issue 管理与 Agent 开发无缝衔接，打造流畅的自动化工作流。
 
 ## Acceptance Criteria
-- [ ] `TransitionConfig` 模型支持 `post_actions` 字段，用于定义后续操作。
-- [ ] `monoco issue` 状态转换逻辑支持执行 `post_actions` 中的命令。
-- [ ] 支持在 `workspace.yaml` 中配置 `start` 动作触发 `monoco agent run --role engineer`。
-- [ ] 支持在 `workspace.yaml` 中配置 `submit` 动作触发 `monoco agent run --role reviewer`。
-- [ ] 确保命令执行的稳定性和错误处理（Triggers 失败不应回滚状态转换，但应报警）。
+- [x] `TransitionConfig` 模型支持 `post_actions` 字段，用于定义后续操作。
+- [x] `monoco issue` 状态转换逻辑支持执行 `post_actions` 中的命令。
+- [x] 支持在 `workspace.yaml` 中配置 `start` 动作触发 `monoco agent run --role engineer`。
+- [x] 支持在 `workspace.yaml` 中配置 `submit` 动作触发 `monoco agent run --role reviewer`。
+- [x] 确保命令执行的稳定性和错误处理（Triggers 失败不应回滚状态转换，但应报警）。
 
 ## Technical Tasks
 - [x] **Config Schema Update**:

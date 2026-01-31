@@ -48,12 +48,13 @@ class GeminiAdapter(EngineAdapter):
     """
     Adapter for Google Gemini CLI.
 
-    Command format: gemini -y <prompt>
+    Command format: gemini -p <prompt> -y
     The -y flag enables "YOLO mode" (auto-approval of actions).
     """
 
     def build_command(self, prompt: str) -> List[str]:
-        return ["gemini", "-y", prompt]
+        # Based on Gemini CLI help: -p <prompt> for non-interactive
+        return ["gemini", "-p", prompt, "-y"]
 
     @property
     def name(self) -> str:
@@ -69,10 +70,12 @@ class ClaudeAdapter(EngineAdapter):
     Adapter for Anthropic Claude CLI.
 
     Command format: claude -p <prompt>
-    The -p/--print flag enables non-interactive mode (print response and exit).
+    The -p/--print flag enables non-interactive mode.
     """
 
     def build_command(self, prompt: str) -> List[str]:
+        # Based on Claude CLI help: -p <prompt> is NOT standard, usually -p means print/non-interactive.
+        # But for one-shot execution, we do passing prompt as argument with -p flag.
         return ["claude", "-p", prompt]
 
     @property
@@ -89,16 +92,38 @@ class QwenAdapter(EngineAdapter):
     """
     Adapter for Qwen Code CLI.
 
-    Command format: qwen -y <prompt>
-    The -y flag enables "YOLO mode" (auto-approval of actions).
+    Command format: qwen -p <prompt> -y
     """
 
     def build_command(self, prompt: str) -> List[str]:
-        return ["qwen", "-y", prompt]
+        # Assuming Qwen follows similar patterns (based on user feedback)
+        return ["qwen", "-p", prompt, "-y"]
 
     @property
     def name(self) -> str:
         return "qwen"
+
+    @property
+    def supports_yolo_mode(self) -> bool:
+        return True
+
+
+class KimiAdapter(EngineAdapter):
+    """
+    Adapter for Kimi CLI (Moonshot AI).
+
+    Command format: kimi -p <prompt> --print
+    Note: --print implicitly adds --yolo.
+    """
+
+    def build_command(self, prompt: str) -> List[str]:
+        # Based on Kimi CLI help: -p, --prompt TEXT.
+        # Also using --print for non-interactive mode (which enables yolo).
+        return ["kimi", "-p", prompt, "--print"]
+
+    @property
+    def name(self) -> str:
+        return "kimi"
 
     @property
     def supports_yolo_mode(self) -> bool:
@@ -118,6 +143,7 @@ class EngineFactory:
         "gemini": GeminiAdapter,
         "claude": ClaudeAdapter,
         "qwen": QwenAdapter,
+        "kimi": KimiAdapter,
     }
 
     @classmethod
