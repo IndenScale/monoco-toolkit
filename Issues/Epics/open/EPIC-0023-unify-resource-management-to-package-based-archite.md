@@ -22,6 +22,8 @@ isolation:
   ref: feat/epic-0023-unify-resource-management-to-package-based-archite
   path: null
   created_at: '2026-01-31T17:10:11'
+progress: 0/1
+files_count: 0
 ---
 
 ## EPIC-0023: Unify Resource Management to Package-Based Architecture
@@ -33,7 +35,7 @@ isolation:
 ## Scope
 - **Standard**: 定义Feature资源的目录结构规范 (`monoco/features/{module}/resources/{lang}/...`)。
 - **Core**: 重构 `monoco sync` 命令，支持基于 Feature 的资源发现与注入。
-- **Migration**: 将现有模块（Issue, Memo, Spike）迁移到新架构。
+- **Migration**: 将现有模块（Issue, Memo, Spike, Agent）迁移到新架构。
 - **New Feature**: 实现 Glossary 模块作为架构样板。
 
 ## Key Results
@@ -49,7 +51,7 @@ isolation:
 - [ ] Design & Implement `monoco.core.resource` package
 - [ ] Update `monoco sync` to use new resource discovery logic
 - [ ] Execute FEAT-0126 (Glossary Module) as pilot
-- [ ] Refactor existing features (Issue, Memo, Spike) to new architecture
+- [ ] Refactor existing features (Issue, Memo, Spike, Agent) to new architecture
 
 ## Review Comments
 - Initial draft for the resource management unification epic.
