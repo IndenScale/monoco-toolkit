@@ -16,7 +16,9 @@ domains:
 - AgentOnboarding
 tags:
 - '#EPIC-0022'
+- '#FEAT-0121'
 - '#FEAT-0122'
+- '#FEAT-0123'
 files:
 - monoco/core/skills.py
 - monoco/core/sync.py

@@ -1,4 +1,4 @@
-from .models import RoleTemplate, AgentConfig, SchedulerConfig
+from .models import RoleTemplate, AgentRoleConfig as AgentConfig, SchedulerConfig
 from .worker import Worker
 from .config import load_scheduler_config, load_agent_config
 from .defaults import DEFAULT_ROLES

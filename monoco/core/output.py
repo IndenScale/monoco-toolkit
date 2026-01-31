@@ -1,7 +1,7 @@
 import os
 import json
 import typer
-from typing import Any, List, Union, Annotated
+from typing import Any, List, Union, Annotated, Optional
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
@@ -41,7 +41,7 @@ class OutputManager:
 
     @staticmethod
     def print(
-        data: Union[BaseModel, List[BaseModel], dict, list, str], title: str = ""
+        data: Union[BaseModel, List[BaseModel], dict, list, str], title: str = "", style: Optional[str] = None
     ):
         """
         Dual frontend dispatcher.
@@ -49,7 +49,7 @@ class OutputManager:
         if OutputManager.is_agent_mode():
             OutputManager._render_agent(data)
         else:
-            OutputManager._render_human(data, title)
+            OutputManager._render_human(data, title, style=style)
 
     @staticmethod
     def error(message: str):
@@ -94,7 +94,7 @@ class OutputManager:
                 print(str(data))
 
     @staticmethod
-    def _render_human(data: Any, title: str):
+    def _render_human(data: Any, title: str, style: Optional[str] = None):
         """
         Human channel: Visual priority.
         """
@@ -104,7 +104,7 @@ class OutputManager:
             console.rule(f"[bold blue]{title}[/bold blue]")
 
         if isinstance(data, str):
-            console.print(data)
+            console.print(data, style=style)
             return
 
         # Special handling for Lists of Pydantic Models -> Table

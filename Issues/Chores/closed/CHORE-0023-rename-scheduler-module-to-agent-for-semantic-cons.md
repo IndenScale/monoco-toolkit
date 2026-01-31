@@ -17,6 +17,8 @@ domains:
 tags:
 - '#CHORE-0023'
 - '#EPIC-0022'
+- '#FEAT-0122'
+- '#FEAT-0123'
 files: []
 criticality: low
 opened_at: '2026-01-30T17:52:15'
