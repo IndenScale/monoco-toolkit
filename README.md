@@ -1,91 +1,88 @@
-# Monoco Toolkit
+# Monoco Distro
 
 [![Version](https://img.shields.io/pypi/v/monoco-toolkit)](https://pypi.org/project/monoco-toolkit/)
 [![License](https://img.shields.io/github/license/IndenScale/Monoco)](LICENSE)
 
-> **The Operating System for Agentic Engineering.**
+> **The Headless Operating System for Agentic Engineering.**
 >
-> Stop chatting. Start building.
-> Monoco grounds your AI Agents into deterministic, validatable, and shippable engineering workflows.
+> Monoco is a **Linux-like Distribution** for AI Agents.
+> It provides the **Package Manager**, **Init System**, and **Policy Kit** that turns a raw LLM Kernel into a production-ready engineering workforce.
 
 ---
 
-## ⚡️ The Gap: "Chat" is not Engineering.
+## 🐧 The "Distro" Metaphor
 
-Generating code is easy. **Engineering**—managing dependencies, maintaining state, validation, and version control—is hard.
+Monoco is built on a clear separation of concerns, inspired by the Linux ecosystem:
 
-Most Agent workflows today are fragile "chats". Monoco turns them into **Software Engineering Processes**. It acts as the "BizOps" layer for your Agents, ensuring that every line of code generated is tracked, reviewed, and aligned with the project roadmap.
+| Component   | In Linux      | In Monoco             | Responsibility                                                                                                             |
+| :---------- | :------------ | :-------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| **Kernel**  | Linux Kernel  | **Kimi CLI / Kosong** | The raw execution engine. Handles LLM prompts, tool execution, and process isolation.                                      |
+| **Distro**  | Ubuntu / Arch | **Monoco**            | The system manager. Orchestrates workflows, enforces policies, manages state (Issues), and installs capabilities (Skills). |
+| **Desktop** | GNOME / KDE   | **VSCode / Zed**      | The user interface. Connects to Monoco via standard protocols (LSP, ACP) to provide a visual experience.                   |
 
 ## 🌟 Core Philosophy
 
-### 1. Co-pilot by Design
+### 1. Headless & Protocol-First
 
-**Just-enough Automation.**
-Monoco abstracts away the tedious details (Git ops, state tracking) while keeping you securely in the driver's seat. Agents can suggest and build, but **you** always have the final say on what gets merged.
+Monoco is designed to run silently in the background. It doesn't fight for your attention with a chat window. Instead, it exposes its state via **LSP (Language Server Protocol)** and **ACP (Agent Client Protocol)**, allowing your favorite IDEs to become "Agent-Native".
 
-### 2. Battle-Tested Best Practices
+### 2. Issue is the Unit of Work
 
-**Senior Engineer Intuition.**
-Monoco enforces **Issue Driven Development (IDD)** and standard **Git Workflows**. We bake the rigorous habits of effective software teams into the Agent's core loop, ensuring every line of code is traceable and reviewed.
+Just as `systemd` manages Units, Monoco manages **Issues**.
+An Issue is not just a text file; it is a stateful object that defines the lifecycle of a task. The Agent cannot "freelance"—it must be assigned to an active Issue.
 
-### 3. Radical Transparency (Dogfooding)
+### 3. Governance as Code
 
-**Process as Product.**
-Monoco is built by Monoco. We believe in open-sourcing not just the code, but the engineering process itself. Every design decision, interaction log, and failure is public—providing a live blueprint for Agentic Engineering.
+Monoco acts as the "Policy Kit" for your AI workforce.
+
+- **Guardrails**: Prevent destructive actions.
+- **Verification**: Enforce linting and tests before submission.
+- **Audit**: Log every decision and tool call.
 
 ## 🚀 Quick Start
 
 ### 1. Installation
 
-Monoco is available as a Python CLI tool.
+Install the Monoco Distro via pip:
 
 ```bash
 pip install monoco-toolkit
 ```
 
-### 2. Workspace Initialization
+### 2. Initialize System
 
-Turn any directory into a Monoco Workspace. This creates the `.monoco` config and the `Issues/` directory.
+Turn your project into a Monoco-managed workspace:
 
 ```bash
 monoco init
 ```
 
-### 3. Agent Synchronization
+### 3. Sync Kernel
 
-**Crucial Step**: This injects the "Monoco System Neural Network" (System Prompts & Skills) into your agent configuration files (e.g., `GEMINI.md`, `CLAUDE.md`).
+Inject Monoco's policies into your Agent Kernel (e.g., Kimi CLI configuration):
 
 ```bash
 monoco sync
 ```
 
-### 4. The Engineering Loop (Agent-First)
+### 4. Start a Session
 
-In Monoco, you don't need to memorize CLI commands. **The Agent is your DevOps Engineer.**
+Launch the Monoco Daemon to begin orchestrating work:
 
-1.  **Chat**: Tell your Agent in the chatbox (e.g., _"Implement Dark Mode"_).
-2.  **Plan**: The Agent investigates and proposes an **Issue Ticket** for your review.
-3.  **Build**: Once approved, the Agent creates a branch, writes code, and submits changes.
-4.  **Ship**: You accept the results. The Agent handles the merge and closure.
-
----
-
-## 📦 Extension for VS Code
-
-The **Monoco VS Code Extension** is the primary visual interface for the toolkit.
-
-- **Install from Marketplace**: Search for `Monoco`.
-- **Keybinding**: `Cmd+Shift+P` -> `Monoco: Open Kanban Board`.
+```bash
+monoco session start
+```
 
 ## 🛠️ Tech Stack & Architecture
 
-- **Core**: Python (CLI & Logic Layer)
-- **Extension**: TypeScript (VS Code Client & LSP)
-- **Data**: Local Filesystem (Markdown/YAML)
+- **Kernel Interface**: Python (Interfacing with Kimi/Kosong)
+- **Distro Logic**: Python (State Management, Issue Tracking)
+- **Protocols**: LSP / ACP (for IDE integration)
+- **Storage**: Local Filesystem (Markdown/YAML)
 
 ## 🤝 Contributing
 
-Monoco is designed for the community. We welcome contributions to both the core CLI and the VS Code extension.
+Monoco is open-source. We are building the standard distribution for the Agentic era.
 
 ## 📄 License
 

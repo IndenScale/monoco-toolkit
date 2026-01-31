@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Agent Logic Timeout
 created_at: '2026-01-31T10:45:26'
-updated_at: '2026-01-31T16:14:12'
+updated_at: 2026-01-31 16:14:13
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -24,10 +24,6 @@ criticality: medium
 opened_at: '2026-01-31T10:45:26'
 closed_at: '2026-01-31T16:14:12'
 solution: implemented
-isolation:
-  type: branch
-  ref: feat/feat-0125-agent-logic-timeout
-  created_at: '2026-01-31T10:52:38'
 ---
 
 ## FEAT-0125: Agent Logic Timeout
