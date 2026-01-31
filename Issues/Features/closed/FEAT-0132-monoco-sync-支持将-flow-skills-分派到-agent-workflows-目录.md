@@ -3,6 +3,7 @@ id: FEAT-0132
 uid: fa578a
 type: feature
 status: closed
+solution: implemented
 stage: done
 title: monoco sync 支持将 flow skills 分派到 .agent/workflows 目录以兼容 Antigravity IDE
 created_at: '2026-01-31T22:36:09'
@@ -116,7 +117,6 @@ description: Engineer 角色的标准化工作流。定义从需求调研到代�
 4. **目录**: 输出到 `.agent/workflows/`
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
 
 ### 验收结果 (2026-01-31)
 
