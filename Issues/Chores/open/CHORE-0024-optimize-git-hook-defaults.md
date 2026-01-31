@@ -6,7 +6,7 @@ status: open
 stage: review
 title: Optimize Git Hook Defaults
 created_at: '2026-01-31T10:29:47'
-updated_at: '2026-01-31T10:50:31'
+updated_at: '2026-01-31T10:50:51'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,9 +14,7 @@ domains: []
 tags:
 - '#CHORE-0024'
 - '#EPIC-0000'
-files:
-- monoco/core/hooks/builtin/git_cleanup.py
-- .monoco/workspace.yaml
+files: []
 criticality: low
 opened_at: '2026-01-31T10:29:47'
 isolation:
