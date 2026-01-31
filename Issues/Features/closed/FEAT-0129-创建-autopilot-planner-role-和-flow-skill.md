@@ -21,6 +21,8 @@ files:
 - monoco/features/agent/resources/skills/flow_planner/SKILL.md
 criticality: high
 opened_at: '2026-01-31T20:05:06'
+closed_at: '2026-01-31T20:30:00'
+solution: implemented
 ---
 
 ## FEAT-0129: 创建 Autopilot Planner Role 和 Flow Skill
