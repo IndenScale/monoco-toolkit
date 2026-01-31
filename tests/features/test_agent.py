@@ -39,8 +39,8 @@ def test_load_config_override():
         assert roles["Planner"].description == "Modified Planner"
         # new_role should be added
         assert "new_role" in roles
-        # Builder and other defaults should remain
-        assert "Builder" in roles
+        # Default and other defaults should remain
+        assert "Default" in roles
 
 
 def test_worker_init():
@@ -48,7 +48,7 @@ def test_worker_init():
     worker = Worker(role, "ISSUE-123")
     assert worker.status == "pending"
     assert worker.issue_id == "ISSUE-123"
-    assert worker.role.name == "Planner"
+    assert worker.role.name == "Default"
 
 
 @patch("subprocess.Popen")

@@ -48,7 +48,7 @@ class TestWorkerEngineIntegration:
         # Verify Popen was called with correct Gemini command
         call_args = mock_popen.call_args[0][0]
         assert call_args[0] == "gemini"
-        assert call_args[1] == "-y"
+        assert call_args[1] == "-p"
         assert "test drafter" in call_args[2]
 
     @patch("subprocess.Popen")
