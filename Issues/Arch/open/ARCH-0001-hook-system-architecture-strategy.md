@@ -3,10 +3,10 @@ id: ARCH-0001
 uid: 2edc85
 type: arch
 status: open
-stage: draft
+stage: doing
 title: Hook System Architecture Strategy
 created_at: '2026-01-31T10:38:10'
-updated_at: '2026-01-31T10:38:10'
+updated_at: '2026-01-31T10:51:41'
 parent: EPIC-0000
 dependencies: []
 related: []
