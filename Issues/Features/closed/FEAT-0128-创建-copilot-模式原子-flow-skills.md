@@ -2,7 +2,7 @@
 id: FEAT-0128
 uid: c143a4
 type: feature
-status: open
+status: closed
 stage: done
 title: 创建 Copilot 模式原子 Flow Skills
 created_at: '2026-01-31T20:04:53'
