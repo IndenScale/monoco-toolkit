@@ -3,10 +3,10 @@ id: FEAT-0131
 uid: '114665'
 type: feature
 status: open
-stage: draft
+stage: doing
 title: Memo 作为通用反馈总线：赋予系统演化能力
 created_at: '2026-01-31T22:23:26'
-updated_at: '2026-01-31T22:23:26'
+updated_at: '2026-01-31T22:48:28'
 parent: EPIC-0000
 dependencies: []
 related: []
