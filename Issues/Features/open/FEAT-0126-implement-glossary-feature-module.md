@@ -31,24 +31,31 @@ isolation:
 这将替代手动的 `GLOSSARY.md` 文件维护，通过 `monoco sync` 机制确保所有 Agent 始终拥有最新的架构认知。
 
 ## Acceptance Criteria
-- [ ] 创建 `monoco/features/glossary` 模块结构
-- [ ] 实现 `GlossaryManager` 负责管理和渲染术语定义
-    - [ ] 渲染逻辑需尊守 `i18n.source_lang` 配置，仅输出一种语言
-    - [ ] 渲染逻辑需动态调整 Markdown Header Level，避免破坏宿主文件大纲
-- [ ] 定义 `monoco_glossary` Skill (包含术语表和核心法则)
-- [ ] 注册 Feature 并集成到 `monoco sync` 流程中
-- [ ] 验证运行 `monoco sync` 后，`GEMINI.md` 或 `AGENTS.md` 正确包含了 Glossary 内容
-    - [ ] 验证内容位于自动生成区域内，且未覆盖用户自定义内容
-- [ ] 移除旧的 `.agent/GLOSSARY.md` 文件
+- [x] 创建 `monoco/features/glossary` 模块结构
+- [x] 实现 `GlossaryManager` 负责管理和渲染术语定义
+    - [x] 渲染逻辑需尊守 `i18n.source_lang` 配置，仅输出一种语言
+    - [x] 渲染逻辑需动态调整 Markdown Header Level，避免破坏宿主文件大纲
+- [x] 定义 `monoco_glossary` Skill (包含术语表和核心法则)
+- [x] 注册 Feature 并集成到 `monoco sync` 流程中
+- [x] 验证运行 `monoco sync` 后，`GEMINI.md` 或 `AGENTS.md` 正确包含了 Glossary 内容
+    - [x] 验证内容位于自动生成区域内，且未覆盖用户自定义内容
+- [x] 移除旧的 `.agent/GLOSSARY.md` 文件
 
 ## Technical Tasks
-- [ ] 初始化 `monoco/features/glossary` (core.py, config.py)
-- [ ] 创建 `.agent/skills/monoco_glossary/SKILL.md` 模板
-- [ ] 实现 `get_context_prompt` 接口，整合 Architecture Metaphor 和 Operational Laws
-- [ ] 更新 `monoco/features/__init__.py` 进行注册
-- [ ] 编写测试用例验证注入逻辑
+- [x] 初始化 `monoco/features/glossary` (core.py, config.py)
+- [x] 创建 `.agent/skills/monoco_glossary/SKILL.md` 模板
+- [x] 实现 `get_context_prompt` 接口，整合 Architecture Metaphor 和 Operational Laws
+- [x] 更新 `monoco/features/__init__.py` 进行注册
+- [x] 编写测试用例验证注入逻辑
 
 
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+- **Completed**: 2026-01-31
+- **Summary**: Implemented Glossary feature module and integrated with `monoco sync`.
+  - Created `monoco/features/glossary` package.
+  - Implemented `GlossaryManager` with dynamic header demotion and `i18n.source_lang` support.
+  - Updated `monoco sync` to inject managed blocks with explicit delimiters.
+  - Verified generation of `AGENTS.md` with correct content and structure.
+  - Distributed `monoco_glossary` skill via sync.

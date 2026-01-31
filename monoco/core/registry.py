@@ -36,4 +36,8 @@ class FeatureRegistry:
         cls.register(SpikeFeature())
         cls.register(I18nFeature())
         cls.register(MemoFeature())
+
+        
+        from monoco.features.glossary.adapter import GlossaryFeature
+        cls.register(GlossaryFeature())
         pass
