@@ -19,7 +19,7 @@ class TestGeminiAdapter:
         prompt = "Write a test for the User model"
         command = adapter.build_command(prompt)
 
-        assert command == ["gemini", "-y", "Write a test for the User model"]
+        assert command == ["gemini", "-p", "Write a test for the User model", "-y"]
 
     def test_name(self):
         adapter = GeminiAdapter()
@@ -57,7 +57,7 @@ class TestQwenAdapter:
         prompt = "Implement user authentication"
         command = adapter.build_command(prompt)
 
-        assert command == ["qwen", "-y", "Implement user authentication"]
+        assert command == ["qwen", "-p", "Implement user authentication", "-y"]
 
     def test_name(self):
         adapter = QwenAdapter()
