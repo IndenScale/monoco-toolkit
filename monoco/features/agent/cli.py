@@ -103,6 +103,9 @@ def run(
     detach: bool = typer.Option(
         False, "--detach", "-d", help="Run in background (Daemon)"
     ),
+    provider: Optional[str] = typer.Option(
+        None, "--provider", "-p", help="Override the default engine/provider for this session."
+    ),
 ):
     """
     Start an agent session.
@@ -134,8 +137,14 @@ def run(
         print_error(f"Role '{role}' not found. Available: {list(roles.keys())}")
         raise typer.Exit(code=1)
 
+    # Override engine if provider is specified
+    if provider:
+        # We modify the instance in memory for this session only
+        print_output(f"Overriding provider: {selected_role.engine} -> {provider}")
+        selected_role.engine = provider
+
     print_output(
-        f"Starting Agent Session for '{target}' as {role}...",
+        f"Starting Agent Session for '{target}' as {role} (via {selected_role.engine})...",
         title="Agent Framework",
     )
 
