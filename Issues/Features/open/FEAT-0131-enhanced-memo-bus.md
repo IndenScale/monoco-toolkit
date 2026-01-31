@@ -6,14 +6,14 @@ status: open
 stage: doing
 title: Enhanced Memo Bus as Feedback Loop
 created_at: '2026-02-01T00:56:00'
-updated_at: '2026-02-01T00:56:00'
+updated_at: '2026-02-01T01:00:58'
 parent: EPIC-0025
 dependencies: []
 related:
 - FEAT-0130
 domains:
-- MemoCore
-- DaemonBus
+- IssueTracing
+- AgentScheduling
 tags:
 - '#FEAT-0131'
 - '#memo'
@@ -21,11 +21,12 @@ tags:
 - '#traceability'
 - '#EPIC-0025'
 - '#FEAT-0130'
-files:
-- monoco/features/memo/core.py
-- monoco/features/memo/models.py
-- monoco/features/memo/cli.py
+files: []
 criticality: high
+isolation:
+  type: branch
+  ref: feat/feat-0131-enhanced-memo-bus-as-feedback-loop
+  created_at: '2026-02-01T00:56:00'
 ---
 
 ## FEAT-0131: Enhanced Memo Bus as Feedback Loop
@@ -36,15 +37,15 @@ Memo 必须具备结构化的元数据能力，准确记录 **谁 (Source)** 在
 这将成为 Architect Agent 工作的输入源，以及 Autopsy (尸检) 报告的输出地。
 
 ## Acceptance Criteria
-- [ ] **Schema Upgrade**: Memo 存储格式支持元数据：`Author` (提出者), `Source` (来源渠道), `Status` (状态), `Ref` (追踪的 Issue)。
-- [ ] **Identity Awareness**: CLI/API 在写入 Memo 时自动记录当前操作者身份 (User Name 或 Agent Role)。
-- [ ] **Traceability**: 支持将 Memo 链接到特定的 Issue (Status: `pending` -> `tracked #ISSUE-ID`)。
-- [ ] **Filtering**: 支持按作者、状态或关联 Issue 筛选 Memo (e.g., `monoco memo list --status pending`).
+- [x] **Schema Upgrade**: Memo 存储格式支持元数据：`Author` (提出者), `Source` (来源渠道), `Status` (状态), `Ref` (追踪的 Issue)。
+- [x] **Identity Awareness**: CLI/API 在写入 Memo 时自动记录当前操作者身份 (User Name 或 Agent Role)。
+- [x] **Traceability**: 支持将 Memo 链接到特定的 Issue (Status: `pending` -> `tracked #ISSUE-ID`)。
+- [x] **Filtering**: 支持按作者、状态或关联 Issue 筛选 Memo (e.g., `monoco memo list --status pending`).
 
 ## Technical Tasks
 
 ### 1. Data Model & Storage Format
-- [ ] **Design Format**: 采用轻量级 Header 扩展 Markdown 格式。
+- [x] **Design Format**: 采用轻量级 Header 扩展 Markdown 格式。
     ```markdown
     ## [uid] 2026-02-01 12:00:00
     - **From**: IndenScale (User)
@@ -53,17 +54,15 @@ Memo 必须具备结构化的元数据能力，准确记录 **谁 (Source)** 在
     
     Memo content here...
     ```
-- [ ] **Refactor Parser**: 更新 `monoco.features.memo.core` 中的解析与序列化逻辑，支持读写这些元数据。
+- [x] **Refactor Parser**: 更新 `monoco.features.memo.core` 中的解析与序列化逻辑，支持读写这些元数据。
 
 ### 2. Traceability Operations
-- [ ] **Command: Link**: 实现 `monoco memo link <memo_id> <issue_id>`。
+- [x] **Command: Link**: 实现 `monoco memo link <memo_id> <issue_id>`。
     - 动作：更新 Memo 状态为 `[x] Tracked`，记录 `Ref: #ISSUE-ID`。
     - 场景：Architect 将 Memo 转化为 Issue 后自动调用。
-- [ ] **Command: Resolve**: 实现 `monoco memo resolve <memo_id>` (标记为已处理/无需处理)。
+- [x] **Command: Resolve**: 实现 `monoco memo resolve <memo_id>` (标记为已处理/无需处理)。
 
 ### 3. Integrated Input Channels
-- [ ] **CLI Metadata**: `monoco memo add` 增加 `--type` (bug/feature/insight) 和 `--source` (默认为 current user) 参数。
-- [ ] **Agent API**: 供 `Daemon` 和 `Worker` 调用的 Python API，用于写入尸检报告或运行日志。
+- [x] **CLI Metadata**: `monoco memo add` 增加 `--type` (bug/feature/insight) 和 `--source` (默认为 current user) 参数。
+- [x] **Agent API**: 供 `Daemon` 和 `Worker` 调用的 Python API，用于写入尸检报告或运行日志。
 
-## Review Comments
-<!-- Record review feedback here. -->
