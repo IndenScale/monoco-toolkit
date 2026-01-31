@@ -161,3 +161,35 @@ ACP 调查结论：
 - 文件所在目录必须与 status 匹配
 - stage 必须是 enum: [draft, doing, review, done]
 - 检查非法目录名
+
+## [5031cb] 2026-01-31 20:22:03
+> **Context**: `issue-system`
+
+Git Commit Hooks 需求分析
+
+问题背景：
+FEAT-0128/0129 被关闭时缺少必需的 solution 字段，导致：
+1. linter 解析失败，Issue 未被加入索引
+2. FEAT-0130 的依赖检查出现虚警
+3. 需要手动修复 closed issue
+
+根本原因：
+缺少 pre-commit hook 在提交前验证 Issue 格式合规性
+
+Git Hooks 需求：
+1. pre-commit: 运行 monoco issue lint，阻止不合规提交
+2. pre-push: 检查是否有未完成的关键 Issue
+3. post-checkout: 自动同步 issue 状态到工作区
+
+monoco sync 扩展建议：
+- : 安装/更新 git hooks
+- 支持 hooks 模板自定义
+- 与现有 skill 分发机制集成
+
+相关文件：
+- .git/hooks/pre-commit (需要创建)
+- monoco/features/issue/linter.py (已有)
+- monoco/features/sync/commands.py (扩展)
+
+优先级：medium
+影响：防止不合规 Issue 进入仓库
