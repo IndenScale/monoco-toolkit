@@ -60,7 +60,12 @@ class SessionManager:
             branch_name=branch_name,
         )
 
-        worker = Worker(role, issue_id)
+        # Get timeout from config
+        timeout = 900
+        if self.config and hasattr(self.config, "agent"):
+            timeout = self.config.agent.timeout_seconds
+
+        worker = Worker(role, issue_id, timeout=timeout)
         runtime = RuntimeSession(
             session_model, 
             worker,

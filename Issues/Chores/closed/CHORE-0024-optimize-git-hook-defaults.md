@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Optimize Git Hook Defaults
 created_at: '2026-01-31T10:29:47'
-updated_at: '2026-01-31T10:51:04'
+updated_at: 2026-01-31 10:51:05
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,10 +19,6 @@ criticality: low
 opened_at: '2026-01-31T10:29:47'
 closed_at: '2026-01-31T10:51:04'
 solution: implemented
-isolation:
-  type: branch
-  ref: feat/chore-0024-optimize-git-hook-defaults
-  created_at: '2026-01-31T10:30:05'
 ---
 
 ## CHORE-0024: Optimize Git Hook Defaults

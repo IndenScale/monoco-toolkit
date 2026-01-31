@@ -8,12 +8,14 @@ class Worker:
     Represents an active or pending agent session assigned to a specific role and issue.
     """
 
-    def __init__(self, role: RoleTemplate, issue_id: str):
+    def __init__(self, role: RoleTemplate, issue_id: str, timeout: Optional[int] = None):
         self.role = role
         self.issue_id = issue_id
+        self.timeout = timeout
         self.status = "pending"  # pending, running, suspended, terminated
         self.process_id: Optional[int] = None
         self._process = None
+        self.start_at: Optional[float] = None
 
     def start(self, context: Optional[dict] = None):
         """
@@ -26,6 +28,8 @@ class Worker:
         print(f"Starting worker {self.role.name} for issue {self.issue_id}")
 
         try:
+            import time
+            self.start_at = time.time()
             self._execute_work(context)
             self.status = "running"
         except Exception as e:
@@ -97,6 +101,23 @@ class Worker:
         if not self._process:
             return self.status
 
+        # Check timeout
+        if (
+            self.status == "running"
+            and self.timeout
+            and self.start_at
+        ):
+            import time
+
+            elapsed = time.time() - self.start_at
+            if elapsed > self.timeout:
+                print(
+                    f"\n[{self.role.name}] [bold red]Timeout exceeded[/bold red] ({self.timeout}s). Terminating process..."
+                )
+                self.stop()
+                self.status = "timeout"
+                return self.status
+
         returncode = self._process.poll()
         if returncode is None:
             return "running"
@@ -118,14 +139,29 @@ class Worker:
 
     def stop(self):
         """
-        Stop the worker session.
+        Stop the worker session and kill the process if running.
         """
         if self.status == "terminated":
             return
 
         print(f"Stopping worker {self.role.name} for issue {self.issue_id}")
+
+        if self._process:
+            try:
+                # Try graceful termination
+                self._process.terminate()
+                # Wait a bit
+                try:
+                    self._process.wait(timeout=2)
+                except Exception:
+                    # Force kill if still running
+                    self._process.kill()
+            except Exception as e:
+                print(f"Error stopping process: {e}")
+
         self.status = "terminated"
         self.process_id = None
+        self._process = None
 
     def __repr__(self):
         return (

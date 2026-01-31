@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Hook System Architecture Strategy
 created_at: '2026-01-31T10:38:10'
-updated_at: '2026-01-31T10:52:31'
+updated_at: 2026-01-31 10:52:32
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -20,10 +20,6 @@ criticality: medium
 opened_at: '2026-01-31T10:38:10'
 closed_at: '2026-01-31T10:52:31'
 solution: implemented
-isolation:
-  type: branch
-  ref: feat/arch-0001-hook-system-architecture-strategy
-  created_at: '2026-01-31T10:51:42'
 ---
 
 ## ARCH-0001: Hook System Architecture Strategy

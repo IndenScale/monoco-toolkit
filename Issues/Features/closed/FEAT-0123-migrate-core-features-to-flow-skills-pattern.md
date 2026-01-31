@@ -17,6 +17,8 @@ domains:
 - Guardrail
 tags:
 - '#EPIC-0022'
+- '#FEAT-0121'
+- '#FEAT-0122'
 - '#FEAT-0123'
 files:
 - monoco/features/i18n/resources/skills/
