@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Issue Lifecycle Triggers
 created_at: '2026-01-31T10:36:48'
-updated_at: '2026-01-31T10:48:27'
+updated_at: 2026-01-31 10:48:28
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,10 +19,6 @@ criticality: medium
 opened_at: '2026-01-31T10:36:48'
 closed_at: '2026-01-31T10:47:01'
 solution: implemented
-isolation:
-  type: branch
-  ref: feat/feat-0124-issue-lifecycle-triggers
-  created_at: '2026-01-31T10:37:05'
 ---
 
 ## FEAT-0124: Issue Lifecycle Triggers
