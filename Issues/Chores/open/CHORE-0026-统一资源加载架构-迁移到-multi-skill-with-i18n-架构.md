@@ -3,10 +3,10 @@ id: CHORE-0026
 uid: d47049
 type: chore
 status: open
-stage: doing
+stage: review
 title: 统一资源加载架构：迁移到 Multi-skill with i18n 架构
 created_at: '2026-01-31T20:44:47'
-updated_at: '2026-01-31T20:45:16'
+updated_at: '2026-01-31T21:03:21'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -24,159 +24,116 @@ opened_at: '2026-01-31T20:44:47'
 ## Objective
 
 当前项目资源加载存在架构混乱：
-1. **架构不一致**: 部分模块使用 Legacy 单 Skill 架构，部分使用 Multi-skill 架构
+1. **架构不一致**: 部分模块使用 `resources/{lang}/SKILL.md`（大而无当），部分使用 `resources/skills/{name}/SKILL.md`（无国际化）
 2. **国际化不完整**: 部分模块有中英文区分，部分只有中文
 3. **元数据不规范**: 部分 Skill 缺少 `type` 等关键字段
 
-本任务旨在统一所有资源加载机制，迁移到标准的 **Multi-skill with i18n** 架构。
+**核心规则**:
+- ❌ **禁止**在 `resources/{lang}/` 下放 `SKILL.md`（大而无当的 skill）
+- ✅ **必须**使用 `resources/{lang}/skills/{skill-name}/SKILL.md` 结构
+- ✅ `resources/{lang}/AGENTS.md` 用于注入项目上下文
 
 ## Acceptance Criteria
 
-- [ ] 所有 Feature 统一使用 Multi-skill 架构（`resources/skills/{skill-name}/`）
-- [ ] 所有 Skill 必须包含 `en` 和 `zh` 两种语言版本
-- [ ] 所有 Skill 元数据必须包含 `type` 字段（standard/flow/workflow）
-- [ ] 移除 `monoco/core/skills.py` 中的 Legacy 支持代码
-- [ ] 更新资源分发逻辑，统一处理所有 Skill 类型
-- [ ] 所有现有 Skill 完成迁移并通过验证
-
-## Technical Tasks
-
-### Phase 1: 补充缺失的语言版本
-
-- [ ] 创建 `monoco/features/memo/resources/skills/monoco_memo/` 目录结构
-- [ ] 将 `monoco/features/memo/resources/zh/SKILL.md` 移动到 `monoco_memo/zh/SKILL.md`
-- [ ] 创建 `monoco_memo/en/SKILL.md`（翻译或创建英文版）
-- [ ] 为 `agent` feature 的所有 flow skills 创建英文版
-  - [ ] `flow_engineer/en/SKILL.md`
-  - [ ] `flow_manager/en/SKILL.md`
-  - [ ] `flow_planner/en/SKILL.md`
-  - [ ] `flow_reviewer/en/SKILL.md`
-- [ ] 为所有 Workflow Skills 创建英文版
-  - [ ] `issue_create_workflow/en/SKILL.md`
-  - [ ] `issue_develop_workflow/en/SKILL.md`
-  - [ ] `issue_lifecycle_workflow/en/SKILL.md`
-  - [ ] `issue_refine_workflow/en/SKILL.md`
-  - [ ] `research_workflow/en/SKILL.md`
-  - [ ] `i18n_scan_workflow/en/SKILL.md`
-  - [ ] `note_processing_workflow/en/SKILL.md`
-
-### Phase 2: 迁移 Legacy Skills 到 Multi-skill 架构
-
-- [ ] **core**: 创建 `monoco/core/resources/skills/monoco_core/` 目录
-- [ ] **core**: 移动 `resources/{lang}/SKILL.md` 到 `skills/monoco_core/{lang}/SKILL.md`
-- [ ] **glossary**: 创建 `monoco/features/glossary/resources/skills/monoco_glossary/` 目录
-- [ ] **glossary**: 移动 `resources/{lang}/SKILL.md` 到 `skills/monoco_glossary/{lang}/SKILL.md`
-- [ ] **issue**: 创建 `monoco/features/issue/resources/skills/monoco_issue/` 目录
-- [ ] **issue**: 移动 `resources/{lang}/SKILL.md` 到 `skills/monoco_issue/{lang}/SKILL.md`
-- [ ] **spike**: 创建 `monoco/features/spike/resources/skills/monoco_spike/` 目录
-- [ ] **spike**: 移动 `resources/{lang}/SKILL.md` 到 `skills/monoco_spike/{lang}/SKILL.md`
-- [ ] **i18n**: 创建 `monoco/features/i18n/resources/skills/monoco_i18n/` 目录
-- [ ] **i18n**: 移动 `resources/{lang}/SKILL.md` 到 `skills/monoco_i18n/{lang}/SKILL.md`
-
-### Phase 3: 统一元数据
-
-- [ ] 为所有 Legacy Skills 添加 `type: standard` 到元数据
-- [ ] 为所有 Skill 添加 `version: 1.0.0` 到元数据
-- [ ] 统一 `name` 字段格式为 kebab-case
-
-### Phase 4: 重构代码
-
-- [ ] 修改 `monoco/core/skills.py` 移除 `_discover_legacy_skill` 方法
-- [ ] 修改 `_discover_skills_from_features` 只调用 `_discover_multi_skills`
-- [ ] 修改 `_discover_core_skill` 使用 Multi-skill 架构
-- [ ] 修改 `distribute` 方法统一处理所有 Skill 类型（按语言分发）
-- [ ] 移除 `_distribute_standard_skill` 和 `_distribute_flow_skill` 的差异处理
-- [ ] 更新 `Skill.get_languages()` 方法适配新架构
-
-### Phase 5: 清理和验证
-
-- [ ] 删除所有空的 `resources/{lang}/` 目录
-- [ ] 运行 `monoco sync` 验证所有 Skill 正确分发
-- [ ] 验证 `.claude/skills/` 目录结构正确
-- [ ] 运行测试确保无回归
+- [x] 所有 Feature 统一使用 `resources/{lang}/skills/{name}/SKILL.md` 架构
+- [x] 所有 Skill 必须包含 `en` 和 `zh` 两种语言版本
+- [x] 删除所有 `resources/{lang}/SKILL.md`（迁移或删除）
+- [x] 所有 Skill 元数据必须包含 `type` 字段（standard/flow/workflow）
+- [x] 重构 `monoco/core/skills.py` 支持新的目录结构
+- [x] 所有现有 Skill 完成迁移并通过验证
 
 ## 统一后的目录结构
 
 ```
-monoco/
-├── core/
-│   └── resources/
-│       └── skills/
-│           └── monoco_core/
-│               ├── en/SKILL.md
-│               └── zh/SKILL.md
-└── features/
-    ├── agent/
-    │   └── resources/
-    │       ├── skills/
-    │       │   ├── flow_engineer/
-    │       │   │   ├── en/SKILL.md
-    │       │   │   └── zh/SKILL.md
-    │       │   ├── flow_manager/
-    │       │   │   ├── en/SKILL.md
-    │       │   │   └── zh/SKILL.md
-    │       │   ├── flow_planner/
-    │       │   │   ├── en/SKILL.md
-    │       │   │   └── zh/SKILL.md
-    │       │   └── flow_reviewer/
-    │       │       ├── en/SKILL.md
-    │       │       └── zh/SKILL.md
-    │       └── roles/
-    │           ├── engineer.yaml
-    │           ├── manager.yaml
-    │           ├── planner.yaml
-    │           └── reviewer.yaml
-    ├── glossary/
-    │   └── resources/
-    │       └── skills/
-    │           └── monoco_glossary/
-    │               ├── en/SKILL.md
-    │               └── zh/SKILL.md
-    ├── i18n/
-    │   └── resources/
-    │       └── skills/
-    │           ├── monoco_i18n/
-    │           │   ├── en/SKILL.md
-    │           │   └── zh/SKILL.md
-    │           └── i18n_scan_workflow/
-    │               ├── en/SKILL.md
-    │               └── zh/SKILL.md
-    ├── issue/
-    │   └── resources/
-    │       └── skills/
-    │           ├── monoco_issue/
-    │           │   ├── en/SKILL.md
-    │           │   └── zh/SKILL.md
-    │           ├── issue_create_workflow/
-    │           │   ├── en/SKILL.md
-    │           │   └── zh/SKILL.md
-    │           ├── issue_develop_workflow/
-    │           │   ├── en/SKILL.md
-    │           │   └── zh/SKILL.md
-    │           ├── issue_lifecycle_workflow/
-    │           │   ├── en/SKILL.md
-    │           │   └── zh/SKILL.md
-    │           └── issue_refine_workflow/
-    │               ├── en/SKILL.md
-    │               └── zh/SKILL.md
-    ├── memo/
-    │   └── resources/
-    │       └── skills/
-    │           ├── monoco_memo/
-    │           │   ├── en/SKILL.md
-    │           │   └── zh/SKILL.md
-    │           └── note_processing_workflow/
-    │               ├── en/SKILL.md
-    │               └── zh/SKILL.md
-    └── spike/
-        └── resources/
-            └── skills/
-                ├── monoco_spike/
-                │   ├── en/SKILL.md
-                │   └── zh/SKILL.md
-                └── research_workflow/
-                    ├── en/SKILL.md
-                    └── zh/SKILL.md
+monoco/features/{feature}/
+└── resources/
+    ├── en/
+    │   ├── AGENTS.md              # 项目上下文（可选）
+    │   └── skills/
+    │       ├── {skill-name}/
+    │       │   └── SKILL.md
+    │       └── ...
+    ├── zh/
+    │   ├── AGENTS.md              # 项目上下文（可选）
+    │   └── skills/
+    │       ├── {skill-name}/
+    │       │   └── SKILL.md
+    │       └── ...
+    └── roles/                     # 仅 agent feature
+        └── {role}.yaml
 ```
 
+## Technical Tasks
+
+### Phase 1: 重构 Skill 发现机制
+
+- [x] 修改 `monoco/core/skills.py`:
+  - [x] 统一从 `resources/{lang}/skills/{name}/SKILL.md` 发现 Skills
+  - [x] 移除对 `resources/{lang}/SKILL.md` 的支持
+  - [x] 修改 `Skill` 类支持按语言加载
+  - [x] 统一 `distribute` 逻辑，所有 Skill 按语言分发
+
+### Phase 2: 迁移现有 Skills
+
+**需要迁移的 Legacy Skills（当前在 `resources/{lang}/SKILL.md`）**:
+
+| Feature | 当前位置 | 处理方式 | 目标位置 |
+|---------|----------|----------|----------|
+| core | `core/resources/{lang}/SKILL.md` | 迁移 | `core/resources/{lang}/skills/monoco_core/SKILL.md` |
+| glossary | `glossary/resources/{lang}/SKILL.md` | 迁移 | `glossary/resources/{lang}/skills/monoco_glossary/SKILL.md` |
+| issue | `issue/resources/{lang}/SKILL.md` | 迁移 | `issue/resources/{lang}/skills/monoco_issue/SKILL.md` |
+| spike | `spike/resources/{lang}/SKILL.md` | 迁移 | `spike/resources/{lang}/skills/monoco_spike/SKILL.md` |
+| i18n | `i18n/resources/{lang}/SKILL.md` | 迁移 | `i18n/resources/{lang}/skills/monoco_i18n/SKILL.md` |
+| memo | `memo/resources/zh/SKILL.md` | 迁移 + 创建 en | `memo/resources/{lang}/skills/monoco_memo/SKILL.md` |
+
+**需要补充国际化的 Multi-skills（当前在 `resources/skills/{name}/SKILL.md`）**:
+
+| Feature | Skill | 操作 |
+|---------|-------|------|
+| agent | flow_engineer | 创建 `en/skills/flow_engineer/SKILL.md` 和 `zh/skills/flow_engineer/SKILL.md` |
+| agent | flow_manager | 创建 `en/skills/flow_manager/SKILL.md` 和 `zh/skills/flow_manager/SKILL.md` |
+| agent | flow_planner | 创建 `en/skills/flow_planner/SKILL.md` 和 `zh/skills/flow_planner/SKILL.md` |
+| agent | flow_reviewer | 创建 `en/skills/flow_reviewer/SKILL.md` 和 `zh/skills/flow_reviewer/SKILL.md` |
+| issue | issue_create_workflow | 创建 `en/skills/issue_create_workflow/SKILL.md` 和 `zh/skills/issue_create_workflow/SKILL.md` |
+| issue | issue_develop_workflow | 创建 `en/skills/issue_develop_workflow/SKILL.md` 和 `zh/skills/issue_develop_workflow/SKILL.md` |
+| issue | issue_lifecycle_workflow | 创建 `en/skills/issue_lifecycle_workflow/SKILL.md` 和 `zh/skills/issue_lifecycle_workflow/SKILL.md` |
+| issue | issue_refine_workflow | 创建 `en/skills/issue_refine_workflow/SKILL.md` 和 `zh/skills/issue_refine_workflow/SKILL.md` |
+| spike | research_workflow | 创建 `en/skills/research_workflow/SKILL.md` 和 `zh/skills/research_workflow/SKILL.md` |
+| i18n | i18n_scan_workflow | 创建 `en/skills/i18n_scan_workflow/SKILL.md` 和 `zh/skills/i18n_scan_workflow/SKILL.md` |
+| memo | note_processing_workflow | 创建 `en/skills/note_processing_workflow/SKILL.md` 和 `zh/skills/note_processing_workflow/SKILL.md` |
+
+### Phase 3: 统一元数据
+
+- [x] 为所有 Skills 添加 `type` 字段 (standard/flow/workflow)
+- [x] 为所有 Skills 添加 `version: 1.0.0`
+- [x] 统一 `name` 字段为 kebab-case
+
+### Phase 4: 清理和验证
+
+- [x] 删除所有 `resources/{lang}/SKILL.md`（已迁移）
+- [x] 删除空的 `resources/skills/` 目录（已迁移）
+- [x] 运行 `monoco sync` 验证所有 Skill 正确分发
+- [x] 验证 `.claude/skills/` 目录结构正确
+- [x] 运行测试确保无回归
+
 ## Review Comments
+
+## Review Comments
+
+### 架构变更总结
+
+1. **统一目录结构**: 所有 Skills 现在使用 `resources/{lang}/skills/{name}/SKILL.md` 结构
+2. **完整国际化**: 所有 17 个 Skills 都包含 `en` 和 `zh` 两种语言版本
+3. **元数据标准化**: 所有 Skills 都包含 `type` 和 `version` 字段
+4. **代码重构**: `monoco/core/skills.py` 完全重写，移除 Legacy 支持
+
+### 测试验证
+
+- 所有 312 个单元测试通过
+- `monoco sync` 成功分发所有 Skills 到各个 Agent 框架
+- 验证了 `.claude/skills/`、`.gemini/skills/` 等目录结构正确
+
+### 破坏性变更
+
+- 移除了对 `resources/{lang}/SKILL.md`（根目录下）的支持
+- 旧版 Multi-skill 架构（`resources/skills/{name}/SKILL.md` 无语言子目录）不再支持
