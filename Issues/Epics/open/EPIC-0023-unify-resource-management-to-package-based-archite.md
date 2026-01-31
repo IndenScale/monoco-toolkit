@@ -37,13 +37,13 @@ isolation:
 - **New Feature**: 实现 Glossary 模块作为架构样板。
 
 ## Key Results
-- [ ] 所有 Feature 资源均以 Markdown 文件形式存于 Python 包内
-- [ ] `monoco sync` 能够正确生成 `AGENTS.md`
-    - [ ] 实现明确的 `Generated` vs `User Maintained` 分割线 (e.g., `<!-- MONOCO_GENERATED_START -->`)
-    - [ ] 解决 Header Level 冲突，实现注入内容的动态标题降级
-    - [ ] 根据 user workspace `i18n.source_lang` 仅生成单一语言内容，避免中英重复
+- [x] 所有 Feature 资源均以 Markdown 文件形式存于 Python 包内
+- [x] `monoco sync` 能够正确生成 `AGENTS.md`
+    - [x] 实现明确的 `Generated` vs `User Maintained` 分割线 (e.g., `<!-- MONOCO_GENERATED_START -->`)
+    - [x] 解决 Header Level 冲突，实现注入内容的动态标题降级
+    - [x] 根据 user workspace `i18n.source_lang` 仅生成单一语言内容，避免中英重复
 - [ ] 移除所有 Python 代码中的硬编码 Prompt 字符串
-- [ ] Glossary 模块成功实现并分发
+- [x] Glossary 模块成功实现并分发
 
 ## Technical Tasks
 - [ ] Design & Implement `monoco.core.resource` package

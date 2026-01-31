@@ -10,6 +10,8 @@ class PromptInjector:
     """
 
     MANAGED_HEADER = "## Monoco Toolkit"
+    MANAGED_START = "<!-- MONOCO_GENERATED_START -->"
+    MANAGED_END = "<!-- MONOCO_GENERATED_END -->"
 
     def __init__(self, target_file: Path):
         self.target_file = target_file
@@ -52,19 +54,40 @@ class PromptInjector:
             # Sanitize content: remove leading header if it matches the title
             clean_content = content.strip()
             # Regex to match optional leading hash header matching the title (case insensitive)
-            # e.g. "### Issue Management" or "# Issue Management"
             pattern = r"^(#+\s*)" + re.escape(title) + r"\s*\n"
             match = re.match(pattern, clean_content, re.IGNORECASE)
 
             if match:
                 clean_content = clean_content[match.end() :].strip()
-
-            managed_block.append(clean_content)
+            
+            # Demote headers in content to be below ### (so start at ####)
+            # We assume the content headers start at # or ##. 
+            # We map # -> ####, ## -> #####, etc. (+3 offset)
+            demoted_content = []
+            for line in clean_content.splitlines():
+                if line.lstrip().startswith("#"):
+                    demoted_content.append("###" + line)
+                else:
+                    demoted_content.append(line)
+            
+            managed_block.append("\n".join(demoted_content))
             managed_block.append("")  # Blank line after section
 
         managed_block_str = "\n".join(managed_block).strip() + "\n"
+        managed_block_str = f"{self.MANAGED_START}\n{managed_block_str}\n{self.MANAGED_END}\n"
 
         # 2. Find and replace/append in the original content
+        # Check for delimiters first
+        if self.MANAGED_START in original and self.MANAGED_END in original:
+            try:
+                pre = original.split(self.MANAGED_START)[0]
+                post = original.split(self.MANAGED_END)[1]
+                # Reconstruct
+                return pre + managed_block_str.strip() + post
+            except IndexError:
+                # Fallback to header detection if delimiters malformed
+                pass
+
         lines = original.splitlines()
         start_idx = -1
         end_idx = -1
@@ -74,31 +97,29 @@ class PromptInjector:
             if line.strip() == self.MANAGED_HEADER:
                 start_idx = i
                 break
+        
+        if start_idx == -1:
+             # Check if we have delimiters even if header is missing/changed?
+             # Handled above.
+             pass
 
         if start_idx == -1:
             # Block not found, append to end
             if original and not original.endswith("\n"):
-                return original + "\n\n" + managed_block_str
+                return original + "\n\n" + managed_block_str.strip()
             elif original:
-                return original + "\n" + managed_block_str
+                return original + "\n" + managed_block_str.strip()
             else:
-                return managed_block_str
+                return managed_block_str.strip() + "\n"
 
-        # Find end: Look for next header of level 1 (assuming Managed Header is H1)
-        # Or EOF
-        # Note: If MANAGED_HEADER is "# ...", we look for next "# ..."
-        # But allow "## ..." as children.
-
+        # Find end: Look for next header of level 1 or 2 (siblings or parents)
         header_level_match = re.match(r"^(#+)\s", self.MANAGED_HEADER)
-        header_level_prefix = header_level_match.group(1) if header_level_match else "#"
+        header_level_prefix = header_level_match.group(1) if header_level_match else "##"
 
         for i in range(start_idx + 1, len(lines)):
             line = lines[i]
             # Check if this line is a header of the same level or higher (fewer #s)
-            # e.g. if Managed is "###", then "#" and "##" are higher/parents, "###" is sibling.
-            # We treat siblings as end of block too.
             if line.startswith("#"):
-                # Match regex to get level
                 match = re.match(r"^(#+)\s", line)
                 if match:
                     level = match.group(1)
@@ -146,26 +167,39 @@ class PromptInjector:
 
         # Find start
         for i, line in enumerate(lines):
-            if line.strip() == self.MANAGED_HEADER:
+            if self.MANAGED_START in line:
                 start_idx = i
+                # Look for end from here
+                for j in range(i, len(lines)):
+                    if self.MANAGED_END in lines[j]:
+                        end_idx = j + 1 # Include the end line
+                        break
                 break
+        
+        if start_idx == -1:
+            # Fallback to header logic
+             for i, line in enumerate(lines):
+                if line.strip() == self.MANAGED_HEADER:
+                    start_idx = i
+                    break
 
         if start_idx == -1:
             return False
 
-        # Find end: exact logic as in _merge_content
-        header_level_match = re.match(r"^(#+)\s", self.MANAGED_HEADER)
-        header_level_prefix = header_level_match.group(1) if header_level_match else "#"
+        if end_idx == -1:
+            # Find end: exact logic as in _merge_content
+            header_level_match = re.match(r"^(#+)\s", self.MANAGED_HEADER)
+            header_level_prefix = header_level_match.group(1) if header_level_match else "##"
 
-        for i in range(start_idx + 1, len(lines)):
-            line = lines[i]
-            if line.startswith("#"):
-                match = re.match(r"^(#+)\s", line)
-                if match:
-                    level = match.group(1)
-                    if len(level) <= len(header_level_prefix):
-                        end_idx = i
-                        break
+            for i in range(start_idx + 1, len(lines)):
+                line = lines[i]
+                if line.startswith("#"):
+                    match = re.match(r"^(#+)\s", line)
+                    if match:
+                        level = match.group(1)
+                        if len(level) <= len(header_level_prefix):
+                            end_idx = i
+                            break
 
         if end_idx == -1:
             end_idx = len(lines)
