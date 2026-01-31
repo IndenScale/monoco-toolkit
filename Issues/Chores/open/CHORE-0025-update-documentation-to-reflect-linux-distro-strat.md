@@ -3,10 +3,10 @@ id: CHORE-0025
 uid: 3fbbd3
 type: chore
 status: open
-stage: doing
+stage: review
 title: Update Documentation to Reflect Linux Distro Strategy
 created_at: '2026-01-31T16:42:52'
-updated_at: '2026-01-31T16:43:30'
+updated_at: '2026-01-31T16:48:11'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -17,6 +17,10 @@ tags:
 files: []
 criticality: low
 opened_at: '2026-01-31T16:42:52'
+isolation:
+  type: branch
+  ref: feat/chore-0025-update-documentation-to-reflect-linux-distro-strat
+  created_at: '2026-01-31T16:43:31'
 ---
 
 ## CHORE-0025: Update Documentation to Reflect Linux Distro Strategy
@@ -39,9 +43,11 @@ opened_at: '2026-01-31T16:42:52'
 <!-- - [ ] Parent Task -->
 <!--   - [ ] Sub Task -->
 
-- [ ] Create `GLOSSARY.md` with key terms (Distro, Kernel, etc.)
-- [ ] Update `GEMINI.md` to reflect the new strategy and terms
-- [ ] Update `README.md` and `README_ZH.md` with the "Linux Distro for Agents" manifesto1
+- [x] Create `GLOSSARY.md` with key terms (Distro, Kernel, etc.)
+- [x] Update `GEMINI.md` to reflect the new strategy and terms
+- [x] Update `README.md` and `README_ZH.md` with the "Linux Distro for Agents" manifesto1
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- Updated `GEMINI.md` to be the new Constitution for the Agent Distro.
+- Created `GLOSSARY.md` to define "Distro", "Kernel", "Unit" metaphors.
+- Updated `README.md` and `README_ZH.md` to align with the new strategic positioning.
