@@ -3,10 +3,10 @@ id: EPIC-0023
 uid: f8428d
 type: epic
 status: open
-stage: doing
+stage: review
 title: Unify Resource Management to Package-Based Architecture
 created_at: '2026-01-31T17:09:08'
-updated_at: '2026-01-31T17:10:10'
+updated_at: '2026-01-31T17:56:51'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -20,7 +20,6 @@ opened_at: '2026-01-31T17:09:08'
 isolation:
   type: branch
   ref: feat/epic-0023-unify-resource-management-to-package-based-archite
-  path: null
   created_at: '2026-01-31T17:10:11'
 progress: 1/1
 files_count: 0
