@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Issue Lifecycle Triggers
 created_at: '2026-01-31T10:36:48'
-updated_at: '2026-01-31T10:37:04'
+updated_at: '2026-01-31T10:42:36'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -17,6 +17,10 @@ tags:
 files: []
 criticality: medium
 opened_at: '2026-01-31T10:36:48'
+isolation:
+  type: branch
+  ref: feat/feat-0124-issue-lifecycle-triggers
+  created_at: '2026-01-31T10:37:05'
 ---
 
 ## FEAT-0124: Issue Lifecycle Triggers
@@ -33,13 +37,14 @@ opened_at: '2026-01-31T10:36:48'
 - [ ] 确保命令执行的稳定性和错误处理（Triggers 失败不应回滚状态转换，但应报警）。
 
 ## Technical Tasks
-- [ ] **Config Schema Update**:
-    - [ ] 修改 `monoco/core/config.py` 中的 `TransitionConfig`，增加 `post_actions: List[str]` 字段。
-- [ ] **Logic Implementation**:
-    - [ ] 在 `monoco/features/issue/core.py` 的状态转换逻辑中，添加 `execute_post_actions` 处理函数。
-    - [ ] 实现命令模板替换逻辑（支持 `{id}`, `{title}` 等变量）。
-- [ ] **Integration & Config**:
-    - [ ] 更新 `.monoco/workspace.yaml`，为 `start` 和 `submit` 转换添加示例 Trigger 配置。
+- [x] **Config Schema Update**:
+    - [x] 修改 `monoco/core/config.py` 中的 `TransitionConfig`，增加 `post_actions: List[str]` 字段。
+- [x] **Logic Implementation**:
+    - [x] 在 `monoco/features/issue/core.py` 的状态转换逻辑中，添加 `execute_post_actions` 处理函数。
+    - [x] 在 `monoco/features/issue/engine/machine.py` 中更新 `validate_transition` 返回 transition 对象。
+    - [x] 实现命令模板替换逻辑（支持 `{id}`, `{title}` 等变量）。
+- [x] **Integration & Config**:
+    - [x] 更新 `.monoco/workspace.yaml`，为 `start` 和 `submit` 转换添加示例 Trigger 配置。
 - [ ] **Verification**:
     - [ ] 创建测试 Issue，验证 `monoco issue start` 是否正确唤起 Agent。
 
