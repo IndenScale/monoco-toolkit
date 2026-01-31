@@ -18,7 +18,7 @@ class TestGitCleanupHook:
         
         assert hook.name == "git_cleanup"
         assert hook.auto_switch_to_main is True
-        assert hook.auto_delete_merged_branches is True
+        assert hook.auto_delete_merged_branches is False
         assert hook.main_branch == "main"
         assert hook.require_clean_worktree is True
 
