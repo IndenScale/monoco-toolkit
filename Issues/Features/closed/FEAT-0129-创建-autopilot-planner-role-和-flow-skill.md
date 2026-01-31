@@ -2,8 +2,8 @@
 id: FEAT-0129
 uid: 199c55
 type: feature
-status: done
-stage: review
+status: closed
+stage: done
 title: 创建 Autopilot Planner Role 和 Flow Skill
 created_at: '2026-01-31T20:05:06'
 updated_at: '2026-01-31T20:07:25'
