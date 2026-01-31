@@ -3,10 +3,10 @@ id: FEAT-0127
 uid: 3f9296
 type: feature
 status: open
-stage: doing
+stage: review
 title: Implement Core Resource Package
 created_at: '2026-01-31T17:36:28'
-updated_at: 2026-01-31 17:37:09
+updated_at: '2026-01-31T17:46:37'
 parent: EPIC-0023
 dependencies: []
 related: []
@@ -20,7 +20,6 @@ opened_at: '2026-01-31T17:36:28'
 isolation:
   type: branch
   ref: feat/feat-0127-implement-core-resource-package
-  path: null
   created_at: '2026-01-31T17:37:09'
 ---
 
