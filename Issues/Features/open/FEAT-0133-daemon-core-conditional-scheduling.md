@@ -39,7 +39,7 @@ isolation:
 - [x] **Trigger-Strategy-Architect**: 实现基于 "Memo 堆积量 / 严重性阈值 / CRON" 的 Architect 唤醒机制。
 - [x] **Trigger-Strategy-Engineer**: 实现基于 "Architect 产出 + 严重性分级 + (可选) HITP 确认" 的 Engineer 启动链。
 - [x] **Trigger-Strategy-Reviewer**: 实现 Engineer 完成后的自动 Reviewer 介入。
-- [ ] **Trigger-Strategy-MergePush**: 实现基于 HITP 信号的 Merge 和 Push 动作。
+- [x] **Trigger-Strategy-MergePush**: 实现基于 HITP 信号的 Merge 和 Push 动作。
 - [x] **Lifecycle-Autopsy**: 实现 Agent 结束后的自动 "尸检" 逻辑，生成报告并回写。
 
 ## Technical Tasks
