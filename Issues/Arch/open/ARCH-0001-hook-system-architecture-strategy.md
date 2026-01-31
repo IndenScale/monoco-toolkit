@@ -3,10 +3,10 @@ id: ARCH-0001
 uid: 2edc85
 type: arch
 status: open
-stage: doing
+stage: review
 title: Hook System Architecture Strategy
 created_at: '2026-01-31T10:38:10'
-updated_at: '2026-01-31T10:51:41'
+updated_at: '2026-01-31T10:52:20'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,9 +14,14 @@ domains: []
 tags:
 - '#ARCH-0001'
 - '#EPIC-0000'
-files: []
+files:
+- Issues/Arch/open/ARCH-0001-hook-system-architecture-strategy.md
 criticality: medium
 opened_at: '2026-01-31T10:38:10'
+isolation:
+  type: branch
+  ref: feat/arch-0001-hook-system-architecture-strategy
+  created_at: '2026-01-31T10:51:42'
 ---
 
 ## ARCH-0001: Hook System Architecture Strategy
@@ -62,6 +67,12 @@ Monoco Toolkit 需要一个扩展机制来处理生命周期事件。目前存�
 
 3. **默认策略**:
     - **GitCleanupHook**: 采用“保守默认”策略。默认开启 `switch_to_main`，默认关闭 `delete_branch`。安全第一。
+ 
+ ## Technical Tasks
+ - [x] Define Hook System types
+ - [x] Select Workflow Triggers strategy
+ - [x] Update GitCleanup defaults strategy
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- Architecture strategy finalized and implementation completed in FEAT-0124.
+- This ADR serves as a reference for the distinction between Session Hooks, Git Hooks, and Workflow Triggers.
