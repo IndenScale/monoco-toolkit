@@ -32,6 +32,7 @@ from monoco.core.skill_framework import (
     SkillType,
     SkillMode,
 )
+from monoco.core.workflow_converter import WorkflowDistributor
 
 console = Console()
 
@@ -705,3 +706,37 @@ class SkillManager:
             commands.append(f"/flow:{short_name}")
                         
         return sorted(set(commands))
+
+    # ========================================================================
+    # Workflow Distribution (for Antigravity IDE compatibility)
+    # ========================================================================
+
+    def distribute_workflows(self, force: bool = False, lang: str = "zh") -> Dict[str, bool]:
+        """
+        Convert and distribute Flow Skills as Antigravity Workflows.
+        
+        Flow Skills are converted to Antigravity Workflow format and saved
+        to .agent/workflows/ directory for IDE compatibility.
+        
+        Args:
+            force: Overwrite existing files even if unchanged
+            lang: Language code for Flow Skills (default: "zh")
+            
+        Returns:
+            Dictionary mapping workflow filenames to success status
+        """
+        distributor = WorkflowDistributor(self.root)
+        return distributor.distribute(force=force, lang=lang)
+
+    def cleanup_workflows(self, lang: str = "zh") -> int:
+        """
+        Remove distributed Antigravity Workflows.
+        
+        Args:
+            lang: Language code for Flow Skills (default: "zh")
+            
+        Returns:
+            Number of workflow files removed
+        """
+        distributor = WorkflowDistributor(self.root)
+        return distributor.cleanup(lang=lang)
