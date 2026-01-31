@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict
 from monoco.core.feature import MonocoFeature, IntegrationData
-from monoco.features.glossary.core import GlossaryManager
+
 
 class GlossaryFeature(MonocoFeature):
     @property
@@ -15,8 +15,17 @@ class GlossaryFeature(MonocoFeature):
     def integrate(self, root: Path, config: Dict) -> IntegrationData:
         # Determine language from config, default to 'en'
         lang = config.get("i18n", {}).get("source_lang", "en")
-        
-        manager = GlossaryManager()
-        content = manager.get_glossary_content(lang)
-        
+
+        # Resource path: monoco/features/glossary/resources/{lang}/AGENTS.md
+        base_dir = Path(__file__).parent / "resources"
+
+        # Try specific language, fallback to 'en'
+        prompt_file = base_dir / lang / "AGENTS.md"
+        if not prompt_file.exists():
+            prompt_file = base_dir / "en" / "AGENTS.md"
+
+        content = ""
+        if prompt_file.exists():
+            content = prompt_file.read_text(encoding="utf-8").strip()
+
         return IntegrationData(system_prompts={"Glossary": content})

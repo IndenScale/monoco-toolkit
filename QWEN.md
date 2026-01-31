@@ -60,32 +60,36 @@ Lightweight note-taking for ideas and quick thoughts.
 
 ### Glossary
 
-#### Monoco Glossary
+###### 术语表
 
-##### Core Architecture Metaphor: "Linux Distro"
+####### Monoco 术语表
 
-| Term             | Definition                                                                                          | Metaphor                            |
-| :--------------- | :-------------------------------------------------------------------------------------------------- | :---------------------------------- |
-| **Monoco**       | The Agent Operating System Distribution. Managed policy, workflow, and package system.              | **Distro** (e.g., Ubuntu, Arch)     |
-| **Kimi CLI**     | The core runtime execution engine. Handles LLM interaction, tool execution, and process management. | **Kernel** (Linux Kernel)           |
-| **Session**      | An initialized instance of the Agent Kernel, managed by Monoco. Has state and context.              | **Init System / Daemon** (systemd)  |
-| **Issue**        | An atomic unit of work with state (Open/Done) and strict lifecycle.                                 | **Unit File** (systemd unit)        |
-| **Skill**        | A package of capabilities (tools, prompts, flows) that extends the Agent.                           | **Package** (apt/pacman package)    |
-| **Context File** | Configuration files (e.g., `GEMINI.md`, `AGENTS.md`) defining environment rules and preferences.    | **Config** (`/etc/config`)          |
-| **Agent Client** | The user interface connecting to Monoco (CLI, VSCode, Zed).                                         | **Desktop Environment** (GNOME/KDE) |
+######## 核心架构隐喻: "Linux 发行版"
 
-##### Key Concepts
+| 术语 | 定义 | 隐喻 |
+| :--- | :--- | :--- |
+| **Monoco** | 智能体操作系统发行版。管理策略、工作流和包系统。 | **发行版** (如 Ubuntu, Arch) |
+| **Kimi CLI** | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。 | **内核** (Linux Kernel) |
+| **Session** | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。 | **初始化系统/守护进程** (systemd) |
+| **Issue** | 具有状态（Open/Done）和严格生命周期的原子工作单元。 | **单元文件** (systemd unit) |
+| **Skill** | 扩展智能体功能的工具、提示词和流程包。 | **软件包** (apt/pacman package) |
+| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。 | **配置** (`/etc/config`) |
+| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。 | **桌面环境** (GNOME/KDE) |
 
-###### Context File
+######## 关键概念
 
-Files like `GEMINI.md` that provide the "Constitution" for the Agent. They define the role, scope, and behavioral policies of the Agent within a specific context (Root, Directory, Project).
+######### Context File
 
-###### Headless
+像 `GEMINI.md` 这样的文件，为智能体提供"宪法"。它们定义了特定上下文（根目录、目录、项目）中智能体的角色、范围和行为策略。
 
-Monoco is designed to run without a native GUI. It exposes its capabilities via standard protocols (LSP, ACP) to be consumed by various Clients (IDEs, Terminals).
+######### Headless
 
-###### Universal Shell
+Monoco 设计为无需原生 GUI 即可运行。它通过标准协议（LSP, ACP）暴露其能力，供各种客户端（IDE、终端）使用。
 
-The concept that the CLI is the universal interface for all workflows. Monoco acts as an intelligent layer over the shell.
+######### Universal Shell
+
+CLI 是所有工作流的通用接口的概念。Monoco 作为 shell 的智能层。
+
+### Agent
 
 <!-- MONOCO_GENERATED_END -->
