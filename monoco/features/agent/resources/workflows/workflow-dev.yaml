@@ -1,0 +1,83 @@
+---
+name: workflow-dev
+type: workflow
+description: 开发工作流编排 - 从准备环境到提交评审的完整流程
+version: 1.0.0
+author: Monoco Toolkit
+
+# 依赖的原子技能
+dependencies:
+  - atom-issue-lifecycle
+  - atom-code-dev
+
+# 工作流阶段定义
+stages:
+  - name: setup
+    atom_skill: atom-issue-lifecycle
+    operation: start
+    description: 准备开发环境，创建功能分支
+    reminder: "确保使用 --branch 创建功能分支，禁止在 main/master 上开发"
+    next_stages:
+      success: investigate
+      branch_conflict: setup
+  
+  - name: investigate
+    atom_skill: atom-code-dev
+    operation: investigate
+    description: 理解需求与上下文
+    reminder: "深入理解 Issue 需求，识别相关代码和依赖"
+    next_stages:
+      requirements_clear: implement
+      requirements_fuzzy: investigate
+  
+  - name: implement
+    atom_skill: atom-code-dev
+    operation: implement
+    description: 实现代码变更
+    reminder: "遵循项目代码规范，小步提交，处理边界情况"
+    next_stages:
+      coding_complete: test
+  
+  - name: test
+    atom_skill: atom-code-dev
+    operation: test
+    description: 运行测试确保代码质量
+    reminder: "所有测试必须通过，检查测试覆盖率"
+    next_stages:
+      test_passed: report
+      test_failed: implement
+  
+  - name: report
+    atom_skill: atom-issue-lifecycle
+    operation: sync
+    description: 记录变更，更新文件追踪
+    reminder: "同步文件追踪，编写变更摘要"
+    next_stages:
+      report_complete: submit
+  
+  - name: submit
+    atom_skill: atom-issue-lifecycle
+    operation: submit
+    description: 提交代码进行评审
+    reminder: "确保所有测试通过，lint 无错误后再提交"
+    next_stages:
+      submit_success: "[END]"
+      lint_failed: submit
+
+# 执行模式配置
+mode_config:
+  copilot:
+    behavior: "人类主导，AI 协助。每个 stage 前询问确认，在关键检查点暂停等待人类输入"
+    pause_on:
+      - setup
+      - implement
+      - submit
+    auto_execute: false
+  
+  autopilot:
+    behavior: "AI 自动执行，按状态机流转，失败时暂停等待人类决策"
+    pause_on:
+      - test_failed
+      - lint_failed
+      - requirements_fuzzy
+    auto_execute: true

@@ -15,6 +15,8 @@ related: []
 domains: []
 tags:
 - '#EPIC-0024'
+- '#FEAT-0128'
+- '#FEAT-0129'
 - '#FEAT-0130'
 files: []
 criticality: medium
@@ -203,4 +205,6 @@ version: 1.0.0-deprecated
 - Related: FEAT-0128, FEAT-0129
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+- 2026-01-31: Feature 创建完成，定义了重构 issue-lifecycle-workflow 的方案。
+- 包含两种方案对比：协调器模式 vs 废弃模式，建议采用协调器模式。

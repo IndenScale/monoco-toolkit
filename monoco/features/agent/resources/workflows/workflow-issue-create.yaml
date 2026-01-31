@@ -1,0 +1,72 @@
+---
+name: workflow-issue-create
+type: workflow
+description: Issue 创建工作流编排 - 从 Memo 提取到 Issue 创建
+version: 1.0.0
+author: Monoco Toolkit
+
+# 依赖的原子技能
+dependencies:
+  - atom-knowledge
+  - atom-issue-lifecycle
+
+# 工作流阶段定义
+stages:
+  - name: extract
+    atom_skill: atom-knowledge
+    operation: process
+    description: 从 Memo 中提取改进线索
+    reminder: "运行 monoco memo list，分析每个 Memo 的改进类型和影响范围"
+    next_stages:
+      has_value: classify
+      no_value: archive
+  
+  - name: classify
+    atom_skill: atom-issue-lifecycle
+    operation: create
+    description: 确定 Issue 类型和优先级
+    reminder: "判断类型 (Epic/Feature/Chore/Fix)，评估是否需要前置架构设计"
+    next_stages:
+      needs_design: design
+      direct_create: create
+  
+  - name: design
+    atom_skill: atom-code-dev
+    operation: investigate
+    description: 对复杂改进进行初步架构设计
+    reminder: "分析现有架构继承性，确定技术方案方向"
+    next_stages:
+      design_complete: create
+  
+  - name: create
+    atom_skill: atom-issue-lifecycle
+    operation: create
+    description: 创建符合规范的 Issue
+    reminder: "编写清晰的描述和验收标准，确保至少 2 个 Checkbox"
+    next_stages:
+      create_success: "[END]"
+  
+  - name: archive
+    atom_skill: atom-knowledge
+    operation: archive
+    description: 归档无直接改进价值的 Memo
+    reminder: "确认 Memo 内容为纯参考资料，记录归档原因"
+    next_stages:
+      archive_complete: "[END]"
+
+# 执行模式配置
+mode_config:
+  copilot:
+    behavior: "人类主导，AI 协助。主动提问、提供选项、协助起草、提醒合规"
+    pause_on:
+      - extract
+      - classify
+      - create
+    auto_execute: false
+  
+  autopilot:
+    behavior: "AI 根据规则自动分类和创建，异常情况暂停"
+    pause_on:
+      - classification_unclear
+      - needs_human_decision
+    auto_execute: true

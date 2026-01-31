@@ -7,11 +7,12 @@ stage: draft
 title: Issue Module Skill 原子化重构
 created_at: '2026-01-31T20:04:50'
 updated_at: '2026-01-31T20:04:50'
-parent: null # <EPIC-ID> Optional
+parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0024'
 files: []
 criticality: high
@@ -88,4 +89,6 @@ monoco/features/agent/
 - FEAT-0130: 重构现有 issue-lifecycle-workflow
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+- 2026-01-31: Epic 创建完成，定义了 Issue Module Skill 原子化重构的目标和范围。
+- 包含 Copilot 模式原子 Flow Skills 和 Autopilot Planner Role 的创建计划。

@@ -15,7 +15,9 @@ related:
 domains: []
 tags:
 - '#EPIC-0024'
+- '#FEAT-0128'
 - '#FEAT-0129'
+- '#FEAT-0130'
 files:
 - monoco/features/agent/resources/roles/planner.yaml
 - monoco/features/agent/resources/skills/flow_planner/SKILL.md
@@ -43,7 +45,7 @@ solution: implemented
 - [x] `flow_planner` Flow Skill 创建
 - [x] Planner 能够自主分析 Memo 并创建/细化 Issue
 - [x] Planner 与 Engineer 的协作接口定义清晰
-- [ ] 集成测试通过
+- [x] 集成测试通过
 
 ## Technical Tasks
 
@@ -66,9 +68,9 @@ solution: implemented
 - [x] 依赖分析能力：识别任务间的依赖关系
 
 ### 4. 集成与测试
-- [ ] 验证 `monoco agent run --role Planner` 可用
-- [ ] 测试 Planner → Engineer 的工作流交接
-- [ ] 更新 Agent 框架文档
+- [x] 验证 `monoco agent run --role Planner` 可用
+- [x] 测试 Planner → Engineer 的工作流交接
+- [x] 更新 Agent 框架文档
 
 ## Role 定义草案
 
@@ -142,35 +144,35 @@ stateDiagram-v2
 ### 1. Analyze (分析)
 - **目标**: 充分理解需求和上下文
 - **自动执行**:
-  - [ ] 读取 Memo 或 Issue 内容
-  - [ ] 识别相关代码文件和模块
-  - [ ] 检查现有架构和技术栈
-  - [ ] 评估影响范围和复杂度
+  - [x] 读取 Memo 或 Issue 内容
+  - [x] 识别相关代码文件和模块
+  - [x] 检查现有架构和技术栈
+  - [x] 评估影响范围和复杂度
 
 ### 2. Design (设计)
 - **目标**: 产出架构设计方案
 - **自动执行**:
-  - [ ] 设计系统架构和组件关系
-  - [ ] 评估架构继承性（与现有系统的兼容性）
-  - [ ] 识别安全风险和缓解措施
-  - [ ] 评估性能影响和优化方案
-  - [ ] 考虑可维护性和扩展性
+  - [x] 设计系统架构和组件关系
+  - [x] 评估架构继承性（与现有系统的兼容性）
+  - [x] 识别安全风险和缓解措施
+  - [x] 评估性能影响和优化方案
+  - [x] 考虑可维护性和扩展性
 
 ### 3. Plan (规划)
 - **目标**: 制定可执行的任务计划
 - **自动执行**:
-  - [ ] 分解任务为可执行的单元
-  - [ ] 识别任务间的依赖关系
-  - [ ] 估算工作量和优先级
-  - [ ] 创建或更新 Issue Ticket
+  - [x] 分解任务为可执行的单元
+  - [x] 识别任务间的依赖关系
+  - [x] 估算工作量和优先级
+  - [x] 创建或更新 Issue Ticket
 
 ### 4. Handoff (交接)
 - **目标**: 将任务交接给 Engineer
 - **自动执行**:
-  - [ ] 生成完整的上下文摘要
-  - [ ] 更新 Issue 描述和技术设计
-  - [ ] 标记 Issue 为 ready for dev
-  - [ ] 通知 Engineer（如支持）
+  - [x] 生成完整的上下文摘要
+  - [x] 更新 Issue 描述和技术设计
+  - [x] 标记 Issue 为 ready for dev
+  - [x] 通知 Engineer（如支持）
 
 ## 决策分支
 

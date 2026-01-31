@@ -1,0 +1,94 @@
+---
+name: workflow-review
+type: workflow
+description: 代码评审工作流编排 - 双层防御体系 (Verify + Challenge)
+version: 1.0.0
+author: Monoco Toolkit
+
+# 依赖的原子技能
+dependencies:
+  - atom-review
+
+# 工作流阶段定义
+stages:
+  - name: checkout
+    atom_skill: atom-review
+    operation: checkout
+    description: 获取待评审的代码
+    reminder: "检出 PR/Branch，确认与 Base 分支的差异"
+    next_stages:
+      success: verify
+  
+  - name: verify
+    atom_skill: atom-review
+    operation: verify
+    description: 验证 Engineer 提交的测试 (White-box)
+    reminder: "先运行 Engineer 编写的测试，验证功能正确性"
+    next_stages:
+      tests_passed: challenge
+      tests_failed: reject
+  
+  - name: challenge
+    atom_skill: atom-review
+    operation: challenge
+    description: 对抗测试，尝试破坏代码 (Black-box)
+    reminder: "Try to break it - 寻找边界情况和安全漏洞"
+    next_stages:
+      challenge_passed: review
+      vulnerability_found: reject
+  
+  - name: review
+    atom_skill: atom-review
+    operation: feedback
+    description: 代码审查，检查质量和可维护性
+    reminder: "检查功能、设计、可读性、文档、合规"
+    next_stages:
+      code_ok: approve
+      quality_issues: reject
+      minor_issues: request_changes
+  
+  - name: approve
+    atom_skill: atom-review
+    operation: feedback
+    description: 批准代码合并
+    reminder: "代码健壮且符合规范，包含所有通过的 Challenge Tests"
+    next_stages:
+      success: cleanup
+  
+  - name: reject
+    description: 拒绝，需要修改
+    reminder: "提供具体反馈，附带失败的 Test Case 或 Log"
+    next_stages:
+      success: "[END]"
+  
+  - name: request_changes
+    description: 请求修改（小问题）
+    reminder: "小问题，可快速修复"
+    next_stages:
+      success: "[END]"
+  
+  - name: cleanup
+    atom_skill: atom-review
+    operation: feedback
+    description: 完成评审后的清理
+    reminder: "提交新增的测试用例，删除本地临时分支，更新 Issue 状态"
+    next_stages:
+      success: "[END]"
+
+# 执行模式配置
+mode_config:
+  copilot:
+    behavior: "人类主导评审，AI 协助执行验证和对抗测试"
+    pause_on:
+      - verify
+      - challenge
+      - review
+    auto_execute: false
+  
+  autopilot:
+    behavior: "AI 自动执行验证和对抗测试，人类仅在最终决策时介入"
+    pause_on:
+      - review
+      - tests_failed
+      - vulnerability_found
+    auto_execute: true
