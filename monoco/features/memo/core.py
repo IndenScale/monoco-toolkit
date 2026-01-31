@@ -1,9 +1,10 @@
 import re
 from pathlib import Path
-from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Optional, Any
 import secrets
+from datetime import datetime
 
+from .models import Memo
 
 def is_chinese(text: str) -> bool:
     """Check if the text contains at least one Chinese character."""
@@ -18,7 +19,6 @@ def validate_content_language(content: str, source_lang: str) -> bool:
     if source_lang == "zh":
         return is_chinese(content)
     # For 'en', we generally allow everything but could be more strict.
-    # Requirement is mainly about enforcing 'zh' when configured.
     return True
 
 
@@ -27,7 +27,6 @@ def get_memos_dir(issues_root: Path) -> Path:
     Get the directory for memos.
     Convention: Sibling of Issues directory.
     """
-    # issues_root is usually ".../Issues"
     return issues_root.parent / "Memos"
 
 
@@ -40,107 +39,205 @@ def generate_memo_id() -> str:
     return secrets.token_hex(3)
 
 
-def format_memo(uid: str, content: str, context: Optional[str] = None) -> str:
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    header = f"## [{uid}] {timestamp}"
-
-    body = content.strip()
-
-    if context:
-        body = f"> **Context**: `{context}`\n\n{body}"
-
-    return f"\n{header}\n{body}\n"
-
-
-def add_memo(issues_root: Path, content: str, context: Optional[str] = None) -> str:
+def parse_memo_block(block: str) -> Optional[Memo]:
     """
-    Append a memo to the inbox.
-    Returns the generated UID.
+    Parse a text block into a Memo object.
+    Block format:
+    ## [uid] YYYY-MM-DD HH:MM:SS
+    - **Key**: Value
+    ...
+    Content
     """
-    inbox_path = get_inbox_path(issues_root)
+    lines = block.strip().split("\n")
+    if not lines:
+        return None
+        
+    header = lines[0]
+    match = re.match(r"^## \[([a-f0-9]+)\] (.*?)$", header)
+    if not match:
+        return None
+        
+    uid = match.group(1)
+    ts_str = match.group(2)
+    try:
+        timestamp = datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        timestamp = datetime.now() # Fallback
 
-    if not inbox_path.exists():
-        inbox_path.parent.mkdir(parents=True, exist_ok=True)
-        inbox_path.write_text("# Monoco Memos Inbox\n", encoding="utf-8")
+    content_lines = []
+    metadata = {}
+    
+    # Simple state machine
+    # 0: Header (done)
+    # 1: Metadata
+    # 2: Content
+    
+    state = 1
+    
+    for line in lines[1:]:
+        stripped = line.strip()
+        if state == 1:
+            if not stripped:
+                continue
+            # Check for metadata line: - **Key**: Value
+            meta_match = re.match(r"^\- \*\*([a-zA-Z]+)\*\*: (.*)$", stripped)
+            if meta_match:
+                key = meta_match.group(1).lower()
+                val = meta_match.group(2).strip()
+                metadata[key] = val
+            else:
+                # First non-metadata line marks start of content
+                state = 2
+                content_lines.append(line)
+        elif state == 2:
+            content_lines.append(line)
+            
+    content = "\n".join(content_lines).strip()
+    
+    # Map metadata to model fields
+    # Status map reverse
+    status_raw = metadata.get("status", "[ ] Pending")
+    status = "pending"
+    if "[x] Tracked" in status_raw:
+        status = "tracked"
+    elif "[x] Resolved" in status_raw:
+        status = "resolved"
+    elif "[-] Dismissed" in status_raw:
+        status = "dismissed"
+        
+    return Memo(
+        uid=uid,
+        timestamp=timestamp,
+        content=content,
+        author=metadata.get("from", "User"),
+        source=metadata.get("source", "cli"),
+        type=metadata.get("type", "insight"),
+        status=status,
+        ref=metadata.get("ref"),
+        context=metadata.get("context") # Note: context might need cleanup if it was wrapped in code blocks
+    )
 
-    uid = generate_memo_id()
-    entry = format_memo(uid, content, context)
-
-    with inbox_path.open("a", encoding="utf-8") as f:
-        f.write(entry)
-
-    return uid
-
-
-def list_memos(issues_root: Path) -> List[Dict[str, str]]:
+def load_memos(issues_root: Path) -> List[Memo]:
     """
-    Parse memos from inbox.
+    Parse all memos from inbox.
     """
     inbox_path = get_inbox_path(issues_root)
     if not inbox_path.exists():
         return []
 
     content = inbox_path.read_text(encoding="utf-8")
-
-    # Regex to find headers: ## [uid] timestamp
-    # We split by headers
-
-    pattern = re.compile(r"^## \[([a-f0-9]+)\] (.*?)$", re.MULTILINE)
-
+    
+    # Split by headers: ## [uid]
+    # We use a lookahead or just standard split carefully
+    parts = re.split(r"(^## \[)", content, flags=re.MULTILINE)[1:] # Skip preamble
+    
+    # parts will be like: ['## [', 'abc] 2023...\n...', '## [', 'def] ...']
+    # Reassemble pairs
+    blocks = []
+    for i in range(0, len(parts), 2):
+        if i+1 < len(parts):
+            blocks.append(parts[i] + parts[i+1])
+            
     memos = []
-    matches = list(pattern.finditer(content))
-
-    for i, match in enumerate(matches):
-        uid = match.group(1)
-        timestamp = match.group(2)
-
-        start = match.end()
-        end = matches[i + 1].start() if i + 1 < len(matches) else len(content)
-
-        body = content[start:end].strip()
-
-        memos.append({"id": uid, "timestamp": timestamp, "content": body})
-
+    for block in blocks:
+        memo = parse_memo_block(block)
+        if memo:
+            memos.append(memo)
+            
+    # Sort by timestamp desc? Or keep file order? File order is usually append (time asc).
     return memos
+
+def save_memos(issues_root: Path, memos: List[Memo]) -> None:
+    """
+    Rewrite the inbox file with the given list of memos.
+    """
+    inbox_path = get_inbox_path(issues_root)
+    
+    # Header
+    lines = ["# Monoco Memos Inbox", ""]
+    
+    for memo in memos:
+        lines.append(memo.to_markdown().strip())
+        lines.append("") # Spacer
+        
+    inbox_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def add_memo(
+    issues_root: Path, 
+    content: str, 
+    context: Optional[str] = None,
+    author: str = "User",
+    source: str = "cli",
+    memo_type: str = "insight"
+) -> str:
+    """
+    Append a memo to the inbox.
+    Returns the generated UID.
+    """
+    uid = generate_memo_id()
+    memo = Memo(
+        uid=uid,
+        content=content,
+        context=context,
+        author=author,
+        source=source,
+        type=memo_type
+    )
+    
+    # Append mode is more robust against concurrent reads than rewrite, 
+    # but for consistent formatting we might want to just append string.
+    inbox_path = get_inbox_path(issues_root)
+    
+    if not inbox_path.exists():
+        inbox_path.parent.mkdir(parents=True, exist_ok=True)
+        inbox_path.write_text("# Monoco Memos Inbox\n\n", encoding="utf-8")
+        
+    with inbox_path.open("a", encoding="utf-8") as f:
+        f.write("\n" + memo.to_markdown().strip() + "\n")
+        
+    return uid
+
+
+def update_memo(issues_root: Path, memo_id: str, updates: dict) -> bool:
+    """
+    Update a memo's fields.
+    """
+    memos = load_memos(issues_root)
+    found = False
+    for i, m in enumerate(memos):
+        if m.uid == memo_id:
+            # Apply updates
+            updated_data = m.model_dump()
+            updated_data.update(updates)
+            memos[i] = Memo(**updated_data) # Re-validate
+            found = True
+            break
+            
+    if found:
+        save_memos(issues_root, memos)
+        
+    return found
 
 
 def delete_memo(issues_root: Path, memo_id: str) -> bool:
     """
     Delete a memo by its ID.
-    Returns True if deleted, False if not found.
     """
-    inbox_path = get_inbox_path(issues_root)
-    if not inbox_path.exists():
-        return False
+    memos = load_memos(issues_root)
+    initial_count = len(memos)
+    memos = [m for m in memos if m.uid != memo_id]
+    
+    if len(memos) < initial_count:
+        save_memos(issues_root, memos)
+        return True
+    return False
 
-    content = inbox_path.read_text(encoding="utf-8")
-    pattern = re.compile(r"^## \[([a-f0-9]+)\] (.*?)$", re.MULTILINE)
+# Compatibility shim for cli.py until cli is updated
+# list_memos should return dicts for now ONLY IF we don't update cli.py immediately.
+# But I WILL update cli.py immediately.
+# However, to avoid import errors if tool runs parially, I'll name the new function load_memos
+# and keep list_memos as a wrapper if needed? 
+# No, I will update cli.py next.
 
-    matches = list(pattern.finditer(content))
-    target_idx = -1
-    for i, m in enumerate(matches):
-        if m.group(1) == memo_id:
-            target_idx = i
-            break
 
-    if target_idx == -1:
-        return False
-
-    # Find boundaries
-    start = matches[target_idx].start()
-    # Include the potential newline before the header if it exists
-    if start > 0 and content[start - 1] == "\n":
-        start -= 1
-
-    if target_idx + 1 < len(matches):
-        end = matches[target_idx + 1].start()
-        # Back up if there's a newline before the next header that we should keep?
-        # Actually, if we delete a memo, we should probably remove one "entry block".
-        # Entry blocks are format_memo: \n## header\nbody\n
-        # So we want to remove the leading \n and the trailing parts.
-    else:
-        end = len(content)
-
-    new_content = content[:start] + content[end:]
-    inbox_path.write_text(new_content, encoding="utf-8")
-    return True
