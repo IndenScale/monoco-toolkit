@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Unify Resource Management to Package-Based Architecture
 created_at: '2026-01-31T17:09:08'
-updated_at: '2026-01-31T17:10:10'
+updated_at: 2026-01-31 17:10:11
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -17,6 +17,11 @@ tags:
 files: []
 criticality: high
 opened_at: '2026-01-31T17:09:08'
+isolation:
+  type: branch
+  ref: feat/epic-0023-unify-resource-management-to-package-based-archite
+  path: null
+  created_at: '2026-01-31T17:10:11'
 ---
 
 ## EPIC-0023: Unify Resource Management to Package-Based Architecture
@@ -33,9 +38,18 @@ opened_at: '2026-01-31T17:09:08'
 
 ## Key Results
 - [ ] 所有 Feature 资源均以 Markdown 文件形式存于 Python 包内
-- [ ] `monoco sync` 能够正确生成 `AGENTS.md` 并处理符号链接 (`GEMINI.md` -> `AGENTS.md`)
+- [ ] `monoco sync` 能够正确生成 `AGENTS.md`
+    - [ ] 实现明确的 `Generated` vs `User Maintained` 分割线 (e.g., `<!-- MONOCO_GENERATED_START -->`)
+    - [ ] 解决 Header Level 冲突，实现注入内容的动态标题降级
+    - [ ] 根据 user workspace `i18n.source_lang` 仅生成单一语言内容，避免中英重复
 - [ ] 移除所有 Python 代码中的硬编码 Prompt 字符串
 - [ ] Glossary 模块成功实现并分发
+
+## Technical Tasks
+- [ ] Design & Implement `monoco.core.resource` package
+- [ ] Update `monoco sync` to use new resource discovery logic
+- [ ] Execute FEAT-0126 (Glossary Module) as pilot
+- [ ] Refactor existing features (Issue, Memo, Spike) to new architecture
 
 ## Review Comments
 - Initial draft for the resource management unification epic.
