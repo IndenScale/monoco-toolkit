@@ -43,14 +43,14 @@ isolation:
 - [x] 编写单元测试 `tests/core/test_resource.py`
 
 ## Review Comments
-- Initial creation.
-- **Implementation Status**: Completed implementation of `monoco.core.resource` package with `ResourceFinder` and `ResourceManager`.
-    - Implemented logic scanning resources at `package/resources/lang/type`.
-    - Added support for resource extraction and language-based merging/override.
-- **Verification**: 
-    - Added unit tests in `tests/core/test_resource.py`.
-    - Verified all tests pass with `uv run pytest`.
-- **Additional Fixes**:
-    - Addressed `ImportError` in `test_reliability.py` by implementing missing `ApoptosisManager`.
-    - Fixed 7 regression failures in existing tests caused by recent changes (Hooks defaulting, Roles defaulting, CLI flags).
-- **Self Review**: Code is clean, modular, and fully tested. Ready for merge.
+- 初始创建。
+- **实施状态**: 完成了 `monoco.core.resource` 包的实现，包含 `ResourceFinder` 和 `ResourceManager`。
+    - 实现了扫描 `package/resources/lang/type` 资源的逻辑。
+    - 增加了对资源提取和基于语言的合并/覆盖的支持。
+- **验证**:
+    - 在 `tests/core/test_resource.py` 中添加了单元测试。
+    - 验证了所有测试通过 (`uv run pytest`)。
+- **额外修复**:
+    - 通过实现缺失的 `ApoptosisManager` 解决了 `test_reliability.py` 中的 `ImportError`。
+    - 修复了 7 个因近期变更（Hooks 默认值、角色默认值、CLI 标志）导致的回归测试失败。
+- **自评**: 代码整洁模块化，测试充分。准备合并。
