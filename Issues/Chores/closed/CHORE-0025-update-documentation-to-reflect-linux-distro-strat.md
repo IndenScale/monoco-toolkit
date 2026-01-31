@@ -4,7 +4,7 @@ uid: 3fbbd3
 type: chore
 status: closed
 stage: done
-title: Update Documentation to Reflect Linux Distro Strategy
+title: 更新文档以反映 Linux Distro 战略
 created_at: '2026-01-31T16:42:52'
 updated_at: '2026-01-31T16:49:06'
 parent: EPIC-0000
@@ -25,33 +25,27 @@ isolation:
   created_at: '2026-01-31T16:43:31'
 ---
 
-## CHORE-0025: Update Documentation to Reflect Linux Distro Strategy
+## CHORE-0025: 更新文档以反映 Linux Distro 战略
 
-## Objective
-Use the "Linux Distro" metaphor to clarify Monoco's positioning as a Headless Agent OS.
+## 目标
 
-## Acceptance Criteria
-- [x] GLOSSARY.md defines core terms (Distro, Kernel, Unit)
-- [x] GEMINI.md provides clear policy guidance
-- [x] README.md and README_ZH.md reflect the new strategy
+使用 "Linux Distro" 隐喻来阐明 Monoco 作为 Headless Agent OS 的定位。
+
+## 验收标准
+
+- [x] GLOSSARY.md 定义核心术语（Distro、Kernel、Unit）
+- [x] GEMINI.md 提供清晰的策略指导
+- [x] README.md 和 README_ZH.md 反映新战略
 
 
-## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
+## 技术任务
 
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
-- [x] Create `GLOSSARY.md` with key terms (Distro, Kernel, etc.)
-- [x] Update `GEMINI.md` to reflect the new strategy and terms
-- [x] Update `README.md` and `README_ZH.md` with the "Linux Distro for Agents" manifesto1
+- [x] 创建 `GLOSSARY.md`，包含关键术语（Distro、Kernel 等）
+- [x] 更新 `GEMINI.md` 以反映新战略和术语
+- [x] 使用 "Linux Distro for Agents" 宣言更新 `README.md` 和 `README_ZH.md`
 
 ## Review Comments
-- Updated `GEMINI.md` to be the new Constitution for the Agent Distro.
-- Created `GLOSSARY.md` to define "Distro", "Kernel", "Unit" metaphors.
-- Updated `README.md` and `README_ZH.md` to align with the new strategic positioning.
+
+- 更新 `GEMINI.md` 作为 Agent Distro 的新宪法
+- 创建 `GLOSSARY.md` 定义 "Distro"、"Kernel"、"Unit" 隐喻
+- 更新 `README.md` 和 `README_ZH.md` 以符合新的战略定位

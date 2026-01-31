@@ -53,6 +53,12 @@ test.pdf
 .env
 .monoco/local_config.yaml
 
+# Agent Directories
+.qwen/
+.gemini/
+.claude/
+.agent/
+
 # IDEs
 .vscode/
 .idea/

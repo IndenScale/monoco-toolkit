@@ -1,12 +1,12 @@
 """
-Unit tests for SkillManager multi-skill architecture.
+Unit tests for SkillManager multi-skill architecture with i18n support.
 
 Tests cover:
-- Multi-skill discovery from resources/skills/
+- Multi-skill discovery from resources/{lang}/skills/
 - Flow skill detection and distribution
-- Standard skill backward compatibility
-- Mixed mode (standard + flow skills)
+- Standard skill support
 - Skill metadata type and role fields
+- i18n language support
 """
 
 import shutil
@@ -28,10 +28,10 @@ def temp_project():
 
 @pytest.fixture
 def sample_standard_skill(temp_project):
-    """Create a sample standard skill in resources/en/SKILL.md (legacy pattern)."""
+    """Create a sample standard skill in resources/en/skills/test_standard/SKILL.md."""
     resources_dir = temp_project / "resources"
-    en_dir = resources_dir / "en"
-    en_dir.mkdir(parents=True)
+    skill_dir = resources_dir / "en" / "skills" / "test_standard"
+    skill_dir.mkdir(parents=True)
 
     skill_content = """---
 name: test-standard-skill
@@ -44,15 +44,24 @@ type: standard
 
 This is a standard skill.
 """
-    (en_dir / "SKILL.md").write_text(skill_content)
+    (skill_dir / "SKILL.md").write_text(skill_content)
+    
+    # Also create zh version
+    zh_skill_dir = resources_dir / "zh" / "skills" / "test_standard"
+    zh_skill_dir.mkdir(parents=True)
+    (zh_skill_dir / "SKILL.md").write_text(skill_content)
+    
     return resources_dir
 
 
 @pytest.fixture
 def sample_flow_skill(temp_project):
-    """Create a sample flow skill in resources/skills/flow_test/SKILL.md."""
-    skills_dir = temp_project / "resources" / "skills" / "flow_test"
-    skills_dir.mkdir(parents=True)
+    """Create a sample flow skill in resources/en/skills/flow_test/SKILL.md."""
+    resources_dir = temp_project / "resources"
+    
+    # Create en version
+    skill_dir = resources_dir / "en" / "skills" / "flow_test"
+    skill_dir.mkdir(parents=True)
 
     skill_content = """---
 name: flow-test
@@ -71,8 +80,14 @@ stateDiagram-v2
     End --> [*]
 ```
 """
-    (skills_dir / "SKILL.md").write_text(skill_content)
-    return skills_dir
+    (skill_dir / "SKILL.md").write_text(skill_content)
+    
+    # Create zh version
+    zh_skill_dir = resources_dir / "zh" / "skills" / "flow_test"
+    zh_skill_dir.mkdir(parents=True)
+    (zh_skill_dir / "SKILL.md").write_text(skill_content)
+    
+    return resources_dir
 
 
 @pytest.fixture
@@ -86,22 +101,28 @@ def multiple_flow_skills(temp_project):
         ("flow_reviewer", "reviewer"),
     ]
     for skill_name, role in skills:
-        skill_dir = resources_dir / "skills" / skill_name
+        # Create en version
+        skill_dir = resources_dir / "en" / "skills" / skill_name
         skill_dir.mkdir(parents=True)
         content = f"---\nname: {skill_name}\ndescription: Test\ntype: flow\nrole: {role}\n---\n"
         (skill_dir / "SKILL.md").write_text(content)
+        
+        # Create zh version
+        zh_skill_dir = resources_dir / "zh" / "skills" / skill_name
+        zh_skill_dir.mkdir(parents=True)
+        (zh_skill_dir / "SKILL.md").write_text(content)
 
     return resources_dir
 
 
 @pytest.fixture
 def mixed_skills(temp_project):
-    """Create mixed skills: one standard (legacy) and multiple flow skills."""
+    """Create mixed skills: one standard and multiple flow skills."""
     resources_dir = temp_project / "resources"
 
-    # Standard skill (legacy pattern)
-    en_dir = resources_dir / "en"
-    en_dir.mkdir(parents=True)
+    # Standard skill
+    std_en_dir = resources_dir / "en" / "skills" / "mixed_standard"
+    std_en_dir.mkdir(parents=True)
     standard_content = """---
 name: mixed-standard
 description: Standard skill in mixed setup
@@ -110,14 +131,24 @@ type: standard
 
 # Standard
 """
-    (en_dir / "SKILL.md").write_text(standard_content)
+    (std_en_dir / "SKILL.md").write_text(standard_content)
+    
+    std_zh_dir = resources_dir / "zh" / "skills" / "mixed_standard"
+    std_zh_dir.mkdir(parents=True)
+    (std_zh_dir / "SKILL.md").write_text(standard_content)
 
     # Flow skills
     for skill_name in ["flow_helper", "flow_utils"]:
-        skill_dir = resources_dir / "skills" / skill_name
+        # en version
+        skill_dir = resources_dir / "en" / "skills" / skill_name
         skill_dir.mkdir(parents=True)
         content = f"---\nname: {skill_name}\ndescription: Test\ntype: flow\n---\n"
         (skill_dir / "SKILL.md").write_text(content)
+        
+        # zh version
+        zh_skill_dir = resources_dir / "zh" / "skills" / skill_name
+        zh_skill_dir.mkdir(parents=True)
+        (zh_skill_dir / "SKILL.md").write_text(content)
 
     return resources_dir
 
@@ -166,109 +197,136 @@ class TestSkillTypeAndRole:
 
     def test_skill_get_type_flow(self, temp_project):
         """Test get_type for flow skill."""
-        skill_dir = temp_project / "flow_skill"
-        skill_dir.mkdir()
+        resources_dir = temp_project / "resources"
+        skill_dir = resources_dir / "en" / "skills" / "flow_skill"
+        skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
             "---\nname: test\ndescription: Test\ntype: flow\n---\n"
         )
 
-        skill = Skill(temp_project, skill_dir)
+        skill = Skill(temp_project, "flow_skill", resources_dir)
 
         assert skill.get_type() == "flow"
 
     def test_skill_get_type_standard(self, temp_project):
         """Test get_type for standard skill."""
-        skill_dir = temp_project / "standard_skill"
-        skill_dir.mkdir()
+        resources_dir = temp_project / "resources"
+        skill_dir = resources_dir / "en" / "skills" / "standard_skill"
+        skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
             "---\nname: test\ndescription: Test\ntype: standard\n---\n"
         )
 
-        skill = Skill(temp_project, skill_dir)
+        skill = Skill(temp_project, "standard_skill", resources_dir)
 
         assert skill.get_type() == "standard"
 
     def test_skill_get_type_default(self, temp_project):
         """Test get_type defaults to standard when not specified."""
-        skill_dir = temp_project / "default_skill"
-        skill_dir.mkdir()
+        resources_dir = temp_project / "resources"
+        skill_dir = resources_dir / "en" / "skills" / "default_skill"
+        skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
             "---\nname: test\ndescription: Test\n---\n"
         )
 
-        skill = Skill(temp_project, skill_dir)
+        skill = Skill(temp_project, "default_skill", resources_dir)
 
         assert skill.get_type() == "standard"
 
     def test_skill_get_role(self, temp_project):
         """Test get_role method."""
-        skill_dir = temp_project / "role_skill"
-        skill_dir.mkdir()
+        resources_dir = temp_project / "resources"
+        skill_dir = resources_dir / "en" / "skills" / "role_skill"
+        skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
             "---\nname: test\ndescription: Test\ntype: flow\nrole: engineer\n---\n"
         )
 
-        skill = Skill(temp_project, skill_dir)
+        skill = Skill(temp_project, "role_skill", resources_dir)
 
         assert skill.get_role() == "engineer"
 
     def test_skill_get_role_none(self, temp_project):
         """Test get_role returns None when not set."""
-        skill_dir = temp_project / "no_role_skill"
-        skill_dir.mkdir()
+        resources_dir = temp_project / "resources"
+        skill_dir = resources_dir / "en" / "skills" / "no_role_skill"
+        skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
             "---\nname: test\ndescription: Test\n---\n"
         )
 
-        skill = Skill(temp_project, skill_dir)
+        skill = Skill(temp_project, "no_role_skill", resources_dir)
 
         assert skill.get_role() is None
 
 
-class TestSkillManagerMultiSkillDiscovery:
-    """Tests for SkillManager multi-skill discovery."""
+class TestSkillLanguages:
+    """Tests for Skill language support."""
+
+    def test_get_languages_multiple(self, temp_project):
+        """Test detecting multiple language versions."""
+        resources_dir = temp_project / "resources"
+        
+        # Create en and zh versions
+        (resources_dir / "en" / "skills" / "test_skill").mkdir(parents=True)
+        (resources_dir / "en" / "skills" / "test_skill" / "SKILL.md").write_text(
+            "---\nname: test\n---\n"
+        )
+        (resources_dir / "zh" / "skills" / "test_skill").mkdir(parents=True)
+        (resources_dir / "zh" / "skills" / "test_skill" / "SKILL.md").write_text(
+            "---\nname: test\n---\n"
+        )
+
+        skill = Skill(temp_project, "test_skill", resources_dir)
+        languages = skill.get_languages()
+
+        assert "en" in languages
+        assert "zh" in languages
+        assert len(languages) == 2
+
+    def test_get_languages_single(self, temp_project):
+        """Test detecting single language version."""
+        resources_dir = temp_project / "resources"
+        
+        (resources_dir / "en" / "skills" / "test_skill").mkdir(parents=True)
+        (resources_dir / "en" / "skills" / "test_skill" / "SKILL.md").write_text(
+            "---\nname: test\n---\n"
+        )
+
+        skill = Skill(temp_project, "test_skill", resources_dir)
+        languages = skill.get_languages()
+
+        assert languages == ["en"]
+
+    def test_get_languages_empty(self, temp_project):
+        """Test detecting no language versions."""
+        resources_dir = temp_project / "resources"
+
+        skill = Skill(temp_project, "nonexistent_skill", resources_dir)
+        languages = skill.get_languages()
+
+        assert languages == []
+
+
+class TestSkillManagerDiscovery:
+    """Tests for SkillManager skill discovery."""
 
     def test_discover_flow_skills(self, temp_project, multiple_flow_skills):
         """Test discovering multiple flow skills."""
-        # Create a mock feature
-        class MockFeature:
-            name = "test_feature"
-
-            class __class__:
-                __module__ = "monoco.features.test.adapter"
-
-        manager = SkillManager(
-            temp_project,
-            features=[MockFeature()],
-        )
-
-        # Manually trigger discovery with our test resources
-        manager._discover_multi_skills(multiple_flow_skills, "test")
+        manager = SkillManager(temp_project)
+        manager._discover_skills_in_resources(multiple_flow_skills, "test")
 
         flow_skills = manager.get_flow_skills()
         assert len(flow_skills) == 3
 
         skill_names = {s.name for s in flow_skills}
-        # Note: skill directories are flow_engineer, flow_manager, flow_reviewer
-        # After adding prefix "monoco_flow_", they become monoco_flow_flow_engineer, etc.
-        # The get_flow_skills() filters by type="flow"
         assert len(skill_names) == 3
 
-    def test_discover_standard_skill_legacy(self, temp_project, sample_standard_skill):
-        """Test discovering standard skill with legacy pattern."""
-        class MockFeature:
-            name = "test_feature"
-
-            class __class__:
-                __module__ = "monoco.features.test.adapter"
-
-        manager = SkillManager(
-            temp_project,
-            features=[MockFeature()],
-        )
-
-        # Manually trigger discovery
-        manager._discover_legacy_skill(sample_standard_skill, "test")
+    def test_discover_standard_skill(self, temp_project, sample_standard_skill):
+        """Test discovering standard skill."""
+        manager = SkillManager(temp_project)
+        manager._discover_skills_in_resources(sample_standard_skill, "test")
 
         skills = manager.list_skills()
         assert len(skills) == 1
@@ -276,20 +334,8 @@ class TestSkillManagerMultiSkillDiscovery:
 
     def test_discover_mixed_skills(self, temp_project, mixed_skills):
         """Test discovering mixed standard and flow skills."""
-        class MockFeature:
-            name = "test_feature"
-
-            class __class__:
-                __module__ = "monoco.features.test.adapter"
-
-        manager = SkillManager(
-            temp_project,
-            features=[MockFeature()],
-        )
-
-        # Discover both types
-        manager._discover_multi_skills(mixed_skills, "test")
-        manager._discover_legacy_skill(mixed_skills, "test")
+        manager = SkillManager(temp_project)
+        manager._discover_skills_in_resources(mixed_skills, "test")
 
         all_skills = manager.list_skills()
         flow_skills = manager.get_flow_skills()
@@ -299,111 +345,74 @@ class TestSkillManagerMultiSkillDiscovery:
 
     def test_flow_skill_prefix_custom(self, temp_project, sample_flow_skill):
         """Test custom flow skill prefix."""
-        class MockFeature:
-            name = "test_feature"
-
-            class __class__:
-                __module__ = "monoco.features.test.adapter"
-
         custom_prefix = "custom_"
-        manager = SkillManager(
-            temp_project,
-            features=[MockFeature()],
-            flow_skill_prefix=custom_prefix,
-        )
-
-        resources_dir = temp_project / "resources"
-        manager._discover_multi_skills(resources_dir, "test")
+        manager = SkillManager(temp_project, flow_skill_prefix=custom_prefix)
+        manager._discover_skills_in_resources(sample_flow_skill, "test")
 
         flow_skills = manager.get_flow_skills()
         assert len(flow_skills) == 1
-        assert flow_skills[0].name == "custom_flow_test"
+        # Skill name is "flow_test", with prefix "custom_" it becomes "custom_flow_test"
+        # But the code removes "flow_" prefix first, so it becomes "custom_test"
+        assert flow_skills[0].name == "custom_test"
 
 
 class TestSkillManagerDistribution:
     """Tests for SkillManager skill distribution."""
 
-    def test_distribute_flow_skill(self, temp_project, sample_flow_skill):
-        """Test distributing a flow skill."""
+    def test_distribute_skill(self, temp_project, sample_flow_skill):
+        """Test distributing a skill."""
         skill = Skill(
             root_dir=temp_project,
-            skill_dir=sample_flow_skill,
-            name="monoco_flow_test",
-            skill_file=sample_flow_skill / "SKILL.md",
+            skill_name="flow_test",
+            resources_dir=sample_flow_skill,
         )
+        skill.name = "monoco_flow_flow_test"
 
         target_dir = temp_project / ".agent" / "skills"
 
         manager = SkillManager(temp_project)
-        manager.skills["monoco_flow_test"] = skill
+        manager.skills["monoco_flow_flow_test"] = skill
 
         results = manager.distribute(target_dir, lang="en")
 
-        assert results["monoco_flow_test"] is True
-        assert (target_dir / "monoco_flow_test" / "SKILL.md").exists()
+        assert results["monoco_flow_flow_test"] is True
+        assert (target_dir / "monoco_flow_flow_test" / "SKILL.md").exists()
 
-    def test_distribute_standard_skill(self, temp_project, sample_standard_skill):
-        """Test distributing a standard skill."""
-        skill = Skill(
-            root_dir=temp_project,
-            skill_dir=sample_standard_skill,
-            name="test_standard",
-        )
+    def test_distribute_fallback_to_en(self, temp_project):
+        """Test distributing falls back to 'en' when lang not available."""
+        resources_dir = temp_project / "resources"
+        
+        # Only create en version
+        skill_dir = resources_dir / "en" / "skills" / "test_skill"
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text("---\nname: test\n---\n")
+
+        skill = Skill(temp_project, "test_skill", resources_dir)
 
         target_dir = temp_project / ".agent" / "skills"
 
         manager = SkillManager(temp_project)
-        manager.skills["test_standard"] = skill
+        manager.skills["test_skill"] = skill
 
-        results = manager.distribute(target_dir, lang="en")
+        # Request zh (which doesn't exist), should fallback to en
+        results = manager.distribute(target_dir, lang="zh")
 
-        assert results["test_standard"] is True
-        assert (target_dir / "test_standard" / "SKILL.md").exists()
-
-    def test_distribute_mixed_skills(self, temp_project, mixed_skills):
-        """Test distributing mixed standard and flow skills."""
-        # Create standard skill
-        standard_skill = Skill(
-            root_dir=temp_project,
-            skill_dir=mixed_skills,
-            name="test_mixed",
-        )
-
-        # Create flow skill
-        flow_skill_dir = mixed_skills / "skills" / "flow_helper"
-        flow_skill = Skill(
-            root_dir=temp_project,
-            skill_dir=flow_skill_dir,
-            name="monoco_flow_helper",
-            skill_file=flow_skill_dir / "SKILL.md",
-        )
-
-        target_dir = temp_project / ".agent" / "skills"
-
-        manager = SkillManager(temp_project)
-        manager.skills["test_mixed"] = standard_skill
-        manager.skills["monoco_flow_helper"] = flow_skill
-
-        results = manager.distribute(target_dir, lang="en")
-
-        assert results["test_mixed"] is True
-        assert results["monoco_flow_helper"] is True
-        assert (target_dir / "test_mixed" / "SKILL.md").exists()
-        assert (target_dir / "monoco_flow_helper" / "SKILL.md").exists()
+        assert results["test_skill"] is True
+        assert (target_dir / "test_skill" / "SKILL.md").exists()
 
     def test_distribute_skips_up_to_date(self, temp_project, sample_flow_skill):
         """Test that distribute skips up-to-date skills."""
         skill = Skill(
             root_dir=temp_project,
-            skill_dir=sample_flow_skill,
-            name="monoco_flow_test",
-            skill_file=sample_flow_skill / "SKILL.md",
+            skill_name="flow_test",
+            resources_dir=sample_flow_skill,
         )
+        skill.name = "monoco_flow_flow_test"
 
         target_dir = temp_project / ".agent" / "skills"
 
         manager = SkillManager(temp_project)
-        manager.skills["monoco_flow_test"] = skill
+        manager.skills["monoco_flow_flow_test"] = skill
 
         # First distribute
         manager.distribute(target_dir, lang="en")
@@ -412,21 +421,21 @@ class TestSkillManagerDistribution:
         results = manager.distribute(target_dir, lang="en")
 
         # Should still return True (success), just skip the copy
-        assert results["monoco_flow_test"] is True
+        assert results["monoco_flow_flow_test"] is True
 
     def test_distribute_force_overwrites(self, temp_project, sample_flow_skill):
         """Test that force=True overwrites existing skills."""
         skill = Skill(
             root_dir=temp_project,
-            skill_dir=sample_flow_skill,
-            name="monoco_flow_test",
-            skill_file=sample_flow_skill / "SKILL.md",
+            skill_name="flow_test",
+            resources_dir=sample_flow_skill,
         )
+        skill.name = "monoco_flow_flow_test"
 
         target_dir = temp_project / ".agent" / "skills"
 
         manager = SkillManager(temp_project)
-        manager.skills["monoco_flow_test"] = skill
+        manager.skills["monoco_flow_flow_test"] = skill
 
         # First distribute
         manager.distribute(target_dir, lang="en")
@@ -434,7 +443,7 @@ class TestSkillManagerDistribution:
         # Force distribute should overwrite
         results = manager.distribute(target_dir, lang="en", force=True)
 
-        assert results["monoco_flow_test"] is True
+        assert results["monoco_flow_flow_test"] is True
 
 
 class TestSkillManagerFlowCommands:
@@ -442,8 +451,6 @@ class TestSkillManagerFlowCommands:
 
     def test_get_flow_skill_commands(self, temp_project):
         """Test getting flow skill commands."""
-        # Create flow skills with roles
-        # Note: SkillManager adds "monoco_flow_" prefix, so we use just the role name
         skills_data = [
             ("engineer", "engineer"),
             ("manager", "manager"),
@@ -452,56 +459,27 @@ class TestSkillManagerFlowCommands:
 
         manager = SkillManager(temp_project)
 
+        resources_dir = temp_project / "resources"
         for skill_name, role in skills_data:
-            skill_dir = temp_project / skill_name
-            skill_dir.mkdir()
+            skill_dir = resources_dir / "en" / "skills" / skill_name
+            skill_dir.mkdir(parents=True)
             (skill_dir / "SKILL.md").write_text(
                 f"---\nname: {skill_name}\ndescription: Test\ntype: flow\nrole: {role}\n---\n"
             )
             skill = Skill(
                 root_dir=temp_project,
-                skill_dir=skill_dir,
-                name=skill_name,
-                skill_file=skill_dir / "SKILL.md",
+                skill_name=skill_name,
+                resources_dir=resources_dir,
             )
+            skill.name = skill_name
             manager.skills[skill_name] = skill
 
         commands = manager.get_flow_skill_commands()
 
-        # Commands are extracted from skill names (after removing prefix)
-        # e.g., "engineer" -> "/flow:engineer"
         assert "/flow:engineer" in commands
         assert "/flow:manager" in commands
         assert "/flow:reviewer" in commands
         assert len(commands) == 3
-
-    def test_get_flow_skill_commands_no_role(self, temp_project):
-        """Test getting commands when role is extracted from name."""
-        # Create a skill that simulates the real structure:
-        # Directory: resources/skills/flow_tester/
-        # After prefix: monoco_flow_flow_tester
-        # Extracted role: "flow_tester"[5:] = "tester"
-        skill_dir = temp_project / "flow_tester"
-        skill_dir.mkdir()
-        (skill_dir / "SKILL.md").write_text(
-            "---\nname: flow-tester\ndescription: Test\ntype: flow\n---\n"
-        )
-
-        skill = Skill(
-            root_dir=temp_project,
-            skill_dir=skill_dir,
-            name="monoco_flow_flow_tester",  # After prefix is added
-            skill_file=skill_dir / "SKILL.md",
-        )
-
-        manager = SkillManager(temp_project)
-        manager.skills["monoco_flow_flow_tester"] = skill
-
-        commands = manager.get_flow_skill_commands()
-
-        # "monoco_flow_flow_tester" -> remove prefix "monoco_flow_" -> "flow_tester"
-        # Then remove "flow_" (5 chars) -> "tester"
-        assert "/flow:tester" in commands
 
     def test_get_flow_skill_commands_empty(self, temp_project):
         """Test getting commands when no flow skills exist."""
@@ -555,13 +533,14 @@ class TestSkillManagerListSkills:
     def test_list_skills(self, temp_project):
         """Test listing all skills."""
         manager = SkillManager(temp_project)
+        resources_dir = temp_project / "resources"
 
         # Add some skills
         for skill_name in ["skill_a", "skill_b", "skill_c"]:
-            skill_dir = temp_project / skill_name
-            skill_dir.mkdir()
+            skill_dir = resources_dir / "en" / "skills" / skill_name
+            skill_dir.mkdir(parents=True)
             (skill_dir / "SKILL.md").write_text("---\nname: test\n---\n")
-            skill = Skill(temp_project, skill_dir, name=skill_name)
+            skill = Skill(temp_project, skill_name, resources_dir)
             manager.skills[skill_name] = skill
 
         skills = manager.list_skills()
@@ -573,23 +552,24 @@ class TestSkillManagerListSkills:
     def test_list_skills_by_type(self, temp_project):
         """Test listing skills filtered by type."""
         manager = SkillManager(temp_project)
+        resources_dir = temp_project / "resources"
 
         # Add standard skill
-        std_dir = temp_project / "standard_skill"
-        std_dir.mkdir()
+        std_dir = resources_dir / "en" / "skills" / "standard_skill"
+        std_dir.mkdir(parents=True)
         (std_dir / "SKILL.md").write_text(
             "---\nname: test\ndescription: Test\ntype: standard\n---\n"
         )
-        std_skill = Skill(temp_project, std_dir, name="standard_skill")
+        std_skill = Skill(temp_project, "standard_skill", resources_dir)
         manager.skills["standard_skill"] = std_skill
 
         # Add flow skill
-        flow_dir = temp_project / "flow_skill"
-        flow_dir.mkdir()
+        flow_dir = resources_dir / "en" / "skills" / "flow_skill"
+        flow_dir.mkdir(parents=True)
         (flow_dir / "SKILL.md").write_text(
             "---\nname: test\ndescription: Test\ntype: flow\n---\n"
         )
-        flow_skill = Skill(temp_project, flow_dir, name="flow_skill")
+        flow_skill = Skill(temp_project, "flow_skill", resources_dir)
         manager.skills["flow_skill"] = flow_skill
 
         standard_skills = manager.list_skills_by_type("standard")
@@ -601,32 +581,6 @@ class TestSkillManagerListSkills:
         assert flow_skills[0].name == "flow_skill"
 
 
-class TestSkillCustomNameAndFile:
-    """Tests for Skill custom name and skill_file parameters."""
-
-    def test_skill_custom_name(self, temp_project):
-        """Test skill with custom name."""
-        skill_dir = temp_project / "original_name"
-        skill_dir.mkdir()
-        (skill_dir / "SKILL.md").write_text("---\nname: test\n---\n")
-
-        skill = Skill(temp_project, skill_dir, name="custom_name")
-
-        assert skill.name == "custom_name"
-        assert skill.skill_dir.name == "original_name"
-
-    def test_skill_custom_skill_file(self, temp_project):
-        """Test skill with custom skill_file path."""
-        skill_dir = temp_project / "skill"
-        custom_file = temp_project / "custom" / "SKILL.md"
-        custom_file.parent.mkdir(parents=True)
-        custom_file.write_text("---\nname: test\n---\n")
-
-        skill = Skill(temp_project, skill_dir, skill_file=custom_file)
-
-        assert skill.skill_file == custom_file
-
-
 class TestIntegration:
     """Integration tests for the complete multi-skill workflow."""
 
@@ -634,20 +588,10 @@ class TestIntegration:
         self, temp_project, mixed_skills
     ):
         """Test complete workflow with both standard and flow skills."""
-        class MockFeature:
-            name = "test_feature"
-
-            class __class__:
-                __module__ = "monoco.features.test.adapter"
-
-        manager = SkillManager(
-            temp_project,
-            features=[MockFeature()],
-        )
-
+        manager = SkillManager(temp_project)
+        
         # Discover skills
-        manager._discover_multi_skills(mixed_skills, "test")
-        manager._discover_legacy_skill(mixed_skills, "test")
+        manager._discover_skills_in_resources(mixed_skills, "test")
 
         # Verify discovery
         assert len(manager.list_skills()) == 3
@@ -660,44 +604,47 @@ class TestIntegration:
         assert all(results.values())
 
         # Verify distribution
-        # Note: The legacy skill name is determined by metadata.name or feature name
-        # From the output: "mixed_standard/SKILL.md" -> skill name is "mixed_standard"
-        assert (target_dir / "mixed_standard" / "SKILL.md").exists()  # Standard (legacy)
-        assert (target_dir / "monoco_flow_flow_helper" / "SKILL.md").exists()  # Flow
-        assert (target_dir / "monoco_flow_flow_utils" / "SKILL.md").exists()  # Flow
+        assert (target_dir / "test_mixed_standard" / "SKILL.md").exists()  # Standard
+        assert (target_dir / "monoco_flow_helper" / "SKILL.md").exists()  # Flow (flow_ prefix removed)
+        assert (target_dir / "monoco_flow_utils" / "SKILL.md").exists()  # Flow (flow_ prefix removed)
 
         # Cleanup
         manager.cleanup(target_dir)
 
         # Verify cleanup
-        assert not (target_dir / "test").exists()
+        assert not (target_dir / "test_mixed_standard").exists()
         assert not (target_dir / "monoco_flow_helper").exists()
 
-    def test_backward_compatibility_legacy_only(
-        self, temp_project, sample_standard_skill
-    ):
-        """Test backward compatibility with legacy single-skill pattern."""
-        class MockFeature:
-            name = "test_feature"
-
-            class __class__:
-                __module__ = "monoco.features.test.adapter"
-
-        manager = SkillManager(
-            temp_project,
-            features=[MockFeature()],
+    def test_full_workflow_i18n(self, temp_project):
+        """Test complete workflow with i18n support."""
+        resources_dir = temp_project / "resources"
+        
+        # Create skill with both en and zh versions
+        (resources_dir / "en" / "skills" / "i18n_skill").mkdir(parents=True)
+        (resources_dir / "en" / "skills" / "i18n_skill" / "SKILL.md").write_text(
+            "---\nname: i18n-skill\ndescription: English version\ntype: standard\n---\n# English\n"
+        )
+        (resources_dir / "zh" / "skills" / "i18n_skill").mkdir(parents=True)
+        (resources_dir / "zh" / "skills" / "i18n_skill" / "SKILL.md").write_text(
+            "---\nname: i18n-skill\ndescription: 中文版本\ntype: standard\n---\n# 中文\n"
         )
 
-        # Discover legacy skill
-        manager._discover_legacy_skill(sample_standard_skill, "test")
+        manager = SkillManager(temp_project)
+        manager._discover_skills_in_resources(resources_dir, "test")
 
-        # Verify
-        skills = manager.list_skills()
-        assert len(skills) == 1
-        assert skills[0].get_type() == "standard"
+        # Verify both languages detected
+        skill = manager.get_skill("test_i18n_skill")
+        assert skill is not None
+        languages = skill.get_languages()
+        assert "en" in languages
+        assert "zh" in languages
 
-        # Distribute
+        # Distribute zh version
         target_dir = temp_project / ".agent" / "skills"
-        results = manager.distribute(target_dir, lang="en")
+        results = manager.distribute(target_dir, lang="zh")
+        assert results["test_i18n_skill"] is True
+        assert (target_dir / "test_i18n_skill" / "SKILL.md").exists()
 
-        assert results["test"] is True
+        # Distribute en version (should overwrite)
+        results = manager.distribute(target_dir, lang="en", force=True)
+        assert results["test_i18n_skill"] is True

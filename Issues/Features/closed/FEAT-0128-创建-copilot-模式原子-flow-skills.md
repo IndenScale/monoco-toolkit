@@ -16,6 +16,8 @@ domains: []
 tags:
 - '#EPIC-0024'
 - '#FEAT-0128'
+- '#FEAT-0129'
+- '#FEAT-0130'
 files:
 - monoco/features/issue/resources/skills/issue_create_workflow/SKILL.md
 - monoco/features/issue/resources/skills/issue_refine_workflow/SKILL.md

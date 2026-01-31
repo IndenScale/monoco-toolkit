@@ -40,4 +40,6 @@ class FeatureRegistry:
         
         from monoco.features.glossary.adapter import GlossaryFeature
         cls.register(GlossaryFeature())
-        pass
+
+        from monoco.features.agent.adapter import AgentFeature
+        cls.register(AgentFeature())
