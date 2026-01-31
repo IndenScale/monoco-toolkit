@@ -1,0 +1,41 @@
+---
+id: EPIC-0023
+uid: f8428d
+type: epic
+status: open
+stage: doing
+title: Unify Resource Management to Package-Based Architecture
+created_at: '2026-01-31T17:09:08'
+updated_at: '2026-01-31T17:10:10'
+parent: EPIC-0000
+dependencies: []
+related: []
+domains: []
+tags:
+- '#EPIC-0023'
+- '#EPIC-0000'
+files: []
+criticality: high
+opened_at: '2026-01-31T17:09:08'
+---
+
+## EPIC-0023: Unify Resource Management to Package-Based Architecture
+
+## Objective
+重构 Monoco 的资源管理机制，从硬编码/散乱模式迁移到统一的 **Package-Based Architecture**。
+确立 "Monoco Sync" 作为核心的分发机制，将 Python 包内的资源（Prompt, Rules, Skills）动态安装/更新到用户工作区。
+
+## Scope
+- **Standard**: 定义Feature资源的目录结构规范 (`monoco/features/{module}/resources/{lang}/...`)。
+- **Core**: 重构 `monoco sync` 命令，支持基于 Feature 的资源发现与注入。
+- **Migration**: 将现有模块（Issue, Memo, Spike）迁移到新架构。
+- **New Feature**: 实现 Glossary 模块作为架构样板。
+
+## Key Results
+- [ ] 所有 Feature 资源均以 Markdown 文件形式存于 Python 包内
+- [ ] `monoco sync` 能够正确生成 `AGENTS.md` 并处理符号链接 (`GEMINI.md` -> `AGENTS.md`)
+- [ ] 移除所有 Python 代码中的硬编码 Prompt 字符串
+- [ ] Glossary 模块成功实现并分发
+
+## Review Comments
+- Initial draft for the resource management unification epic.
