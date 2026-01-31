@@ -659,6 +659,8 @@ def update_issue(
     path.write_text(new_content)
 
     # 3. Handle physical move if status changed
+    # Save old path before move for git tracking
+    old_path_before_move = path
     if status and status != current_status:
         # Move file
         prefix = issue_id.split("-")[0].upper()
@@ -702,17 +704,16 @@ def update_issue(
         # Only auto-commit if we're in a git repo
         git_service = IssueGitService(project_root)
         if git_service.is_git_repository():
-            # Determine old path if status changed (file was moved)
+            # Use the saved old path before file move for git tracking
             old_path_for_git = None
-            if status and status != current_status:
-                # The original path before move
-                old_path_for_git = find_issue_path(issues_root, issue_id)
+            if status and status != current_status and old_path_before_move != path:
+                old_path_for_git = old_path_before_move
 
             commit_result = git_service.commit_issue_change(
                 issue_id=issue_id,
                 action=action,
                 issue_file_path=path,
-                old_file_path=old_path_for_git if old_path_for_git != path else None,
+                old_file_path=old_path_for_git,
                 no_commit=no_commit,
             )
             # Attach commit result to metadata for optional inspection
