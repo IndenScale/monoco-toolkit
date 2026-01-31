@@ -46,6 +46,12 @@ def sync_command(
         help="Specific file to update (default: auto-detect from config or standard files)",
     ),
     check: bool = typer.Option(False, "--check", help="Dry run check mode"),
+    workflows: bool = typer.Option(
+        False,
+        "--workflows",
+        "-w",
+        help="Also distribute Flow Skills as Antigravity Workflows to .agent/workflows/",
+    ),
 ):
     """
     Synchronize Agent Environment (System Prompts & Skills).
@@ -155,6 +161,26 @@ def sync_command(
         console.print(
             "[yellow]No agent frameworks detected. Skipping skill distribution.[/yellow]"
         )
+
+    # 5. Distribute Workflows (if --workflows flag is set)
+    if workflows:
+        console.print("[bold blue]Distributing Flow Skills as Workflows...[/bold blue]")
+        
+        try:
+            workflow_results = skill_manager.distribute_workflows(force=False, lang=skill_lang)
+            success_count = sum(1 for v in workflow_results.values() if v)
+            if workflow_results:
+                console.print(
+                    f"[green]  ✓ Distributed {success_count}/{len(workflow_results)} workflows to .agent/workflows/[/green]"
+                )
+            else:
+                console.print(
+                    "[yellow]  No Flow Skills found to convert[/yellow]"
+                )
+        except Exception as e:
+            console.print(
+                f"[red]  Failed to distribute workflows: {e}[/red]"
+            )
 
     # 4. Determine Targets
     targets = _get_targets(root, config, target)
@@ -269,4 +295,18 @@ def uninstall_command(
     else:
         console.print(
             "[yellow]No agent frameworks detected. Skipping skill cleanup.[/yellow]"
+        )
+
+    # 3. Clean up Workflows
+    console.print("[bold blue]Cleaning up distributed workflows...[/bold blue]")
+    
+    try:
+        removed_count = skill_manager.cleanup_workflows()
+        if removed_count > 0:
+            console.print(
+                f"[green]  ✓ Removed {removed_count} workflows from .agent/workflows/[/green]"
+            )
+    except Exception as e:
+        console.print(
+            f"[red]  Failed to clean workflows: {e}[/red]"
         )
