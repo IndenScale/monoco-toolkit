@@ -480,6 +480,7 @@ class FeatureLoader:
 
             # Instantiate the feature
             instance = feature_class()
+            instance._state = LifecycleState.LOADED
             self._loaded[name] = instance
             self.registry.register(instance)
 
