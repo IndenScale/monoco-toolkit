@@ -60,12 +60,33 @@ Linter 在运行时统计当前项目的总活跃 Issue 数和 Epic 数。
 
 ### 检查清单
 
-- [ ] **Stats**: 在 Linter 中实现全库统计功能（Count Epics/Issues）。
-- [ ] **Rule Implementation**: 实现 `DomainCoverageRule`。
+- [x] **Stats**: 在 Linter 中实现全库统计功能（Count Epics/Issues）。
+- [x] **Rule Implementation**: 实现 `DomainCoverageRule`。
   - Check: `if (stats.epics > 32 or stats.issues > 128) and (untracked_ratio > 0.25): raise Violation`.
-- [ ] **Inheritance Logic**:
+- [x] **Inheritance Logic**:
   - 修改 Validator，当检查 Feature 的 Domain 时，如果为空，尝试获取 Parent 的 Domain。
   - 如果 Parent 也没有 Domain 且处于严格模式，则报错。
 
 ## Review Comments
-*No comments yet.*
+
+### Implementation Summary (2026-02-01)
+
+1. **Scale-Aware Thresholds**: 在 `linter.py` 的 `check_integrity()` 函数中实现了项目规模统计，当检测到 `num_issues > 128` 或 `num_epics > 32` 时激活严格模式。
+
+2. **Domain Coverage Rule**: 在 `linter.py` 中添加了项目级别的 Domain 覆盖率检查。计算未分配 Domain 的 Epic 比例，如果超过 25% 则报错。
+
+3. **Auto-Inheritance Logic**: 在 `validator.py` 的 `_validate_domains()` 中实现了逻辑继承：
+   - 如果子 Issue 没有 domains 但 parent 有，则视为有效继承（不产生错误）
+   - 如果子 Issue 和 parent 都没有 domains，且处于大规模模式，则报错
+
+4. **Tests**: 添加了 5 个测试用例验证：
+   - 大规模项目低覆盖率触发错误
+   - 足够覆盖率通过检查
+   - 子 Issue 逻辑继承 parent 的 Domain
+   - 子 Issue 和 parent 都无 Domain 时报错
+   - 小规模项目不触发严格检查
+
+**Files Modified**:
+- `monoco/features/issue/linter.py`: 添加项目级别 Domain 覆盖率检查
+- `monoco/features/issue/validator.py`: 添加 `all_issues` 参数和继承逻辑
+- `tests/features/issue/test_domain_governance.py`: 新增测试文件
