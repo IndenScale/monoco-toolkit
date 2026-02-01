@@ -21,6 +21,10 @@ opened_at: '2026-02-01T20:57:03'
 
 ## FEAT-0145: Integrate Git Hooks for Development Workflow
 
+## 背景与目标
+
+将 Git Hooks 集成到 Monoco 工作流中，确保开发规范在提交阶段被强制执行。当前缺少必要字段（如关闭 Issue 的 `solution` 字段）的问题可能破坏索引器或依赖关系，手动修复容易出错。通过 `pre-commit` 钩子运行 `monoco issue lint` 可以在提交前拦截不合规的更改，`pre-push` 钩子可检查关键 Issue 状态（可选配置）。本功能需要创建钩子模板、实现安装逻辑，并确保与现有 Monoco 命令的集成。
+
 ## Objective
 Integrate Git Hooks (pre-commit, pre-push) into the Monoco workflow to ensure data integrity and process compliance.
 

@@ -18,6 +18,10 @@ tags:
 
 > Implement the core Daemon Orchestration Layer as defined in EPIC-0025.
 
+## 背景说明
+
+本功能旨在实现 Monoco 守护进程编排层，负责管理代理生命周期和任务调度。守护进程需要从被动服务演进为主动编排器，监控输入源（如收件箱）、调度工作线程（工程师、架构师），并处理故障情况（验尸分析）。该编排层是 Monoco 作为"智能体操作系统发行版"的核心组件，确保代理会话的高效管理和资源分配。
+
 ## Context
 The Monoco Daemon needs to evolve from a passive service to an active orchestrator that manages the lifecycle of Agents ("Kernel Workers"). This involves monitoring inputs (Inbox), scheduling workers (Engineers, Architects), and handling failures (Autopsy).
 

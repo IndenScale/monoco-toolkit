@@ -21,6 +21,10 @@ opened_at: '2026-02-01T20:56:51'
 
 ## FEAT-0143: Support Block-Level Language Detection in i18n Linter
 
+## 背景与目标
+
+本功能旨在增强 i18n linter 的语言检测能力，支持块级检测以避免混合语言文件中的误报。当前 linter 可能将中文文档中的英文内容（如代码块、英文评审备注）误判为"未翻译"或"语言错误"。需要尊重块边界（如段落、代码块、标题章节）进行语言检测，确保评审备注章节中的英文文本不会被错误地标记为问题，同时正确处理代码块的语言检测策略。
+
 ## Objective
 Enhance the i18n linter to support block-level language detection to avoid false positives in mixed-language Markdown files.
 

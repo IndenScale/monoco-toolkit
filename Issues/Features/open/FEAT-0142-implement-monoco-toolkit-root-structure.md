@@ -26,6 +26,10 @@ isolation:
 
 ## FEAT-0142: Implement Monoco Toolkit Root Structure
 
+## 背景与目标
+
+规范 Monoco Toolkit 仓库的根目录结构，确保"发行版"架构清晰可见。Monoco 作为"智能体操作系统发行版"，其目录结构需要体现这一定位。本功能需要创建 `TREE.md` 文件记录关键目录用途（如 `.monoco`、Issues、monoco、docs 等），确保 README 引用该结构概述，并检查 `monoco/core/setup.py` 初始化逻辑与目录结构保持一致，使开发者能够快速理解项目架构。
+
 ## Objective
 Formalize and document the root directory structure of the Monoco Toolkit repository. This ensures that the "Distro" architecture is clearly visible and enforced.
 
