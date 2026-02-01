@@ -94,3 +94,14 @@ Linter 在运行时统计当前项目的总活跃 Issue 数和 Epic 数。
 - `monoco/features/issue/linter.py`: 添加项目级别 Domain 覆盖率检查
 - `monoco/features/issue/validator.py`: 添加 `all_issues` 参数和继承逻辑
 - `tests/features/issue/test_domain_governance.py`: 新增测试文件
+
+## Delivery
+<!-- Monoco Auto Generated -->
+**Commits (1)**:
+- `2c919f6` feat(issue): FEAT-0136 enforce domain governance rules and auto-inheritance
+
+**Touched Files (4)**:
+- `Issues/Features/open/FEAT-0136-enforce-domain-governance-rules-and-auto-inheritan.md`
+- `monoco/features/issue/linter.py`
+- `monoco/features/issue/validator.py`
+- `tests/features/issue/test_domain_governance.py`
