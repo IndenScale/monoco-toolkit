@@ -25,22 +25,56 @@ class SessionManager:
         self._sessions: Dict[str, RuntimeSession] = {}
         self.project_root = project_root or find_monoco_root()
         self.config = config
-        
+
+        self.sessions_dir = self.project_root / ".monoco" / "sessions"
+        self.sessions_dir.mkdir(parents=True, exist_ok=True)
+
         # Initialize hook registry
         self.hook_registry = hook_registry or get_registry()
-        
+
         # Load hooks from config if available
         self._load_hooks_from_config()
+
+        # Load persisted sessions
+        self._load_sessions()
+
+    def _load_sessions(self):
+        """Load sessions from disk."""
+        import json
+
+        for session_file in self.sessions_dir.glob("*.json"):
+            try:
+                data = json.loads(session_file.read_text())
+                session_model = Session(**data)
+                # Rehydrate as Observer
+                runtime = RuntimeSession(
+                    session_model,
+                    worker=None,  # No worker for loaded sessions initially (Observer mode)
+                    hook_registry=self.hook_registry,
+                    project_root=self.project_root,
+                    save_callback=self._save_session,
+                )
+                self._sessions[session_model.id] = runtime
+                # Check status immediately to see if it's still running
+                runtime.refresh_status()
+            except Exception as e:
+                print(f"Failed to load session {session_file}: {e}")
+
+    def _save_session(self, session: Session):
+        """Save session to disk."""
+        file_path = self.sessions_dir / f"{session.id}.json"
+        file_path.write_text(session.model_dump_json(indent=2))
 
     def _load_hooks_from_config(self) -> None:
         """Load and register hooks from configuration."""
         if self.config is None:
             try:
                 from monoco.core.config import get_config
+
                 self.config = get_config(str(self.project_root))
             except Exception:
                 return
-        
+
         # Load hooks from config
         if self.config and hasattr(self.config, "session_hooks"):
             hooks_config = self.config.session_hooks
@@ -67,12 +101,14 @@ class SessionManager:
 
         worker = Worker(role, issue_id, timeout=timeout)
         runtime = RuntimeSession(
-            session_model, 
+            session_model,
             worker,
             hook_registry=self.hook_registry,
             project_root=self.project_root,
+            save_callback=self._save_session,
         )
         self._sessions[session_id] = runtime
+        self._save_session(session_model)
         return runtime
 
     def get_session(self, session_id: str) -> Optional[RuntimeSession]:
@@ -87,5 +123,5 @@ class SessionManager:
         session = self.get_session(session_id)
         if session:
             session.terminate()
-            # We might want to keep the record for a while, so don't delete immediately
+            # We keep the record for history
             # del self._sessions[session_id]
