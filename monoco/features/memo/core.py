@@ -29,15 +29,12 @@ def get_memos_dir(issues_root: Path) -> Path:
     """
     return issues_root.parent / "Memos"
 
-
 def get_inbox_path(issues_root: Path) -> Path:
     return get_memos_dir(issues_root) / "inbox.md"
-
 
 def generate_memo_id() -> str:
     """Generate a short 6-char ID."""
     return secrets.token_hex(3)
-
 
 def parse_memo_block(block: str) -> Optional[Memo]:
     """
@@ -198,7 +195,6 @@ def add_memo(
         
     return uid
 
-
 def update_memo(issues_root: Path, memo_id: str, updates: dict) -> bool:
     """
     Update a memo's fields.
@@ -219,7 +215,6 @@ def update_memo(issues_root: Path, memo_id: str, updates: dict) -> bool:
         
     return found
 
-
 def delete_memo(issues_root: Path, memo_id: str) -> bool:
     """
     Delete a memo by its ID.
@@ -233,11 +228,5 @@ def delete_memo(issues_root: Path, memo_id: str) -> bool:
         return True
     return False
 
-# Compatibility shim for cli.py until cli is updated
-# list_memos should return dicts for now ONLY IF we don't update cli.py immediately.
-# But I WILL update cli.py immediately.
-# However, to avoid import errors if tool runs parially, I'll name the new function load_memos
-# and keep list_memos as a wrapper if needed? 
-# No, I will update cli.py next.
-
-
+# Compatibility shim
+list_memos = load_memos

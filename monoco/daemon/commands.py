@@ -15,6 +15,9 @@ def serve(
         False, "--reload", "-r", help="Enable auto-reload for dev"
     ),
     root: Optional[str] = typer.Option(None, "--root", help="Workspace root directory"),
+    max_agents: Optional[int] = typer.Option(
+        None, "--max-agents", help="Override global maximum concurrent agents (default: 3)"
+    ),
 ):
     """
     Start the Monoco Daemon server.
@@ -25,6 +28,13 @@ def serve(
         os.environ["MONOCO_SERVER_ROOT"] = str(Path(root).resolve())
         print_output(
             f"Workspace Root: {os.environ['MONOCO_SERVER_ROOT']}", title="Monoco Serve"
+        )
+    
+    # Set max agents override if provided
+    if max_agents is not None:
+        os.environ["MONOCO_MAX_AGENTS"] = str(max_agents)
+        print_output(
+            f"Max Agents: {max_agents}", title="Monoco Serve"
         )
 
     print_output(
