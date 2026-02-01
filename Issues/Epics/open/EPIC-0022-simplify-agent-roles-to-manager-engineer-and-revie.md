@@ -7,14 +7,16 @@ stage: doing
 title: 简化 Agent 角色为 Manager, Engineer 和 Reviewer
 created_at: '2026-01-30T16:42:46'
 updated_at: '2026-01-30T16:42:46'
-parent: EPIC-0000
+parent: EPIC-0025
 dependencies: []
-related: []
+related:
+- EPIC-0024
 domains:
 - AgentScheduling
 tags:
 - '#EPIC-0022'
-- '#EPIC-0000'
+- '#EPIC-0025'
+- '#EPIC-0024'
 files: []
 opened_at: '2026-01-30T16:42:46'
 progress: 5/5
@@ -25,6 +27,8 @@ files_count: 0
 
 ## 目标 (Objective)
 将当前的 Agent 角色划分简化为三个核心角色：**Manager**、**Engineer** 和 **Reviewer**。这种精简的结构旨在理清责任并提高开发工作流的效率。
+
+> **注意**: 请参阅 `EPIC-0024` (Issue Module Skill 原子化重构)，该 Epic 引入了 **Copilot / Autopilot** 双模式，并针对 Autopilot 模式重新引入了 **Planner** 角色。本 Epic (EPIC-0022) 的简化原则主要适用于 Copilot 模式或早期设计阶段。最终的角色定义以 EPIC-0024 为准。
 
 角色定义如下：
 1.  **Manager**: 负责需求分析。将来自用户或 Memo Inbox 的模糊需求转化为结构化、清晰的 Issue Ticket。及时与用户交互以澄清歧义。

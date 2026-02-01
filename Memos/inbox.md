@@ -274,3 +274,9 @@ kimi-cli Agent Flow vs Hooks区别：Agent Flow通过/flow:name执行Mermaid/D2�
 - **Context**: ```test/file:10```
 
 测试反馈：Memo增强功能测试
+
+## [02f30a] 2026-02-01 10:24:21
+- **Status**: [ ] Pending
+- **Context**: `Feature Request`
+
+Feature: 增加 monoco issue domain CRUD 命令行工具
