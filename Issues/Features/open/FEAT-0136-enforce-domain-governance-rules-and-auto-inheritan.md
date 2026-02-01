@@ -6,7 +6,7 @@ status: open
 stage: review
 title: Enforce Domain Governance Rules and Auto-Inheritance
 created_at: '2026-02-01T09:37:27'
-updated_at: '2026-02-01T10:11:58'
+updated_at: '2026-02-01T10:12:08'
 priority: medium
 parent: EPIC-0026
 dependencies: []
