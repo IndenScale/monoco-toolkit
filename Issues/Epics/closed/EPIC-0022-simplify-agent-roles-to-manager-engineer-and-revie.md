@@ -12,7 +12,7 @@ dependencies: []
 related:
 - FEAT-0148
 domains:
-- AgentScheduling
+- AgentEmpowerment
 tags:
 - '#EPIC-0022'
 - '#EPIC-0025'

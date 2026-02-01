@@ -11,7 +11,7 @@ parent: EPIC-0000
 dependencies: []
 related: []
 domains:
-- AgentOnboarding
+- AgentEmpowerment
 tags:
 - '#EPIC-0000'
 - '#EPIC-0029'
