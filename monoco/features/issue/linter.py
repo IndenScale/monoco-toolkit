@@ -29,7 +29,7 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
 
     # 1. Collection Phase (Build Index)
     # Helper to collect issues from a project
-    def collect_project_issues(project_issues_root: Path, project_name: str = "local"):
+    def collect_project_issues(project_issues_root: Path, project_name: str = "local", include_archived: bool = False):
         project_issues = []
         project_diagnostics = []
         for subdir in ["Epics", "Features", "Chores", "Fixes", "Domains"]:
@@ -128,7 +128,13 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                 else:
                     # Standard Issues (Epics/Features/etc)
                     files = []
-                    for status in ["open", "closed", "backlog"]:
+                    # Standard status directories
+                    status_dirs = ["open", "closed", "backlog"]
+                    # Include archived if requested (for full validation)
+                    if include_archived:
+                        status_dirs.append("archived")
+                    
+                    for status in status_dirs:
                         status_dir = d / status
                         if status_dir.exists():
                             files.extend(status_dir.rglob("*.md"))

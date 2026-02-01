@@ -727,6 +727,9 @@ def list_cmd(
     workspace: bool = typer.Option(
         False, "--workspace", "-w", help="Include issues from workspace members"
     ),
+    all: bool = typer.Option(
+        False, "--all", "-a", help="Include archived issues in the list"
+    ),
     json: AgentOutput = False,
 ):
     """List issues in a table format with filtering."""
@@ -742,7 +745,7 @@ def list_cmd(
 
     target_status = status.lower() if status else "open"
 
-    issues = core.list_issues(issues_root, recursive_workspace=workspace)
+    issues = core.list_issues(issues_root, recursive_workspace=workspace, include_archived=all)
     filtered = []
 
     for i in issues:
