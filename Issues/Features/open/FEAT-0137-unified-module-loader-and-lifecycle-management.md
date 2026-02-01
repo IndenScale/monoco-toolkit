@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Unified Module Loader and Lifecycle Management
 created_at: '2026-02-01T10:30:04'
-updated_at: '2026-02-01T23:38:07'
+updated_at: 2026-02-01 23:38:08
 parent: EPIC-0028
 dependencies: []
 related: []
@@ -19,8 +19,13 @@ tags:
 - loader
 files: []
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-01T10:30:04'
+isolation:
+  type: branch
+  ref: feat/feat-0137-unified-module-loader-and-lifecycle-management
+  path: null
+  created_at: '2026-02-01T23:38:08'
 ---
 
 ## FEAT-0137: Unified Module Loader and Lifecycle Management

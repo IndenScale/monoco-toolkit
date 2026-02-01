@@ -3,15 +3,14 @@ id: EPIC-0028
 uid: 0312cd
 type: epic
 status: open
-stage: draft
+stage: doing
 title: 'Toolkit Core Maintenance Q1: Kernel & Module Loader'
 created_at: '2026-02-01T10:29:00'
 updated_at: '2026-02-01T10:29:00'
 parent: EPIC-0000
 dependencies: []
 related: []
-
-domains: 
+domains:
 - Foundation
 tags:
 - '#EPIC-0028'
@@ -24,6 +23,8 @@ tags:
 files: []
 criticality: high
 opened_at: '2026-02-01T10:29:00'
+progress: 1/2
+files_count: 0
 ---
 
 ## EPIC-0028: Toolkit Core Maintenance Q1: Kernel & Module Loader

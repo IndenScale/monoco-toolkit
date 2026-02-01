@@ -79,6 +79,113 @@ class StateMachine:
             allowed.append(t)
         return allowed
 
+    def get_available_solutions(self, from_status: str, from_stage: Optional[str]) -> List[str]:
+        """Get all valid solutions for transitions from the current state."""
+        solutions = set()
+        for t in self.transitions:
+            # Skip non-transitions (agent actions with same status/stage)
+            if t.from_status is None and t.from_stage is None:
+                continue
+
+            if t.from_status and t.from_status != from_status:
+                continue
+            if t.from_stage and t.from_stage != from_stage:
+                continue
+
+            if t.required_solution:
+                solutions.add(t.required_solution)
+        return sorted(list(solutions))
+
+    def get_valid_transitions_from_state(
+        self, from_status: str, from_stage: Optional[str]
+    ) -> List[TransitionConfig]:
+        """Get all valid transitions from a given state."""
+        valid = []
+        for t in self.transitions:
+            # Skip non-transitions (agent actions with same status/stage)
+            if t.from_status is None and t.from_stage is None:
+                continue
+
+            if t.from_status and t.from_status != from_status:
+                continue
+            if t.from_stage and t.from_stage != from_stage:
+                continue
+
+            valid.append(t)
+        return valid
+
+    def _format_state(self, status: str, stage: Optional[str]) -> str:
+        """Format a state for display in error messages."""
+        # Handle Enum values
+        if hasattr(status, 'value'):
+            status = status.value
+        if stage and hasattr(stage, 'value'):
+            stage = stage.value
+        
+        if stage:
+            return f"{status}({stage})"
+        return status
+
+    def _build_transition_not_found_error(
+        self,
+        from_status: str,
+        from_stage: Optional[str],
+        to_status: str,
+        to_stage: Optional[str],
+    ) -> str:
+        """Build a descriptive error message when no transition is found."""
+        current_state = self._format_state(from_status, from_stage)
+        target_state = self._format_state(to_status, to_stage)
+
+        error_msg = (
+            f"Lifecycle Policy: Transition from '{current_state}' "
+            f"to '{target_state}' is not defined."
+        )
+
+        # Add available transitions hint
+        valid_transitions = self.get_valid_transitions_from_state(from_status, from_stage)
+        if valid_transitions:
+            error_msg += " Available transitions from this state:"
+            for t in valid_transitions:
+                target = self._format_state(t.to_status, t.to_stage)
+                if t.required_solution:
+                    error_msg += f"\n  - {t.name}: '{current_state}' -> '{target}' (requires --solution {t.required_solution})"
+                else:
+                    error_msg += f"\n  - {t.name}: '{current_state}' -> '{target}'"
+        else:
+            error_msg += " No transitions are available from this state."
+
+        return error_msg
+
+    def _build_invalid_solution_error(
+        self,
+        transition: TransitionConfig,
+        provided_solution: Optional[str],
+        from_status: str,
+        from_stage: Optional[str],
+    ) -> str:
+        """Build a descriptive error message when solution is invalid or missing."""
+        current_state = self._format_state(from_status, from_stage)
+        target_state = self._format_state(transition.to_status, transition.to_stage)
+
+        if provided_solution:
+            error_msg = (
+                f"Lifecycle Policy: Transition '{transition.label}' from '{current_state}' "
+                f"to '{target_state}' does not accept solution '{provided_solution}'."
+            )
+        else:
+            error_msg = (
+                f"Lifecycle Policy: Transition '{transition.label}' from '{current_state}' "
+                f"to '{target_state}' requires a solution."
+            )
+
+        # Get valid solutions for this transition
+        valid_solutions = self.get_available_solutions(from_status, from_stage)
+        if valid_solutions:
+            error_msg += f" Valid solutions are: {', '.join(valid_solutions)}."
+
+        return error_msg
+
     def find_transition(
         self,
         from_status: str,
@@ -134,7 +241,7 @@ class StateMachine:
         to_stage: Optional[str],
         solution: Optional[str] = None,
         meta: Optional[IssueMetadata] = None,
-    ) -> Optional[TransitionConfig]:
+    ) -> TransitionConfig:
         """
         Validate if a transition is allowed. Raises ValueError if not.
         If meta is provided, also validates criticality-based policies.
@@ -149,13 +256,16 @@ class StateMachine:
 
         if not transition:
             raise ValueError(
-                f"Lifecycle Policy: Transition from {from_status}({from_stage if from_stage else 'None'}) "
-                f"to {to_status}({to_stage if to_stage else 'None'}) is not defined."
+                self._build_transition_not_found_error(
+                    from_status, from_stage, to_status, to_stage
+                )
             )
 
         if transition.required_solution and solution != transition.required_solution:
             raise ValueError(
-                f"Lifecycle Policy: Transition '{transition.label}' requires solution '{transition.required_solution}'."
+                self._build_invalid_solution_error(
+                    transition, solution, from_status, from_stage
+                )
             )
 
         # Criticality-based policy checks
