@@ -3,10 +3,10 @@ id: FEAT-0136
 uid: 16590c
 type: feature
 status: open
-stage: doing
+stage: review
 title: Enforce Domain Governance Rules and Auto-Inheritance
 created_at: '2026-02-01T09:37:27'
-updated_at: '2026-02-01T10:11:55'
+updated_at: '2026-02-01T10:11:58'
 priority: medium
 parent: EPIC-0026
 dependencies: []
@@ -22,6 +22,10 @@ tags:
 files: []
 criticality: medium
 opened_at: '2026-02-01T09:37:27'
+isolation:
+  type: branch
+  ref: feat/feat-0136-enforce-domain-governance-rules-and-auto-inheritan
+  created_at: '2026-02-01T10:11:55'
 owner: IndenScale
 ---
 
