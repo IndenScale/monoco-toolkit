@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Enhanced Memo Bus as Feedback Loop
 created_at: '2026-02-01T00:56:00'
-updated_at: '2026-02-01T01:02:12'
+updated_at: 2026-02-01 01:02:12
 parent: EPIC-0025
 dependencies: []
 related:
@@ -25,10 +25,6 @@ files: []
 criticality: high
 closed_at: '2026-02-01T01:02:12'
 solution: implemented
-isolation:
-  type: branch
-  ref: feat/feat-0131-enhanced-memo-bus-as-feedback-loop
-  created_at: '2026-02-01T00:56:00'
 ---
 
 ## FEAT-0131: Enhanced Memo Bus as Feedback Loop
