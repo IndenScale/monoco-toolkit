@@ -10,7 +10,7 @@ class ApoptosisManager:
     def __init__(self, session_manager: SessionManager):
         self.session_manager = session_manager
         
-    def trigger_apoptosis(self, session_id: str) -> None:
+    def trigger_apoptosis(self, session_id: str, failure_reason: str = "Unknown") -> None:
         """
         Trigger the apoptosis process for a given session.
         1. Mark session as crashed.
@@ -24,14 +24,14 @@ class ApoptosisManager:
         session.model.status = "crashed"
         
         # 2. Start Coroner
-        self._perform_autopsy(session)
+        self._perform_autopsy(session, failure_reason)
         
-    def _perform_autopsy(self, victim_session):
+    def _perform_autopsy(self, victim_session, failure_reason: str):
         coroner_role = RoleTemplate(
             name="Coroner",
             description="Investigates cause of death for failed agents.",
             trigger="system.crash",
-            goal="Determine why the previous agent failed.",
+            goal=f"Determine why the previous agent failed. Reason: {failure_reason}",
             system_prompt="You are the Coroner. Analyze the logs.",
             engine="gemini"
         )

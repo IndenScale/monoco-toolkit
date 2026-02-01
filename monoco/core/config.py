@@ -136,9 +136,21 @@ class CriticalityConfig(BaseModel):
         return self
 
 
+class AgentConcurrencyConfig(BaseModel):
+    """Configuration for agent concurrency limits (semaphore-based)."""
+    global_max: int = Field(default=3, description="Global maximum concurrent agents across all roles")
+    engineer: int = Field(default=1, description="Maximum concurrent Engineer agents")
+    architect: int = Field(default=1, description="Maximum concurrent Architect agents")
+    reviewer: int = Field(default=1, description="Maximum concurrent Reviewer agents")
+    planner: int = Field(default=1, description="Maximum concurrent Planner agents")
+    # Cool-down configuration
+    failure_cooldown_seconds: int = Field(default=60, description="Cooldown period after a failure before retrying")
+
+
 class AgentConfig(BaseModel):
     """Configuration for AI Agents."""
     timeout_seconds: int = Field(default=900, description="Global timeout for agent sessions")
+    concurrency: AgentConcurrencyConfig = Field(default_factory=AgentConcurrencyConfig)
 
 
 class IssueSchemaConfig(BaseModel):
