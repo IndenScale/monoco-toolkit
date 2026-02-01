@@ -80,6 +80,12 @@ monoco session start
 - **Protocols**: LSP / ACP (for IDE integration)
 - **Storage**: Local Filesystem (Markdown/YAML)
 
+## 📁 Project Structure
+
+Monoco follows a "Distro" architecture that separates **State** (`Issues/`), **Config** (`.monoco/`), and **Logic** (`monoco/`).
+
+For a detailed breakdown of the directory structure, see **[TREE.md](./TREE.md)**.
+
 ## 🤝 Contributing
 
 Monoco is open-source. We are building the standard distribution for the Agentic era.
