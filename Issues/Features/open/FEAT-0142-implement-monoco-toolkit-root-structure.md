@@ -6,7 +6,7 @@ status: open
 stage: review
 title: Implement Monoco Toolkit Root Structure
 created_at: '2026-02-01T20:53:20'
-updated_at: '2026-02-01T23:21:37'
+updated_at: '2026-02-01T23:26:39'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -18,6 +18,7 @@ files:
 - TREE.md
 - README.md
 criticality: medium
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-01T20:53:20'
 isolation:
   type: branch
