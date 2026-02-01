@@ -3,7 +3,7 @@ id: FEAT-0136
 uid: 16590c
 type: feature
 status: open
-stage: todo
+stage: draft
 title: Enforce Domain Governance Rules and Auto-Inheritance
 created_at: '2026-02-01T09:37:27'
 updated_at: '2026-02-01T09:37:27'

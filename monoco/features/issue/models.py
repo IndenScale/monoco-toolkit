@@ -224,8 +224,7 @@ class IssueMetadata(BaseModel):
             # Stage normalization
             if "stage" in v and isinstance(v["stage"], str):
                 v["stage"] = v["stage"].lower()
-                if v["stage"] == "todo":
-                    v["stage"] = "draft"
+
                 try:
                     v["stage"] = IssueStage(v["stage"])
                 except ValueError:
