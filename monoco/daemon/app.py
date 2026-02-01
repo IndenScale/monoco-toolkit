@@ -9,6 +9,7 @@ from typing import Optional, List, Dict
 from monoco.daemon.services import Broadcaster, ProjectManager
 from monoco.core.git import GitMonitor
 from monoco.core.config import get_config, ConfigMonitor, ConfigScope, get_config_path
+from monoco.daemon.scheduler import SchedulerService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,6 +35,7 @@ broadcaster = Broadcaster()
 git_monitor: GitMonitor | None = None
 config_monitors: List[ConfigMonitor] = []
 project_manager: ProjectManager | None = None
+scheduler_service: SchedulerService | None = None
 
 
 @asynccontextmanager
@@ -41,7 +43,7 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Monoco Daemon services...")
 
-    global project_manager, git_monitor, config_monitors
+    global project_manager, git_monitor, config_monitors, scheduler_service
     # Use MONOCO_SERVER_ROOT if set, otherwise CWD
     env_root = os.getenv("MONOCO_SERVER_ROOT")
     workspace_root = Path(env_root) if env_root else Path.cwd()
@@ -72,6 +74,10 @@ async def lifespan(app: FastAPI):
     ]
 
     await project_manager.start_all()
+    # Start Scheduler
+    scheduler_service = SchedulerService(project_manager)
+    await scheduler_service.start()
+    
     git_task = asyncio.create_task(git_monitor.start())
     config_tasks = [asyncio.create_task(m.start()) for m in config_monitors]
 
@@ -84,6 +90,8 @@ async def lifespan(app: FastAPI):
         m.stop()
     if project_manager:
         project_manager.stop_all()
+    if scheduler_service:
+        scheduler_service.stop()
 
     await git_task
     await asyncio.gather(*config_tasks)
