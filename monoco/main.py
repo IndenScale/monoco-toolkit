@@ -1,7 +1,23 @@
 import os
 import typer
 from typing import Optional
+from pathlib import Path
 from monoco.core.output import print_output
+from monoco.core.loader import FeatureLoader, FeatureContext
+
+# Global feature loader for CLI lifecycle management
+_feature_loader: Optional[FeatureLoader] = None
+
+
+def get_feature_loader() -> FeatureLoader:
+    """Get or initialize the global feature loader."""
+    global _feature_loader
+    if _feature_loader is None:
+        _feature_loader = FeatureLoader()
+        # Discover features but defer loading until needed
+        _feature_loader.discover()
+    return _feature_loader
+
 
 app = typer.Typer(
     name="monoco",
@@ -89,7 +105,26 @@ def main(
             if (discovered / ".monoco").exists():
                 config_root = str(discovered)
 
-        get_config(project_root=config_root, require_project=require_workspace)
+        config = get_config(project_root=config_root, require_project=require_workspace)
+        
+        # Initialize FeatureLoader and mount features when workspace is available
+        if require_workspace and config_root:
+            loader = get_feature_loader()
+            # Load all features (with lazy loading for non-critical features)
+            loader.load_all(lazy=True)
+            # Create feature context and mount all features
+            feature_context = FeatureContext(
+                root=Path(config_root),
+                config=config.model_dump(),
+                registry=loader.registry,
+            )
+            errors = loader.mount_all(feature_context)
+            if errors:
+                from rich.console import Console
+                console = Console()
+                for name, error in errors.items():
+                    console.print(f"[yellow]Warning: Failed to mount feature '{name}': {error}[/yellow]")
+                    
     except FileNotFoundError as e:
         # Graceful exit for workspace errors
         from rich.console import Console
