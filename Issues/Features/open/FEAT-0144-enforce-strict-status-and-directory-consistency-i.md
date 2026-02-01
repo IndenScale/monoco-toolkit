@@ -3,10 +3,10 @@ id: FEAT-0144
 uid: 47e02d
 type: feature
 status: open
-stage: doing
+stage: review
 title: Enforce Strict Status and Directory Consistency in Issue Linter
 created_at: '2026-02-01T20:56:58'
-updated_at: '2026-02-01T23:15:31'
+updated_at: '2026-02-01T23:36:10'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,7 +16,6 @@ tags:
 - '#FEAT-0144'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-01T20:56:58'
 ---
 
@@ -34,15 +33,33 @@ Enhance `monoco issue lint` to enforce strict consistency rules between Issue st
 - The current linter failed to catch these anomalies.
 
 ## Acceptance Criteria
-- [ ] Linter reports error if `status` is not one of: `open`, `closed`, `backlog`.
-- [ ] Linter reports error if file is not in the directory matching its status.
-- [ ] Linter reports error for illegal directory names (e.g., `done/`).
-- [ ] Linter verifies `stage` is valid (e.g., `draft`, `doing`, `review`, `done`).
+- [x] Linter reports error if `status` is not one of: `open`, `closed`, `backlog`.
+- [x] Linter reports error if file is not in the directory matching its status.
+- [x] Linter reports error for illegal directory names (e.g., `done/`).
+- [x] Linter verifies `stage` is valid (e.g., `draft`, `doing`, `review`, `done`).
 
 ## Technical Tasks
-- [ ] Update `monoco/features/issue/linter.py`.
-- [ ] Add validation rules for Status enum.
-- [ ] Add validation rules for Directory <-> Status mapping.
-- [ ] Add unit tests for invalid cases.
+- [x] Update `monoco/features/issue/linter.py`.
+- [x] Add validation rules for Status enum.
+- [x] Add validation rules for Directory <-> Status mapping.
+- [x] Add unit tests for invalid cases.
 
 ## Review Comments
+
+### 2026-02-01
+
+**实现总结**:
+1. **Status Enum 验证**: Pydantic 模型 `IssueMetadata` 已在解析时严格验证 status 必须为 `open`, `closed`, `backlog` 或 `archived`。无效值会在解析阶段抛出 `ValidationError`，linter 会将其报告为 Schema Error。
+
+2. **Stage Enum 验证**: 同理，stage 必须为 `draft`, `doing`, `review`, `done` 或 `freezed`。无效值会在解析阶段被拒绝。
+
+3. **目录与 Status 一致性验证**: 在 `linter.py` 中添加了 `Status/Directory Mismatch` 检查。当 Issue 文件的 `status` 字段与其所在目录（如 `open/`, `closed/`, `backlog/`）不匹配时，会报告错误。
+
+4. **非法目录名检测**: 在 `linter.py` 中添加了 `Illegal Directory` 检查。当发现 `done/`, `freeze/`, `freezed/` 等非法目录名时，会报告错误并提示正确的目录名。
+
+5. **单元测试**: 添加了 `tests/features/issue/test_linter_strict_status.py`，包含 12 个测试用例，覆盖所有新验证规则。
+
+**修改的文件**:
+- `monoco/features/issue/linter.py`: 添加目录/status一致性检查和非法目录名检测
+- `monoco/features/issue/validator.py`: 添加 `_validate_status_enum` 和 `_validate_stage_enum` 方法（作为额外的防御层）
+- `tests/features/issue/test_linter_strict_status.py`: 新增测试文件
