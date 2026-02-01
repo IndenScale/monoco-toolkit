@@ -29,28 +29,19 @@ solution: implemented
 
 ## Objective
 <!-- Describe the "Why" and "What" clearly. Focus on value. -->
-Add the `solution` field to Issue templates and CLI update command to ensure consistency with the close command and improve issue lifecycle management.
+在 Issue 模版和 CLI update 命令中增加 `solution` 字段，以确保与 close 命令的一致性，并改进 Issue 生命周期管理。 (Add the `solution` field to Issue templates and CLI update command to ensure consistency with the close command and improve issue lifecycle management.)
 
 ## Acceptance Criteria
 <!-- Define binary conditions for success. -->
-- [x] Issue template includes `solution` field with helpful comment
-- [x] CLI `update` command supports `--solution` parameter
-- [x] Solution field is properly serialized in YAML frontmatter
+- [x] Issue 模版包含带有帮助说明的 `solution` 字段
+- [x] CLI `update` 命令支持 `--solution` 参数
+- [x] Solution 字段正确序列化至 YAML frontmatter
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
 
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
-- [x] Add `solution` field to `_serialize_metadata()` in `core.py`
-- [x] Add YAML comment for solution field guidance
-- [x] Add `--solution` parameter to CLI `update` command
+- [x] 在 `core.py` 的 `_serialize_metadata()` 中添加 `solution` 字段
+- [x] 添加 YAML 注释以提供 solution 字段指引
+- [x] 向 CLI `update` 命令添加 `--solution` 参数
 
 ## Review Comments
 Fix completed. The solution field is now:
