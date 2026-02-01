@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Enforce Strict Status and Directory Consistency in Issue Linter
 created_at: '2026-02-01T20:56:58'
-updated_at: '2026-02-01T23:15:31'
+updated_at: '2026-02-01T23:20:50'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,7 +16,6 @@ tags:
 - '#FEAT-0144'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-01T20:56:58'
 ---
 
