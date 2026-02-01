@@ -3,10 +3,10 @@ id: FEAT-0137
 uid: c4bb18
 type: feature
 status: open
-stage: doing
+stage: review
 title: Unified Module Loader and Lifecycle Management
 created_at: '2026-02-01T10:30:04'
-updated_at: 2026-02-01 23:45:00
+updated_at: '2026-02-01T23:45:28'
 parent: EPIC-0028
 dependencies: []
 related: []
@@ -28,12 +28,11 @@ files:
 - monoco/features/i18n/adapter.py
 - monoco/features/glossary/adapter.py
 criticality: high
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-01T10:30:04'
 isolation:
   type: branch
   ref: feat/feat-0137-unified-module-loader-and-lifecycle-management
-  path: null
   created_at: '2026-02-01T23:38:08'
 ---
 
