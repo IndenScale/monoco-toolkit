@@ -6,10 +6,8 @@ status: open
 stage: review
 title: Implement Issue Archival Strategy and Lint Support
 created_at: '2026-02-01T09:37:27'
-updated_at: '2026-02-01T09:37:27'
-opened_at: '2026-02-01T09:37:27'
+updated_at: '2026-02-01T09:42:32'
 priority: medium
-owner: IndenScale
 parent: EPIC-0026
 dependencies: []
 related: []
@@ -22,6 +20,8 @@ tags:
 - performance
 files: []
 criticality: medium
+opened_at: '2026-02-01T09:37:27'
+owner: IndenScale
 ---
 
 ## FEAT-0135: Implement Issue Archival Strategy and Lint Support
