@@ -7,12 +7,12 @@ stage: draft
 title: Integrate Git Hooks for Development Workflow
 created_at: '2026-02-01T20:57:03'
 updated_at: '2026-02-01T20:57:03'
-parent: EPIC-0031
+parent: EPIC-0025
 dependencies: []
 related: []
 domains: []
 tags:
-- '#EPIC-0031'
+- '#EPIC-0025'
 - '#FEAT-0145'
 files: []
 criticality: medium

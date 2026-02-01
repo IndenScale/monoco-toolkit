@@ -1,12 +1,12 @@
 ---
-id: EPIC-0024
+id: FEAT-0148
 uid: 326e1a
-type: epic
+type: feature
 status: open
 stage: draft
 title: Issue Module Skill 原子化重构
 created_at: '2026-01-31T20:04:50'
-updated_at: '2026-01-31T20:04:50'
+updated_at: '2026-02-01T22:42:00'
 parent: EPIC-0027
 dependencies: []
 related: []
@@ -14,13 +14,13 @@ domains:
 - IssueGovernance
 tags:
 - '#EPIC-0027'
-- '#EPIC-0024'
+- '#FEAT-0148'
 files: []
 criticality: high
 opened_at: '2026-01-31T20:04:50'
 ---
 
-## EPIC-0024: Issue Module Skill 原子化重构
+## FEAT-0148: Issue Module Skill 原子化重构
 
 ## Objective
 

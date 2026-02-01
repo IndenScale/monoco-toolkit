@@ -1,25 +1,28 @@
 ---
-id: EPIC-0031
+id: FEAT-0149
 uid: 7750aa
-type: epic
+type: feature
 status: open
 stage: draft
 title: Design and Implement Monoco Native Hook System
 created_at: '2026-02-01T20:56:45'
-updated_at: '2026-02-01T20:56:45'
-parent: EPIC-0000
+updated_at: '2026-02-01T22:42:00'
+parent: EPIC-0025
 dependencies: []
-related: []
-domains: []
+related:
+- EPIC-0025
+domains:
+- AgentScheduling
 tags:
 - '#EPIC-0000'
-- '#EPIC-0031'
+- '#EPIC-0025'
+- '#FEAT-0149'
 files: []
 criticality: high
 opened_at: '2026-02-01T20:56:45'
 ---
 
-## EPIC-0031: Design and Implement Monoco Native Hook System
+## FEAT-0149: Design and Implement Monoco Native Hook System
 
 ## 背景与目标
 

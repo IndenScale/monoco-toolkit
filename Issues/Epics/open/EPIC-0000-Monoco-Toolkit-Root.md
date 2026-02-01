@@ -31,11 +31,12 @@ files_count: 0
 
 | ID | Domain | 职责 |
 |----|--------|------|
-| 0025 | AgentScheduling | Daemon & Agent Orchestrator |
-| 0027 | IssueGovernance | Issue Governance & Quality |
-| 0028 | Infrastructure | Kernel & Runtime Core |
-| 0029 | AgentOnboarding | Knowledge Engine & Memory System |
-| 0030 | DevEx | Developer Experience & Tooling |
+| 0025 | AgentScheduling | Daemon & Orchestrator (Agent OS Kernel) |
+| 0027 | IssueGovernance | Issue Governance & Quality (Process & SOP) |
+| 0028 | Infrastructure  | Core Runtime & Module System (Stability) |
+| 0029 | AgentOnboarding | Knowledge Engine & Memory (Second Brain) |
+| 0030 | DevEx           | Internal Developer Experience (Productivity) |
+| 0032 | CollaborationBus| Collaboration Bus (Human-AI Interaction) |
 
 **历史归档**: `.archives/issues-archive-20260201.tar.gz`
 
