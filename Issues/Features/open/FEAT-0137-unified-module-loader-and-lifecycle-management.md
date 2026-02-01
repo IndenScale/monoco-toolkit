@@ -3,10 +3,10 @@ id: FEAT-0137
 uid: c4bb18
 type: feature
 status: open
-stage: draft
+stage: doing
 title: Unified Module Loader and Lifecycle Management
 created_at: '2026-02-01T10:30:04'
-updated_at: '2026-02-01T10:30:04'
+updated_at: '2026-02-01T23:15:05'
 parent: EPIC-0028
 dependencies: []
 related: []
@@ -19,6 +19,7 @@ tags:
 - loader
 files: []
 criticality: high
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-01T10:30:04'
 ---
 
