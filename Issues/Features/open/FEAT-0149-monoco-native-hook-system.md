@@ -12,7 +12,7 @@ dependencies: []
 related:
 - EPIC-0025
 domains:
-- AgentScheduling
+- AgentEmpowerment
 tags:
 - '#EPIC-0000'
 - '#EPIC-0025'

@@ -11,7 +11,7 @@ parent: EPIC-0027
 dependencies: []
 related: []
 domains:
-- IssueGovernance
+- IssueSystem
 tags:
 - '#CHORE-0027'
 - '#EPIC-0027'
@@ -47,9 +47,9 @@ solution: implemented
 - [x] **Draft**: 输出一份 "Epic Refactoring Plan"，列出拟定的新 Narrative Epics 及其职责边界，供架构师评审。
 
 ### 1. Identify Narratives
-- [x] **Infrastructure**: 确认 `EPIC-0028` 为 Kernel/Runtime 叙事。
-- [x] **IssueGovernance**: 确认 `EPIC-0027` 为 Governance 叙事。
-- [x] **AgentScheduling**: 确认 Daemon 叙事 Epic。
+- [x] **Foundation**: 确认 `EPIC-0028` 为 Kernel/Runtime 叙事。
+- [x] **IssueSystem**: 确认 `EPIC-0027` 为 Governance 叙事。
+- [x] **AgentEmpowerment**: 确认 Daemon 叙事 Epic。
 - [x] **Knowledge**: 创建/确认 Knowledge Engine 叙事 (Memo/Spike/Docs) → **EPIC-0029**。
 - [x] **DevEx**: 创建/确认 Developer Experience 叙事 (IDE/CLI Tools) → **EPIC-0030**。
 
@@ -57,8 +57,8 @@ solution: implemented
 - [x] **Scan**: 扫描所有 `status: open` 且 `parent: EPIC-0000/null` 的存量 Issue。
 - [x] **Classify**: 根据 Domain 重新挂载到对应的 Narrative Epic。
   - FEAT-0134 → EPIC-0030 (DevEx)
-  - FEAT-0137 → EPIC-0028 (Infrastructure)
-  - CHORE-0027 → EPIC-0027 (IssueGovernance)
+  - FEAT-0137 → EPIC-0028 (Foundation)
+  - CHORE-0027 → EPIC-0027 (IssueSystem)
 
 ### 3. Legacy Cleanup — **彻底删除**
 - [x] **Archive**: 创建带时间戳的压缩归档 `.archives/issues-archive-20260201.tar.gz`
@@ -82,16 +82,16 @@ solution: implemented
 
 1. **确立了 6 个核心 Narrative Epics**:
    - EPIC-0000: Monoco Toolkit Root (根节点)
-   - EPIC-0027: Issue Governance & Quality (IssueGovernance)
-   - EPIC-0028: Kernel & Runtime Core (Infrastructure)
-   - Daemon & Agent Orchestrator (AgentScheduling)
-   - EPIC-0029: Knowledge Engine & Memory System (AgentOnboarding)
+   - EPIC-0027: Issue Governance & Quality (IssueSystem)
+   - EPIC-0028: Kernel & Runtime Core (Foundation)
+   - Daemon & Agent Orchestrator (AgentEmpowerment)
+   - EPIC-0029: Knowledge Engine & Memory System (AgentEmpowerment)
    - EPIC-0030: Developer Experience & Tooling (DevEx)
 
 2. **Open Issues 已重新挂载**:
    - FEAT-0134 → EPIC-0030 (DevEx)
-   - FEAT-0137 → EPIC-0028 (Infrastructure)
-   - CHORE-0027 → EPIC-0027 (IssueGovernance)
+   - FEAT-0137 → EPIC-0028 (Foundation)
+   - CHORE-0027 → EPIC-0027 (IssueSystem)
 
 3. **中间层 Epic**: 已挂载到对应 Narrative Epic
 
@@ -103,7 +103,7 @@ solution: implemented
 ```
 EPIC-0000 (Root)
 ├── Daemon & Agent Orchestrator Epic
-├── EPIC-0027 (Issue Governance)
+├── EPIC-0027 (Issue System)
 │   └── CHORE-0027 (This Task)
 ├── EPIC-0028 (Kernel & Runtime)
 │   └── FEAT-0137 (Module Loader)

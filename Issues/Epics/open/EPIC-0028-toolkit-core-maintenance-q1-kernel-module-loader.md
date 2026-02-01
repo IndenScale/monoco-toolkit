@@ -12,7 +12,7 @@ dependencies: []
 related: []
 
 domains: 
-- Infrastructure
+- Foundation
 tags:
 - '#EPIC-0028'
 - '#EPIC-0000'
