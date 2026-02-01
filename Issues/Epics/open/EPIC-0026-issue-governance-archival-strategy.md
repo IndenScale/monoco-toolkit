@@ -22,7 +22,7 @@ tags:
 - maintenance
 - archival
 criticality: medium
-progress: 0/2
+progress: 1/2
 files_count: 0
 ---
 
