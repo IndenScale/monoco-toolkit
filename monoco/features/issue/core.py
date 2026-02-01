@@ -189,15 +189,19 @@ def parse_issue_detail(file_path: Path) -> Optional[IssueDetail]:
         return None
 
 
-def find_next_id(issue_type: str, issues_root: Path) -> str:
+def find_next_id(issue_type: str, issues_root: Path, include_archived: bool = False) -> str:
     prefix_map = get_prefix_map(issues_root)
     prefix = prefix_map.get(issue_type, "ISSUE")
     pattern = re.compile(rf"{prefix}-(\d+)")
     max_id = 0
 
     base_dir = get_issue_dir(issue_type, issues_root)
-    # Scan all subdirs: open, backlog, closed
-    for status_dir in ["open", "backlog", "closed"]:
+    # Scan all subdirs: open, backlog, closed, archived (optional)
+    status_dirs = ["open", "backlog", "closed"]
+    if include_archived:
+        status_dirs.append("archived")
+    
+    for status_dir in status_dirs:
         d = base_dir / status_dir
         if d.exists():
             for f in d.rglob("*.md"):
@@ -388,7 +392,15 @@ def get_available_actions(meta: IssueMetadata) -> List[Any]:
     return actions
 
 
-def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
+def find_issue_path(issues_root: Path, issue_id: str, include_archived: bool = True) -> Optional[Path]:
+    """
+    Find the path of an issue file.
+    
+    Args:
+        issues_root: Root directory of issues
+        issue_id: Issue ID to find
+        include_archived: Whether to search in archived directory (default: True for find operations)
+    """
     parsed = IssueID(issue_id)
 
     if not parsed.is_local:
@@ -414,7 +426,7 @@ def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
             return None
 
         # Recursively search in member project
-        return find_issue_path(member_issues, parsed.local_id)
+        return find_issue_path(member_issues, parsed.local_id, include_archived)
 
     # Local Search
     try:
@@ -428,9 +440,19 @@ def find_issue_path(issues_root: Path, issue_id: str) -> Optional[Path]:
         return None
 
     base_dir = get_issue_dir(issue_type, issues_root)
-    # Search in all status subdirs recursively
-    for f in base_dir.rglob(f"{parsed.local_id}-*.md"):
-        return f
+    # Search in standard status subdirs first
+    for status_dir in ["open", "backlog", "closed"]:
+        d = base_dir / status_dir
+        if d.exists():
+            for f in d.rglob(f"{parsed.local_id}-*.md"):
+                return f
+    
+    # Search in archived if enabled
+    if include_archived:
+        archived_dir = base_dir / "archived"
+        if archived_dir.exists():
+            for f in archived_dir.rglob(f"{parsed.local_id}-*.md"):
+                return f
     return None
 
 
@@ -1068,10 +1090,15 @@ def get_resources() -> Dict[str, Any]:
 
 
 def list_issues(
-    issues_root: Path, recursive_workspace: bool = False
+    issues_root: Path, recursive_workspace: bool = False, include_archived: bool = False
 ) -> List[IssueMetadata]:
     """
     List all issues in the project.
+    
+    Args:
+        issues_root: Root directory of issues
+        recursive_workspace: Include issues from workspace members
+        include_archived: Include archived issues (default: False)
     """
     issues = []
     engine = get_engine(str(issues_root.parent))
@@ -1079,7 +1106,11 @@ def list_issues(
 
     for issue_type in all_types:
         base_dir = get_issue_dir(issue_type, issues_root)
-        for status_dir in ["open", "backlog", "closed"]:
+        status_dirs = ["open", "backlog", "closed"]
+        if include_archived:
+            status_dirs.append("archived")
+        
+        for status_dir in status_dirs:
             d = base_dir / status_dir
             if d.exists():
                 for f in d.rglob("*.md"):
@@ -1436,10 +1467,15 @@ def check_issue_match(
     return True
 
 
-def search_issues(issues_root: Path, query: str) -> List[IssueMetadata]:
+def search_issues(issues_root: Path, query: str, include_archived: bool = False) -> List[IssueMetadata]:
     """
     Search issues using advanced query syntax.
     Returns list of matching IssueMetadata.
+    
+    Args:
+        issues_root: Root directory of issues
+        query: Search query string
+        include_archived: Include archived issues in search (default: False)
     """
     explicit_positives, terms, negatives = parse_search_query(query)
 
@@ -1449,7 +1485,7 @@ def search_issues(issues_root: Path, query: str) -> List[IssueMetadata]:
     # Let's align with "grep": empty pattern matches everything?
     # Or strict: empty query -> all.
     if not explicit_positives and not terms and not negatives:
-        return list_issues(issues_root)
+        return list_issues(issues_root, include_archived=include_archived)
 
     matches = []
     all_files = []
@@ -1469,7 +1505,11 @@ def search_issues(issues_root: Path, query: str) -> List[IssueMetadata]:
 
     for issue_type in all_types:
         base_dir = get_issue_dir(issue_type, issues_root)
-        for status_dir in ["open", "backlog", "closed"]:
+        status_dirs = ["open", "backlog", "closed"]
+        if include_archived:
+            status_dirs.append("archived")
+        
+        for status_dir in status_dirs:
             d = base_dir / status_dir
             if d.exists():
                 for f in d.rglob("*.md"):
