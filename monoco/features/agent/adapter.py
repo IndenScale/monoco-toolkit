@@ -1,18 +1,28 @@
 from pathlib import Path
 from typing import Dict
-from monoco.core.feature import MonocoFeature, IntegrationData
+from monoco.core.loader import FeatureModule, FeatureMetadata
+from monoco.core.feature import IntegrationData
 
 
-class AgentFeature(MonocoFeature):
+class AgentFeature(FeatureModule):
+    """Agent management feature module with unified lifecycle support."""
+
     @property
-    def name(self) -> str:
-        return "agent"
+    def metadata(self) -> FeatureMetadata:
+        return FeatureMetadata(
+            name="agent",
+            version="1.0.0",
+            description="Agent session and role management",
+            dependencies=["core"],
+            priority=20,
+        )
 
-    def initialize(self, root: Path, config: Dict) -> None:
-        # Agent feature doesn't require special initialization
+    def _on_mount(self, context: "FeatureContext") -> None:  # type: ignore
+        """Agent feature doesn't require special initialization."""
         pass
 
     def integrate(self, root: Path, config: Dict) -> IntegrationData:
+        """Provide integration data for agent environment."""
         # Determine language from config, default to 'en'
         lang = config.get("i18n", {}).get("source_lang", "en")
 
