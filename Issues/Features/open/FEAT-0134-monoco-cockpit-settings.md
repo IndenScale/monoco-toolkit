@@ -1,10 +1,26 @@
 ---
-type: Feature
-title: Monoco Cockpit - Settings Page Implementation
+id: FEAT-0134
+uid: f0e1d2  # Manually assigned placeholder UID
+type: feature
 status: open
+stage: todo  # Assuming Todo since checklist is empty
+title: Monoco Cockpit - Settings Page Implementation
+created_at: '2026-02-01T00:59:12' # Estimated from file creation or conversation
+updated_at: '2026-02-01T00:59:12'
+opened_at: '2026-02-01T00:59:12'
 priority: high
 owner: IndenScale
-labels: [vscode-extension, ui, configuration, cockpit]
+parent: EPIC-0000 # Default parent
+dependencies: []
+related: []
+domains: []
+tags:
+- vscode-extension
+- ui
+- configuration
+- cockpit
+files: []
+criticality: medium
 ---
 
 ## FEAT-0134: Monoco Cockpit - Settings Page Implementation
