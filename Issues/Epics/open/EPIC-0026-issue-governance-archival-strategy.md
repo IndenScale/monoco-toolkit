@@ -17,10 +17,11 @@ domains:
 - IssueTracing
 files: []
 tags:
+- '#EPIC-0000'
 - '#EPIC-0026'
+- archival
 - governance
 - maintenance
-- archival
 criticality: medium
 progress: 1/2
 files_count: 0
@@ -45,4 +46,4 @@ files_count: 0
 - [ ] **FEAT-0136**: 强制实施领域治理规则与自动继承 (Domain Governance Rules)。
 
 ## Review Comments
-<!-- Record review feedback here. -->
+*No comments yet.*
