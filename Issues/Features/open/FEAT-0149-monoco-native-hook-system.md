@@ -3,10 +3,10 @@ id: FEAT-0149
 uid: 7750aa
 type: feature
 status: open
-stage: draft
+stage: doing
 title: Design and Implement Monoco Native Hook System
 created_at: '2026-02-01T20:56:45'
-updated_at: '2026-02-01T22:42:00'
+updated_at: '2026-02-01T23:01:24'
 parent: EPIC-0025
 dependencies: []
 related:
@@ -19,6 +19,7 @@ tags:
 - '#FEAT-0149'
 files: []
 criticality: high
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-01T20:56:45'
 ---
 
