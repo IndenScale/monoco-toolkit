@@ -38,4 +38,4 @@ opened_at: '2026-02-01T20:53:07'
 - [ ] 编写默认的 `pre-commit` 脚本模板
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+*No comments yet.*

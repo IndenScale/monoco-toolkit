@@ -8,7 +8,11 @@ owner: IndenScale
 parent: EPIC-0025
 priority: high
 created_at: '2026-02-01'
+domains:
+- AgentScheduling
 tags:
+- '#EPIC-0025'
+- '#FEAT-0140'
 - daemon
 - orchestrator
 - scheduler
@@ -37,7 +41,7 @@ The Monoco Daemon needs to evolve from a passive service to an active orchestrat
 3.  **Refine Apoptosis**: Update `monoco/features/agent/apoptosis.py` to pass context to the Coroner agent.
 4.  **Integration**: Ensure `monoco/daemon/app.py` correctly starts and exposes the orchestrator.
 
-## Checklist
+## Technical Tasks
 - [ ] Refactor `SchedulerService` for better extensibility.
 - [ ] Implement `check_inbox_trigger` in Scheduler.
 - [ ] Implement `check_handover_trigger` in Scheduler.
