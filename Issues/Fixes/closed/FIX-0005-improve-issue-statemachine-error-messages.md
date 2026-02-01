@@ -4,7 +4,7 @@ uid: c4b656
 type: fix
 status: closed
 stage: done
-title: Improve Issue StateMachine Error Messages
+title: 改进 Issue 状态机错误消息
 created_at: '2026-02-01T23:30:38'
 updated_at: '2026-02-01T23:37:30'
 parent: EPIC-0000
@@ -23,84 +23,74 @@ opened_at: '2026-02-01T23:30:38'
 closed_at: '2026-02-01T23:37:30'
 ---
 
-## FIX-0005: Improve Issue StateMachine Error Messages
+## FIX-0005: 改进 Issue 状态机错误消息
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
-Refactor `monoco/features/issue/engine/machine.py` to provide descriptive, actionable error messages when a transition fails. Currently, the error messages are generic and don't help users understand what went wrong or how to fix it.
+重构 `monoco/features/issue/engine/machine.py` 以在状态转换失败时提供描述性、可操作的错误消息。目前的错误消息过于通用，无法帮助用户理解问题所在或如何修复。
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [x] When a transition is not found, the error message explains the current state and target state clearly
-- [x] When a solution is missing or invalid, the error suggests valid solutions based on available workflows
-- [x] Error messages include hints about available transitions from the current state
-- [x] All error messages follow a consistent format: "Lifecycle Policy: {context}. {suggestion}"
-- [x] Tests are added to verify all error message scenarios
+- [x] 当找不到状态转换时，错误消息应清晰解释当前状态和目标状态
+- [x] 当缺少或无效 solution 时，错误消息应根据可用工作流建议有效的 solution
+- [x] 错误消息应包含从当前状态可用的转换提示
+- [x] 所有错误消息遵循一致格式："Lifecycle Policy: {context}. {suggestion}"
+- [x] 添加测试以验证所有错误消息场景
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
-
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-
-- [x] Refactor `validate_transition()` to provide descriptive error messages
-  - [x] Extract error message generation into helper methods
-  - [x] Add context about current state (status, stage) to error messages
-  - [x] Add suggestions for valid solutions when solution is invalid/missing
-  - [x] List available transitions from current state
-- [x] Add comprehensive tests for error messages
-  - [x] Test transition not found error
-  - [x] Test invalid solution error with suggestions
-  - [x] Test missing solution error with suggestions
-  - [x] Test error message format consistency
+- [x] 重构 `validate_transition()` 以提供描述性错误消息
+  - [x] 将错误消息生成提取到辅助方法中
+  - [x] 在错误消息中添加有关当前状态（status, stage）的上下文
+  - [x] 在 solution 无效/缺失时添加有效 solution 的建议
+  - [x] 列举从当前状态可用的转换
+- [x] 为错误消息添加全面测试
+  - [x] 测试找不到转换的错误
+  - [x] 测试带有建议的无效 solution 错误
+  - [x] 测试带有建议的缺失 solution 错误
+  - [x] 测试错误消息格式的一致性
 
 ## Implementation Summary
 
-### Changes to `monoco/features/issue/engine/machine.py`
+### 对 `monoco/features/issue/engine/machine.py` 的更改
 
-1. **Added helper methods for error message generation:**
-   - `_format_state(status, stage)`: Formats state for display, handles Enum values
-   - `_build_transition_not_found_error(...)`: Builds descriptive error when no transition exists
-   - `_build_invalid_solution_error(...)`: Builds error when solution is invalid/missing
-   - `get_available_solutions(...)`: Returns valid solutions for current state
-   - `get_valid_transitions_from_state(...)`: Returns all valid transitions from a state
+1. **添加了用于生成错误消息的辅助方法：**
+   - `_format_state(status, stage)`: 格式化状态以供显示，处理 Enum 值
+   - `_build_transition_not_found_error(...)`: 在不存在转换时构建描述性错误
+   - `_build_invalid_solution_error(...)`: 在 solution 无效/缺失时构建错误
+   - `get_available_solutions(...)`: 返回当前状态的有效 solution
+   - `get_valid_transitions_from_state(...)`: 返回该状态的所有有效转换
 
-2. **Improved error messages:**
-   - **Transition not found**: Now shows current state, target state, and lists all available transitions with their required solutions
-   - **Invalid/missing solution**: Now shows the transition name, current/target states, and lists all valid solutions
+2. **改进了错误消息：**
+   - **找不到转换**: 现在显示当前状态、目标状态，并列出所有可用转换及其所需的 solution
+   - **无效/缺失 solution**: 现在显示转换名称、当前/目标状态，并列出所有有效 solution
 
-### Example Error Messages
+### 错误消息示例
 
-**Before:**
+**修改前:**
 ```
 Lifecycle Policy: Transition from backlog(freezed) to open(review) is not defined.
 ```
 
-**After:**
+**修改后:**
 ```
 Lifecycle Policy: Transition from 'backlog(freezed)' to 'open(review)' is not defined. Available transitions from this state:
   - pull: 'backlog(freezed)' -> 'open(draft)'
   - cancel_backlog: 'backlog(freezed)' -> 'closed(done)' (requires --solution cancelled)
 ```
 
-**Before:**
+**修改前:**
 ```
 Lifecycle Policy: Transition 'Accept' requires solution 'implemented'.
 ```
 
-**After:**
+**修改后:**
 ```
 Lifecycle Policy: Transition 'Accept' from 'open(review)' to 'closed(done)' requires a solution. Valid solutions are: cancelled, implemented, wontfix.
 ```
 
 ## Review Comments
 
-### Self-Review
+### 自检 (Self-Review)
 
-- [x] Error messages are descriptive and actionable
-- [x] All tests pass
-- [x] Code follows existing patterns in the codebase
-- [x] Helper methods are properly documented
+- [x] 错误消息具有描述性和可操作性
+- [x] 所有测试均通过
+- [x] 代码遵循代码库中的现有模式
+- [x] 辅助方法已妥善记录
