@@ -20,6 +20,10 @@ opened_at: '2026-02-01T20:56:45'
 
 ## EPIC-0031: Design and Implement Monoco Native Hook System
 
+## 背景与目标
+
+本 Epic 旨在设计和实现 Monoco 原生钩子系统，用于统一管理代理生命周期和生态系统工具。通过建立标准化的事件总线和钩子接口，解决当前 CLI 工具（如 gemini、kimi）私有钩子导致的生态碎片化问题。该系统将提供比标准 Git 钩子更丰富的上下文信息（如会话 ID、Issue ID），支持跨不同代理和工具的生命周期事件编排。
+
 ## Objective
 Implement a unified Monoco Native Hook System to manage agent lifecycles and ecosystem tools, addressing the fragmentation of private hooks in CLI tools (gemini, kimi, etc.).
 

@@ -21,6 +21,10 @@ opened_at: '2026-02-01T20:57:13'
 
 ## CHORE-0028: Document Architecture Decision regarding ACP and Kimi CLI
 
+## 背景与目标
+
+记录关于 ACP 和 Kimi CLI 的架构决策，明确技术选型理由。Agent Client Protocol（ACP）专为编辑器到代理的通信设计（基于 JSON-RPC），而 Monoco 需要的是编排器到代理的无头接口。经过评估，ACP 对于南向接口引入了不必要的复杂性（服务器管理、RPC 客户端）。本决策记录将阐明为何继续采用 EngineAdapter 加 CLI 模式，而非直接集成 ACP，为未来可能的北向接口（编辑器到 Monoco）保留 ACP 的应用空间。
+
 ## Objective
 Document the architectural decision to **NOT** use ACP (Agent Client Protocol) for internal Monoco Agent orchestration, but rather continue using the EngineAdapter + CLI pattern.
 

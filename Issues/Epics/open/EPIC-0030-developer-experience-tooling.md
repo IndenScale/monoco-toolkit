@@ -3,7 +3,7 @@ id: EPIC-0030
 uid: 058649
 type: epic
 status: open
-stage: draft
+stage: doing
 title: Developer Experience & Tooling
 created_at: '2026-02-01T10:37:05'
 updated_at: '2026-02-01T10:37:07'
@@ -21,6 +21,8 @@ tags:
 files: []
 criticality: high
 opened_at: '2026-02-01T10:37:05'
+progress: 1/3
+files_count: 0
 ---
 
 ## EPIC-0030: Developer Experience & Tooling

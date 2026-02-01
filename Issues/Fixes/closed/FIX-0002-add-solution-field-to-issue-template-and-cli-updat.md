@@ -18,9 +18,11 @@ files:
 - monoco/features/issue/core.py
 - monoco/features/issue/commands.py
 criticality: high
-solution: implemented
+
 opened_at: '2026-02-01T21:42:30'
-closed_at: '2026-02-01T21:49:52'
+closed_at: '2026-02-01T21:55:00'
+solution: implemented
+
 ---
 
 ## FIX-0002: Add 'solution' field to Issue Template and CLI update command

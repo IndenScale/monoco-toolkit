@@ -21,6 +21,10 @@ opened_at: '2026-02-01T20:56:58'
 
 ## FEAT-0144: Enforce Strict Status and Directory Consistency in Issue Linter
 
+## 背景与目标
+
+增强 Issue linter 的严格性，强制检查状态与文件目录的一致性。现有 linter 无法捕获状态异常（如使用 `done` 而非 `closed`）或文件位置错误（如将 Issue 放在 `Issues/Features/done/` 而非 `closed/` 目录）。本功能需要添加状态枚举验证、目录与状态映射验证、非法目录名检测以及阶段有效性检查，确保 Issue 文件组织规范，提高项目可维护性。
+
 ## Objective
 Enhance `monoco issue lint` to enforce strict consistency rules between Issue status and file location.
 
