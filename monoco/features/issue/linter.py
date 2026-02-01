@@ -289,12 +289,45 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
 
     # 2. Validation Phase
     valid_domains = set()
+    # Build list of actual IssueMetadata objects for domain governance checks
+    all_issue_metas = []
+    
     # Now validate
     for path, meta, project_name in all_issues:
         if meta == "DOMAIN":
             valid_domains.add(
                 project_name
             )  # Record the domain name (which was stored in project_name slot)
+        else:
+            all_issue_metas.append(meta)
+
+    # FEAT-0136: Project-Level Domain Governance Check
+    # Calculate scale metrics
+    num_issues = len(all_issue_metas)
+    num_epics = len([i for i in all_issue_metas if i.type == "epic"])
+    is_large_scale = num_issues > 128 or num_epics > 32
+    
+    # Check Domain Coverage for large-scale projects
+    if is_large_scale and num_epics > 0:
+        epics = [i for i in all_issue_metas if i.type == "epic"]
+        untracked_epics = [e for e in epics if not e.domains]
+        untracked_ratio = len(untracked_epics) / len(epics)
+        
+        # Rule: Untracked Epics / Total Epics <= 25%
+        if untracked_ratio > 0.25:
+            # Report this as a project-level diagnostic (attached to first epic or general)
+            diagnostics.append(
+                Diagnostic(
+                    range=Range(
+                        start=Position(line=0, character=0),
+                        end=Position(line=0, character=0),
+                    ),
+                    message=f"Domain Governance: Coverage is too low for a project of this scale ({len(untracked_epics)}/{len(epics)} Epics untracked). "
+                            f"At least 75% of Epics must have domains assigned.",
+                    severity=DiagnosticSeverity.Error,
+                    source="DomainGovernance",
+                )
+            )
 
     for path, meta, project_name in all_issues:
         if meta == "DOMAIN":
@@ -331,6 +364,7 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
 
         # A. Run Core Validator
         # Pass valid_domains kwarg (Validator needs update to accept it)
+        # FEAT-0136: Also pass all_issue_metas for domain governance checks
         file_diagnostics = validator.validate(
             meta,
             content,
@@ -338,6 +372,7 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
             current_project=project_name,
             workspace_root=workspace_root_name,
             valid_domains=valid_domains,
+            all_issues=all_issue_metas,
         )
 
         # Add context to diagnostics (Path)
