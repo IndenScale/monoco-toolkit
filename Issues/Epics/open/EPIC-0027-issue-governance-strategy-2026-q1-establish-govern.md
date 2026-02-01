@@ -11,7 +11,7 @@ parent: EPIC-0000
 dependencies: []
 related: []
 domains: 
-- IssueGovernance
+- IssueSystem
 tags:
 - '#EPIC-0027'
 - '#EPIC-0000'
@@ -30,7 +30,7 @@ opened_at: '2026-02-01T10:27:42'
 > **Narrative Epic**: Issue 治理与质量控制的长期叙事
 
 ## Objective
-建立 Monoco Toolkit 的 Issue 治理基线，确立 "Issue Governance" 为核心领域。解决随着项目演进带来的 Issue 膨胀、元数据混乱和历史债务问题。本 Epic 旨在通过自动化工具 (Lint, CLI) 和标准流程 (SOP) 来降低维护成本，确保 Issue Library 始终保持高信噪比。
+建立 Monoco Toolkit 的 Issue 治理基线，确立 "Issue System" 为核心领域。解决随着项目演进带来的 Issue 膨胀、元数据混乱和历史债务问题。本 Epic 旨在通过自动化工具 (Lint, CLI) 和标准流程 (SOP) 来降低维护成本，确保 Issue Library 始终保持高信噪比。
 
 ## Acceptance Criteria
 - [ ] **Archival Strategy**: 完成历史 Issue 的物理归档，并确保 CLI/IDE 工具能够正确处理归档数据 (忽略或按需加载)。
@@ -40,7 +40,7 @@ opened_at: '2026-02-01T10:27:42'
 ## Technical Tasks
 
 ### Governance & Process
-- [x] **Define Domains**: 创建 `IssueGovernance`, `Infrastructure`, `DevEx` 等核心 Domain 定义文件。
+- [x] **Define Domains**: 创建 `IssueSystem`, `Foundation`, `DevEx` 等核心 Domain 定义文件。
 - [x] ** Integration**: 已合并 。
 - [ ] **Refine Rules**: 在 `monoco/features/issues/resources/rules/` 中固化 Issue 编写规范。
 

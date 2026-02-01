@@ -11,7 +11,7 @@ parent: EPIC-0027
 dependencies: []
 related: []
 domains:
-- IssueGovernance
+- IssueSystem
 tags:
 - '#EPIC-0027'
 - '#FEAT-0148'

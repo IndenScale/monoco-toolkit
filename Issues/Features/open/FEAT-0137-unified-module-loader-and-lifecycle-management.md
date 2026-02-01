@@ -11,7 +11,7 @@ parent: EPIC-0028
 dependencies: []
 related: []
 domains:
-- Infrastructure
+- Foundation
 tags:
 - '#EPIC-0028'
 - '#FEAT-0137'

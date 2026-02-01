@@ -9,7 +9,7 @@ parent: EPIC-0025
 priority: high
 created_at: '2026-02-01'
 domains:
-- AgentScheduling
+- AgentEmpowerment
 tags:
 - '#EPIC-0025'
 - '#FEAT-0140'
