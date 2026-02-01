@@ -61,8 +61,8 @@ def test_session_lifecycle(mock_popen):
     assert runtime.model.status == "terminated"
 
 
-def test_list_sessions():
-    manager = SessionManager()
+def test_list_sessions(tmp_path):
+    manager = SessionManager(project_root=tmp_path)
     role = DEFAULT_ROLES[0]
 
     s1 = manager.create_session("ISSUE-A", role)

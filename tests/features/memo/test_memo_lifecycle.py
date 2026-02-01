@@ -14,9 +14,9 @@ def test_memo_lifecycle(tmp_path):
     
     memos = list_memos(issues_root)
     assert len(memos) == 3
-    assert any(m["id"] == id1 for m in memos)
-    assert any(m["id"] == id2 for m in memos)
-    assert any(m["id"] == id3 for m in memos)
+    assert any(m.uid == id1 for m in memos)
+    assert any(m.uid == id2 for m in memos)
+    assert any(m.uid == id3 for m in memos)
     
     # 2. Delete the middle one
     result = delete_memo(issues_root, id2)
@@ -24,9 +24,9 @@ def test_memo_lifecycle(tmp_path):
     
     memos = list_memos(issues_root)
     assert len(memos) == 2
-    assert any(m["id"] == id1 for m in memos)
-    assert not any(m["id"] == id2 for m in memos)
-    assert any(m["id"] == id3 for m in memos)
+    assert any(m.uid == id1 for m in memos)
+    assert not any(m.uid == id2 for m in memos)
+    assert any(m.uid == id3 for m in memos)
     
     # 3. Delete a non-existent one
     result = delete_memo(issues_root, "nonexistent")
@@ -38,7 +38,9 @@ def test_memo_lifecycle(tmp_path):
     assert result is True
     memos = list_memos(issues_root)
     assert len(memos) == 1
-    assert memos[0]["id"] == id3
+    memos = list_memos(issues_root)
+    assert len(memos) == 1
+    assert memos[0].uid == id3
     
     # 5. Delete the last one
     result = delete_memo(issues_root, id3)

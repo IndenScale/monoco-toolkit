@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Fix unit test regressions
 created_at: '2026-02-01T22:05:08'
-updated_at: '2026-02-01T22:05:32'
+updated_at: 2026-02-01 22:05:32
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -17,6 +17,11 @@ tags:
 files: []
 criticality: high
 opened_at: '2026-02-01T22:05:08'
+isolation:
+  type: branch
+  ref: feat/fix-0003-fix-unit-test-regressions
+  path: null
+  created_at: '2026-02-01T22:05:32'
 ---
 
 ## FIX-0003: Fix unit test regressions

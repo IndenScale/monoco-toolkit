@@ -3,14 +3,15 @@ from monoco.features.agent import SessionManager, ApoptosisManager, DEFAULT_ROLE
 
 
 @patch("subprocess.Popen")
-def test_apoptosis_flow(mock_popen):
+def test_apoptosis_flow(mock_popen, tmp_path):
     # Setup mock process
     mock_process = mock_popen.return_value
     mock_process.pid = 6666
     mock_process.wait.return_value = None
     mock_process.returncode = 0
+    mock_process.poll.return_value = None # Process is running by default
 
-    manager = SessionManager()
+    manager = SessionManager(project_root=tmp_path)
     apoptosis = ApoptosisManager(manager)
 
     # 1. Start a victim session

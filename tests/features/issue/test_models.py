@@ -69,13 +69,13 @@ def test_issue_metadata_invalid_solution():
     assert "solution" in str(excinfo.value)
 
 
-def test_issue_metadata_stage_normalization():
-    """测试 stage 字段的特殊纠偏逻辑（如 todo -> draft）。"""
+def test_issue_metadata_stage_upper_case():
+    """测试 stage 字段的大写自动转小写。"""
     data = {
         "id": "CHORE-0001",
         "type": "chore",
         "title": "Stage Test",
-        "stage": "TODO",
+        "stage": "DRAFT",
         "parent": "EPIC-0001",
     }
     meta = IssueMetadata(**data)
