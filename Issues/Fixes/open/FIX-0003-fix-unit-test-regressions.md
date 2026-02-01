@@ -41,4 +41,5 @@ Fix regressions in unit tests caused by recent changes and strict validation rul
 - [x] Isolate SessionManager tests using `tmp_path` to avoid environment pollution.
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+## Review Comments
+Change applied to fix regressions. Tests passed.
