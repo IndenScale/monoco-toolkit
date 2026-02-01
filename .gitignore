@@ -59,6 +59,7 @@ test.pdf
 .gemini/
 .claude/
 .agent/
+!.agent/workflows/
 
 # IDEs
 .vscode/
