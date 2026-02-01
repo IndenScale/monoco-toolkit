@@ -737,9 +737,9 @@ def list_cmd(
     issues_root = _resolve_issues_root(config, root)
 
     # Validation
-    if status and status.lower() not in ["open", "closed", "backlog", "all"]:
+    if status and status.lower() not in ["open", "closed", "backlog", "archived", "all"]:
         OutputManager.error(
-            f"Invalid status: {status}. Use open, closed, backlog or all."
+            f"Invalid status: {status}. Use open, closed, backlog, archived or all."
         )
         raise typer.Exit(code=1)
 

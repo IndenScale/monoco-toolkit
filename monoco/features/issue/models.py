@@ -74,6 +74,7 @@ class IssueStatus(str, Enum):
     OPEN = "open"
     CLOSED = "closed"
     BACKLOG = "backlog"
+    ARCHIVED = "archived"
 
 
 class IssueStage(str, Enum):
