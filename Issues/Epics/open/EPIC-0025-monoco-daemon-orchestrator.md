@@ -7,37 +7,38 @@ stage: doing
 title: Monoco Daemon Orchestrator
 created_at: '2026-02-01T00:18:00'
 updated_at: '2026-02-01T00:18:00'
+opened_at: '2026-02-01T00:18:00'
 priority: high
 owner: IndenScale
-parent: null
+parent: EPIC-0000
 dependencies: []
 related: []
 domains:
-- agent.orchestration
-- daemon.core
+- AgentScheduling
 files: []
 tags:
-- null
-- null
-- null
+- '#EPIC-0000'
+- '#EPIC-0025'
+- '#orchestrator'
+- '#daemon'
 criticality: high
-progress: 0/2
+progress: 0/19
 files_count: 0
 ---
 
 ## EPIC-0025: Monoco Daemon Orchestrator
 
-## Objective
+## 目标 (Objective)
 构建 Monoco 的守护进程（Daemon）与编排层（Orchestration Layer），使其从被动工具集进化为主动运行的 Agent 操作系统内核。
 本 Epic 将实现 "Mailroom -> Daemon Loop -> HITP" 的完整自动化闭环，支持非阻塞的二进制解析、基于生命周期的 Agent 调度、以及明确的人机协作（HITP）关卡。
 
-## Acceptance Criteria
+## 验收标准 (Acceptance Criteria)
 - [ ] **Mailroom Pipeline**: 能够异步处理二进制文件（PDF/Image/Audio），将其转换为标准 Markdown + Assets 格式并投递到 Inbox。
 - [ ] **Daemon Core**: 实现 "监听 -> 调度 -> 销毁 -> 尸检" 的 Agent 生命周期闭环。
 - [ ] **Notification Connectors**: 集成 CI/CD (GitHub Actions) 实现非阻塞的外部通知（Email/IM）。
 - [ ] **HITP Gateways**: 在通过 IDE/WebUI 提供明确的三段式人工确认（Confirm Plan -> Merge Code -> Push Remote）。
 
-## Technical Tasks
+## 技术任务 (Technical Tasks)
 
 ### Phase 1: The Mailroom (Ingestion Layer)
 > 解决 "非阻塞的二进制文件解析与处理管道"
