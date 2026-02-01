@@ -28,9 +28,19 @@ class IssueValidator:
         current_project: Optional[str] = None,
         workspace_root: Optional[str] = None,
         valid_domains: Set[str] = set(),
+        all_issues: List[IssueMetadata] = None,
     ) -> List[Diagnostic]:
         """
         Validate an issue and return diagnostics.
+        
+        Args:
+            meta: Issue metadata to validate
+            content: Full content of the issue file
+            all_issue_ids: Set of all issue IDs in the project (for reference validation)
+            current_project: Current project name
+            workspace_root: Workspace root project name
+            valid_domains: Set of valid domain names
+            all_issues: List of all IssueMetadata objects (for domain governance checks, FEAT-0136)
         """
         diagnostics = []
         self._current_project = current_project
@@ -80,7 +90,7 @@ class IssueValidator:
         # 5.5 Domain Integrity
         diagnostics.extend(
             self._validate_domains(
-                meta, content, all_issue_ids, valid_domains=valid_domains
+                meta, content, all_issue_ids, valid_domains=valid_domains, all_issues=all_issues
             )
         )
 
@@ -629,6 +639,7 @@ class IssueValidator:
         content: str,
         all_ids: Set[str] = set(),
         valid_domains: Set[str] = set(),
+        all_issues: List[IssueMetadata] = None,
     ) -> List[Diagnostic]:
         diagnostics = []
         # Check if 'domains' field exists in frontmatter text
@@ -671,6 +682,36 @@ class IssueValidator:
                         "Governance Maturity: Project scale (Epics>8 or Issues>50) requires 'domains' field in frontmatter.",
                         DiagnosticSeverity.Warning,
                         line=0,
+                    )
+                )
+
+        # FEAT-0136: Scale-Aware Domain Governance
+        # Rule: If Total Issues > 128 or Total Epics > 32, enforce strict Domain coverage
+        is_large_scale = num_issues > 128 or num_epics > 32
+        
+        # FEAT-0136: Domain Auto-Inheritance Logic
+        # If child issue has no domains but parent has, treat as inherited (logical inheritance)
+        if meta.type != "epic" and not meta.domains and meta.parent and all_issues and is_large_scale:
+            parent_issue = None
+            for issue in all_issues:
+                if issue.id == meta.parent:
+                    parent_issue = issue
+                    break
+            
+            if parent_issue and parent_issue.domains:
+                # Parent has domains, child inherits them logically
+                # This is not an error - it's valid inheritance
+                pass
+            elif parent_issue and not parent_issue.domains:
+                # Parent also has no domains in large scale mode - this is an error
+                line = self._get_field_line(content, "domains")
+                diagnostics.append(
+                    self._create_diagnostic(
+                        f"Domain Governance: Issue '{meta.id}' has no domains assigned. "
+                        f"Parent '{meta.parent}' also has no domains. In large-scale projects, "
+                        f"at least 75% of Epics must have domains for children to inherit.",
+                        DiagnosticSeverity.Error,
+                        line=line if line > 0 else field_line,
                     )
                 )
 
