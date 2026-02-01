@@ -3,7 +3,7 @@ id: FEAT-0134
 uid: f0e1d2  # Manually assigned placeholder UID
 type: feature
 status: open
-stage: todo  # Assuming Todo since checklist is empty
+stage: draft  # Initial stage for new features
 title: Monoco Cockpit - Settings Page Implementation
 created_at: '2026-02-01T00:59:12' # Estimated from file creation or conversation
 updated_at: '2026-02-01T00:59:12'
@@ -19,6 +19,8 @@ tags:
 - ui
 - configuration
 - cockpit
+- "#EPIC-0000"
+- "#FEAT-0134"
 files: []
 criticality: medium
 ---
@@ -33,46 +35,38 @@ criticality: medium
 
 ### 目标
 
-为 Monoco VS Code 扩展实现一个全面的设置 Webview（驾驶舱），用于管理 Agent 运行配置、上下文与知识以及文化设置。该界面将作为 `monoco run` 参数和环境变量的可视化构建器。
+为 Monoco VS Code 扩展实现一个全面的设置 Webview（驾驶舱），用于配置 Agent 运行时、上下文策略以及文化偏好。该界面将屏蔽底层模型细节，通过 "Agent Native" 的概念体系（如 Kernel, Persona, Capability）来管理智能体行为。
 
 ### 功能需求
 
-#### 1. 运行配置 (Runtime Profile) - 执行层
-管理标准的 `monoco run` CLI 参数：
-- **模型选择 (Model Selection)**：允许指定 LLM 模型 ID（如 `moonshot-v1-128k`, `claude-3-5-sonnet`）。
-- **思考模式 (Thinking Mode)**：开启深度思考（思维链）的开关。
-- **Agent 人设 (Agent Persona)**：选择内置或自定义的 Agent 人设（如 `default`, `architect`）。
-- **安全限制 (Safety Limits)**：
-  - **批准模式**：在手动批准和 YOLO 模式（自动批准）之间切换。
-  - **步数限制**：配置 `--max-steps-per-turn`。
-  - **重试限制**：配置 `--max-retries-per-step`。
+#### 1. 智能体运行时 (Agent Runtime)
+管理 Agent 身份与核心能力：
+- **Agent Provider (服务商)**：选择驱动 Agent 的后端服务（如 `Kimi`, `Vertex AI` 等），而非底层的 "Model ID"。
+- **Agent Role (角色)**：选择 Agent 的岗位（如 `Principal Architect`, `Senior Engineer`, `QA Specialist`）。
+- **Autonomy (自主性)**：
+  - **Human-in-the-loop**：默认 YOLO 模式（自动批准）。支持切换为 Step-by-step 审批。
+  - **Persistence**：默认设置为 **Unlimited (无限)**。Agent 应已被赋予最高权限与最长执行时间。
 
-#### 2. 上下文与知识 (Context & Knowledge) - 策略层
-管理资源路径和知识注入：
-- **技能策略 (Skills Strategy)**：配置 `--skills-dir` 以指向本地自定义技能目录。
-- **MCP 集成 (MCP Integration)**：配置 `--mcp-config-file` 以连接外部工具。
-- **上下文管理 (Context Management)**：可视化选择器，用于切换哪些 `.monoco/*.md` 上下文文件被注入到 Agent 的上下文窗口中。
+#### 2. 工具与能力 (Tools & Capabilities)
+管理 Agent 可用的工具与环境：
+- **Skill Sets (技能组)**：可视化管理 `--skills-dir`，启用/禁用特定技能包（Skills）。
+- **System Access (系统访问)**：强调 **Bash-as-Tool** 理念。不使用 MCP (Model Context Protocol)。Agent 直接通过 Shell 访问系统 CLI、文件系统与网络，以实现真正的全能操作。
 
-#### 3. 文化设置 (Cultural Settings) - 文化层
-管理语言和行为策略（通过环境变量）：
-- **思考语言 (Thinking Language)**：Agent 内部推理使用的语言（建议使用英语）。
-- **沟通语言 (Communication Language)**：Agent 与用户交互使用的语言（如中文）。
-- **角色定义 (Role Definition)**：覆盖特定角色的 System Prompt。
 
 ### 技术实现
 
-- **UI 框架**：使用 React 配合 VS Code Webview UI Toolkit，以保持一致的视觉体验。
-- **状态管理**：将配置持久化到工作区设置 (`.vscode/settings.json`) 或专用的 `.monoco/config.yaml`。
-- **集成**：扩展的命令注册表需要在生成 `monoco` CLI 命令时读取这些设置。
+- **UI 框架**：使用 React 配合 VS Code Webview UI Toolkit。
+- **配置层**：屏蔽 `.vscode/settings.json` 的复杂性，提供语义化的图形配置。
+- **抽象层**：在 `monoco-vscode` 端即时转换 "Agent Config" -> "CLI Args"，对用户隐藏底层参数（如 `temperature`, `model_id`）。
 
 ### 检查清单
 
-- [ ] 设计设置 Webview 布局（标签页或分栏视图）。
-- [ ] 实现 **Intelligence (运行配置)** 部分的 UI 和逻辑。
-- [ ] 实现 **Strategy (上下文与知识)** 部分的 UI 和逻辑。
-- [ ] 实现 **Culture (语言与角色)** 部分的 UI 和逻辑。
-- [ ] 实现设置的持久化存储/加载层。
-- [ ] 更新 `runMonoco` 工具函数以响应该新配置。
+- [ ] 设计 Cockpit 布局，强调 "Agent-First" 的视觉层级。
+- [ ] 实现 **Runtime (Kernel/Persona)** 配置面板。
+- [ ] 实现 **Capabilities (Skills/MCP)** 配置面板。
+- [ ] 实现 **Culture (Language/Tone)** 配置面板。
+- [ ] 开发配置转换适配器 (Adapter)，将 UI 选项映射为 CLI 参数。
+- [ ] 实现配置持久化。
 
 ## Review Comments
 
