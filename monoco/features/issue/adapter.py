@@ -1,19 +1,32 @@
 from pathlib import Path
 from typing import Dict
-from monoco.core.feature import MonocoFeature, IntegrationData
+from monoco.core.loader import FeatureModule, FeatureMetadata
+from monoco.core.feature import IntegrationData
 from monoco.features.issue import core
 
 
-class IssueFeature(MonocoFeature):
-    @property
-    def name(self) -> str:
-        return "issue"
+class IssueFeature(FeatureModule):
+    """Issue management feature module with unified lifecycle support."""
 
-    def initialize(self, root: Path, config: Dict) -> None:
+    @property
+    def metadata(self) -> FeatureMetadata:
+        return FeatureMetadata(
+            name="issue",
+            version="1.0.0",
+            description="Issue management system for Monoco",
+            dependencies=["core"],
+            priority=10,  # High priority - load early
+        )
+
+    def _on_mount(self, context: "FeatureContext") -> None:  # type: ignore
+        """Initialize issue feature with workspace context."""
+        root = context.root
+        config = context.config
         issues_path = root / config.get("paths", {}).get("issues", "Issues")
         core.init(issues_path)
 
     def integrate(self, root: Path, config: Dict) -> IntegrationData:
+        """Provide integration data for agent environment."""
         # Determine language from config, default to 'en'
         lang = config.get("i18n", {}).get("source_lang", "en")
 
