@@ -21,12 +21,15 @@ tags:
 - '#EPIC-0025'
 - '#orchestrator'
 - '#daemon'
+- narrative
 criticality: high
 progress: 0/19
 files_count: 0
 ---
 
 ## EPIC-0025: Monoco Daemon Orchestrator
+
+> **Narrative Epic**: Agent 调度与编排的长期叙事
 
 ## 目标 (Objective)
 构建 Monoco 的守护进程（Daemon）与编排层（Orchestration Layer），使其从被动工具集进化为主动运行的 Agent 操作系统内核。

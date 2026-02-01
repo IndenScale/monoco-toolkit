@@ -24,10 +24,24 @@ files_count: 7
 ### 定义 (Definition)
 此处是 Monoco Toolkit 的万物之源 (The Root of All Things)。
 这是 Toolkit 子项目的根节点 (Sink Epic)。
-所有顶层 Toolkit Epic 均必须继承自此节点。
+
+### 当前架构 (Current Architecture)
+
+自 2026-02-01 重构后，所有 Issue 归属于以下 6 个核心 Narrative Epic:
+
+| ID | Domain | 职责 |
+|----|--------|------|
+| 0025 | AgentScheduling | Daemon & Agent Orchestrator |
+| 0027 | IssueGovernance | Issue Governance & Quality |
+| 0028 | Infrastructure | Kernel & Runtime Core |
+| 0029 | AgentOnboarding | Knowledge Engine & Memory System |
+| 0030 | DevEx | Developer Experience & Tooling |
+
+**历史归档**: `.archives/issues-archive-20260201.tar.gz`
 
 ## 技术任务 (Technical Tasks)
 
-- [ ] 维护 Toolkit Issue 图谱的完整性。
+- [x] 重构 Issue 图谱，确立 6 个核心 Narrative Epic。
+- [x] 归档历史 Issue (2026-02-01 之前)。
 
 ### 评审备注 (Review Comments)
