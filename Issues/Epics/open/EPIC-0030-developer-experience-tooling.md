@@ -4,9 +4,9 @@ uid: 058649
 type: epic
 status: open
 stage: doing
-title: Developer Experience & Tooling
+title: Internal Developer Experience & Infrastructure
 created_at: '2026-02-01T10:37:05'
-updated_at: '2026-02-01T10:37:07'
+updated_at: '2026-02-01T20:30:00'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,8 +16,9 @@ tags:
 - '#EPIC-0000'
 - '#EPIC-0030'
 - narrative
-- devex
-- tooling
+- infrastructure
+- engineering-productivity
+- ci-cd
 files: []
 criticality: high
 opened_at: '2026-02-01T10:37:05'
@@ -25,50 +26,46 @@ progress: 1/3
 files_count: 0
 ---
 
-## EPIC-0030: Developer Experience & Tooling
+## EPIC-0030: Internal Developer Experience & Infrastructure
 
 ## Objective
-打造卓越的开发者体验 (Developer Experience)，使 Monoco Toolkit 成为开发者与 Agent 的高效工作伴侣。本 Epic 聚焦于 IDE 集成、交互优化、工具链完善和工作流简化，确保人机协作的流畅性。
-
-这是项目的长期叙事 (Long-term Narrative)，所有与开发者体验相关的 Feature 和 Chore 都应归属于此 Epic。
+打造卓越的 **内部工程效能 (Engineering Productivity)**，确保 Monoco Toolkit 自身的开发、测试、发布流程高效、稳定。本 Epic 聚焦于 CI/CD 流水线、测试基础设施、代码质量门禁 (Lint/Format) 以及本地开发环境 (Setup/Hooks)。
+它服务于 Monoco 的 **贡献者 (Contributors)**，而非最终用户。
 
 ## Narrative Scope
 
-### 1. IDE Integration
-- VS Code 扩展功能完善
-- Language Server Protocol (LSP) 支持
-- 编辑器内 Agent 交互界面
+### 1. CI/CD Pipeline
+- GitHub Actions 工作流优化
+- 自动化发布与版本管理 (Semantic Release)
+- 依赖更新自动化
 
-### 2. CLI Experience
-- 命令行交互优化
-- 错误提示与自动补全
-- 配置管理简化
+### 2. Testing Infrastructure
+- 共享 Test Fixtures 设计与管理
+- Pytest 配置与插件优化
+- 覆盖率报告与测试性能监控
 
-### 3. Tooling & Automation
-- Git Hooks 集成
-- Linting & Formatting
-- 工作流自动化
+### 3. Code Quality Infrastructure
+- Pre-commit Hooks 配置
+- Linter (Ruff/MyPy) 规则维护
+- 自动化代码格式化
 
-### 4. Cockpit Interface
-- Monoco Cockpit 设置页面
-- Agent 运行时配置界面
-- 可视化任务控制中心
+### 4. Local Development Environment
+- `uv` 环境配置与依赖管理
+- 开发脚本与 Makefile
+- Repo 结构与文档维护 (.editorconfig, .gitignore)
 
 ## Acceptance Criteria
-- [ ] **IDE Integration**: VS Code 扩展提供完整的 Agent 交互能力
-- [ ] **CLI Experience**: 命令行工具提供友好的交互反馈和错误提示
-- [ ] **Cockpit UI**: 提供集中的配置界面和任务控制中心
-- [ ] **Workflow Optimization**: 常用操作流程简化，减少重复性劳动
+- [ ] **CI/CD**: 实现全自动化的测试与发布流水线
+- [ ] **Test Infra**: 提供易用的测试固件，降低编写测试的门槛
+- [ ] **Zero Config**: 新贡献者只需 `git clone` + `uv sync` 即可开始工作
+- [ ] **Code Quality**: 代码提交自动经过严格的 Lint/Format 检查
 
 ## Technical Tasks
-- [ ] **FEAT-Cockpit-Settings**: Monoco Cockpit 设置页面实现
-- [ ] **FEAT-VSCode-Enhancement**: VS Code 扩展功能增强
-- [ ] **FEAT-LSP-Improvement**: Language Server 功能完善
-- [ ] **FEAT-CLI-Optimization**: CLI 交互体验优化
+- [ ] **CHORE-CI-Optimization**: 优化 GitHub Actions 速度
+- [ ] **CHORE-Fixture-Refactor**: 重构并统一测试 Fixtures
+- [ ] **CHORE-Lint-Config**: 统一 Ruff/MyPy 配置
+- [ ] **CHORE-Precommit-Setup**: 完善 Pre-commit Hooks
 
 ## Child Issues
 <!-- 归属于本 Narrative Epic 的子 Issue -->
-- FEAT-0134: Monoco Cockpit - Settings Page Implementation
-
-## Review Comments
-*None yet.*
+- [ ] Shared Fixture Test Infrastructure (Missing Feature Link)

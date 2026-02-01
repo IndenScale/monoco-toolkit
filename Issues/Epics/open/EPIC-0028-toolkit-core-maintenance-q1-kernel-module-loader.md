@@ -31,7 +31,7 @@ opened_at: '2026-02-01T10:29:00'
 > **Narrative Epic**: 核心运行时与基础设施的长期叙事
 
 ## Objective
-作为基础设施维护 Epic，接管自 `` (初期构建) 遗留的针对 Kernel 和 Module Loader 的优化任务。本 Epic 聚焦于提升 Monoco Toolkit 核心运行时的稳定性、模块加载性能及生命周期管理机制。
+构建坚如磐石的 **Core Runtime Infrastructure**，确立 Monoco 作为 Agent OS 的内核地位。本 Epic 致力于打造高性能、高可扩展的模块加载器与生命周期管理机制，为上层应用（Skills, Agents）提供标准化的运行时环境与插件协议 (SPI)。这是保障系统长期稳定演进的基石。
 
 ## Acceptance Criteria
 - [ ] **Module Loader**: 实现稳健的模块发现与加载机制，支持按需加载。

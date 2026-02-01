@@ -10,17 +10,17 @@ updated_at: '2026-02-01T00:59:12'
 opened_at: '2026-02-01T00:59:12'
 priority: high
 owner: IndenScale
-parent: EPIC-0030
+parent: EPIC-0032
 dependencies: []
 related: []
 domains:
-- DevEx
+- CollaborationBus
 tags:
 - vscode-extension
 - ui
 - configuration
 - cockpit
-- "#EPIC-0030"
+- "#EPIC-0032"
 - "#FEAT-0134"
 files: []
 criticality: medium

@@ -12,13 +12,15 @@ priority: high
 owner: IndenScale
 parent: EPIC-0000
 dependencies: []
-related: []
+related:
+- FEAT-0149
 domains:
 - AgentScheduling
 files: []
 tags:
 - '#EPIC-0000'
 - '#EPIC-0025'
+- '#FEAT-0149'
 - '#orchestrator'
 - '#daemon'
 - narrative
@@ -63,6 +65,7 @@ files_count: 0
 - [ ] **FEAT-Agent-Scheduler**: 实现 Agent 进程的生命周期管理（Spawn, Monitor, Timeout, Kill）。
 - [ ] **FEAT-Autopsy-Protocol**: 在 Agent 会话结束（成功/失败/超时）后，自动收集 Logs/Context 并在 Memo 中生成 "尸检报告"。
 - [ ] **FEAT-Feedback-Loop**: 将尸检结果回写到 Knowledge Base 或新的 Issue。
+- [ ] **FEAT-Hook-System**: 实现 Monoco Native Hook System，支持事件总线和生命周期钩子 (详见 FEAT-0149)。
 
 ### Phase 4: HITP Protocols (Interaction Layer)
 > 解决 "HITP: Issue 确认/微调 -> 合并修改 -> 推送远程"
