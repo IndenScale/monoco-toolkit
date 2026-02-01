@@ -7,12 +7,13 @@ stage: draft
 title: Issue Module Skill 原子化重构
 created_at: '2026-01-31T20:04:50'
 updated_at: '2026-01-31T20:04:50'
-parent: EPIC-0000
+parent: EPIC-0027
 dependencies: []
 related: []
-domains: []
+domains:
+- IssueGovernance
 tags:
-- '#EPIC-0000'
+- '#EPIC-0027'
 - '#EPIC-0024'
 files: []
 criticality: high
@@ -84,9 +85,7 @@ monoco/features/agent/
 
 ## Related Issues
 
-- FEAT-0128: 创建 Copilot 模式原子 Flow Skills
-- FEAT-0129: 创建 Autopilot Planner Role 和 Flow Skill
-- FEAT-0130: 重构现有 issue-lifecycle-workflow
+- 相关 Feature 已归档至 `.archives/issues-archive-20260201.tar.gz`
 
 ## Review Comments
 

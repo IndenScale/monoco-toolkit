@@ -10,16 +10,17 @@ updated_at: '2026-02-01T00:59:12'
 opened_at: '2026-02-01T00:59:12'
 priority: high
 owner: IndenScale
-parent: EPIC-0000 # Default parent
+parent: EPIC-0030
 dependencies: []
 related: []
-domains: []
+domains:
+- DevEx
 tags:
 - vscode-extension
 - ui
 - configuration
 - cockpit
-- "#EPIC-0000"
+- "#EPIC-0030"
 - "#FEAT-0134"
 files: []
 criticality: medium
