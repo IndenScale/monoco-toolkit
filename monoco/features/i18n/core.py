@@ -214,38 +214,249 @@ def check_translation_exists(
     return missing
 
 
+# Common technical terms that should not count as "English words"
+# when detecting language in Chinese documents
+TECHNICAL_TERMS_ALLOWLIST = {
+    # CLI/Shell
+    "cli", "api", "ui", "ux", "gui", "cli", "shell", "bash", "zsh", "sh",
+    "cmd", "powershell", "terminal", "console", "prompt",
+    # Cloud/Container
+    "kubernetes", "k8s", "docker", "container", "pod", "cluster", "node",
+    "namespace", "ingress", "service", "deployment", "helm", "kubectl",
+    "aws", "gcp", "azure", "cloud", "serverless", "lambda", "ec2", "s3",
+    # DevOps/CI/CD
+    "ci", "cd", "cicd", "pipeline", "jenkins", "gitlab", "github", "git",
+    "svn", "mercurial", "hg", "commit", "branch", "merge", "rebase", "tag",
+    "hook", "action", "workflow", "artifact", "build", "deploy", "release",
+    # Programming Languages
+    "python", "javascript", "js", "typescript", "ts", "java", "kotlin",
+    "scala", "groovy", "ruby", "go", "golang", "rust", "c", "cpp", "c++",
+    "csharp", "c#", "php", "perl", "lua", "swift", "objc", "objective-c",
+    "r", "matlab", "julia", "dart", "flutter", "elixir", "erlang", "haskell",
+    "clojure", "lisp", "scheme", "racket", "fsharp", "f#", "vb", "vba",
+    # Web/Frameworks
+    "html", "css", "scss", "sass", "less", "xml", "json", "yaml", "yml",
+    "toml", "ini", "csv", "tsv", "markdown", "md", "rst", "asciidoc",
+    "react", "vue", "angular", "svelte", "nextjs", "nuxt", "django",
+    "flask", "fastapi", "tornado", "express", "koa", "nestjs", "spring",
+    "rails", "laravel", "symfony", "dotnet", "aspnet", "mvc", "mvvm",
+    # Databases
+    "sql", "nosql", "mysql", "postgresql", "postgres", "sqlite", "oracle",
+    "mssql", "sqlserver", "mongodb", "mongo", "redis", "cassandra",
+    "dynamodb", "firebase", "elasticsearch", "solr", "neo4j", "graphql",
+    # Testing
+    "test", "testing", "unittest", "pytest", "jest", "mocha", "jasmine",
+    "cypress", "selenium", "cucumber", "bdd", "tdd", "mock", "stub",
+    "fixture", "assertion", "coverage", "benchmark", "profiling",
+    # Architecture/Patterns
+    "microservice", "microservices", "monolith", "server", "client",
+    "frontend", "backend", "fullstack", "api-gateway", "load-balancer",
+    "proxy", "cache", "cdn", "dns", "http", "https", "tcp", "udp",
+    "websocket", "grpc", "rest", "soap", "graphql", "oauth", "jwt",
+    "sso", "ldap", "auth", "authentication", "authorization",
+    # OS/Platform
+    "linux", "ubuntu", "debian", "centos", "rhel", "fedora", "arch",
+    "alpine", "windows", "macos", "darwin", "ios", "android",
+    "unix", "posix", "kernel", "systemd", "init", "daemon",
+    # Tools/IDE
+    "vscode", "idea", "pycharm", "webstorm", "vim", "neovim", "nvim",
+    "emacs", "sublime", "atom", "eclipse", "netbeans", "xcode",
+    "docker-compose", "dockerfile", "makefile", "cmake", "gradle",
+    "maven", "npm", "yarn", "pnpm", "pip", "conda", "venv", "virtualenv",
+    # AI/ML
+    "ai", "ml", "dl", "llm", "nlp", "cv", "neural", "network",
+    "tensorflow", "pytorch", "keras", "scikit", "sklearn", "pandas",
+    "numpy", "scipy", "matplotlib", "seaborn", "jupyter", "notebook",
+    "training", "inference", "model", "dataset", "vector", "embedding",
+    # Security
+    "security", "vulnerability", "exploit", "cve", "xss", "csrf",
+    "injection", "encryption", "decryption", "hash", "signature",
+    "certificate", "ssl", "tls", "https", "firewall", "vpn",
+    # Monitoring/Observability
+    "log", "logging", "metrics", "tracing", "observability", "monitoring",
+    "alert", "dashboard", "grafana", "prometheus", "elk", "splunk",
+    "datadog", "newrelic", "sentry", "bugsnag", "rollbar",
+    # Agile/Project Management
+    "agile", "scrum", "kanban", "sprint", "backlog", "epic", "story",
+    "task", "issue", "ticket", "bug", "feature", "milestone", "roadmap",
+    "retro", "standup", "review", "demo", "po", "sm", "pm",
+    # Misc Tech Terms
+    "id", "uuid", "guid", "url", "uri", "ip", "ipv4", "ipv6",
+    "mac", "hostname", "domain", "subdomain", "path", "query",
+    "header", "body", "payload", "request", "response", "status",
+    "error", "exception", "warning", "info", "debug", "trace",
+    "config", "configuration", "setting", "option", "flag", "env",
+    "variable", "constant", "literal", "expression", "statement",
+    "function", "method", "class", "object", "instance", "interface",
+    "abstract", "virtual", "override", "inherit", "extend", "implement",
+    "import", "export", "module", "package", "library", "framework",
+    "sdk", "toolkit", "runtime", "compiler", "interpreter", "vm",
+    "version", "release", "changelog", "license", "copyright",
+    "repo", "repository", "fork", "clone", "pull", "push", "fetch",
+    "upstream", "origin", "remote", "local", "stash", "stage",
+    "index", "working", "tree", "head", "detached", "orphan",
+    "squash", "amend", "cherry-pick", "revert", "reset", "clean",
+    "linter", "formatter", "parser", "lexer", "ast", "ir",
+    "bytecode", "opcode", "assembly", "binary", "executable",
+    "static", "dynamic", "linking", "compilation", "transpilation",
+    "minification", "bundling", "tree-shaking", "code-splitting",
+    "hot-reload", "hot-restart", "live-reload", "watch", "watchman",
+    "polyfill", "shim", "ponyfill", "fallback", "graceful",
+    "async", "sync", "parallel", "concurrent", "sequential",
+    "blocking", "non-blocking", "io", "nio", "epoll", "kqueue",
+    "thread", "process", "coroutine", "fiber", "goroutine",
+    "mutex", "lock", "semaphore", "channel", "queue", "stack",
+    "heap", "gc", "garbage", "collection", "memory", "leak",
+    "buffer", "stream", "pipe", "redirect", "tee", "cat",
+    "grep", "awk", "sed", "cut", "sort", "uniq", "wc", "head", "tail",
+    "find", "locate", "which", "whereis", "type", "alias",
+    "export", "source", "env", "printenv", "set", "unset",
+    "chmod", "chown", "chgrp", "umask", "sudo", "su",
+    "ssh", "scp", "sftp", "rsync", "ftp", "telnet", "nc",
+    "ping", "traceroute", "netstat", "ss", "lsof", "fuser",
+    "ps", "top", "htop", "kill", "pkill", "killall", "nice",
+    "cron", "at", "batch", "systemctl", "service", "init",
+    "mount", "umount", "df", "du", "fsck", "mkfs", "fdisk",
+    "parted", "lsblk", "blkid", "uuidgen", "tune2fs",
+    "tar", "gzip", "gunzip", "zip", "unzip", "bz2", "xz",
+    "7z", "rar", "archive", "compress", "decompress", "extract",
+    "curl", "wget", "httpie", "postman", "insomnia",
+    "nginx", "apache", "httpd", "tomcat", "jetty", "undertow",
+    "haproxy", "traefik", "envoy", "istio", "linkerd",
+    "rabbitmq", "kafka", "mqtt", "amqp", "stomp", "zeromq",
+    "memcached", "etcd", "consul", "vault", "zookeeper",
+    "prometheus", "grafana", "jaeger", "zipkin", "opentelemetry",
+    "ansible", "puppet", "chef", "saltstack", "terraform",
+    "pulumi", "vagrant", "packer", "nomad", "consul-template",
+    "github-actions", "gitlab-ci", "travis", "circleci", "jenkins",
+    "teamcity", "bamboo", "drone", "argo", "tekton", "spinnaker",
+    "sonarqube", "nexus", "artifactory", "harbor", "chartmuseum",
+    "loki", "fluentd", "fluent-bit", "vector", "filebeat",
+    "telegraf", "influxdb", "timescaledb", "promscale",
+    "minio", "ceph", "glusterfs", "nfs", "smb", "cifs",
+    "vpn", "wireguard", "openvpn", "ipsec", "ssl-vpn",
+    "waf", "ids", "ips", "siem", "soar", "xdr", "edr",
+    "ldap", "ad", "sso", "saml", "oauth2", "openid", "oidc",
+    "mfa", "2fa", "totp", "hotp", "u2f", "webauthn", "fido",
+    "aes", "rsa", "ecc", "dsa", "ecdsa", "ed25519", "curve25519",
+    "sha", "md5", "bcrypt", "scrypt", "argon2", "pbkdf2",
+    "hmac", "cmac", "gcm", "cbc", "ecb", "ctr", "ofb", "cfb",
+    "tls", "ssl", "x509", "csr", "crt", "pem", "der", "p12", "pfx",
+    "acme", "letsencrypt", "certbot", "traefik", "caddy",
+    "wasm", "webassembly", "wasmer", "wasmtime", "wasi",
+    "pwa", "spa", "mpa", "ssr", "csr", "ssg", "isr",
+    "amp", "instant", "turbo", "stimulus", "alpine", "htmx",
+    "webcomponents", "shadow", "dom", "custom", "elements",
+    "service-worker", "pwa", "manifest", "offline", "cache",
+    "webrtc", "websocket", "sse", "eventsource", "polling",
+    "graphql", "subscription", "mutation", "query", "schema",
+    "resolver", "directive", "fragment", "interface", "union",
+    "prisma", "sequelize", "typeorm", "sqlalchemy", "orm",
+    "migration", "seed", "factory", "fixture", "mock", "stub",
+    "faker", "factory-boy", "hypothesis", "property-based",
+    "snapshot", "visual", "regression", "e2e", "integration",
+    "unit", "functional", "acceptance", "performance", "load",
+    "stress", "chaos", "contract", "pact", "consumer", "provider",
+    "tdd", "bdd", "atdd", "sbe", "example", "specification",
+    "given", "when", "then", "scenario", "feature", "background",
+    "cucumber", "behave", "specflow", "gauge", "relish",
+    "allure", "reportportal", "xunit", "nunit", "mstest",
+    "sonar", "coveralls", "codecov", "codeclimate", "codacy",
+    "deepsource", "snyk", "whitesource", "blackduck", "fossa",
+    "dependabot", "renovate", "snyk", "greenkeeper",
+    "pre-commit", "husky", "lint-staged", "commitlint",
+    "semantic-release", "standard-version", "conventional",
+    "changelog", "commitizen", "cz", "commitlint",
+    "monoco", "kimi", "claude", "gemini", "qwen", "gpt",
+}
+
+
 def detect_language(content: str) -> str:
     """
-    Detect the language of the content using simple heuristics.
+    Detect the language of the content using improved heuristics.
+    
+    This function is designed to handle technical documents with mixed
+    Chinese and English content, especially for IT/Software development topics.
+    
     Returns: 'zh', 'en', or 'unknown'
     """
     if not content:
         return "unknown"
 
     # Strip YAML Frontmatter if present
-    # Matches --- at start, followed by anything, followed by ---
     frontmatter_pattern = re.compile(r"^---\n.*?\n---\n", re.DOTALL)
     content = frontmatter_pattern.sub("", content)
 
     if not content.strip():
         return "unknown"
 
-    # 1. Check for CJK characters (Chinese/Japanese/Korean)
-    # Range: \u4e00-\u9fff (Common CJK Unified Ideographs)
-    # Heuristic: If CJK count > threshold, it's likely Asian (we assume ZH for now in this context)
-    total_chars = len(content)
-    cjk_count = sum(1 for c in content if "\u4e00" <= c <= "\u9fff")
+    # Remove code blocks (```...```) as they often contain English keywords
+    code_block_pattern = re.compile(r"```[\s\S]*?```", re.MULTILINE)
+    content_no_code = code_block_pattern.sub("", content)
+    
+    # Remove inline code (`...`)
+    inline_code_pattern = re.compile(r"`[^`]+`")
+    content_no_code = inline_code_pattern.sub("", content_no_code)
+    
+    # Remove URLs
+    url_pattern = re.compile(r"https?://\S+|www\.\S+|")  
+    content_clean = url_pattern.sub("", content_no_code)
+    
+    # Remove issue IDs (EPIC-0001, FEAT-1234, etc.)
+    issue_id_pattern = re.compile(r"\b(EPIC|FEAT|CHORE|FIX)-\d{4}\b")
+    content_clean = issue_id_pattern.sub("", content_clean)
 
-    # If > 5% chars are CJK, highly likely to be Chinese document
-    if total_chars > 0 and cjk_count / total_chars > 0.05:
+    if not content_clean.strip():
+        # If after cleaning there's nothing left, it was likely all code/IDs
+        return "unknown"
+
+    total_chars = len(content_clean)
+    
+    # Count CJK characters (Chinese/Japanese/Korean)
+    cjk_count = sum(1 for c in content_clean if "\u4e00" <= c <= "\u9fff")
+    
+    # Count non-ASCII characters (excluding CJK)
+    non_ascii_non_cjk = sum(
+        1 for c in content_clean 
+        if ord(c) > 127 and not ("\u4e00" <= c <= "\u9fff")
+    )
+    
+    # Extract words for analysis (alphanumeric sequences)
+    words = re.findall(r"\b[a-zA-Z][a-zA-Z0-9]*\b", content_clean)
+    total_words = len(words)
+    
+    # Count technical terms in allowlist (case-insensitive)
+    technical_term_count = sum(
+        1 for word in words 
+        if word.lower() in TECHNICAL_TERMS_ALLOWLIST
+    )
+    
+    # Calculate non-technical English words
+    non_technical_words = total_words - technical_term_count
+    
+    # Heuristic 1: If > 3% chars are CJK, likely Chinese document
+    # Lowered threshold from 5% to 3% for better Chinese detection
+    cjk_ratio = cjk_count / total_chars if total_chars > 0 else 0
+    if cjk_ratio > 0.03:
         return "zh"
-
-    # 2. Check for English
-    # Heuristic: High ASCII ratio and low CJK
-    non_ascii = sum(1 for c in content if ord(c) > 127)
-
-    # If < 10% non-ASCII, likely English (or code)
-    if total_chars > 0 and non_ascii / total_chars < 0.1:
+    
+    # Heuristic 2: If significant CJK (>1%) and some English technical terms,
+    # treat as Chinese (technical Chinese document)
+    if cjk_ratio > 0.01 and technical_term_count > 0:
+        return "zh"
+    
+    # Heuristic 3: For English detection
+    # Only count non-technical English words towards English detection
+    # Require at least 10 non-technical words to be considered English
+    non_ascii_ratio = non_ascii_non_cjk / total_chars if total_chars > 0 else 0
+    
+    # Relaxed threshold: < 15% non-ASCII (excluding CJK) AND 
+    # has meaningful non-technical English content
+    if non_ascii_ratio < 0.15 and non_technical_words >= 10:
+        return "en"
+    
+    # Heuristic 4: High English word density with low CJK
+    if cjk_ratio < 0.01 and total_words > 20:
         return "en"
 
     return "unknown"
