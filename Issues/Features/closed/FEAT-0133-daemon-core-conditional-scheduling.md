@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 'Daemon Core: Conditional Scheduling Strategy'
 created_at: '2026-02-01T01:04:00'
-updated_at: '2026-02-01T01:09:03'
+updated_at: 2026-02-01 01:09:04
 parent: EPIC-0025
 dependencies: []
 related: []
@@ -25,10 +25,6 @@ files:
 criticality: medium
 closed_at: '2026-02-01T01:09:03'
 solution: implemented
-isolation:
-  type: branch
-  ref: feat/feat-0133-daemon-core-conditional-scheduling-strategy
-  created_at: '2026-02-01T01:04:00'
 ---
 
 ## FEAT-0133: Daemon Core: Conditional Scheduling Strategy
