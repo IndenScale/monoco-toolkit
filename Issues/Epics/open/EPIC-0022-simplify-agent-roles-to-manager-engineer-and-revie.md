@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 简化 Agent 角色为 Manager, Engineer 和 Reviewer
 created_at: '2026-01-30T16:42:46'
-updated_at: '2026-01-30T16:42:46'
+updated_at: '2026-02-01T22:29:50'
 parent: EPIC-0025
 dependencies: []
 related:
@@ -18,6 +18,8 @@ tags:
 - '#EPIC-0025'
 - '#EPIC-0024'
 files: []
+criticality: high
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-01-30T16:42:46'
 progress: 5/5
 files_count: 0
