@@ -108,6 +108,8 @@ def _serialize_metadata(metadata: IssueMetadata) -> str:
         data["domains"] = []
     if "files" not in data:
         data["files"] = []
+    if "solution" not in data:
+        data["solution"] = None
 
     # Custom YAML Dumper to preserve None as 'null' and order
     # Helper to order keys: id, uid, type, status, stage, title, ... graph ...
@@ -147,6 +149,10 @@ def _serialize_metadata(metadata: IssueMetadata) -> str:
     if "criticality" in data:
         ordered_data["criticality"] = data["criticality"]
 
+    # Add solution if present (for template generation)
+    if "solution" in data:
+        ordered_data["solution"] = data["solution"]
+
     # Add remaining
     for k, v in data.items():
         if k not in ordered_data:
@@ -160,6 +166,10 @@ def _serialize_metadata(metadata: IssueMetadata) -> str:
     if "parent" in ordered_data and ordered_data["parent"] is None:
         yaml_header = yaml_header.replace(
             "parent: null", "parent: null # <EPIC-ID> Optional"
+        )
+    if "solution" in ordered_data and ordered_data["solution"] is None:
+        yaml_header = yaml_header.replace(
+            "solution: null", "solution: null # implemented, cancelled, wontfix, duplicate"
         )
 
     return yaml_header

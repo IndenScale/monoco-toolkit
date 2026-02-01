@@ -2,11 +2,11 @@
 id: FIX-0002
 uid: d5f310
 type: fix
-status: open
-stage: doing
+status: closed
+stage: done
 title: Add 'solution' field to Issue Template and CLI update command
 created_at: '2026-02-01T21:42:30'
-updated_at: '2026-02-01T21:51:23'
+updated_at: '2026-02-01T21:49:52'
 parent: EPIC-0030
 dependencies: []
 related: []
@@ -18,7 +18,9 @@ files:
 - monoco/features/issue/core.py
 - monoco/features/issue/commands.py
 criticality: high
+solution: implemented
 opened_at: '2026-02-01T21:42:30'
+closed_at: '2026-02-01T21:49:52'
 ---
 
 ## FIX-0002: Add 'solution' field to Issue Template and CLI update command
@@ -29,9 +31,9 @@ Add the `solution` field to Issue templates and CLI update command to ensure con
 
 ## Acceptance Criteria
 <!-- Define binary conditions for success. -->
-- [ ] Issue template includes `solution` field with helpful comment
-- [ ] CLI `update` command supports `--solution` parameter
-- [ ] Solution field is properly serialized in YAML frontmatter
+- [x] Issue template includes `solution` field with helpful comment
+- [x] CLI `update` command supports `--solution` parameter
+- [x] Solution field is properly serialized in YAML frontmatter
 
 ## Technical Tasks
 <!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
@@ -44,9 +46,11 @@ Add the `solution` field to Issue templates and CLI update command to ensure con
 <!-- - [ ] Parent Task -->
 <!--   - [ ] Sub Task -->
 
-- [ ] Add `solution` field to `_serialize_metadata()` in `core.py`
-- [ ] Add YAML comment for solution field guidance
-- [ ] Add `--solution` parameter to CLI `update` command
+- [x] Add `solution` field to `_serialize_metadata()` in `core.py`
+- [x] Add YAML comment for solution field guidance
+- [x] Add `--solution` parameter to CLI `update` command
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+Fix completed. The solution field is now:
+1. Included in new issue templates with a helpful comment showing valid values
+2. Supported by the `monoco issue update` command via `--solution` parameter

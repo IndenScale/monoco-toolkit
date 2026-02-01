@@ -162,6 +162,7 @@ def update(
     title: Optional[str] = typer.Option(None, "--title", "-t", help="New title"),
     status: Optional[str] = typer.Option(None, "--status", help="New status"),
     stage: Optional[str] = typer.Option(None, "--stage", help="New stage"),
+    solution: Optional[str] = typer.Option(None, "--solution", "-s", help="Solution type (implemented, cancelled, wontfix, duplicate)"),
     parent: Optional[str] = typer.Option(
         None, "--parent", "-p", help="Parent Issue ID"
     ),
@@ -188,6 +189,7 @@ def update(
             issue_id,
             status=status,
             stage=stage,
+            solution=solution,
             title=title,
             parent=parent,
             sprint=sprint,
