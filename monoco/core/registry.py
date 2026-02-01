@@ -1,45 +1,54 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 from monoco.core.feature import MonocoFeature
+from monoco.core.loader import FeatureLoader, FeatureRegistry as LoaderFeatureRegistry
 
 
 class FeatureRegistry:
-    _features: Dict[str, MonocoFeature] = {}
+    """
+    Feature registry that wraps the new unified FeatureLoader.
+    
+    This class provides backward compatibility while delegating to the
+    new FeatureLoader for dynamic discovery and lifecycle management.
+    """
+
+    _loader: Optional[FeatureLoader] = None
+
+    @classmethod
+    def _get_loader(cls) -> FeatureLoader:
+        """Get or create the default feature loader."""
+        if cls._loader is None:
+            cls._loader = FeatureLoader()
+            # Discover and load all features
+            cls._loader.discover()
+            cls._loader.load_all()
+        return cls._loader
 
     @classmethod
     def register(cls, feature: MonocoFeature):
         """Register a feature instance."""
-        cls._features[feature.name] = feature
+        loader = cls._get_loader()
+        loader.registry.register(feature)  # type: ignore
 
     @classmethod
     def get_features(cls) -> List[MonocoFeature]:
         """Get all registered features."""
-        return list(cls._features.values())
+        loader = cls._get_loader()
+        return loader.registry.get_all()  # type: ignore
 
     @classmethod
-    def get_feature(cls, name: str) -> MonocoFeature:
+    def get_feature(cls, name: str) -> Optional[MonocoFeature]:
         """Get a specific feature by name."""
-        return cls._features.get(name)
+        loader = cls._get_loader()
+        return loader.registry.get(name)  # type: ignore
 
     @classmethod
     def load_defaults(cls):
         """
-        Load default core features.
-        TODO: In the future, this could be dynamic via entry points.
-        """
-        # Import here to avoid circular dependencies at module level
-        from monoco.features.issue.adapter import IssueFeature
-        from monoco.features.spike.adapter import SpikeFeature
-        from monoco.features.i18n.adapter import I18nFeature
-        from monoco.features.memo.adapter import MemoFeature
-
-        cls.register(IssueFeature())
-        cls.register(SpikeFeature())
-        cls.register(I18nFeature())
-        cls.register(MemoFeature())
-
+        Load default core features using the unified FeatureLoader.
         
-        from monoco.features.glossary.adapter import GlossaryFeature
-        cls.register(GlossaryFeature())
-
-        from monoco.features.agent.adapter import AgentFeature
-        cls.register(AgentFeature())
+        This method discovers and loads all features from monoco/features/
+        automatically, replacing the manual registration approach.
+        """
+        loader = cls._get_loader()
+        # Features are already discovered and loaded in _get_loader
+        # This method is kept for backward compatibility
