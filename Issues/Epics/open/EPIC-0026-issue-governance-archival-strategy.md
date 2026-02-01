@@ -3,7 +3,7 @@ id: EPIC-0026
 uid: bf71df
 type: epic
 status: open
-stage: draft
+stage: doing
 title: Issue Governance & Archival Strategy
 created_at: '2026-02-01T09:37:26'
 updated_at: '2026-02-01T09:37:26'
@@ -24,7 +24,7 @@ tags:
 - maintenance
 criticality: medium
 progress: 1/2
-files_count: 0
+files_count: 4
 ---
 
 ## EPIC-0026: Issue Governance & Archival Strategy
