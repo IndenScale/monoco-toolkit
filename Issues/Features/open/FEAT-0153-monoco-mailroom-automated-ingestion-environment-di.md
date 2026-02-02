@@ -3,12 +3,14 @@ id: FEAT-0153
 uid: mailroom_auto_01
 type: feature
 status: open
-stage: draft
+stage: doing
 title: 'Monoco Mailroom: Automated Ingestion & Environment Discovery'
-owner: IndenScale
-parent: EPIC-0025
+created_at: '2026-02-02T00:00:00'
+updated_at: '2026-02-02T09:07:46'
 priority: high
-created_at: '2026-02-02'
+parent: EPIC-0025
+dependencies: []
+related: []
 domains:
 - AgentEmpowerment
 tags:
@@ -17,6 +19,9 @@ tags:
 - mailroom
 - automation
 - discovery
+files: []
+criticality: medium
+owner: IndenScale
 ---
 
 ## FEAT-0153: Monoco Mailroom: Automated Ingestion & Environment Discovery
