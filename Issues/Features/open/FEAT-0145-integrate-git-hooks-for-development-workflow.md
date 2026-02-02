@@ -3,10 +3,10 @@ id: FEAT-0145
 uid: 6d6bf7
 type: feature
 status: open
-stage: draft
+stage: doing
 title: 集成 Git Hooks 到开发工作流
 created_at: '2026-02-01T20:57:03'
-updated_at: '2026-02-02T13:25:35'
+updated_at: '2026-02-02T14:55:21'
 parent: EPIC-0030
 dependencies: []
 related:
@@ -21,10 +21,12 @@ files:
 - Issues/Epics/open/EPIC-0030-developer-experience-tooling.md
 - Issues/Features/open/FEAT-0145-integrate-git-hooks-for-development-workflow.md
 criticality: medium
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-02T13:25:35'
 isolation:
   type: direct
   ref: current
+  created_at: '2026-02-02T14:55:21'
 ---
 
 ## FEAT-0145: 集成 Git Hooks 到开发工作流
