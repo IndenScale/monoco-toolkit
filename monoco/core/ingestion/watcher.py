@@ -11,7 +11,7 @@ import asyncio
 import logging
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Callable, Any, Set
@@ -44,7 +44,7 @@ class IngestionEvent:
     artifact_id: Optional[str] = None
     error_message: Optional[str] = None
     metadata: dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class DropzoneHandler(FileSystemEventHandler):

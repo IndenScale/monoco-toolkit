@@ -13,7 +13,7 @@ import shutil
 import tempfile
 import threading
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -210,8 +210,8 @@ class ArtifactManager:
             content_hash=content_hash,
             source_type=source_type,
             status=ArtifactStatus.ACTIVE,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
             expires_at=expires_at,
             content_type=content_type,
             size_bytes=len(content),
@@ -427,7 +427,7 @@ class ArtifactManager:
             if status is not None:
                 existing.status = status
 
-            existing.updated_at = datetime.utcnow()
+            existing.updated_at = datetime.now(timezone.utc)
 
             # Rewrite manifest
             self._rewrite_manifest()
@@ -460,7 +460,7 @@ class ArtifactManager:
             else:
                 # Soft delete
                 metadata.status = ArtifactStatus.DELETED
-                metadata.updated_at = datetime.utcnow()
+                metadata.updated_at = datetime.now(timezone.utc)
                 self._rewrite_manifest()
 
             return True
@@ -496,7 +496,7 @@ class ArtifactManager:
             for metadata in self._metadata_cache.values():
                 if metadata.is_expired and metadata.status == ArtifactStatus.ACTIVE:
                     metadata.status = ArtifactStatus.EXPIRED
-                    metadata.updated_at = datetime.utcnow()
+                    metadata.updated_at = datetime.now(timezone.utc)
                     cleaned.append(metadata.artifact_id)
 
             if cleaned:

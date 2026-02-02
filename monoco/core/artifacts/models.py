@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
@@ -53,10 +53,10 @@ class ArtifactMetadata(BaseModel):
         default=ArtifactStatus.ACTIVE, description="Current lifecycle status"
     )
     created_at: datetime = Field(
-        default_factory=datetime.utcnow, description="Creation timestamp (UTC)"
+        default_factory=lambda: datetime.now(timezone.utc), description="Creation timestamp (UTC)"
     )
     updated_at: datetime = Field(
-        default_factory=datetime.utcnow, description="Last update timestamp (UTC)"
+        default_factory=lambda: datetime.now(timezone.utc), description="Last update timestamp (UTC)"
     )
     expires_at: Optional[datetime] = Field(
         default=None, description="Optional expiration timestamp"
@@ -106,7 +106,7 @@ class ArtifactMetadata(BaseModel):
         """Check if the artifact has expired."""
         if self.expires_at is None:
             return False
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at
 
     @property
     def cas_path_components(self) -> tuple[str, str, str]:
