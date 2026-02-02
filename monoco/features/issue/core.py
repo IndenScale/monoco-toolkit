@@ -506,27 +506,10 @@ def find_issue_path_across_branches(
     # Get current branch
     current_branch = git.get_current_branch(project_root)
     
-    # If found locally, check if it's also in other branches
+    # If found locally, we are good. No need to check other branches for "conflict"
+    # because it's expected that the same issue exists in parent/feature branches 
+    # during/after merge.
     if local_path:
-        # Get relative path from project root
-        try:
-            rel_path = local_path.relative_to(project_root)
-        except ValueError:
-            # Local path is not under project root, use as-is
-            rel_path = local_path
-        
-        # Check if this file exists in other branches
-        other_branches = _find_branches_with_file(project_root, str(rel_path), current_branch)
-        
-        if other_branches:
-            # Issue exists in multiple branches - this is a conflict
-            all_branches = [current_branch] + other_branches
-            raise RuntimeError(
-                f"Issue {issue_id} found in multiple branches: {', '.join(all_branches)}. "
-                f"Please resolve the conflict by merging branches or deleting duplicate issue files."
-            )
-        
-        # Only in current branch - golden path
         return local_path, current_branch
     
     # Not found locally, search in all branches
