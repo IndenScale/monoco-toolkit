@@ -230,6 +230,21 @@ def worktree_remove(path: Path, worktree_path: Path, force: bool = False):
         raise RuntimeError(f"Failed to remove worktree: {stderr}")
 
 
+def get_current_head(path: Path) -> str:
+    """Get the current HEAD commit hash."""
+    code, stdout, stderr = _run_git(["rev-parse", "HEAD"], path)
+    if code != 0:
+        raise RuntimeError(f"Failed to get current HEAD: {stderr}")
+    return stdout.strip()
+
+
+def git_reset_hard(path: Path, ref: str):
+    """Reset the repository to a specific ref using --hard."""
+    code, _, stderr = _run_git(["reset", "--hard", ref], path)
+    if code != 0:
+        raise RuntimeError(f"Git reset --hard to {ref} failed: {stderr}")
+
+
 class GitMonitor:
     """
     Polls the Git repository for HEAD changes and triggers updates.
