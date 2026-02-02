@@ -1,6 +1,8 @@
 import fnmatch
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
+from enum import Enum
+from dataclasses import dataclass
 import re
 
 DEFAULT_EXCLUDES = [
@@ -460,6 +462,258 @@ def detect_language(content: str) -> str:
         return "en"
 
     return "unknown"
+
+
+class BlockType(Enum):
+    """Types of content blocks in Markdown."""
+    HEADING = "heading"
+    PARAGRAPH = "paragraph"
+    CODE_BLOCK = "code_block"
+    LIST_ITEM = "list_item"
+    QUOTE = "quote"
+    TABLE = "table"
+    EMPTY = "empty"
+
+
+@dataclass
+class ContentBlock:
+    """Represents a block of content with its type and language info."""
+    type: BlockType
+    content: str
+    line_start: int
+    line_end: int
+    detected_lang: str = "unknown"
+    should_skip: bool = False
+
+
+def parse_markdown_blocks(content: str) -> List[ContentBlock]:
+    """
+    Parse markdown content into blocks for language detection.
+    
+    This function respects block boundaries like:
+    - Code blocks (```...```)
+    - Headings (# ...)
+    - Paragraphs
+    - List items
+    
+    Returns a list of ContentBlock objects.
+    """
+    # Strip YAML Frontmatter if present
+    frontmatter_pattern = re.compile(r"^---\n.*?\n---\n", re.DOTALL)
+    content_without_fm = frontmatter_pattern.sub("", content)
+    
+    lines = content_without_fm.splitlines()
+    blocks = []
+    current_block_lines = []
+    current_block_type = BlockType.PARAGRAPH
+    current_start_line = 0
+    in_code_block = False
+    code_block_lang = ""
+    
+    def flush_block():
+        nonlocal current_block_lines, current_start_line
+        if current_block_lines:
+            content = "\n".join(current_block_lines)
+            block = ContentBlock(
+                type=current_block_type,
+                content=content,
+                line_start=current_start_line,
+                line_end=current_start_line + len(current_block_lines),
+            )
+            blocks.append(block)
+            current_block_lines = []
+    
+    for i, line in enumerate(lines):
+        # Code block handling
+        if line.strip().startswith("```"):
+            if not in_code_block:
+                # Start of code block
+                flush_block()
+                in_code_block = True
+                code_block_lang = line.strip()[3:].strip()
+                current_block_type = BlockType.CODE_BLOCK
+                current_start_line = i
+                current_block_lines.append(line)
+            else:
+                # End of code block
+                current_block_lines.append(line)
+                flush_block()
+                in_code_block = False
+                current_block_type = BlockType.PARAGRAPH
+            continue
+        
+        if in_code_block:
+            current_block_lines.append(line)
+            continue
+        
+        # Heading
+        if re.match(r"^#{1,6}\s", line):
+            flush_block()
+            block = ContentBlock(
+                type=BlockType.HEADING,
+                content=line,
+                line_start=i,
+                line_end=i + 1,
+            )
+            blocks.append(block)
+            current_start_line = i + 1
+            current_block_type = BlockType.PARAGRAPH
+            continue
+        
+        # Empty line
+        if not line.strip():
+            flush_block()
+            blocks.append(ContentBlock(
+                type=BlockType.EMPTY,
+                content="",
+                line_start=i,
+                line_end=i + 1,
+            ))
+            current_start_line = i + 1
+            current_block_type = BlockType.PARAGRAPH
+            continue
+        
+        # List item
+        if re.match(r"^\s*[-*+]\s", line) or re.match(r"^\s*\d+\.\s", line):
+            flush_block()
+            current_block_type = BlockType.LIST_ITEM
+            current_start_line = i
+            current_block_lines.append(line)
+            continue
+        
+        # Quote
+        if line.strip().startswith(">"):
+            flush_block()
+            current_block_type = BlockType.QUOTE
+            current_start_line = i
+            current_block_lines.append(line)
+            continue
+        
+        # Table row
+        if "|" in line and not line.strip().startswith("#"):
+            if current_block_type != BlockType.TABLE:
+                flush_block()
+                current_block_type = BlockType.TABLE
+                current_start_line = i
+            current_block_lines.append(line)
+            continue
+        
+        # Default: accumulate into paragraph
+        if not current_block_lines:
+            current_start_line = i
+        current_block_lines.append(line)
+    
+    # Flush remaining
+    flush_block()
+    
+    return blocks
+
+
+def should_skip_block_for_language_check(
+    block: ContentBlock, 
+    all_blocks: List[ContentBlock], 
+    block_index: int,
+    source_lang: str = "zh"
+) -> bool:
+    """
+    Determine if a block should be skipped during language consistency checks.
+    
+    Design Principle:
+    - Narrative text should be in the source language (e.g., Chinese)
+    - English should only appear as isolated nouns (technical terms, filenames, code blocks)
+    
+    Reasons to skip:
+    1. Code blocks (always contain English keywords)
+    2. Empty blocks
+    3. Blocks with only technical terms/IDs/filenames
+    """
+    # Always skip code blocks
+    if block.type == BlockType.CODE_BLOCK:
+        return True
+    
+    # Skip empty blocks
+    if block.type == BlockType.EMPTY:
+        return True
+    
+    # Check if block contains only technical content
+    content = block.content.strip()
+    if not content:
+        return True
+    
+    # Remove common non-language elements
+    cleaned = content
+    # Remove inline code
+    cleaned = re.sub(r"`[^`]+`", "", cleaned)
+    # Remove URLs
+    cleaned = re.sub(r"https?://\S+|www\.\S+", "", cleaned)
+    # Remove issue IDs
+    cleaned = re.sub(r"\b(EPIC|FEAT|CHORE|FIX)-\d{4}\b", "", cleaned)
+    # Remove file paths
+    cleaned = re.sub(r"[\w\-]+\.[\w\-]+", "", cleaned)
+    
+    if not cleaned.strip():
+        return True
+    
+    return False
+
+
+def detect_language_blocks(content: str, source_lang: str = "zh") -> List[ContentBlock]:
+    """
+    Detect language for each block in the content.
+    
+    This provides block-level language detection that respects:
+    - Code blocks (skipped)
+    - Technical terms (handled by detect_language)
+    - Paragraph boundaries
+    
+    Design Principle:
+    - Narrative text should be in the source language
+    - English should only appear as isolated nouns
+    
+    Returns a list of ContentBlock objects with detected language.
+    """
+    blocks = parse_markdown_blocks(content)
+    
+    for i, block in enumerate(blocks):
+        # Determine if this block should be skipped
+        block.should_skip = should_skip_block_for_language_check(
+            block, blocks, i, source_lang
+        )
+        
+        if block.should_skip:
+            block.detected_lang = "unknown"
+            continue
+        
+        # Detect language for this specific block
+        block.detected_lang = detect_language(block.content)
+    
+    return blocks
+
+
+def has_language_mismatch_blocks(content: str, source_lang: str = "zh") -> Tuple[bool, List[ContentBlock]]:
+    """
+    Check if content has language mismatches at block level.
+    
+    Returns:
+        (has_mismatch, mismatched_blocks)
+        - has_mismatch: True if any non-skipped block has mismatched language
+        - mismatched_blocks: List of blocks that don't match source language
+    """
+    blocks = detect_language_blocks(content, source_lang)
+    mismatched = []
+    
+    for block in blocks:
+        if block.should_skip or block.detected_lang == "unknown":
+            continue
+        
+        if source_lang.lower() in ["zh", "cn"]:
+            if block.detected_lang == "en":
+                mismatched.append(block)
+        elif source_lang.lower() == "en":
+            if block.detected_lang == "zh":
+                mismatched.append(block)
+    
+    return len(mismatched) > 0, mismatched
 
 
 def is_content_source_language(path: Path, source_lang: str = "en") -> bool:
