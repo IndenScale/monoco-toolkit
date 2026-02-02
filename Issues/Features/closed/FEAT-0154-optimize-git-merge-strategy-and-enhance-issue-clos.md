@@ -2,8 +2,8 @@
 id: FEAT-0154
 uid: e3f844
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: 优化 Git 合并策略与增强 Issue 关闭流程
 created_at: '2026-02-02T13:41:00'
 updated_at: '2026-02-02T15:08:00'
@@ -22,7 +22,9 @@ files:
 - monoco/features/issue/resources/zh/AGENTS.md
 - monoco/features/issue/resources/en/AGENTS.md
 criticality: high
+solution: implemented
 opened_at: '2026-02-02T13:41:00'
+closed_at: '2026-02-02T15:53:00'
 ---
 
 ## FEAT-0154: 优化 Git 合并策略与增强 Issue 关闭流程
@@ -55,7 +57,7 @@ opened_at: '2026-02-02T13:41:00'
 
 ### Phase 2: 验证与文档
 - [x] 更新 `AGENTS.md` 规范。
-- [ ] 验证端到端流程：从开发分支运行 `monoco issue sync-files` 到主线运行 `monoco issue close` 完成原子合并。
+- [x] 验证端到端流程：从开发分支运行 `monoco issue sync-files` 到主线运行 `monoco issue close` 完成原子合并。
 
 ### 调研发现 (Investigation Findings)
 
