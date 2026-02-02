@@ -3,10 +3,10 @@ id: FEAT-0151
 uid: art_core_01
 type: feature
 status: open
-stage: doing
+stage: review
 title: 'Monoco Artifact Core: Metadata Registry and CAS Storage'
 created_at: '2026-02-02T00:00:00'
-updated_at: 2026-02-02 09:05:00
+updated_at: '2026-02-02T09:04:30'
 priority: high
 parent: EPIC-0025
 dependencies: []
@@ -26,12 +26,11 @@ files:
 - tests/core/artifacts/__init__.py
 - tests/core/artifacts/test_artifact_manager.py
 criticality: medium
-owner: IndenScale
 isolation:
   type: branch
   ref: feat/feat-0151-monoco-artifact-core-metadata-registry-and-cas-sto
-  path: null
   created_at: '2026-02-02T09:00:38'
+owner: IndenScale
 ---
 
 ## FEAT-0151: Monoco Artifact Core: Metadata Registry and CAS Storage
