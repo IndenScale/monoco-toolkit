@@ -50,3 +50,9 @@ Artifacts & Mailroom 架构决策复盘：
 2. [TechStack] 确定 Office -> PDF (LibreOffice) -> WebP (PyMuPDF, 150 DPI) 链路。调查证实 kimi-cli 原生支持 WebP。
 3. [Storage] 混合存储架构：全局物理 CAS 池 (~/.monoco/artifacts) 实现内容寻址去重 + 项目级逻辑 Symlink 满足自包含与 Generative UI 扩展。
 4. [Workflow] 遵循『基建先行 -> 技能赋能 -> 自动化实现』。拆分为 0151(Core), 0152(Skills), 0153(Auto) 三个 Feature 闭环。
+
+## [b3143c] 2026-02-02 20:42:40
+- **Status**: [ ] Pending
+- **Context**: `workflow`
+
+monoco issue close 检查的是 main 分支上的 Issue 状态，但应该读取 dev branch 的 Issue ticket 状态。这导致在 feature branch 上完成工作后，回到 main 分支无法正确 close issue。影响自动 cherry-pick 工作流的价值。
