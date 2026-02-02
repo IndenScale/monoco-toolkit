@@ -984,6 +984,8 @@ def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> Li
 
     if issue.isolation and issue.isolation.ref:
         target_ref = issue.isolation.ref
+        if target_ref == "current":
+             target_ref = git.get_current_branch(project_root)
     else:
         # Heuristic Search
         # 1. Is current branch related?
