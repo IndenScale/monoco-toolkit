@@ -3,7 +3,7 @@ id: FEAT-0153
 uid: mailroom_auto_01
 type: feature
 status: open
-stage: todo
+stage: draft
 title: 'Monoco Mailroom: Automated Ingestion & Environment Discovery'
 owner: IndenScale
 parent: EPIC-0025
