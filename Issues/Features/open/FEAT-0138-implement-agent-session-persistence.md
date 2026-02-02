@@ -3,10 +3,10 @@ id: FEAT-0138
 uid: 5d2c5f
 type: feature
 status: open
-stage: doing
+stage: review
 title: 实现代理会话持久化
 created_at: '2026-02-01T20:44:08'
-updated_at: 2026-02-02 11:21:25
+updated_at: '2026-02-02T11:27:43'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -18,12 +18,11 @@ files:
 - tests/features/test_session_manager_persistence.py
 - tests/daemon/test_session_api.py
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-01T20:44:08'
 isolation:
   type: branch
   ref: feat/feat-0138-实现代理会话持久化
-  path: null
   created_at: '2026-02-02T11:21:25'
 ---
 
