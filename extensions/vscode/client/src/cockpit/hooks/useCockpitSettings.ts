@@ -10,7 +10,6 @@ import {
   AgentRole,
   AutonomyLevel,
   PersistenceLevel,
-  SkillSet,
   SystemAccess,
   CultureConfig,
 } from '../types/config'

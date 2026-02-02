@@ -1,0 +1,639 @@
+/**
+ * Cockpit Settings Styles
+ * Custom styles for the Monoco Cockpit configuration interface
+ */
+
+/* CSS Variables */
+:root {
+  --cockpit-spacing-xs: 4px;
+  --cockpit-spacing-sm: 8px;
+  --cockpit-spacing-md: 16px;
+  --cockpit-spacing-lg: 24px;
+  --cockpit-spacing-xl: 32px;
+
+  --cockpit-border-radius: 6px;
+  --cockpit-border-radius-lg: 8px;
+
+  --cockpit-transition-fast: 150ms ease;
+  --cockpit-transition-normal: 250ms ease;
+}
+
+/* Reset and Base */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+}
+
+/* Loading State */
+.cockpit-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: var(--cockpit-spacing-md);
+}
+
+.cockpit-loading p {
+  color: var(--vscode-descriptionForeground);
+  margin: 0;
+}
+
+/* Main App Layout */
+.cockpit-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--cockpit-spacing-md);
+}
+
+/* Header */
+.cockpit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--cockpit-spacing-lg);
+  background: var(--vscode-editor-inactiveSelectionBackground);
+  border-radius: var(--cockpit-border-radius-lg);
+  margin-bottom: var(--cockpit-spacing-lg);
+}
+
+.header-content {
+  flex: 1;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-sm);
+  margin: 0 0 var(--cockpit-spacing-xs) 0;
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.header-icon {
+  font-size: 1.2em;
+}
+
+.header-subtitle {
+  margin: 0;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-md);
+}
+
+.unsaved-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-xs);
+  color: var(--vscode-editorWarning-foreground);
+  font-size: 0.85em;
+}
+
+.unsaved-indicator .dot {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Main Content */
+.cockpit-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cockpit-spacing-lg);
+}
+
+/* Panels */
+.cockpit-panels {
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: var(--cockpit-border-radius-lg);
+  overflow: hidden;
+}
+
+.cockpit-panels::part(tabs) {
+  background: var(--vscode-editor-inactiveSelectionBackground);
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.cockpit-panels::part(tab) {
+  padding: var(--cockpit-spacing-sm) var(--cockpit-spacing-md);
+  font-weight: 500;
+}
+
+.cockpit-panels::part(tab-panel) {
+  padding: var(--cockpit-spacing-lg);
+}
+
+.tab-icon {
+  margin-right: var(--cockpit-spacing-xs);
+}
+
+/* Config Sections */
+.config-section {
+  margin-bottom: var(--cockpit-spacing-xl);
+}
+
+.config-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-sm);
+  margin: 0 0 var(--cockpit-spacing-sm) 0;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--vscode-foreground);
+}
+
+.section-title .icon {
+  font-size: 1.1em;
+}
+
+.section-description {
+  margin: 0 0 var(--cockpit-spacing-md) 0;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: var(--cockpit-spacing-md);
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group > label,
+.form-group > vscode-label {
+  display: block;
+  margin-bottom: var(--cockpit-spacing-xs);
+  font-weight: 500;
+}
+
+.field-hint {
+  margin: var(--cockpit-spacing-xs) 0 0 0;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.85em;
+}
+
+/* Input with Button */
+.input-with-button {
+  display: flex;
+  gap: var(--cockpit-spacing-sm);
+  align-items: flex-start;
+}
+
+.input-with-button vscode-text-field {
+  flex: 1;
+}
+
+/* Info Cards */
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cockpit-spacing-sm);
+  padding: var(--cockpit-spacing-sm) var(--cockpit-spacing-md);
+  background: var(--vscode-editor-inactiveSelectionBackground);
+  border-radius: var(--cockpit-border-radius);
+  margin-top: var(--cockpit-spacing-sm);
+  font-size: 0.9em;
+}
+
+.info-icon {
+  font-size: 1.1em;
+  flex-shrink: 0;
+}
+
+.info-text {
+  color: var(--vscode-descriptionForeground);
+  line-height: 1.4;
+}
+
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cockpit-spacing-sm);
+  padding: var(--cockpit-spacing-md);
+  background: var(--vscode-infoBackground);
+  border: 1px solid var(--vscode-infoBorder);
+  border-radius: var(--cockpit-border-radius);
+  margin-bottom: var(--cockpit-spacing-md);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+/* Radio Content */
+.radio-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.radio-label {
+  font-weight: 500;
+}
+
+.radio-description {
+  font-size: 0.85em;
+  color: var(--vscode-descriptionForeground);
+}
+
+/* Checkbox Content */
+.checkbox-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checkbox-label {
+  font-weight: 500;
+}
+
+.checkbox-description {
+  font-size: 0.85em;
+  color: var(--vscode-descriptionForeground);
+}
+
+/* Skills List */
+.skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cockpit-spacing-sm);
+  margin-top: var(--cockpit-spacing-md);
+}
+
+.skill-card {
+  padding: var(--cockpit-spacing-md);
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: var(--cockpit-border-radius);
+  background: var(--vscode-editor-background);
+  transition: all var(--cockpit-transition-fast);
+}
+
+.skill-card.enabled {
+  border-color: var(--vscode-focusBorder);
+  background: var(--vscode-editor-inactiveSelectionBackground);
+}
+
+.skill-card.available {
+  opacity: 0.7;
+}
+
+.skill-header {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-sm);
+  margin-bottom: var(--cockpit-spacing-xs);
+}
+
+.skill-info {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-sm);
+  flex: 1;
+}
+
+.skill-name {
+  font-weight: 500;
+}
+
+.skill-description {
+  margin: 0;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.85em;
+}
+
+.skill-path {
+  display: block;
+  margin-top: var(--cockpit-spacing-xs);
+  font-size: 0.8em;
+  color: var(--vscode-textPreformat-foreground);
+  font-family: var(--vscode-editor-font-family);
+}
+
+.version-tag {
+  font-size: 0.75em;
+}
+
+.subsection-title {
+  margin: var(--cockpit-spacing-md) 0 var(--cockpit-spacing-sm) 0;
+  font-weight: 600;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--cockpit-spacing-xl);
+  text-align: center;
+  color: var(--vscode-descriptionForeground);
+}
+
+.empty-icon {
+  font-size: 2em;
+  margin-bottom: var(--cockpit-spacing-sm);
+  opacity: 0.5;
+}
+
+.empty-state p {
+  margin: 0 0 var(--cockpit-spacing-xs) 0;
+}
+
+.empty-hint {
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+/* CLI Preview */
+.cli-preview {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: var(--cockpit-border-radius-lg);
+  overflow: hidden;
+}
+
+.cli-preview-header {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-sm);
+  padding: var(--cockpit-spacing-sm) var(--cockpit-spacing-md);
+  background: var(--vscode-editor-inactiveSelectionBackground);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--cockpit-transition-fast);
+}
+
+.cli-preview-header:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.cli-icon {
+  font-size: 1.1em;
+}
+
+.cli-title {
+  flex: 1;
+  font-weight: 500;
+}
+
+.cli-count {
+  font-size: 0.75em;
+}
+
+.cli-chevron {
+  transition: transform var(--cockpit-transition-fast);
+}
+
+.cli-chevron.expanded {
+  transform: rotate(90deg);
+}
+
+.cli-preview-content {
+  padding: var(--cockpit-spacing-md);
+  border-top: 1px solid var(--vscode-panel-border);
+}
+
+.cli-description {
+  margin: 0 0 var(--cockpit-spacing-md) 0;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+}
+
+.cli-command-box {
+  background: var(--vscode-textCodeBlock-background);
+  border-radius: var(--cockpit-border-radius);
+  padding: var(--cockpit-spacing-md);
+  margin-bottom: var(--cockpit-spacing-md);
+  overflow-x: auto;
+}
+
+.cli-command {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cockpit-spacing-xs);
+  font-family: var(--vscode-editor-font-family);
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+.cli-prompt {
+  color: var(--vscode-terminal-ansiGreen);
+}
+
+.cli-binary {
+  color: var(--vscode-terminal-ansiCyan);
+  font-weight: 600;
+}
+
+.cli-subcommand {
+  color: var(--vscode-terminal-ansiYellow);
+}
+
+.cli-flag {
+  color: var(--vscode-terminal-ansiMagenta);
+}
+
+.cli-arg {
+  color: var(--vscode-terminal-ansiWhite);
+}
+
+.cli-actions {
+  display: flex;
+  gap: var(--cockpit-spacing-sm);
+  margin-bottom: var(--cockpit-spacing-md);
+}
+
+.cli-args-list {
+  border-top: 1px solid var(--vscode-panel-border);
+  padding-top: var(--cockpit-spacing-md);
+}
+
+.cli-args-list h4 {
+  margin: 0 0 var(--cockpit-spacing-sm) 0;
+  font-size: 0.9em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.cli-args-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cockpit-spacing-xs);
+}
+
+.cli-args-list li {
+  display: flex;
+  gap: var(--cockpit-spacing-sm);
+  align-items: center;
+}
+
+.cli-args-list code {
+  font-family: var(--vscode-editor-font-family);
+  font-size: 0.85em;
+}
+
+.flag-name {
+  color: var(--vscode-terminal-ansiMagenta);
+}
+
+.flag-value {
+  color: var(--vscode-terminal-ansiWhite);
+}
+
+.cli-empty {
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+}
+
+/* Preview Section */
+.preview-section {
+  margin-top: var(--cockpit-spacing-xl);
+}
+
+.preview-card {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: var(--cockpit-border-radius-lg);
+  overflow: hidden;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-sm);
+  padding: var(--cockpit-spacing-sm) var(--cockpit-spacing-md);
+  background: var(--vscode-editor-inactiveSelectionBackground);
+}
+
+.preview-icon {
+  font-size: 1.1em;
+}
+
+.preview-title {
+  font-weight: 500;
+}
+
+.preview-content {
+  padding: var(--cockpit-spacing-md);
+}
+
+.preview-text {
+  margin: 0 0 var(--cockpit-spacing-md) 0;
+  line-height: 1.6;
+  font-style: italic;
+  color: var(--vscode-descriptionForeground);
+}
+
+.preview-meta {
+  display: flex;
+  gap: var(--cockpit-spacing-xs);
+}
+
+.preview-tag {
+  font-size: 0.75em;
+}
+
+/* Footer */
+.cockpit-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--cockpit-spacing-md);
+  margin-top: var(--cockpit-spacing-lg);
+  background: var(--vscode-editor-inactiveSelectionBackground);
+  border-radius: var(--cockpit-border-radius-lg);
+}
+
+.footer-info {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-sm);
+}
+
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: var(--cockpit-spacing-xs);
+  font-size: 0.85em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.footer-item .icon {
+  font-size: 1em;
+}
+
+.footer-separator {
+  color: var(--vscode-panel-border);
+}
+
+.footer-actions {
+  display: flex;
+  gap: var(--cockpit-spacing-sm);
+}
+
+/* Access Options */
+.access-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cockpit-spacing-sm);
+  padding: var(--cockpit-spacing-sm) 0;
+}
+
+/* Tab Badge */
+.tab-badge {
+  margin-left: var(--cockpit-spacing-xs);
+  font-size: 0.7em;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .cockpit-header {
+    flex-direction: column;
+    gap: var(--cockpit-spacing-md);
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .cockpit-footer {
+    flex-direction: column;
+    gap: var(--cockpit-spacing-md);
+  }
+
+  .footer-info {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
