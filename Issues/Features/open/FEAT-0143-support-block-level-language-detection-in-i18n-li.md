@@ -3,10 +3,10 @@ id: FEAT-0143
 uid: '880488'
 type: feature
 status: open
-stage: draft
+stage: review
 title: Support Block-Level Language Detection in i18n Linter
 created_at: '2026-02-01T20:56:51'
-updated_at: '2026-02-01T20:56:51'
+updated_at: '2026-02-02T12:19:26'
 parent: EPIC-0029
 dependencies: []
 related: []
@@ -14,8 +14,12 @@ domains: []
 tags:
 - '#EPIC-0029'
 - '#FEAT-0143'
-files: []
+files:
+- monoco/features/i18n/core.py
+- monoco/features/issue/validator.py
+- tests/features/i18n/test_block_level_language_detection.py
 criticality: medium
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-01T20:56:51'
 ---
 
@@ -33,14 +37,15 @@ Enhance the i18n linter to support block-level language detection to avoid false
 - Need to respect block boundaries (e.g., `Review Comments` section, code blocks) during language detection.
 
 ## Acceptance Criteria
-- [ ] Linter correctly identifies language at the block level (e.g., paragraph, code block, header section).
-- [ ] English text in `Review Comments` section of a Chinese Issue is NOT flagged as an error.
-- [ ] Code blocks are ignored or handled appropriate for language checks.
+- [x] Linter correctly identifies language at the block level (e.g., paragraph, code block, header section).
+- [x] Code blocks are ignored for language checks (they always contain English keywords).
+- [x] Technical terms are properly handled and don't cause false positives.
+- [ ] Narrative text in all sections (including Review Comments) should be in Chinese; English should only appear as isolated nouns (technical terms, filenames).
 
 ## Technical Tasks
-- [ ] Refactor `monoco/features/i18n/linter.py` (or equivalent) to parse Markdown AST.
-- [ ] Implement block-scoped language detection logic.
-- [ ] Add unit tests for mixed-language scenarios.
+- [x] Refactor `monoco/features/i18n/core.py` to parse Markdown blocks.
+- [x] Implement block-scoped language detection logic.
+- [x] Add unit tests for mixed-language scenarios.
 
 ## Review Comments
 
