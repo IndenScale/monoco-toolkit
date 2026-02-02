@@ -3,10 +3,10 @@ id: FEAT-0154
 uid: e3f844
 type: feature
 status: open
-stage: draft
+stage: doing
 title: 优化 Git 合并策略与增强 Issue 关闭流程
 created_at: '2026-02-02T13:41:00'
-updated_at: '2026-02-02T13:41:00'
+updated_at: '2026-02-02T13:45:11'
 parent: EPIC-0030
 dependencies: []
 related:
