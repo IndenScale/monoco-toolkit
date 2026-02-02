@@ -246,7 +246,7 @@ def enable(
 
     # Update workspace.yaml
     config = get_config()
-    config_path = Path(config.project.root) / ".monoco" / "workspace.yaml"
+    config_path = Path(config.paths.root) / ".monoco" / "workspace.yaml"
     try:
         import yaml
         with open(config_path, 'r') as f:
@@ -287,7 +287,7 @@ def disable(
 
     # Update workspace.yaml
     config = get_config()
-    config_path = Path(config.project.root) / ".monoco" / "workspace.yaml"
+    config_path = Path(config.paths.root) / ".monoco" / "workspace.yaml"
     try:
         import yaml
         with open(config_path, 'r') as f:
