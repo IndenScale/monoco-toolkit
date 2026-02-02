@@ -484,7 +484,23 @@ def move_close(
         force = True
 
     try:
-        # 0. Perform Smart Atomic Merge (FEAT-0154)
+        # 0. Find issue across branches (FIX-0006)
+        # This will raise RuntimeError if issue found in multiple branches
+        found_path, source_branch = core.find_issue_path_across_branches(
+            issues_root, issue_id, project_root
+        )
+        if not found_path:
+            OutputManager.error(f"Issue {issue_id} not found in any branch.")
+            raise typer.Exit(code=1)
+        
+        # If issue was found in a different branch, notify user
+        if source_branch and source_branch != git.get_current_branch(project_root):
+            if not OutputManager.is_agent_mode():
+                console.print(
+                    f"[green]✔ Found {issue_id} in branch '{source_branch}', synced to working tree.[/green]"
+                )
+
+        # 1. Perform Smart Atomic Merge (FEAT-0154)
         merged_files = []
         try:
             merged_files = core.merge_issue_changes(issues_root, issue_id, project_root)
