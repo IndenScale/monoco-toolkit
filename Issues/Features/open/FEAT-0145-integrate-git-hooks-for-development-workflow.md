@@ -3,10 +3,10 @@ id: FEAT-0145
 uid: 6d6bf7
 type: feature
 status: open
-stage: doing
+stage: draft
 title: 集成 Git Hooks 到开发工作流
 created_at: '2026-02-01T20:57:03'
-updated_at: '2026-02-02T12:27:48'
+updated_at: '2026-02-02T13:25:00'
 parent: EPIC-0030
 dependencies: []
 related:
