@@ -15,6 +15,7 @@ import { ProviderRegistry } from './providers/ProviderRegistry'
 import { CommandRegistry } from './commands/CommandRegistry'
 import { VIEW_TYPES } from '../../shared/constants'
 import { IssueFilterWebviewProvider } from './views/IssueFilterWebviewProvider'
+import { CockpitProvider } from './cockpit/CockpitProvider'
 
 const execAsync = promisify(exec)
 let outputChannel: vscode.OutputChannel
@@ -231,6 +232,14 @@ export async function activate(context: vscode.ExtensionContext) {
   // 8. Register webview
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(VIEW_TYPES.KANBAN, kanbanProvider)
+  )
+
+  // 9. Register Cockpit Settings provider
+  const cockpitProvider = new CockpitProvider(context.extensionUri)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('monoco.openCockpit', () => {
+      cockpitProvider.show()
+    })
   )
 
   // 11. Bootstrap dependencies if needed
