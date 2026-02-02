@@ -32,7 +32,7 @@ solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-02T13:25:35'
 isolation:
   type: direct
-  ref: current
+  ref: feat/FEAT-0145-git-hooks
   created_at: '2026-02-02T14:55:21'
 ---
 
