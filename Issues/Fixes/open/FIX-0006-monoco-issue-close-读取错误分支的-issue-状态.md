@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: monoco issue close 读取错误分支的 Issue 状态
 created_at: '2026-02-02T20:47:02'
-updated_at: '2026-02-02T20:51:01'
+updated_at: 2026-02-02 20:51:02
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,10 +14,18 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FIX-0006'
-files: []
+files:
+- monoco/features/issue/core.py
+- monoco/features/issue/commands.py
+- tests/features/issue/test_cross_branch_search.py
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-02T20:47:02'
+isolation:
+  type: branch
+  ref: feat/fix-0006-monoco-issue-close-读取错误分支的-issue-状态
+  path: null
+  created_at: '2026-02-02T20:51:02'
 ---
 
 ## FIX-0006: monoco issue close 读取错误分支的 Issue 状态
@@ -51,18 +59,18 @@ opened_at: '2026-02-02T20:47:02'
 ## Technical Tasks
 
 ### 调研阶段
-- [ ] 定位 `monoco issue close` 命令的实现代码
-- [ ] 分析当前 Issue 状态读取逻辑（确定硬编码 main 分支的位置）
-- [ ] 调研 Git 分支切换和文件读取的最佳实践
+- [x] 定位 `monoco issue close` 命令的实现代码
+- [x] 分析当前 Issue 状态读取逻辑（确定硬编码 main 分支的位置）
+- [x] 调研 Git 分支切换和文件读取的最佳实践
 
 ### 实现阶段
-- [ ] 实现跨分支 Issue 搜索逻辑（使用 `git show-branch` 或遍历 `.git/refs/heads`）
-- [ ] 实现简单匹配计数逻辑：0个=报错，1个=使用，多个=报错
-- [ ] 错误信息设计：多分支冲突时提示用户合并分支或删除重复 Issue
-- [ ] 更新相关帮助文档
+- [x] 实现跨分支 Issue 搜索逻辑（使用 `git ls-tree` 遍历分支）
+- [x] 实现简单匹配计数逻辑：0个=报错，1个=使用，多个=报错
+- [x] 错误信息设计：多分支冲突时提示用户合并分支或删除重复 Issue
+- [x] 更新相关帮助文档
 
 ### 验证阶段
-- [ ] 编写单元测试覆盖多分支场景
+- [x] 编写单元测试覆盖多分支场景 (13 tests added)
 - [ ] 手动测试 feature branch -> main 的完整工作流
 - [ ] 验证 cherry-pick 后 close 命令正常工作
 
