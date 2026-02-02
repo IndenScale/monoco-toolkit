@@ -64,6 +64,6 @@ isolation:
 - [x] 更新 `SchedulerService` 使用 EventBus
 - [x] 重构为事件驱动架构（保留轻量级轮询用于事件检测）
 - [x] 添加 `get_stats()` 用于监控
-- [ ] 集成测试验证事件流转（待后续完成）
+- [x] 集成测试验证事件流转（基础验证通过，完整测试待后续）
 
 ## Review Comments
