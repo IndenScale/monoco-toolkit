@@ -20,6 +20,13 @@ files:
 - Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
 - Issues/Epics/open/EPIC-0030-developer-experience-tooling.md
 - Issues/Features/open/FEAT-0145-integrate-git-hooks-for-development-workflow.md
+- monoco/core/config.py
+- monoco/main.py
+- monoco/features/hooks/__init__.py
+- monoco/features/hooks/core.py
+- monoco/features/hooks/adapter.py
+- monoco/features/hooks/commands.py
+- monoco/features/issue/resources/hooks/pre-commit.sh
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-02T13:25:35'
@@ -92,32 +99,32 @@ monoco/features/
 
 ## 验收标准
 
-- [ ] `monoco hooks install` 命令安装 git hooks 到 `.git/hooks/`
-- [ ] `monoco hooks uninstall` 命令移除已安装的 hooks
-- [ ] `monoco hooks status` 命令显示 hooks 安装状态和配置
-- [ ] `pre-commit` hook 收集所有 Feature 的 pre-commit 脚本并串联执行
-- [ ] Issue Feature 提供 `resources/hooks/pre-commit.sh` 运行 `monoco issue lint`
-- [ ] 支持按 Feature 启用/禁用 hooks（通过 `workspace.yaml` 配置）
+- [x] `monoco hooks install` 命令安装 git hooks 到 `.git/hooks/`
+- [x] `monoco hooks uninstall` 命令移除已安装的 hooks
+- [x] `monoco hooks status` 命令显示 hooks 安装状态和配置
+- [x] `pre-commit` hook 收集所有 Feature 的 pre-commit 脚本并串联执行
+- [x] Issue Feature 提供 `resources/hooks/pre-commit.sh` 运行 `monoco issue lint`
+- [x] 支持按 Feature 启用/禁用 hooks（通过 `workspace.yaml` 配置）
 - [ ] `pre-push` 钩子检查未完成的关键 Issue（可选/可配置）。
 
 ## 技术任务
 
 ### Phase 1: Hooks 聚合器基础设施
-- [ ] 创建 `monoco/features/hooks/` Feature 模块
-- [ ] 设计 `HookDeclaration` 元数据类（type, script_path, priority）
-- [ ] 实现 `GitHooksManager.collect_hooks(hook_type)` 发现机制
-- [ ] 实现 Hook 串联生成逻辑（生成可执行的 shell 脚本）
-- [ ] 实现虚拟环境自动检测（确保 hook 中调用正确的 Python 环境）
-- [ ] 创建 `monoco hooks` 子命令（install/uninstall/status）
+- [x] 创建 `monoco/features/hooks/` Feature 模块
+- [x] 设计 `HookDeclaration` 元数据类（type, script_path, priority）
+- [x] 实现 `GitHooksManager.collect_hooks(hook_type)` 发现机制
+- [x] 实现 Hook 串联生成逻辑（生成可执行的 shell 脚本）
+- [x] 实现虚拟环境自动检测（确保 hook 中调用正确的 Python 环境）
+- [x] 创建 `monoco hooks` 子命令（install/uninstall/status）
 
 ### Phase 2: Issue Feature Hooks
-- [ ] Issue Feature: 创建 `resources/hooks/pre-commit.sh`
-- [ ] 实现 staged Issue 文件检测（只检查变更产生影响的 Issue）
-- [ ] 集成 `monoco issue lint` 命令
+- [x] Issue Feature: 创建 `resources/hooks/pre-commit.sh`
+- [x] 实现 staged Issue 文件检测（只检查变更产生影响的 Issue）
+- [x] 集成 `monoco issue lint` 命令
 
 ### Phase 3: 配置与扩展
-- [ ] 添加 Feature-level hooks 启用/禁用配置到 `workspace.yaml`
-- [ ] 支持 hooks 优先级自定义
+- [x] 添加 Feature-level hooks 启用/禁用配置到 `workspace.yaml`
+- [x] 支持 hooks 优先级自定义
 - [ ] 文档：如何为 Feature 添加自定义 hook
 - [ ] 实现 `pre-push` hook：检查关键 Issue 状态（可选配置）
 - [ ] 实现 `post-checkout` hook：自动同步 Issue 状态（可选）

@@ -2,11 +2,11 @@
 id: FEAT-0154
 uid: e3f844
 type: feature
-status: closed
-stage: done
+status: open
+stage: doing
 title: 优化 Git 合并策略与增强 Issue 关闭流程
 created_at: '2026-02-02T13:41:00'
-updated_at: '2026-02-02T14:45:37'
+updated_at: '2026-02-02T15:08:00'
 parent: EPIC-0030
 dependencies: []
 related:
@@ -21,15 +21,8 @@ files:
 - monoco/features/issue/commands.py
 - monoco/features/issue/resources/zh/AGENTS.md
 - monoco/features/issue/resources/en/AGENTS.md
-- .qwen/skills/monoco_workflow_issue_management/SKILL.md
 criticality: high
 opened_at: '2026-02-02T13:41:00'
-closed_at: '2026-02-02T14:45:37'
-solution: implemented
-isolation:
-  type: branch
-  ref: feat/feat-0154-优化-git-合并策略与增强-issue-关闭流程
-  created_at: '2026-02-02T13:45:11'
 ---
 
 ## FEAT-0154: 优化 Git 合并策略与增强 Issue 关闭流程
@@ -46,22 +39,23 @@ isolation:
 ## 验收标准
 
 - [x] `monoco issue close` 默认执行 `--prune` 操作（删除分支/Worktree），除非显式指定 `--no-prune`。
-- [x] `monoco issue close` 支持（或建议）自动化合并流程，优先尝试智能合并。
-- [x] 完成对 `touched files` (Issue `files` 字段) 追踪机制的深度调查报告，评估其作为“智能合并”依据的可行性。
-- [x] 更新 `monoco/features/issue/resources/zh/AGENTS.md` 和相关 Skill 文档，明确合并规范和 Fallback 策略。
+- [/] `monoco issue close` 实现基于 `files` 字段的原子化合并 (Smart Atomic Merge)。
+- [x] 完成对 `touched files` (Issue `files` 字段) 追踪机制的深度调查报告。
+- [x] 更新 `monoco/features/issue/resources/zh/AGENTS.md` 和相关 Skill 文档。
 
 ## 技术任务
 
 ### Phase 1: 机制增强 (Implementation)
 - [x] 修改 `monoco issue close` 命令参数，将 `prune` 默认设为 `True`。
-- [x] 增强 `monoco issue close` 的交互提示，在删除分支前给出明确的最终状态确认。
+- [x] 增强 `monoco issue close` 的交互提示。
+- [ ] 实现 `Smart Atomic Merge` 逻辑：
+    - [ ] 在 `core.py` 中增加受控合并函数，仅合并 `files` 字段中的文件。
+    - [ ] 实现合并前的冲突检测，如有冲突立即中止流程。
+- [ ] 在 `close` 命令中集成合并步骤，确保在删除分支前完成主线同步。
 
-### Phase 2: 规范文档 (Documentation)
-- [x] 更新 `AGENTS.md`：
-    - 明确禁止 Agent 手动执行 `git merge` 合并 Feature 分支。
-    - 说明必须使用 `monoco issue close` 进行闭环。
-    - 阐述冲突处理原则：优先使用 Cherry-Pick 挑选有效变更，而非全量 Merge。
-- [x] 更新 `skills/monoco_workflow_issue_management/SKILL.md` 中的 Close 阶段检查点。
+### Phase 2: 验证与文档
+- [x] 更新 `AGENTS.md` 规范。
+- [ ] 验证端到端流程：从开发分支运行 `monoco issue sync-files` 到主线运行 `monoco issue close` 完成原子合并。
 
 ### 调研发现 (Investigation Findings)
 
