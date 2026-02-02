@@ -3,7 +3,7 @@ id: EPIC-0029
 uid: 32865c
 type: epic
 status: open
-stage: draft
+stage: doing
 title: Knowledge Engine & Memory System
 created_at: '2026-02-01T10:37:03'
 updated_at: '2026-02-01T10:37:05'
@@ -21,6 +21,8 @@ tags:
 files: []
 criticality: high
 opened_at: '2026-02-01T10:37:03'
+progress: 1/2
+files_count: 0
 ---
 
 ## EPIC-0029: Knowledge Engine & Memory System
