@@ -21,9 +21,14 @@ for file in $STAGED_ISSUES; do
     FILE_ARGS="$FILE_ARGS $file"
 done
 
-# Execute lint
-$MONOCO_CMD issue lint --files $FILE_ARGS
-LINT_EXIT=$?
+# Execute lint on each file
+LINT_EXIT=0
+for file in $STAGED_ISSUES; do
+    $MONOCO_CMD issue lint "$file"
+    if [ $? -ne 0 ]; then
+        LINT_EXIT=1
+    fi
+done
 
 if [ $LINT_EXIT -ne 0 ]; then
     echo ""
