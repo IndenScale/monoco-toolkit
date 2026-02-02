@@ -72,6 +72,24 @@ class TelemetryConfig(BaseModel):
     )
 
 
+class HooksConfig(BaseModel):
+    """Configuration for git hooks management."""
+
+    enabled: bool = Field(default=True, description="Whether hooks system is enabled")
+    features: Dict[str, bool] = Field(
+        default_factory=dict,
+        description="Per-feature hook enable/disable (feature_name -> enabled)"
+    )
+    hooks: Dict[str, bool] = Field(
+        default_factory=lambda: {
+            "pre-commit": True,
+            "pre-push": False,
+            "post-checkout": False,
+        },
+        description="Per-hook-type enable/disable (hook_type -> enabled)"
+    )
+
+
 class IssueTypeConfig(BaseModel):
     name: str
     label: str
@@ -248,10 +266,7 @@ class MonocoConfig(BaseModel):
     i18n: I18nConfig = Field(default_factory=I18nConfig)
     ui: UIConfig = Field(default_factory=UIConfig)
     telemetry: TelemetryConfig = Field(default_factory=TelemetryConfig)
-    hooks: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Git hooks configuration (hook_name -> command)",
-    )
+    hooks: HooksConfig = Field(default_factory=HooksConfig)
     session_hooks: Dict[str, Any] = Field(
         default_factory=dict,
         description="Session lifecycle hooks configuration (hook_name -> config)",

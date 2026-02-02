@@ -149,6 +149,29 @@ def delete_branch(path: Path, branch_name: str, force: bool = False):
         raise RuntimeError(f"Failed to delete branch {branch_name}: {stderr}")
 
 
+def get_merge_base(path: Path, ref1: str, ref2: str) -> str:
+    code, stdout, stderr = _run_git(["merge-base", ref1, ref2], path)
+    if code != 0:
+        raise RuntimeError(f"Failed to find merge base: {stderr}")
+    return stdout.strip()
+
+
+def git_checkout_files(path: Path, ref: str, files: List[str]):
+    if not files:
+        return
+    code, _, stderr = _run_git(["checkout", ref, "--"] + files, path)
+    if code != 0:
+        raise RuntimeError(f"Failed to checkout files from {ref}: {stderr}")
+
+
+def has_diff(path: Path, ref1: str, ref2: str, files: List[str]) -> bool:
+    """Check if there are differences between two refs for specific files."""
+    if not files:
+        return False
+    code, stdout, _ = _run_git(["diff", "--name-only", ref1, ref2, "--"] + files, path)
+    return code == 0 and bool(stdout.strip())
+
+
 def get_worktrees(path: Path) -> List[Tuple[str, str, str]]:
     """Returns list of (path, head, branch)"""
     code, stdout, stderr = _run_git(["worktree", "list", "--porcelain"], path)
