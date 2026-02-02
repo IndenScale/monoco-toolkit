@@ -1,6 +1,6 @@
 {
   "name": "@monoco-io/kanban",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "Monoco Kanban Board CLI - Agent Native Mission Dashboard",
   "bin": {
     "monoco-kanban": "./bin/monoco-kanban.js"
