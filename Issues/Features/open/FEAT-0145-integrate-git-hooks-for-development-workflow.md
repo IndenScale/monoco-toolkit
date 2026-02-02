@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 集成 Git Hooks 到开发工作流
 created_at: '2026-02-01T20:57:03'
-updated_at: '2026-02-02T14:55:21'
+updated_at: 2026-02-02 15:31:12
 parent: EPIC-0030
 dependencies: []
 related:
@@ -26,13 +26,18 @@ files:
 - monoco/features/hooks/core.py
 - monoco/features/hooks/adapter.py
 - monoco/features/hooks/commands.py
+- monoco/features/hooks/resources/ADDING_HOOKS.md
 - monoco/features/issue/resources/hooks/pre-commit.sh
+- monoco/features/issue/resources/hooks/pre-push.sh
+- monoco/features/issue/resources/hooks/post-checkout.sh
+- monoco/features/issue/commands.py
+- monoco/features/issue/core.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-02T13:25:35'
 isolation:
-  type: direct
-  ref: current
+  type: branch
+  ref: branch:test-branch
   created_at: '2026-02-02T14:55:21'
 ---
 
@@ -105,7 +110,9 @@ monoco/features/
 - [x] `pre-commit` hook 收集所有 Feature 的 pre-commit 脚本并串联执行
 - [x] Issue Feature 提供 `resources/hooks/pre-commit.sh` 运行 `monoco issue lint`
 - [x] 支持按 Feature 启用/禁用 hooks（通过 `workspace.yaml` 配置）
-- [ ] `pre-push` 钩子检查未完成的关键 Issue（可选/可配置）。
+- [x] `pre-push` 钩子检查未完成的关键 Issue（可选/可配置）
+- [x] 编写文档：如何为 Feature 添加自定义 hook
+- [x] `post-checkout` hook：自动同步 Issue 状态（可选功能）
 
 ## 技术任务
 
@@ -125,13 +132,20 @@ monoco/features/
 ### Phase 3: 配置与扩展
 - [x] 添加 Feature-level hooks 启用/禁用配置到 `workspace.yaml`
 - [x] 支持 hooks 优先级自定义
-- [ ] 文档：如何为 Feature 添加自定义 hook
-- [ ] 实现 `pre-push` hook：检查关键 Issue 状态（可选配置）
-- [ ] 实现 `post-checkout` hook：自动同步 Issue 状态（可选）
+
+### Phase 4: 新增 Hooks 实现
+- [x] 创建 `pre-push` hook 脚本检查关键 Issue 状态
+- [x] 实现 `monoco issue check-critical` 命令
+- [x] 创建 `post-checkout` hook 脚本自动同步 Issue 状态
+- [x] 实现 `monoco issue sync-isolation` 命令
+- [x] 编写 `ADDING_HOOKS.md` 开发者文档
 
 ## 超出范围 (Out of Scope)
 
 - **pre-commit 框架集成**：自建方案已满足需求，避免外部依赖
+- ~~**文档：如何为 Feature 添加自定义 hook**：已纳入验收清单~~ ✅ 已完成
+- ~~**`pre-push` hook：检查关键 Issue 状态**：已纳入验收清单~~ ✅ 已完成
+- ~~**`post-checkout` hook：自动同步 Issue 状态**：已纳入验收清单~~ ✅ 已完成
 
 ## Review Comments
 

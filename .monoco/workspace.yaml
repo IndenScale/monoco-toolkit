@@ -1,217 +1,196 @@
+agent:
+  timeout_seconds: 900
+domains:
+  items:
+  - description: DevOps and CI/CD infrastructure
+    name: backend.devops
+  - description: Containerization technologies (Docker, K8s)
+    name: infrastructure.container
+  - description: Monoco core logic
+    name: monoco.core
+  - description: Monoco CLI interface
+    name: monoco.cli
+  - description: Artificial Intelligence and Agent capabilities
+    name: intelligence
+  strict: false
+hooks:
+  hooks:
+    post-checkout: true
+    pre-push: true
 i18n:
   source_lang: zh
   target_langs:
-    - en
-telemetry:
-  enabled: null
-
+  - en
+issue:
+  solutions:
+  - implemented
+  - cancelled
+  - wontfix
+  - duplicate
+  stages:
+  - draft
+  - doing
+  - review
+  - done
+  - freezed
+  statuses:
+  - open
+  - closed
+  - backlog
+  types:
+  - description: Large strategic initiative
+    folder: Epics
+    label: Epic
+    name: epic
+    prefix: EPIC
+  - description: Value delivery atom
+    folder: Features
+    label: Feature
+    name: feature
+    prefix: FEAT
+  - description: Engineering maintenance task
+    folder: Chores
+    label: Chore
+    name: chore
+    prefix: CHORE
+  - description: Defect resolution
+    folder: Fixes
+    label: Bug Fix
+    name: fix
+    prefix: FIX
+  - description: User-centric requirement
+    folder: Stories
+    label: User Story
+    name: story
+    prefix: STORY
+  - description: Architecture Decision Record (ADR)
+    folder: Arch
+    label: Architecture Decision
+    name: arch
+    prefix: ARCH
+  workflows:
+  - command_template: monoco agent run investigate
+    description: Run agent investigation
+    icon: $(telescope)
+    label: Investigate
+    name: investigate
+    to_status: open
+  - command_template: monoco issue start {id}
+    description: Start working on the issue
+    from_stage: draft
+    from_status: open
+    icon: $(play)
+    label: Start
+    name: start
+    post_actions:
+    - monoco agent run --role engineer --issue {id} -d
+    to_stage: doing
+    to_status: open
+  - command_template: monoco agent run develop
+    description: Run agent development
+    from_stage: doing
+    from_status: open
+    icon: $(tools)
+    label: Develop
+    name: develop
+    to_stage: doing
+    to_status: open
+  - command_template: monoco issue stop {id}
+    description: Stop working and return to draft
+    from_stage: doing
+    from_status: open
+    icon: $(stop)
+    label: Stop
+    name: stop
+    to_stage: draft
+    to_status: open
+  - command_template: monoco issue submit {id}
+    description: Submit for review
+    from_stage: doing
+    from_status: open
+    icon: $(check)
+    label: Submit
+    name: submit
+    post_actions:
+    - monoco agent run --role reviewer --issue {id} -d
+    to_stage: review
+    to_status: open
+  - command_template: monoco issue update {id} --stage doing
+    description: Reject review and return to doing
+    from_stage: review
+    from_status: open
+    icon: $(error)
+    label: Reject
+    name: reject
+    to_stage: doing
+    to_status: open
+  - command_template: monoco issue close {id} --solution implemented
+    description: Accept and close issue
+    from_stage: review
+    from_status: open
+    icon: $(pass-filled)
+    label: Accept
+    name: accept
+    required_solution: implemented
+    to_stage: done
+    to_status: closed
+  - command_template: monoco issue close {id} --solution implemented
+    description: Close completed issue
+    from_stage: done
+    from_status: open
+    icon: $(close)
+    label: Close
+    name: close_done
+    required_solution: implemented
+    to_stage: done
+    to_status: closed
+  - command_template: monoco issue cancel {id}
+    description: Cancel the issue
+    from_status: open
+    icon: $(trash)
+    label: Cancel
+    name: cancel
+    required_solution: cancelled
+    to_stage: done
+    to_status: closed
+  - command_template: monoco issue close {id} --solution wontfix
+    description: Mark as won't fix
+    from_status: open
+    icon: $(circle-slash)
+    label: Won't Fix
+    name: wontfix
+    required_solution: wontfix
+    to_stage: done
+    to_status: closed
+  - command_template: monoco issue backlog pull {id}
+    description: Restore issue from backlog
+    from_status: backlog
+    icon: $(arrow-up)
+    label: Pull
+    name: pull
+    to_stage: draft
+    to_status: open
+  - command_template: monoco issue cancel {id}
+    description: Cancel backlog issue
+    from_status: backlog
+    icon: $(trash)
+    label: Cancel
+    name: cancel_backlog
+    required_solution: cancelled
+    to_stage: done
+    to_status: closed
+  - command_template: monoco issue open {id}
+    description: Reopen a closed issue
+    from_status: closed
+    icon: $(refresh)
+    label: Reopen
+    name: reopen
+    to_stage: draft
+    to_status: open
 session_hooks:
   git_cleanup:
-    enabled: true
-    auto_switch_to_main: true
     auto_delete_merged_branches: false
-
-domains:
-  items:
-    - name: backend.devops
-      description: DevOps and CI/CD infrastructure
-    - name: infrastructure.container
-      description: Containerization technologies (Docker, K8s)
-    - name: monoco.core
-      description: Monoco core logic
-    - name: monoco.cli
-      description: Monoco CLI interface
-    - name: intelligence
-      description: Artificial Intelligence and Agent capabilities
-  strict: false
-
-agent:
-  timeout_seconds: 900
-
-issue:
-  types:
-    - name: epic
-      label: Epic
-      prefix: EPIC
-      folder: Epics
-      description: Large strategic initiative
-    - name: feature
-      label: Feature
-      prefix: FEAT
-      folder: Features
-      description: Value delivery atom
-    - name: chore
-      label: Chore
-      prefix: CHORE
-      folder: Chores
-      description: Engineering maintenance task
-    - name: fix
-      label: Bug Fix
-      prefix: FIX
-      folder: Fixes
-      description: Defect resolution
-    - name: story
-      label: User Story
-      prefix: STORY
-      folder: Stories
-      description: User-centric requirement
-    - name: arch
-      label: Architecture Decision
-      prefix: ARCH
-      folder: Arch
-      description: Architecture Decision Record (ADR)
-
-  statuses:
-    - open
-    - closed
-    - backlog
-
-  stages:
-    - draft
-    - doing
-    - review
-    - done
-    - freezed
-
-  solutions:
-    - implemented
-    - cancelled
-    - wontfix
-    - duplicate
-
-  workflows:
-    # --- Universal Agent Actions ---
-    - name: investigate
-      label: Investigate
-      icon: "$(telescope)"
-      to_status: open
-      command_template: "monoco agent run investigate"
-      description: "Run agent investigation"
-
-    # --- Open -> Open (Stage Transitions) ---
-    - name: start
-      label: Start
-      icon: "$(play)"
-      from_status: open
-      from_stage: draft
-      to_status: open
-      to_stage: doing
-      command_template: "monoco issue start {id}"
-      description: "Start working on the issue"
-      post_actions:
-        - "monoco agent run --role engineer --issue {id} -d"
-
-    - name: develop
-      label: Develop
-      icon: "$(tools)"
-      from_status: open
-      from_stage: doing
-      to_status: open
-      to_stage: doing
-      command_template: "monoco agent run develop"
-      description: "Run agent development"
-
-    - name: stop
-      label: Stop
-      icon: "$(stop)"
-      from_status: open
-      from_stage: doing
-      to_status: open
-      to_stage: draft
-      command_template: "monoco issue stop {id}"
-      description: "Stop working and return to draft"
-
-    - name: submit
-      label: Submit
-      icon: "$(check)"
-      from_status: open
-      from_stage: doing
-      to_status: open
-      to_stage: review
-      command_template: "monoco issue submit {id}"
-      description: "Submit for review"
-      post_actions:
-        - "monoco agent run --role reviewer --issue {id} -d"
-
-    - name: reject
-      label: Reject
-      icon: "$(error)"
-      from_status: open
-      from_stage: review
-      to_status: open
-      to_stage: doing
-      command_template: "monoco issue update {id} --stage doing"
-      description: "Reject review and return to doing"
-
-    # --- Open -> Closed Transitions ---
-    - name: accept
-      label: Accept
-      icon: "$(pass-filled)"
-      from_status: open
-      from_stage: review
-      to_status: closed
-      to_stage: done
-      required_solution: implemented
-      command_template: "monoco issue close {id} --solution implemented"
-      description: "Accept and close issue"
-
-    - name: close_done
-      label: Close
-      icon: "$(close)"
-      from_status: open
-      from_stage: done
-      to_status: closed
-      to_stage: done
-      required_solution: implemented
-      command_template: "monoco issue close {id} --solution implemented"
-      description: "Close completed issue"
-
-    - name: cancel
-      label: Cancel
-      icon: "$(trash)"
-      from_status: open
-      to_status: closed
-      to_stage: done
-      required_solution: cancelled
-      command_template: "monoco issue cancel {id}"
-      description: "Cancel the issue"
-
-    - name: wontfix
-      label: Won't Fix
-      icon: "$(circle-slash)"
-      from_status: open
-      to_status: closed
-      to_stage: done
-      required_solution: wontfix
-      command_template: "monoco issue close {id} --solution wontfix"
-      description: "Mark as won't fix"
-
-    # --- Backlog Transitions ---
-    - name: pull
-      label: Pull
-      icon: "$(arrow-up)"
-      from_status: backlog
-      to_status: open
-      to_stage: draft
-      command_template: "monoco issue backlog pull {id}"
-      description: "Restore issue from backlog"
-
-    - name: cancel_backlog
-      label: Cancel
-      icon: "$(trash)"
-      from_status: backlog
-      to_status: closed
-      to_stage: done
-      required_solution: cancelled
-      command_template: "monoco issue cancel {id}"
-      description: "Cancel backlog issue"
-
-    # --- Closed Transitions ---
-    - name: reopen
-      label: Reopen
-      icon: "$(refresh)"
-      from_status: closed
-      to_status: open
-      to_stage: draft
-      command_template: "monoco issue open {id}"
-      description: "Reopen a closed issue"
+    auto_switch_to_main: true
+    enabled: true
+telemetry:
+  enabled: null
