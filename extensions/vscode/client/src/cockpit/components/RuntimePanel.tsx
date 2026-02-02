@@ -9,7 +9,6 @@ import {
   VSCodeOption,
   VSCodeRadioGroup,
   VSCodeRadio,
-  VSCodeLabel,
   VSCodeDivider,
 } from '@vscode/webview-ui-toolkit/react'
 import {
@@ -64,7 +63,7 @@ export const RuntimePanel: React.FC<RuntimePanelProps> = ({
         </p>
 
         <div className="form-group">
-          <VSCodeLabel htmlFor="provider-select">Provider</VSCodeLabel>
+          <label htmlFor="provider-select">Provider</label>
           <VSCodeDropdown
             id="provider-select"
             value={provider}
@@ -98,7 +97,7 @@ export const RuntimePanel: React.FC<RuntimePanelProps> = ({
         </p>
 
         <div className="form-group">
-          <VSCodeLabel htmlFor="role-select">Role</VSCodeLabel>
+          <label htmlFor="role-select">Role</label>
           <VSCodeDropdown
             id="role-select"
             value={role}
@@ -132,7 +131,7 @@ export const RuntimePanel: React.FC<RuntimePanelProps> = ({
         </p>
 
         <div className="form-group">
-          <VSCodeLabel>Human-in-the-Loop Mode</VSCodeLabel>
+          <label>Human-in-the-Loop Mode</label>
           <VSCodeRadioGroup
             value={autonomy.level}
             onChange={(e: any) => onAutonomyLevelChange(e.target.value as AutonomyLevel)}
@@ -149,7 +148,7 @@ export const RuntimePanel: React.FC<RuntimePanelProps> = ({
         </div>
 
         <div className="form-group">
-          <VSCodeLabel>Persistence Scope</VSCodeLabel>
+          <label>Persistence Scope</label>
           <VSCodeRadioGroup
             value={autonomy.persistence}
             onChange={(e: any) => onPersistenceChange(e.target.value as PersistenceLevel)}
