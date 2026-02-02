@@ -7,12 +7,12 @@ stage: draft
 title: Support Block-Level Language Detection in i18n Linter
 created_at: '2026-02-01T20:56:51'
 updated_at: '2026-02-01T20:56:51'
-parent: EPIC-0000
+parent: EPIC-0029
 dependencies: []
 related: []
 domains: []
 tags:
-- '#EPIC-0000'
+- '#EPIC-0029'
 - '#FEAT-0143'
 files: []
 criticality: medium
@@ -43,3 +43,9 @@ Enhance the i18n linter to support block-level language detection to avoid false
 - [ ] Add unit tests for mixed-language scenarios.
 
 ## Review Comments
+
+### 2026-02-02 归属调整
+
+**变更**: Parent 从 EPIC-0000 调整为 EPIC-0029 (Knowledge Engine & Memory System)
+
+**理由**: i18n Linter 属于文档生态系统 (Documentation Ecosystem)，是 EPIC-0029 中 "多语言文档国际化" 目标的一部分。
