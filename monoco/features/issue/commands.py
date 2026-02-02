@@ -43,6 +43,9 @@ def create(
     related: List[str] = typer.Option(
         [], "--related", "-r", help="Related Issue ID(s)"
     ),
+    from_memo: List[str] = typer.Option(
+        [], "--from-memo", "-m", help="Memo ID(s) to link to this issue"
+    ),
     force: bool = typer.Option(False, "--force", help="Bypass branch context checks"),
     subdir: Optional[str] = typer.Option(
         None,
@@ -118,20 +121,46 @@ def create(
             criticality=criticality_level,
         )
 
+        # Link memos to the newly created issue
+        linked_memos = []
+        missing_memos = []
+        if from_memo:
+            from monoco.features.memo.core import load_memos, update_memo
+            
+            existing_memos = {m.uid: m for m in load_memos(issues_root)}
+            
+            for memo_id in from_memo:
+                if memo_id in existing_memos:
+                    # Only update if not already linked to this issue (idempotency)
+                    memo = existing_memos[memo_id]
+                    if memo.ref != issue.id:
+                        update_memo(issues_root, memo_id, {"status": "tracked", "ref": issue.id})
+                        linked_memos.append(memo_id)
+                else:
+                    missing_memos.append(memo_id)
+
         try:
             rel_path = path.relative_to(Path.cwd())
         except ValueError:
             rel_path = path
 
         if OutputManager.is_agent_mode():
-            OutputManager.print(
-                {"issue": issue, "path": str(rel_path), "status": "created"}
-            )
+            result = {"issue": issue, "path": str(rel_path), "status": "created"}
+            if linked_memos:
+                result["linked_memos"] = linked_memos
+            if missing_memos:
+                result["missing_memos"] = missing_memos
+            OutputManager.print(result)
         else:
             console.print(
                 f"[green]✔ Created {issue.id} in status {issue.status}.[/green]"
             )
             console.print(f"Path: {rel_path}")
+            
+            if linked_memos:
+                console.print(f"[green]✔ Linked {len(linked_memos)} memo(s): {', '.join(linked_memos)}[/green]")
+            if missing_memos:
+                console.print(f"[yellow]⚠ Memo(s) not found: {', '.join(missing_memos)}[/yellow]")
 
             # Prompt for Language
             source_lang = config.i18n.source_lang or "en"

@@ -320,6 +320,21 @@ async def create_issue_endpoint(payload: CreateIssueRequest):
             related=payload.related,
             subdir=payload.subdir,
         )
+        
+        # Link memos to the newly created issue
+        if payload.from_memos:
+            from monoco.features.memo.core import load_memos, update_memo
+            
+            existing_memos = {m.uid: m for m in load_memos(project.issues_root)}
+            
+            for memo_id in payload.from_memos:
+                if memo_id in existing_memos:
+                    # Only update if not already linked to this issue (idempotency)
+                    memo = existing_memos[memo_id]
+                    if memo.ref != issue.id:
+                        update_memo(project.issues_root, memo_id, {"status": "tracked", "ref": issue.id})
+                # Non-blocking: ignore missing memos (just log warning)
+        
         return issue
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
