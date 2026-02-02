@@ -248,7 +248,7 @@ class SkillManager:
 
             for skill_subdir in skills_dir.iterdir():
                 if skill_subdir.is_dir() and (skill_subdir / "SKILL.md").exists():
-                    print(f"DEBUG: Found skill folder {skill_subdir} in feature {feature_name}")
+                    # print(f"DEBUG: Found skill folder {skill_subdir.name} in feature {feature_name}")
                     skill_folders.add(skill_subdir)
 
         for skill_dir in skill_folders:
@@ -293,7 +293,7 @@ class SkillManager:
                 and module_parts[0] == "monoco"
                 and module_parts[1] == "features"
             ):
-                feature_name = module_parts[2]; print(f"DEBUG: Feature {feature_name} found path {skill_subdir}")
+                feature_name = module_parts[2]
                 resources_dir = self.root / "monoco" / "features" / feature_name / "resources"
                 
                 if not resources_dir.exists():
