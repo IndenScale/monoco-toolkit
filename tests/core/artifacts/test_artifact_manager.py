@@ -5,7 +5,7 @@ Unit tests for ArtifactManager and related classes.
 import json
 import os
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -102,12 +102,12 @@ class TestArtifactMetadata:
             artifact_id="test",
             content_hash="a" * 64,
             source_type=ArtifactSourceType.GENERATED,
-            expires_at=datetime.utcnow() + timedelta(days=1),
+            expires_at=datetime.now(timezone.utc) + timedelta(days=1),
         )
         assert not metadata.is_expired
 
         # Expired
-        metadata.expires_at = datetime.utcnow() - timedelta(days=1)
+        metadata.expires_at = datetime.now(timezone.utc) - timedelta(days=1)
         assert metadata.is_expired
 
         # No expiration
@@ -263,7 +263,7 @@ class TestArtifactManager:
         meta1 = manager.store(b"active", source_type=ArtifactSourceType.GENERATED)
 
         # Expired artifact
-        expired_time = datetime.utcnow() - timedelta(days=1)
+        expired_time = datetime.now(timezone.utc) - timedelta(days=1)
         meta2 = manager.store(
             b"expired",
             source_type=ArtifactSourceType.GENERATED,
@@ -346,7 +346,7 @@ class TestArtifactManager:
     def test_cleanup_expired(self, manager):
         """Test cleanup of expired artifacts."""
         # Create expired artifact
-        expired_time = datetime.utcnow() - timedelta(days=1)
+        expired_time = datetime.now(timezone.utc) - timedelta(days=1)
         meta = manager.store(
             b"expired",
             source_type=ArtifactSourceType.GENERATED,

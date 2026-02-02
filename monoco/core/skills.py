@@ -732,11 +732,12 @@ class SkillManager:
         """Get list of available flow skill commands."""
         commands = []
         
-        # Workflow skills with role attribute
-        for skill in self.list_skills_by_type("workflow"):
-            role = skill.get_role()
-            if role:
-                commands.append(f"/flow:{role}")
+        # Workflow/Flow skills with role attribute from legacy skills
+        for skill in self.skills.values():
+            if skill.get_type() in ["flow", "workflow"]:
+                role = skill.get_role()
+                if role:
+                    commands.append(f"/flow:{role}")
         
         # Role skills from three-level architecture
         for role_name in self._roles.keys():

@@ -13,7 +13,7 @@ import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Callable, Any
@@ -40,7 +40,7 @@ class ConversionTask:
     target_format: str
     output_dir: Path
     options: dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     @property
     def source_extension(self) -> str:

@@ -117,7 +117,11 @@ def test_domain_language_check_warning(temp_issues_root, monkeypatch):
     # Domain in English
     domain_file = temp_issues_root / "Domains" / "English.md"
     domain_file.write_text(
-        "# English\n\nThis is strictly English content.", encoding="utf-8"
+        "# English\n\n"
+        "This is strictly English content. We need more words here to satisfy the language detection heuristic. "
+        "The current linter requires at least ten non-technical English words to be confident that the document "
+        "is indeed in English and not just a collection of technical terms.",
+        encoding="utf-8",
     )
 
     diagnostics = linter.check_integrity(temp_issues_root)
