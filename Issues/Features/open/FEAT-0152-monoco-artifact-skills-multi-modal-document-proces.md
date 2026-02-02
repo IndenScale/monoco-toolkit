@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 'Monoco Artifact Skills: Multi-modal Document Processing SOP'
 created_at: '2026-02-02T00:00:00'
-updated_at: '2026-02-02T09:04:58'
+updated_at: 2026-02-02 09:04:58
 priority: high
 parent: EPIC-0025
 dependencies: []
@@ -22,6 +22,11 @@ tags:
 files: []
 criticality: medium
 owner: IndenScale
+isolation:
+  type: branch
+  ref: feat/feat-0152-monoco-artifact-skills-multi-modal-document-proces
+  path: null
+  created_at: '2026-02-02T09:04:58'
 ---
 
 ## FEAT-0152: Monoco Artifact Skills: Multi-modal Document Processing SOP
