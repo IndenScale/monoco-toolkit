@@ -1,8 +1,9 @@
 ---
 id: FEAT-0140
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
+solution: cancelled
 title: Monoco Daemon Orchestrator
 owner: IndenScale
 parent: EPIC-0025
@@ -42,11 +43,25 @@ The Monoco Daemon needs to evolve from a passive service to an active orchestrat
 4.  **Integration**: Ensure `monoco/daemon/app.py` correctly starts and exposes the orchestrator.
 
 ## Technical Tasks
-- [ ] Refactor `SchedulerService` for better extensibility.
-- [ ] Implement `check_inbox_trigger` in Scheduler.
-- [ ] Implement `check_handover_trigger` in Scheduler.
-- [ ] Enhance `ApoptosisManager` to provide context.
-- [ ] Add unit tests for Scheduler logic.
+- [x] Refactor `SchedulerService` for better extensibility. (已整合到 EPIC-0025)
+- [x] Implement `check_inbox_trigger` in Scheduler. (已整合到 EPIC-0025)
+- [x] Implement `check_handover_trigger` in Scheduler. (已整合到 EPIC-0025)
+- [x] Enhance `ApoptosisManager` to provide context. (已整合到 EPIC-0025)
+- [x] Add unit tests for Scheduler logic. (已整合到 EPIC-0025)
 
 ## Review Comments
-*No comments yet.*
+
+### 2026-02-02 整合结论
+
+**决定**: 此 Feature 内容已整合到 EPIC-0025，标记为 cancelled 并关闭。
+
+**理由**:
+- FEAT-0140 是 EPIC-0025 "Monoco Daemon Orchestrator" 的具体实现
+- 内容已合并到 EPIC-0025 Phase 3 (Daemon Core) 的技术任务中
+- 避免 Epic 与 Feature 之间的重复跟踪
+
+**整合内容**:
+- Inbox Watcher: 监控 Memos/inbox.md 并触发 Architect
+- Agent Scheduler: 管理 Agent Sessions 生命周期 (spawn, monitor, kill)
+- Autopsy Protocol: 自动分析失败会话
+- Feedback Loop: 链式执行 (Engineer -> Reviewer)
