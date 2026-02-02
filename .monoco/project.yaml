@@ -14,6 +14,7 @@ project:
     claude-agent-sdk-python: https://github.com/anthropics/claude-agent-sdk-python
     claude-code: https://github.com/anthropics/claude-code
     gemini-cli: https://github.com/google-gemini/gemini-cli
+    kimi-agent-sdk: https://github.com/MoonshotAI/kimi-agent-sdk
     monoco-toolkit: https://github.com/IndenScale/monoco-toolkit
     qwen-code: https://github.com/QwenLM/qwen-code
     ralph: https://github.com/snarktank/ralph

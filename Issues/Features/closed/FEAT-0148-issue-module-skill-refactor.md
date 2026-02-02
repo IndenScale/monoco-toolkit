@@ -2,8 +2,9 @@
 id: FEAT-0148
 uid: 326e1a
 type: feature
-status: open
-stage: draft
+status: closed
+stage: done
+solution: implemented
 title: Issue Module Skill 原子化重构
 created_at: '2026-01-31T20:04:50'
 updated_at: '2026-02-01T22:42:00'
@@ -34,30 +35,30 @@ opened_at: '2026-01-31T20:04:50'
 
 ## Acceptance Criteria
 
-- [ ] Copilot 模式原子 Flow Skills 创建完成（3 个）
-- [ ] Autopilot Planner Role 和 Flow Skill 创建完成
-- [ ] 现有 `issue-lifecycle-workflow` 重构或废弃
-- [ ] 所有新 Skill 遵循 `resources/{lang}/` 多语言结构
-- [ ] Skill 同步机制验证通过
+- [x] Copilot 模式原子 Flow Skills 创建完成（3 个）
+- [x] Autopilot Planner Role 和 Flow Skill 创建完成
+- [x] 现有 `issue-lifecycle-workflow` 重构或废弃
+- [x] 所有新 Skill 遵循 `resources/{lang}/` 多语言结构
+- [x] Skill 同步机制验证通过
 
 ## Technical Tasks
 
 ### Phase 1: Copilot Skills (Issue Module)
-- [ ] 创建 `issue_create_workflow` - Memo 到 Issue 的转化流程
-- [ ] 创建 `issue_refine_workflow` - Issue 调查细化流程  
-- [ ] 创建 `issue_develop_workflow` - Issue 开发交付流程
-- [ ] 更新 `monoco/features/issue/resources/skills/` 结构
+- [x] 创建 `issue_create_workflow` - Memo 到 Issue 的转化流程
+- [x] 创建 `issue_refine_workflow` - Issue 调查细化流程  
+- [x] 创建 `issue_develop_workflow` - Issue 开发交付流程
+- [x] 更新 `monoco/features/issue/resources/skills/` 结构
 
 ### Phase 2: Autopilot Skills (Agent Module)
-- [ ] 创建 `planner.yaml` Role 定义
-- [ ] 创建 `flow_planner` Flow Skill
-- [ ] 更新 `monoco/features/agent/resources/roles/` 和 `skills/`
+- [x] 创建 `planner.yaml` Role 定义
+- [x] 创建 `flow_planner` Flow Skill
+- [x] 更新 `monoco/features/agent/resources/roles/` 和 `skills/`
 
 ### Phase 3: 重构与清理
-- [ ] 重构现有 `issue_lifecycle_workflow`
-- [ ] 更新 Skill 分发配置
-- [ ] 验证 `.claude/skills/` 同步结果
-- [ ] 废弃旧版 lifecycle workflow（可选）
+- [x] 重构现有 `issue_lifecycle_workflow`
+- [x] 更新 Skill 分发配置
+- [x] 验证 `.claude/skills/` 同步结果
+- [x] 废弃旧版 lifecycle workflow（可选）
 
 ## Architecture
 
@@ -91,3 +92,4 @@ monoco/features/agent/
 
 - 2026-01-31: Epic 创建完成，定义了 Issue Module Skill 原子化重构的目标和范围。
 - 包含 Copilot 模式原子 Flow Skills 和 Autopilot Planner Role 的创建计划。
+- 2026-02-02: 所有任务已完成。Copilot 模式的 3 个原子 Flow Skills (`issue_create_workflow`, `issue_refine_workflow`, `issue_develop_workflow`) 已创建并同步到多语言目录。Autopilot Planner Role 和 Flow Skill 已创建。旧版 `issue_lifecycle_workflow` 已由 `monoco_atom_issue_lifecycle` 替代。Skill 同步机制已验证通过。
