@@ -400,7 +400,7 @@ def move_close(
         None, "--solution", "-s", help="Solution type"
     ),
     prune: bool = typer.Option(
-        False, "--prune", help="Delete branch/worktree after close"
+        True, "--prune/--no-prune", help="Delete branch/worktree after close (default: True)"
     ),
     force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
     force_prune: bool = typer.Option(
@@ -466,10 +466,37 @@ def move_close(
 
         pruned_resources = []
         if prune:
+            # Get isolation info for confirmation prompt
+            isolation_info = None
+            if issue.isolation:
+                isolation_type = issue.isolation.type.value if issue.isolation.type else None
+                isolation_ref = issue.isolation.ref
+                isolation_info = (isolation_type, isolation_ref)
+
+            # Interactive confirmation before pruning (non-agent mode only)
+            if not OutputManager.is_agent_mode() and isolation_info and not force:
+                iso_type, iso_ref = isolation_info
+                if iso_ref:
+                    console.print(f"\n[bold yellow]⚠️  Resource Cleanup Confirmation[/bold yellow]")
+                    console.print(f"Issue [cyan]{issue_id}[/cyan] will be closed with the following action:")
+                    console.print(f"  • Delete {iso_type}: [bold]{iso_ref}[/bold]")
+                    console.print(f"\n[dim]This operation will permanently remove the {iso_type}. "
+                                f"Ensure all changes have been merged to main.[/dim]")
+                    confirm = typer.confirm(
+                        f"\nProceed with closing {issue_id} and deleting {iso_type}?",
+                        default=True,
+                    )
+                    if not confirm:
+                        console.print(f"[yellow]Close operation cancelled.[/yellow]")
+                        console.print(f"[dim]Tip: Use --no-prune to close without deleting {iso_type}.[/dim]")
+                        raise typer.Abort()
+
             try:
                 pruned_resources = core.prune_issue_resources(
                     issues_root, issue_id, force, project_root
                 )
+                if pruned_resources and not OutputManager.is_agent_mode():
+                    console.print(f"[green]✔ Cleaned up:[/green] {', '.join(pruned_resources)}")
             except Exception as e:
                 OutputManager.error(f"Prune Error: {e}")
                 raise typer.Exit(code=1)
