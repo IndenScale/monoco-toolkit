@@ -18,6 +18,7 @@ class CreateIssueRequest(BaseModel):
     related: List[str] = []
     subdir: Optional[str] = None
     project_id: Optional[str] = None  # Added for multi-project support
+    from_memos: List[str] = []  # Memo IDs to link to this issue
 
 
 class UpdateIssueRequest(BaseModel):
