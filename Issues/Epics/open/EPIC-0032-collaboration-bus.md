@@ -3,7 +3,7 @@ id: EPIC-0032
 uid: 6a27eb
 type: epic
 status: open
-stage: draft
+stage: doing
 title: 协作总线：人机交互界面与信息传递
 created_at: '2026-02-01T20:24:49'
 updated_at: '2026-02-01T20:24:49'
@@ -21,6 +21,8 @@ tags:
 files: []
 criticality: high
 opened_at: '2026-02-01T20:24:49'
+progress: 0/1
+files_count: 0
 ---
 
 ## EPIC-0032: 协作总线：人机交互界面与信息传递
