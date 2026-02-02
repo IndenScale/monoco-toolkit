@@ -3,12 +3,14 @@ id: FEAT-0152
 uid: art_skill_01
 type: feature
 status: open
-stage: todo
+stage: doing
 title: 'Monoco Artifact Skills: Multi-modal Document Processing SOP'
-owner: IndenScale
-parent: EPIC-0025
+created_at: '2026-02-02T00:00:00'
+updated_at: '2026-02-02T09:04:58'
 priority: high
-created_at: '2026-02-02'
+parent: EPIC-0025
+dependencies: []
+related: []
 domains:
 - AgentEmpowerment
 tags:
@@ -17,6 +19,9 @@ tags:
 - skill
 - sop
 - documentation
+files: []
+criticality: medium
+owner: IndenScale
 ---
 
 ## FEAT-0152: Monoco Artifact Skills: Multi-modal Document Processing SOP
