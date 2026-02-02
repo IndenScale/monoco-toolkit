@@ -1579,6 +1579,193 @@ def show(
     OutputManager.print(result)
 
 
+@app.command("check-critical")
+def check_critical(
+    fail_on_warning: bool = typer.Option(
+        False,
+        "--fail-on-warning",
+        help="Exit with error code if high priority issues are found",
+    ),
+    root: Optional[str] = typer.Option(
+        None, "--root", help="Override issues root directory"
+    ),
+    json: AgentOutput = False,
+):
+    """
+    Check for incomplete critical/high priority issues.
+
+    Returns:
+        0: No critical/high issues found
+        1: High priority issues found (warning)
+        2: Critical issues found (blocking)
+    """
+    from .criticality import CriticalityLevel
+
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+
+    issues = core.list_issues(issues_root)
+
+    critical_issues = []
+    high_issues = []
+
+    for issue in issues:
+        if issue.status == "closed":
+            continue
+
+        criticality = issue.criticality
+        if not criticality:
+            continue
+
+        if criticality == CriticalityLevel.CRITICAL:
+            critical_issues.append(issue)
+        elif criticality == CriticalityLevel.HIGH:
+            high_issues.append(issue)
+
+    result = {
+        "critical_count": len(critical_issues),
+        "high_count": len(high_issues),
+        "critical_issues": [
+            {"id": i.id, "title": i.title, "stage": i.stage}
+            for i in critical_issues
+        ],
+        "high_issues": [
+            {"id": i.id, "title": i.title, "stage": i.stage}
+            for i in high_issues
+        ],
+    }
+
+    if OutputManager.is_agent_mode() or json:
+        OutputManager.print(result)
+    else:
+        if critical_issues:
+            console.print("[red]❌ Critical issues (blocking):[/red]")
+            for issue in critical_issues:
+                console.print(f"  [red]• {issue.id}:[/red] {issue.title} ({issue.stage})")
+
+        if high_issues:
+            console.print("[yellow]⚠️  High priority issues (warning):[/yellow]")
+            for issue in high_issues:
+                console.print(f"  [yellow]• {issue.id}:[/yellow] {issue.title} ({issue.stage})")
+
+        if not critical_issues and not high_issues:
+            console.print("[green]✓ No incomplete critical or high priority issues.[/green]")
+
+    # Determine exit code
+    if critical_issues:
+        raise typer.Exit(code=2)
+    elif high_issues and fail_on_warning:
+        raise typer.Exit(code=1)
+    elif high_issues:
+        # Warning only, don't fail
+        pass
+
+    raise typer.Exit(code=0)
+
+
+@app.command("sync-isolation")
+def sync_isolation(
+    issue_id: str = typer.Argument(..., help="Issue ID to sync isolation for"),
+    branch: Optional[str] = typer.Option(
+        None, "--branch", help="Current branch name (auto-detected if not provided)"
+    ),
+    root: Optional[str] = typer.Option(
+        None, "--root", help="Override issues root directory"
+    ),
+    json: AgentOutput = False,
+):
+    """
+    Sync issue isolation configuration with current branch.
+
+    Updates the isolation.ref field to match the current branch context.
+    This is typically called by the post-checkout hook.
+    """
+    import subprocess
+    from .core import update_issue_field
+
+    config = get_config()
+    issues_root = _resolve_issues_root(config, root)
+    project_root = Path(config.paths.root).resolve()
+
+    # Auto-detect branch if not provided
+    if not branch:
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                cwd=project_root,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            branch = result.stdout.strip()
+        except Exception:
+            OutputManager.error("Could not detect current branch. Use --branch.")
+            raise typer.Exit(code=1)
+
+    # Find the issue
+    issue_path = core.find_issue_path(issues_root, issue_id)
+    if not issue_path:
+        OutputManager.error(f"Issue {issue_id} not found.")
+        raise typer.Exit(code=1)
+
+    # Parse current issue
+    issue = core.parse_issue(issue_path)
+    if not issue:
+        OutputManager.error(f"Could not parse issue {issue_id}.")
+        raise typer.Exit(code=1)
+
+    # Check if isolation needs updating
+    current_isolation = issue.isolation
+    if current_isolation:
+        current_ref = current_isolation.ref or ""
+        current_isolation_dict = {
+            "type": current_isolation.type,
+            "ref": current_isolation.ref,
+        }
+        if current_isolation.path:
+            current_isolation_dict["path"] = current_isolation.path
+        if current_isolation.created_at:
+            current_isolation_dict["created_at"] = current_isolation.created_at.isoformat()
+    else:
+        current_ref = ""
+        current_isolation_dict = {}
+
+    # Expected ref format: branch:branch-name
+    expected_ref = f"branch:{branch}"
+
+    if current_ref == expected_ref:
+        if OutputManager.is_agent_mode() or json:
+            OutputManager.print({"updated": False, "message": "Isolation already up to date"})
+        else:
+            console.print(f"[dim]Isolation already up to date for {issue_id}[/dim]")
+        raise typer.Exit(code=0)
+
+    # Update the isolation field
+    new_isolation = {**current_isolation_dict, "ref": expected_ref, "type": "branch"}
+
+    try:
+        update_issue_field(
+            issue_path,
+            "isolation",
+            new_isolation,
+        )
+
+        result = {
+            "updated": True,
+            "issue_id": issue_id,
+            "isolation": new_isolation,
+        }
+
+        if OutputManager.is_agent_mode() or json:
+            OutputManager.print(result)
+        else:
+            console.print(f"[green]✓ Updated isolation for {issue_id}:[/green] {expected_ref}")
+
+    except Exception as e:
+        OutputManager.error(f"Failed to update isolation: {e}")
+        raise typer.Exit(code=1)
+
+
 def _validate_branch_context(
     project_root: Path,
     allowed: Optional[List[str]] = None,
