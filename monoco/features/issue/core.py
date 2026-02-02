@@ -1035,6 +1035,75 @@ def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> Li
     return []
 
 
+def merge_issue_changes(
+    issues_root: Path, issue_id: str, project_root: Path
+) -> List[str]:
+    """
+    Perform Smart Atomic Merge or selection checkout of touched files.
+    Ensures safe mainline synchronization by only merging files tracked in 'files' field.
+    """
+    path = find_issue_path(issues_root, issue_id)
+    if not path:
+        raise FileNotFoundError(f"Issue {issue_id} not found.")
+
+    issue = parse_issue(path)
+    if not issue:
+        raise ValueError(f"Could not parse issue {issue_id}")
+
+    if not issue.files:
+        # If no files tracked, nothing to merge.
+        return []
+
+    # Determine Source (Feature Branch)
+    source_ref = None
+    if issue.isolation and issue.isolation.ref:
+        source_ref = issue.isolation.ref
+    else:
+        # Heuristic: Search for branch by convention
+        current = git.get_current_branch(project_root)
+        if issue_id.lower() in current.lower():
+            source_ref = current
+
+    if not source_ref:
+        raise RuntimeError(f"Could not determine source branch for Issue {issue_id}.")
+
+    if not git.branch_exists(project_root, source_ref):
+        raise RuntimeError(f"Source branch {source_ref} does not exist.")
+
+    # 1. Conflict Check
+    # A conflict occurs if a file in 'files' has changed on HEAD (main)
+    # since the common ancestor of HEAD and source_ref.
+
+    current_head = git.get_current_branch(project_root)
+    try:
+        base = git.get_merge_base(project_root, current_head, source_ref)
+    except Exception as e:
+        raise RuntimeError(f"Failed to determine merge base: {e}")
+
+    conflicts = []
+    for f in issue.files:
+        # Has main changed this file?
+        if git.has_diff(project_root, base, current_head, [f]):
+            # Has feature also changed this file?
+            if git.has_diff(project_root, base, source_ref, [f]):
+                conflicts.append(f)
+
+    if conflicts:
+        raise RuntimeError(
+            f"Atomic Merge Conflict: The following files changed on both mainline and {issue_id}:\n"
+            + "\n".join([f"  - {f}" for f in conflicts])
+            + "\n\nPlease resolve manually using Cherry-Pick as per AGENTS.md policy."
+        )
+
+    # 2. Perform Atomic Merge (Selective Checkout)
+    try:
+        git.git_checkout_files(project_root, source_ref, issue.files)
+    except Exception as e:
+        raise RuntimeError(f"Selective checkout failed: {e}")
+
+    return issue.files
+
+
 # Resources
 SKILL_CONTENT = """
 ---

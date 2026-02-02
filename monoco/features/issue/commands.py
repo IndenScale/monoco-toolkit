@@ -455,6 +455,32 @@ def move_close(
         force = True
 
     try:
+        # 0. Perform Smart Atomic Merge (FEAT-0154)
+        merged_files = []
+        try:
+            merged_files = core.merge_issue_changes(issues_root, issue_id, project_root)
+            if merged_files:
+                if not OutputManager.is_agent_mode():
+                    console.print(
+                        f"[green]✔ Smart Merge:[/green] Synced {len(merged_files)} files from feature branch."
+                    )
+
+                # Auto-commit merged files if not no_commit
+                if not no_commit:
+                    commit_msg = f"feat: atomic merge changes from {issue_id}"
+                    try:
+                        git.git_commit(project_root, commit_msg)
+                        if not OutputManager.is_agent_mode():
+                            console.print(f"[green]✔ Committed merged changes.[/green]")
+                    except Exception as e:
+                        # If commit fails (e.g. nothing to commit?), just warn
+                        if not OutputManager.is_agent_mode():
+                            console.print(f"[yellow]⚠ Commit skipped: {e}[/yellow]")
+
+        except Exception as e:
+            OutputManager.error(f"Merge Error: {e}")
+            raise typer.Exit(code=1)
+
         issue = core.update_issue(
             issues_root,
             issue_id,
