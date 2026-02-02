@@ -6,7 +6,7 @@ status: open
 stage: review
 title: Monoco Cockpit - Settings Page Implementation
 created_at: '2026-02-01T00:59:12'
-updated_at: '2026-02-02T11:58:59'
+updated_at: '2026-02-02T12:00:51'
 priority: high
 parent: EPIC-0032
 dependencies: []
