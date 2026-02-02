@@ -4,7 +4,7 @@ uid: 6913df
 type: feature
 status: open
 stage: draft
-title: Implement CLI Command for Issue Domain Management
+title: 实现 Issue 域管理 CLI 命令
 created_at: '2026-02-01T20:57:08'
 updated_at: '2026-02-01T20:57:08'
 parent: EPIC-0000
@@ -19,27 +19,27 @@ criticality: medium
 opened_at: '2026-02-01T20:57:08'
 ---
 
-## FEAT-0146: Implement CLI Command for Issue Domain Management
+## FEAT-0146: 实现 Issue 域管理 CLI 命令
 
 ## 背景与目标
 
-实现 Issue 域管理 CLI 命令组，提供对域的增删改查操作。当前管理域需要通过手动编辑 Markdown 文件或配置文件完成，操作繁琐且容易出错。本功能需求源自备忘录记录，需要提供便捷的命令行工具来列出、创建和管理域定义，确保正确更新 `Issues/Domains/*.md` 文件，并支持与现有 Issue 系统的无缝集成。
+实现 Issue 域 (Domain) 管理 CLI 命令组，提供对域的增删改查操作。当前管理域需要通过手动编辑 Markdown 文件或配置文件完成，操作繁琐且容易出错。本功能需求源自备忘录记录，需要提供便捷的命令行工具来列出、创建和管理域定义，确保正确更新 `Issues/Domains/*.md` 文件，并支持与现有 Issue 系统的无缝集成。
 
-## Objective
-Implement a CLI command group `monoco issue domain` to manage Domains (CRUD operations).
+## 目标
+实现 `monoco issue domain` 命令组，用于管理域（CRUD 操作）。
 
-**Context**:
-- Feature request from memo [02f30a].
-- Need easy way to list, add, and manage domains without manually editing Markdown files or config.
+**上下文**:
+- 需求来自备忘录 [02f30a]。
+- 需要一种简单的列表、添加和管理域的方法，而无需手动编辑 Markdown 文件或配置。
 
-## Acceptance Criteria
-- [ ] `monoco issue domain list` lists all domains.
-- [ ] `monoco issue domain create <name>` creates a new domain definition.
-- [ ] `monoco issue domain show <name>` shows domain details.
+## 验收标准
+- [ ] `monoco issue domain list` 列出所有域。
+- [ ] `monoco issue domain create <name>` 创建新的域定义。
+- [ ] `monoco issue domain show <name>` 显示域详情。
 
-## Technical Tasks
-- [ ] Implement `monoco.cli.issue_domain` group.
-- [ ] Implement `list`, `create`, `show` commands.
-- [ ] Ensure it updates `Issues/Domains/*.md` correctly.
+## 技术任务
+- [ ] 实现 `monoco.cli.issue_domain` 命令组。
+- [ ] 实现 `list`、`create`、`show` 命令。
+- [ ] 确保正确更新 `Issues/Domains/*.md` 文件。
 
 ## Review Comments
