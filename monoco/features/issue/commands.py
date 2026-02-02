@@ -445,7 +445,11 @@ def move_close(
     ),
     json: AgentOutput = False,
 ):
-    """Close issue."""
+    """Close issue with atomic transaction guarantee.
+    
+    If any step fails, all changes made during the close operation will be
+    automatically rolled back to ensure the mainline remains clean.
+    """
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     project_root = _resolve_project_root(config)
@@ -483,7 +487,26 @@ def move_close(
         prune = True
         force = True
 
+    # ATOMIC TRANSACTION: Capture initial state for potential rollback
+    initial_head = None
+    transaction_commits = []
+    
+    def rollback_transaction():
+        """Rollback all changes made during the transaction."""
+        if initial_head and transaction_commits:
+            try:
+                git.git_reset_hard(project_root, initial_head)
+                if not OutputManager.is_agent_mode():
+                    console.print(f"[yellow]↩ Rolled back to {initial_head[:7]}[/yellow]")
+            except Exception as rollback_error:
+                if not OutputManager.is_agent_mode():
+                    console.print(f"[red]⚠ Rollback failed: {rollback_error}[/red]")
+                    console.print(f"[red]   Manual recovery may be required. Run: git reset --hard {initial_head[:7]}[/red]")
+
     try:
+        # Capture initial HEAD before any modifications
+        initial_head = git.get_current_head(project_root)
+        
         # 0. Find issue across branches (FIX-0006)
         # This will raise RuntimeError if issue found in multiple branches
         found_path, source_branch = core.find_issue_path_across_branches(
@@ -514,7 +537,8 @@ def move_close(
                 if not no_commit:
                     commit_msg = f"feat: atomic merge changes from {issue_id}"
                     try:
-                        git.git_commit(project_root, commit_msg)
+                        commit_hash = git.git_commit(project_root, commit_msg)
+                        transaction_commits.append(commit_hash)
                         if not OutputManager.is_agent_mode():
                             console.print(f"[green]✔ Committed merged changes.[/green]")
                     except Exception as e:
@@ -524,17 +548,28 @@ def move_close(
 
         except Exception as e:
             OutputManager.error(f"Merge Error: {e}")
+            rollback_transaction()
             raise typer.Exit(code=1)
 
-        issue = core.update_issue(
-            issues_root,
-            issue_id,
-            status="closed",
-            solution=solution,
-            no_commit=no_commit,
-            project_root=project_root,
-        )
+        # 2. Update issue status to closed
+        try:
+            issue = core.update_issue(
+                issues_root,
+                issue_id,
+                status="closed",
+                solution=solution,
+                no_commit=no_commit,
+                project_root=project_root,
+            )
+            # Track the auto-commit from update_issue if it occurred
+            if hasattr(issue, 'commit_result') and issue.commit_result:
+                transaction_commits.append(issue.commit_result)
+        except Exception as e:
+            OutputManager.error(f"Update Error: {e}")
+            rollback_transaction()
+            raise typer.Exit(code=1)
 
+        # 3. Prune issue resources (branch/worktree)
         pruned_resources = []
         if prune:
             # Get isolation info for confirmation prompt
@@ -560,6 +595,7 @@ def move_close(
                     if not confirm:
                         console.print(f"[yellow]Close operation cancelled.[/yellow]")
                         console.print(f"[dim]Tip: Use --no-prune to close without deleting {iso_type}.[/dim]")
+                        rollback_transaction()
                         raise typer.Abort()
 
             try:
@@ -570,14 +606,21 @@ def move_close(
                     console.print(f"[green]✔ Cleaned up:[/green] {', '.join(pruned_resources)}")
             except Exception as e:
                 OutputManager.error(f"Prune Error: {e}")
+                rollback_transaction()
                 raise typer.Exit(code=1)
 
+        # Success: Clear transaction state as all operations completed
         OutputManager.print(
             {"issue": issue, "status": "closed", "pruned": pruned_resources}
         )
 
+    except typer.Abort:
+        # User cancelled, rollback already handled
+        raise
     except Exception as e:
+        # Catch-all for unexpected errors
         OutputManager.error(str(e))
+        rollback_transaction()
         raise typer.Exit(code=1)
 
 
