@@ -3,10 +3,10 @@ id: FEAT-0145
 uid: 6d6bf7
 type: feature
 status: open
-stage: doing
+stage: review
 title: 集成 Git Hooks 到开发工作流
 created_at: '2026-02-01T20:57:03'
-updated_at: 2026-02-02 15:31:12
+updated_at: '2026-02-02T15:37:27'
 parent: EPIC-0030
 dependencies: []
 related:
@@ -33,7 +33,7 @@ files:
 - monoco/features/issue/commands.py
 - monoco/features/issue/core.py
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-02T13:25:35'
 isolation:
   type: branch
