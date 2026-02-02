@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 集成 Git Hooks 到开发工作流
 created_at: '2026-02-01T20:57:03'
-updated_at: '2026-02-02T15:37:27'
+updated_at: '2026-02-02T15:44:35'
 parent: EPIC-0030
 dependencies: []
 related:
@@ -17,27 +17,25 @@ tags:
 - '#FEAT-0145'
 - '#FEAT-0141'
 files:
+- .monoco/workspace.yaml
 - Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
 - Issues/Epics/open/EPIC-0030-developer-experience-tooling.md
 - Issues/Features/open/FEAT-0145-integrate-git-hooks-for-development-workflow.md
-- monoco/core/config.py
-- monoco/main.py
-- monoco/features/hooks/__init__.py
-- monoco/features/hooks/core.py
-- monoco/features/hooks/adapter.py
+- Issues/Features/open/FEAT-0154-optimize-git-merge-strategy-and-enhance-issue-clos.md
+- monoco/__main__.py
 - monoco/features/hooks/commands.py
 - monoco/features/hooks/resources/ADDING_HOOKS.md
-- monoco/features/issue/resources/hooks/pre-commit.sh
-- monoco/features/issue/resources/hooks/pre-push.sh
-- monoco/features/issue/resources/hooks/post-checkout.sh
 - monoco/features/issue/commands.py
 - monoco/features/issue/core.py
+- monoco/features/issue/resources/hooks/post-checkout.sh
+- monoco/features/issue/resources/hooks/pre-commit.sh
+- monoco/features/issue/resources/hooks/pre-push.sh
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-02T13:25:35'
 isolation:
   type: branch
-  ref: branch:test-branch
+  ref: feat/FEAT-0145-git-hooks
   created_at: '2026-02-02T14:55:21'
 ---
 
