@@ -3,10 +3,10 @@ id: FEAT-0134
 uid: f0e1d2
 type: feature
 status: open
-stage: doing
+stage: review
 title: Monoco Cockpit - Settings Page Implementation
 created_at: '2026-02-01T00:59:12'
-updated_at: '2026-02-02T11:19:24'
+updated_at: '2026-02-02T11:58:59'
 priority: high
 parent: EPIC-0032
 dependencies: []
@@ -20,9 +20,24 @@ tags:
 - cockpit
 - '#EPIC-0032'
 - '#FEAT-0134'
-files: []
+files:
+- Issues/Features/open/FEAT-0138-implement-agent-session-persistence.md
+- extensions/vscode/client/src/cockpit/components/CapabilitiesPanel.tsx
+- extensions/vscode/client/src/cockpit/components/CliPreview.tsx
+- extensions/vscode/client/src/cockpit/components/CulturePanel.tsx
+- extensions/vscode/client/src/cockpit/components/RuntimePanel.tsx
+- extensions/vscode/client/src/cockpit/components/index.ts
+- extensions/vscode/client/src/cockpit/hooks/index.ts
+- extensions/vscode/client/src/cockpit/hooks/useCockpitSettings.ts
+- extensions/vscode/client/src/cockpit/hooks/useVSCodeApi.ts
+- extensions/vscode/client/src/cockpit/index.tsx
+- extensions/vscode/client/src/cockpit/types/config.ts
+- extensions/vscode/client/src/cockpit/types/index.ts
+- extensions/vscode/client/src/cockpit/types/messages.ts
+- extensions/vscode/client/src/cockpit/views/CockpitApp.tsx
+- extensions/vscode/client/src/cockpit/views/index.ts
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-01T00:59:12'
 owner: IndenScale
 ---
@@ -63,13 +78,63 @@ owner: IndenScale
 
 ### 检查清单
 
-- [ ] 设计 Cockpit 布局，强调 "Agent-First" 的视觉层级。
-- [ ] 实现 **Runtime (Kernel/Persona)** 配置面板。
-- [ ] 实现 **Capabilities (Skills/MCP)** 配置面板。
-- [ ] 实现 **Culture (Language/Tone)** 配置面板。
-- [ ] 开发配置转换适配器 (Adapter)，将 UI 选项映射为 CLI 参数。
-- [ ] 实现配置持久化。
+- [x] 设计 Cockpit 布局，强调 "Agent-First" 的视觉层级。
+- [x] 实现 **Runtime (Kernel/Persona)** 配置面板。
+- [x] 实现 **Capabilities (Skills/MCP)** 配置面板。
+- [x] 实现 **Culture (Language/Tone)** 配置面板。
+- [x] 开发配置转换适配器 (Adapter)，将 UI 选项映射为 CLI 参数。
+- [x] 实现配置持久化。
+
+### 实现详情
+
+#### 文件结构
+```
+extensions/vscode/client/src/cockpit/
+├── CockpitProvider.ts          # VS Code Webview Provider
+├── index.tsx                   # React 应用入口
+├── index.html                  # HTML 模板
+├── components/
+│   ├── RuntimePanel.tsx        # Agent Runtime 配置面板
+│   ├── CapabilitiesPanel.tsx   # Capabilities 配置面板
+│   ├── CulturePanel.tsx        # Culture 配置面板
+│   ├── CliPreview.tsx          # CLI 参数预览
+│   └── index.ts
+├── hooks/
+│   ├── useVSCodeApi.ts         # VS Code API Hook
+│   ├── useCockpitSettings.ts   # 设置状态管理 Hook
+│   └── index.ts
+├── types/
+│   ├── config.ts               # 配置类型定义
+│   ├── messages.ts             # 消息类型定义
+│   └── index.ts
+├── styles/
+│   └── cockpit.css             # 样式文件
+└── views/
+    ├── CockpitApp.tsx          # 主应用组件
+    └── index.ts
+```
+
+#### 新增依赖
+- `@vscode/webview-ui-toolkit`: VS Code Webview UI 组件库
+- `react`: React 框架
+- `react-dom`: React DOM 渲染
+- `@types/react`: React TypeScript 类型
+- `@types/react-dom`: React DOM TypeScript 类型
+- `esbuild`: 构建工具
+
+#### 新增命令
+- `monoco.openCockpit`: 打开 Monoco Cockpit 设置面板
+
+#### 新增配置项
+- `monoco.cockpit.runtime.provider`: Agent Provider
+- `monoco.cockpit.runtime.role`: Agent Role
+- `monoco.cockpit.runtime.autonomy.level`: Autonomy Level
+- `monoco.cockpit.runtime.autonomy.persistence`: Persistence Scope
+- `monoco.cockpit.capabilities.skills.directory`: Skills Directory
+- `monoco.cockpit.capabilities.skills.sets`: Enabled Skills
+- `monoco.cockpit.capabilities.systemAccess.*`: System Access Settings
+- `monoco.cockpit.culture.*`: Culture Settings
 
 ## Review Comments
 
-*No comments yet.*
+*Implementation completed. Ready for review.*
