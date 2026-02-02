@@ -3,10 +3,10 @@ id: FIX-0007
 uid: e492b4
 type: fix
 status: open
-stage: draft
+stage: doing
 title: 'Fix: monoco issue close 应该是原子化操作'
 created_at: '2026-02-02T22:39:20'
-updated_at: '2026-02-02T22:39:20'
+updated_at: 2026-02-02 22:43:19
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -15,10 +15,16 @@ domains:
 tags:
 - '#EPIC-0000'
 - '#FIX-0007'
-files: []
+files:
+  - monoco/core/git.py
+  - monoco/features/issue/commands.py
+  - tests/features/issue/test_close_atomic.py
 criticality: critical
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-02T22:39:20'
+isolation:
+  ref: branch:feat/FIX-0007-atomic-close
+  type: branch
 ---
 
 ## FIX-0007: Fix: monoco issue close 应该是原子化操作
@@ -51,17 +57,17 @@ opened_at: '2026-02-02T22:39:20'
 ### Phase 1: 问题分析与方案设计
 - [x] 分析当前 close 命令的执行流程
 - [x] 识别非原子化操作的具体位置
-- [ ] 设计原子化/事务机制（临时分支方案或 git reset 方案）
+- [x] 设计原子化/事务机制（临时分支方案或 git reset 方案）
 
 ### Phase 2: 核心实现
-- [ ] 修改 `monoco/features/issue/commands.py` 中的 `move_close` 函数
-- [ ] 实现事务包装器：成功提交，失败回滚
-- [ ] 添加详细的错误处理和日志
+- [x] 修改 `monoco/features/issue/commands.py` 中的 `move_close` 函数
+- [x] 实现事务包装器：成功提交，失败回滚
+- [x] 添加详细的错误处理和日志
 
 ### Phase 3: 测试与验证
-- [ ] 编写单元测试：模拟中间步骤失败，验证回滚行为
-- [ ] 集成测试：验证正常关闭流程不受影响
-- [ ] 手动测试：模拟各种错误场景
+- [x] 编写单元测试：模拟中间步骤失败，验证回滚行为
+- [x] 集成测试：验证正常关闭流程不受影响
+- [x] 手动测试：模拟各种错误场景
 
 ## Review Comments
 <!-- Required for Review/Done stage. Record review feedback here. -->
