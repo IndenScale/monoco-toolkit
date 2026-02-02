@@ -466,6 +466,203 @@ def find_issue_path(issues_root: Path, issue_id: str, include_archived: bool = T
     return None
 
 
+def find_issue_path_across_branches(
+    issues_root: Path, 
+    issue_id: str, 
+    project_root: Optional[Path] = None,
+    include_archived: bool = True
+) -> Tuple[Optional[Path], Optional[str]]:
+    """
+    Find issue path across all local git branches.
+    
+    Implements the "Golden Path" logic:
+    - If issue found in exactly one branch -> return it silently
+    - If issue found in multiple branches -> raise error (conflict)
+    - If issue not found in any branch -> return None
+    
+    Args:
+        issues_root: Root directory of issues
+        issue_id: Issue ID to find
+        project_root: Project root (defaults to issues_root.parent)
+        include_archived: Whether to search in archived directory
+        
+    Returns:
+        Tuple of (file_path, branch_name) or (None, None) if not found
+        
+    Raises:
+        RuntimeError: If issue found in multiple branches (conflict)
+    """
+    # First, try to find in current working tree
+    local_path = find_issue_path(issues_root, issue_id, include_archived)
+    
+    # Determine project root
+    if project_root is None:
+        project_root = issues_root.parent
+    
+    # If not a git repo, just return local result
+    if not git.is_git_repo(project_root):
+        return (local_path, None) if local_path else (None, None)
+    
+    # Get current branch
+    current_branch = git.get_current_branch(project_root)
+    
+    # If found locally, check if it's also in other branches
+    if local_path:
+        # Get relative path from project root
+        try:
+            rel_path = local_path.relative_to(project_root)
+        except ValueError:
+            # Local path is not under project root, use as-is
+            rel_path = local_path
+        
+        # Check if this file exists in other branches
+        other_branches = _find_branches_with_file(project_root, str(rel_path), current_branch)
+        
+        if other_branches:
+            # Issue exists in multiple branches - this is a conflict
+            all_branches = [current_branch] + other_branches
+            raise RuntimeError(
+                f"Issue {issue_id} found in multiple branches: {', '.join(all_branches)}. "
+                f"Please resolve the conflict by merging branches or deleting duplicate issue files."
+            )
+        
+        # Only in current branch - golden path
+        return local_path, current_branch
+    
+    # Not found locally, search in all branches
+    return _search_issue_in_branches(issues_root, issue_id, project_root, include_archived)
+
+
+def _find_branches_with_file(project_root: Path, rel_path: str, exclude_branch: str) -> List[str]:
+    """
+    Find all branches (except excluded) that contain the given file path.
+    
+    Args:
+        project_root: Project root path
+        rel_path: Relative path from project root
+        exclude_branch: Branch to exclude from search
+        
+    Returns:
+        List of branch names containing the file
+    """
+    branches_with_file = []
+    
+    # Get all local branches
+    code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
+    if code != 0:
+        return []
+    
+    all_branches = [b.strip() for b in stdout.splitlines() if b.strip()]
+    
+    for branch in all_branches:
+        if branch == exclude_branch:
+            continue
+            
+        # Check if file exists in this branch
+        code, _, _ = git._run_git(["show", f"{branch}:{rel_path}"], project_root)
+        if code == 0:
+            branches_with_file.append(branch)
+    
+    return branches_with_file
+
+
+def _search_issue_in_branches(
+    issues_root: Path,
+    issue_id: str,
+    project_root: Path,
+    include_archived: bool = True
+) -> Tuple[Optional[Path], Optional[str]]:
+    """
+    Search for an issue file across all branches.
+    
+    Returns:
+        Tuple of (file_path, branch_name) or (None, None)
+        
+    Raises:
+        RuntimeError: If issue found in multiple branches
+    """
+    parsed = IssueID(issue_id)
+    
+    if not parsed.is_local:
+        # For workspace issues, just use standard find
+        path = find_issue_path(issues_root, issue_id, include_archived)
+        return (path, None) if path else (None, None)
+    
+    # Get issue type from prefix
+    try:
+        prefix = parsed.local_id.split("-")[0].upper()
+    except IndexError:
+        return None, None
+    
+    reverse_prefix_map = get_reverse_prefix_map(issues_root)
+    issue_type = reverse_prefix_map.get(prefix)
+    if not issue_type:
+        return None, None
+    
+    # Build possible paths to search
+    base_dir = get_issue_dir(issue_type, issues_root)
+    rel_base = base_dir.relative_to(project_root)
+    
+    status_dirs = ["open", "backlog", "closed"]
+    if include_archived:
+        status_dirs.append("archived")
+    
+    # Search pattern: Issues/{Type}/{status}/{issue_id}-*.md
+    found_in_branches: List[Tuple[str, str]] = []  # (branch, file_path)
+    
+    # Get all local branches
+    code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
+    if code != 0:
+        return None, None
+    
+    all_branches = [b.strip() for b in stdout.splitlines() if b.strip()]
+    
+    for branch in all_branches:
+        # List files in each status directory for this branch
+        for status_dir in status_dirs:
+            dir_path = f"{rel_base}/{status_dir}"
+            
+            # List all files in this directory on the branch
+            code, stdout, _ = git._run_git(
+                ["ls-tree", "-r", "--name-only", branch, dir_path], 
+                project_root
+            )
+            
+            if code != 0 or not stdout.strip():
+                continue
+            
+            # Find matching issue file
+            pattern = f"{parsed.local_id}-"
+            for line in stdout.splitlines():
+                line = line.strip()
+                if pattern in line and line.endswith(".md"):
+                    found_in_branches.append((branch, line))
+    
+    if not found_in_branches:
+        return None, None
+    
+    if len(found_in_branches) > 1:
+        # Found in multiple branches - conflict
+        branches = [b for b, _ in found_in_branches]
+        raise RuntimeError(
+            f"Issue {issue_id} found in multiple branches: {', '.join(branches)}. "
+            f"Please resolve the conflict by merging branches or deleting duplicate issue files."
+        )
+    
+    # Golden path: exactly one match
+    branch, file_path = found_in_branches[0]
+    
+    # Checkout the file to working tree
+    try:
+        git.git_checkout_files(project_root, branch, [file_path])
+        full_path = project_root / file_path
+        return full_path, branch
+    except Exception:
+        # If checkout fails, return the path anyway - caller can handle
+        full_path = project_root / file_path
+        return full_path, branch
+
+
 def update_issue(
     issues_root: Path,
     issue_id: str,
