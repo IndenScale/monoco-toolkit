@@ -35,22 +35,24 @@ files_count: 0
 
 ## 目标 (Objective)
 构建 Monoco 的守护进程（Daemon）与编排层（Orchestration Layer），使其从被动工具集进化为主动运行的 Agent 操作系统内核。
-本 Epic 将实现 "Mailroom -> Daemon Loop -> HITP" 的完整自动化闭环，支持非阻塞的二进制解析、基于生命周期的 Agent 调度、以及明确的人机协作（HITP）关卡。
+本 Epic 将实现 "Mailroom -> Daemon Loop -> HITP" 的完整自动化闭环，支持非阻塞的轻量级二进制解析、基于生命周期的 Agent 调度、以及明确的人机协作（HITP）关卡。
 
 ## 验收标准 (Acceptance Criteria)
-- [ ] **Mailroom Pipeline**: 能够异步处理二进制文件（PDF/Image/Audio），将其转换为标准 Markdown + Assets 格式并投递到 Inbox。
+- [ ] **Mailroom Pipeline**: 能够通过环境感知的适配器处理二进制文件（Office/PDF），利用“截图 + 多模态 API”将其转换为标准格式并投递给 Agent。
 - [ ] **Daemon Core**: 实现 "监听 -> 调度 -> 销毁 -> 尸检" 的 Agent 生命周期闭环。
 - [ ] **Notification Connectors**: 集成 CI/CD (GitHub Actions) 实现非阻塞的外部通知（Email/IM）。
 - [ ] **HITP Gateways**: 在通过 IDE/WebUI 提供明确的三段式人工确认（Confirm Plan -> Merge Code -> Push Remote）。
 
 ## 技术任务 (Technical Tasks)
 
-### Phase 1: The Mailroom (Ingestion Layer)
-> 解决 "非阻塞的二进制文件解析与处理管道"
+### Phase 1: The Artifact Ecosystem & Mailroom (Ingestion Layer)
+> 建立产物管理基础设施与轻量化文档接入。
+> Mindset: Infrastructure First -> Skill Empowerment -> Automated Implementation.
 
-- [ ] **FEAT-Mailroom-Service**: 设计独立的 Mailroom 服务/Watcher，监听 `Inbox/Dropzone`。
-- [ ] **FEAT-Binary-Adapters**: 集成 MinerU (Docs), FFmpeg (Media) 等工具的转换适配器。
-- [ ] **FEAT-Async-Pipeline**: 实现基于文件系统的异步队列机制，解析完成后回调 Daemon。
+- [ ] **FEAT-0151**: Monoco Artifact Core - 实现全局 CAS 存储与项目元数据注册表 (`manifest.jsonl`)。
+- [ ] **FEAT-0152**: Monoco Artifact Skills - 定义多模态文档处理的 Agent SOP 与环境自适应指南。
+- [ ] **FEAT-0153**: Monoco Mailroom Automation - 实现自动化工具链探测与非阻塞式 Binary Ingestion。
+- [ ] **FEAT-VLM-Protocol**: 标准化 Mailroom 输出与 Kimi/Gemini CLI 多模态协议的对接。
 
 ### Phase 2: Notification Connectors (Output Layer)
 > 解决 "运行结束后对通知的集成"

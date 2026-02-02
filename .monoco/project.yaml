@@ -5,6 +5,7 @@ project:
   key: TOO
   name: Monoco Toolkit
   spike_repos:
+    MinerU: https://github.com/opendatalab/MinerU
     SWE-agent: https://github.com/SWE-agent/SWE-agent
     SWE-bench: https://github.com/SWE-bench/SWE-bench
     Typedown: https://github.com/IndenScale/Typedown

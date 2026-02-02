@@ -24,3 +24,12 @@
 - **Context**: `i18n`
 
 i18n语言检测阈值优化建议：当前 detect_language 函数使用 5% CJK 字符阈值判断中文内容，但对于技术文档类 Issue（大量英文术语、代码），容易被误判为英文。建议：1) 对于 Issue 文件放宽阈值或跳过检测；2) 或增加对技术文档的特殊处理，识别技术术语不计入语言检测
+
+## [e691f9] 2026-02-02 08:56:58
+> **Context**: `Arch Decision`
+
+Artifacts & Mailroom 架构决策复盘：
+1. [Mindset] 拒绝过度工程。去 GPU/MinerU，转向『截图降维 + 远程 VLM API』的轻量化路线。
+2. [Tech Stack] 确定 Office -> PDF (LibreOffice) -> WebP (PyMuPDF, 150 DPI) 链路。调查证实 kimi-cli 原生支持 WebP。
+3. [Storage] 混合存储架构：全局物理 CAS 池 (~/.monoco/artifacts) 实现内容寻址去重 + 项目级逻辑 Symlink 满足自包含与 Generative UI 扩展。
+4. [Workflow] 遵循『基建先行 -> 技能赋能 -> 自动化实现』。拆分为 0151(Core), 0152(Skills), 0153(Auto) 三个 Feature 闭环。
