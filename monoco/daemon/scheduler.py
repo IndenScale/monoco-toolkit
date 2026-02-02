@@ -203,34 +203,10 @@ class SchedulerService:
             raise
 
     def handle_completion(self, session: RuntimeSession, sm: SessionManager):
-        # Chained Execution: Engineer -> Reviewer
-        if session.model.role_name == "Engineer":
-            # Check semaphore before spawning Reviewer
-            if not self.semaphore_manager.can_acquire("Reviewer", issue_id=session.model.issue_id):
-                logger.warning(
-                    f"Cannot spawn Reviewer for {session.model.issue_id}: "
-                    f"concurrency limit reached. Review will be deferred."
-                )
-                return
-                
-            logger.info(f"Engineer finished for {session.model.issue_id}. Spawning Reviewer.")
-            reviewer_role = RoleTemplate(
-                name="Reviewer",
-                description="Code Reviewer",
-                trigger="engineer.completion",
-                goal=f"Review work on {session.model.issue_id}",
-                system_prompt="You are a Code Reviewer. Review the code changes.",
-                engine="gemini"
-            )
-            rs = sm.create_session(issue_id=session.model.issue_id, role=reviewer_role)
-            
-            # Acquire semaphore slot
-            self.semaphore_manager.acquire(rs.model.id, "Reviewer")
-            
-            try:
-                rs.start()
-            except Exception as e:
-                # Release slot on spawn failure
-                self.semaphore_manager.release(rs.model.id)
-                logger.error(f"Failed to start Reviewer session for {session.model.issue_id}: {e}")
-                raise
+        """Handle session completion - no chained execution (FEAT-0155).
+        
+        Note: Reviewer is no longer auto-triggered by Engineer completion.
+        Reviewer should be triggered by PR creation or manual command.
+        """
+        logger.info(f"Session {session.model.id} ({session.model.role_name}) completed. "
+                   f"No chained execution - Reviewer must be triggered manually or via PR.")
