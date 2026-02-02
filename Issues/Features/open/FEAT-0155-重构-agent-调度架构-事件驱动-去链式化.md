@@ -3,10 +3,10 @@ id: FEAT-0155
 uid: e5d638
 type: feature
 status: open
-stage: doing
+stage: review
 title: 重构 Agent 调度架构：事件驱动 + 去链式化
 created_at: '2026-02-02T20:29:43'
-updated_at: 2026-02-02 20:30:43
+updated_at: '2026-02-02T20:38:02'
 parent: EPIC-0025
 dependencies: []
 related: []
@@ -17,12 +17,11 @@ tags:
 - '#FEAT-0155'
 files: []
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-02T20:29:43'
 isolation:
   type: branch
   ref: feat/feat-0155-重构-agent-调度架构-事件驱动-去链式化
-  path: null
   created_at: '2026-02-02T20:30:43'
 ---
 
