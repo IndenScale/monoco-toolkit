@@ -3,7 +3,7 @@ id: FIX-0007
 uid: e492b4
 type: fix
 status: open
-stage: doing
+stage: review
 title: 'Fix: monoco issue close 应该是原子化操作'
 created_at: '2026-02-02T22:39:20'
 updated_at: 2026-02-02 22:43:19
@@ -70,4 +70,9 @@ isolation:
 - [x] 手动测试：模拟各种错误场景
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+### 2026-02-02
+- 实现了原子化关闭操作，使用 git reset --hard 进行回滚
+- 添加了详细的错误处理和回滚日志
+- 编写了全面的测试用例验证原子性行为
+- 所有测试通过
