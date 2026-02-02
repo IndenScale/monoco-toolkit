@@ -51,4 +51,4 @@ owner: IndenScale
 - [x] 实现一个简单的辅助脚本 `scripts/doc-to-webp.py`（可选，供 Agent 调用）。
 
 ## 5. Review Comments
-- [ ] 待评审。
+- [x] 代码实现与 Skill 文档已交付，测试脚本通过。
