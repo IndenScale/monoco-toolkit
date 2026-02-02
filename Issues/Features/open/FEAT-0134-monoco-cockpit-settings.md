@@ -1,15 +1,13 @@
 ---
 id: FEAT-0134
-uid: f0e1d2  # Manually assigned placeholder UID
+uid: f0e1d2
 type: feature
 status: open
-stage: draft  # Initial stage for new features
+stage: doing
 title: Monoco Cockpit - Settings Page Implementation
-created_at: '2026-02-01T00:59:12' # Estimated from file creation or conversation
-updated_at: '2026-02-01T00:59:12'
-opened_at: '2026-02-01T00:59:12'
+created_at: '2026-02-01T00:59:12'
+updated_at: '2026-02-02T11:19:24'
 priority: high
-owner: IndenScale
 parent: EPIC-0032
 dependencies: []
 related: []
@@ -20,10 +18,13 @@ tags:
 - ui
 - configuration
 - cockpit
-- "#EPIC-0032"
-- "#FEAT-0134"
+- '#EPIC-0032'
+- '#FEAT-0134'
 files: []
 criticality: medium
+solution: null # implemented, cancelled, wontfix, duplicate
+opened_at: '2026-02-01T00:59:12'
+owner: IndenScale
 ---
 
 ## FEAT-0134: Monoco Cockpit - Settings Page Implementation
