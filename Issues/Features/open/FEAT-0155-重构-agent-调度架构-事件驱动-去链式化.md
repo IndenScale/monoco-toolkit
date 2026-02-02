@@ -67,3 +67,24 @@ isolation:
 - [x] 集成测试验证事件流转（基础验证通过，完整测试待后续）
 
 ## Review Comments
+
+### 实现总结 (2026-02-02)
+
+**架构变更**:
+1. **删除 Planner 角色** - 从 `AgentConcurrencyConfig` 和 `SemaphoreManager` 中完全移除
+2. **删除链式触发** - Engineer 完成后不再自动触发 Reviewer
+3. **事件驱动架构** - 从轮询+硬编码改为 EventBus + Handler 模式
+
+**新增组件**:
+- `monoco/daemon/events.py` - EventBus 事件总线，支持异步发布/订阅
+- `monoco/daemon/handlers.py` - 事件处理器基类和具体实现
+
+**角色触发方式**:
+| 角色 | 触发事件 | 说明 |
+|------|----------|------|
+| Architect | `MEMO_THRESHOLD` | Memo 积累达到阈值 |
+| Engineer | `ISSUE_STAGE_CHANGED` | Issue 进入 doing 阶段 |
+| Reviewer | `PR_CREATED` | PR 创建（人工/外部触发）|
+| Coroner | `SESSION_FAILED/CRASHED` | Session 失败/崩溃 |
+
+**4 角色确认**: Architect, Engineer, Reviewer (主工作流) + Coroner (诊断)
