@@ -75,6 +75,9 @@ class IssueValidator:
         # 1. State Matrix Validation
         diagnostics.extend(self._validate_state_matrix(meta, content))
 
+        # 1.5 Directory Consistency (FEAT-0144)
+        diagnostics.extend(self._validate_directory_consistency(meta, content))
+
         # 2. State Requirements (Strict Verification)
         diagnostics.extend(self._validate_state_requirements(meta, blocks))
 
@@ -160,6 +163,62 @@ class IssueValidator:
                 if re.match(rf"^{re.escape(field_name)}\s*:", stripped):
                     return i
         return 0
+
+    def _validate_directory_consistency(
+        self, meta: IssueMetadata, content: str
+    ) -> List[Diagnostic]:
+        """
+        Check if the issue status matches its physical directory.
+        Checks for illegal directory names (like 'done' or 'freezed').
+        """
+        diagnostics = []
+        if not meta.path:
+            return diagnostics
+
+        path = Path(meta.path)
+        parent_dir_name = path.parent.name.lower()
+
+        # 1. Status/Directory Mismatch
+        if meta.status == "open" and parent_dir_name == "closed":
+            diagnostics.append(
+                self._create_diagnostic(
+                    f"Status/Directory Mismatch: Issue '{meta.id}' has status 'open' but is in 'closed/' directory.",
+                    DiagnosticSeverity.Error,
+                )
+            )
+        elif meta.status == "closed" and parent_dir_name == "open":
+            diagnostics.append(
+                self._create_diagnostic(
+                    f"Status/Directory Mismatch: Issue '{meta.id}' has status 'closed' but is in 'open/' directory.",
+                    DiagnosticSeverity.Error,
+                )
+            )
+
+        # 2. Illegal Directory Names
+        if parent_dir_name == "done":
+            diagnostics.append(
+                self._create_diagnostic(
+                    "Illegal Directory: Issues should be in 'closed/' directory, not 'done/'.",
+                    DiagnosticSeverity.Error,
+                )
+            )
+        elif parent_dir_name == "freezed":
+            diagnostics.append(
+                self._create_diagnostic(
+                    "Illegal Directory: Issues should be in 'backlog/' directory, not 'freezed/'.",
+                    DiagnosticSeverity.Error,
+                )
+            )
+
+        return diagnostics
+
+    def _validate_status_enum(self, meta: IssueMetadata, content: str) -> List[Diagnostic]:
+        """Legacy helper for enum validation (mostly handled by Pydantic now)."""
+        return []
+
+    def _validate_stage_enum(self, meta: IssueMetadata, content: str) -> List[Diagnostic]:
+        """Legacy helper for enum validation (mostly handled by Pydantic now)."""
+        return []
 
     def _validate_state_matrix(
         self, meta: IssueMetadata, content: str

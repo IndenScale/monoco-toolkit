@@ -134,10 +134,24 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
                     if include_archived:
                         status_dirs.append("archived")
                     
-                    for status in status_dirs:
-                        status_dir = d / status
-                        if status_dir.exists():
-                            files.extend(status_dir.rglob("*.md"))
+                    for item in d.iterdir():
+                        if item.is_dir():
+                            status = item.name.lower()
+                            if status in status_dirs:
+                                files.extend(item.rglob("*.md"))
+                            elif status != "archived": # archived is handled separately if include_archived
+                                # Report Illegal Directory immediately
+                                project_diagnostics.append(
+                                    Diagnostic(
+                                        range=Range(
+                                            start=Position(line=0, character=0),
+                                            end=Position(line=0, character=0),
+                                        ),
+                                        message=f"Illegal Directory: Issues should be in 'open/', 'closed/', or 'backlog/' directories, not '{status}/' directory.",
+                                        severity=DiagnosticSeverity.Error,
+                                        source="System",
+                                    )
+                                )
 
                     for f in files:
                         try:

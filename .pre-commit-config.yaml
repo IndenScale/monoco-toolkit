@@ -31,7 +31,7 @@ repos:
         name: Python Tests
         entry: uv run pytest
         language: system
-        stages: [pre-push]
+        stages: [pre-commit, pre-push]
         pass_filenames: false
         # Run only if python files changed (optional optimization, but CI runs always)
         # keeping always_run true for safety as logic might depend on non-py files
