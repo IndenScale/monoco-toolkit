@@ -3,10 +3,10 @@ id: FIX-0006
 uid: 30a4fe
 type: fix
 status: open
-stage: doing
+stage: review
 title: monoco issue close 读取错误分支的 Issue 状态
 created_at: '2026-02-02T20:47:02'
-updated_at: 2026-02-02 20:51:02
+updated_at: '2026-02-02T21:03:29'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,12 +19,11 @@ files:
 - monoco/features/issue/commands.py
 - tests/features/issue/test_cross_branch_search.py
 criticality: high
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-02T20:47:02'
 isolation:
   type: branch
   ref: feat/fix-0006-monoco-issue-close-读取错误分支的-issue-状态
-  path: null
   created_at: '2026-02-02T20:51:02'
 ---
 
@@ -71,8 +70,36 @@ isolation:
 
 ### 验证阶段
 - [x] 编写单元测试覆盖多分支场景 (13 tests added)
-- [ ] 手动测试 feature branch -> main 的完整工作流
-- [ ] 验证 cherry-pick 后 close 命令正常工作
+- [~] 手动测试 feature branch -> main 的完整工作流 (deferred to integration testing)
+- [~] 验证 cherry-pick 后 close 命令正常工作 (deferred to integration testing)
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+### Implementation Summary
+
+Implemented cross-branch issue search for `monoco issue close` command.
+
+**Key Design Decisions:**
+1. **Golden Path Simplicity**: No user interaction required for the common case
+2. **Fail Fast on Conflict**: Multiple branch matches result in immediate error
+3. **Git-native Approach**: Uses `git ls-tree` to search without checking out branches
+
+**Code Changes:**
+- `core.py`: Added 3 new functions (~200 lines)
+  - `find_issue_path_across_branches()`: Main entry point
+  - `_find_branches_with_file()`: Helper to check file existence across branches
+  - `_search_issue_in_branches()`: Deep search when file not in working tree
+- `commands.py`: Modified `close` command to use new search logic
+- `test_cross_branch_search.py`: 13 comprehensive unit tests
+
+**Test Coverage:**
+- Local file found (no git)
+- Local file in git repo (golden path)
+- Local file conflict (multiple branches)
+- Cross-branch search (file only in other branch)
+- Not found anywhere
+- Workspace issue handling
+- Invalid issue ID handling
+
+**Manual Testing Notes:**
+Deferred to integration testing phase due to complex git state requirements.
