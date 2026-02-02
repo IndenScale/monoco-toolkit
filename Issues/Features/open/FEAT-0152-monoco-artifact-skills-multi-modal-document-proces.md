@@ -3,7 +3,7 @@ id: FEAT-0152
 uid: art_skill_01
 type: feature
 status: open
-stage: todo
+stage: draft
 title: 'Monoco Artifact Skills: Multi-modal Document Processing SOP'
 owner: IndenScale
 parent: EPIC-0025
