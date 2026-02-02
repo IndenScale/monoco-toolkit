@@ -1359,6 +1359,56 @@ def update_issue_content(
             os.unlink(tmp_path)
 
 
+def update_issue_field(
+    issue_path: Path,
+    field: str,
+    value: Any,
+) -> IssueMetadata:
+    """
+    Update a specific field in an issue's frontmatter.
+
+    Args:
+        issue_path: Path to the issue file
+        field: Field name to update
+        value: New value for the field
+
+    Returns:
+        Updated IssueMetadata
+    """
+    # Read full content
+    content = issue_path.read_text()
+
+    # Split Frontmatter and Body
+    match = re.search(r"^---(.*?)---\n(.*)", content, re.DOTALL | re.MULTILINE)
+    if not match:
+        raise ValueError(f"Could not parse frontmatter for {issue_path}")
+
+    yaml_str = match.group(1)
+    body = match.group(2)
+
+    try:
+        data = yaml.safe_load(yaml_str) or {}
+    except yaml.YAMLError as e:
+        raise ValueError(f"Invalid YAML metadata: {e}")
+
+    # Update the field
+    data[field] = value
+    data["updated_at"] = current_time()
+
+    # Serialize back directly (not through model) to preserve all fields
+    yaml_header = yaml.dump(
+        data, sort_keys=False, allow_unicode=True, default_flow_style=False
+    )
+
+    # Reconstruct File
+    new_content = f"---\n{yaml_header}---\n{body}"
+    issue_path.write_text(new_content)
+
+    # Re-hydrate through Model to validate and return
+    updated_meta = IssueMetadata(**data)
+    return updated_meta
+
+
 def generate_delivery_report(
     issues_root: Path, issue_id: str, project_root: Path
 ) -> IssueMetadata:
