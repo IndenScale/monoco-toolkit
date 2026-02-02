@@ -64,6 +64,11 @@
         "icon": "$(gear)"
       },
       {
+        "command": "monoco.openCockpit",
+        "title": "Monoco: Open Cockpit",
+        "icon": "$(dashboard)"
+      },
+      {
         "command": "monoco.refreshEntry",
         "title": "Refresh",
         "icon": "$(refresh)"
@@ -163,6 +168,83 @@
           "type": "boolean",
           "description": "Use native TreeView instead of Webview for issue list (recommended for better drag & drop support).",
           "default": true
+        },
+        "monoco.cockpit.runtime.provider": {
+          "type": "string",
+          "enum": ["kimi", "vertex-ai", "openai", "anthropic", "local"],
+          "default": "kimi",
+          "description": "Agent provider (kernel) - Backend service driving the agent"
+        },
+        "monoco.cockpit.runtime.role": {
+          "type": "string",
+          "enum": ["principal-architect", "senior-engineer", "qa-specialist", "devops-engineer", "security-analyst", "product-manager", "default"],
+          "default": "senior-engineer",
+          "description": "Agent role (persona) - Defines expertise and behavioral characteristics"
+        },
+        "monoco.cockpit.runtime.autonomy.level": {
+          "type": "string",
+          "enum": ["yolo", "step-by-step", "full-manual"],
+          "default": "yolo",
+          "description": "Human-in-the-loop mode - Auto-approval behavior"
+        },
+        "monoco.cockpit.runtime.autonomy.persistence": {
+          "type": "string",
+          "enum": ["unlimited", "session", "task"],
+          "default": "unlimited",
+          "description": "Execution scope and time limits"
+        },
+        "monoco.cockpit.capabilities.skills.directory": {
+          "type": "string",
+          "default": "~/.monoco/skills",
+          "description": "Directory containing skill packages"
+        },
+        "monoco.cockpit.capabilities.skills.sets": {
+          "type": "array",
+          "default": [],
+          "description": "Enabled skill sets"
+        },
+        "monoco.cockpit.capabilities.systemAccess.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Bash-as-Tool system access"
+        },
+        "monoco.cockpit.capabilities.systemAccess.allowNetwork": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow network access (HTTP requests, API calls)"
+        },
+        "monoco.cockpit.capabilities.systemAccess.allowFileSystem": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow file system access (read, write, manipulate files)"
+        },
+        "monoco.cockpit.capabilities.systemAccess.allowSystemCommands": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow system command execution (git, npm, docker, etc.)"
+        },
+        "monoco.cockpit.capabilities.systemAccess.restrictedCommands": {
+          "type": "array",
+          "default": ["rm -rf /", "dd", "mkfs"],
+          "description": "Commands requiring explicit confirmation"
+        },
+        "monoco.cockpit.culture.language": {
+          "type": "string",
+          "enum": ["auto", "en", "zh"],
+          "default": "auto",
+          "description": "Communication language"
+        },
+        "monoco.cockpit.culture.tone": {
+          "type": "string",
+          "enum": ["professional", "technical", "casual"],
+          "default": "professional",
+          "description": "Communication tone"
+        },
+        "monoco.cockpit.culture.responseStyle": {
+          "type": "string",
+          "enum": ["concise", "balanced", "detailed"],
+          "default": "balanced",
+          "description": "Response detail level"
         }
       }
     },
@@ -189,7 +271,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -b shared/tsconfig.json && tsc -b client/tsconfig.json && tsc -b server/tsconfig.json && node client/scripts/resolve-aliases.js && node client/scripts/build-webview.js && npm run copy-assets && npm run copy-server-assets",
+    "compile": "tsc -b shared/tsconfig.json && tsc -b client/tsconfig.json && tsc -b server/tsconfig.json && node client/scripts/resolve-aliases.js && node client/scripts/build-webview.js && node client/scripts/build-cockpit.js && npm run copy-assets && npm run copy-server-assets",
     "copy-assets": "node scripts/copy-assets.js",
     "copy-server-assets": "node scripts/copy-server-assets.js",
     "watch": "tsc -b client/tsconfig.json -w",
