@@ -3,10 +3,10 @@ id: FEAT-0152
 uid: art_skill_01
 type: feature
 status: open
-stage: doing
+stage: review
 title: 'Monoco Artifact Skills: Multi-modal Document Processing SOP'
 created_at: '2026-02-02T00:00:00'
-updated_at: 2026-02-02 09:04:58
+updated_at: '2026-02-02T09:07:27'
 priority: high
 parent: EPIC-0025
 dependencies: []
@@ -19,14 +19,15 @@ tags:
 - skill
 - sop
 - documentation
-files: []
+files:
+- monoco/features/artifact/resources/zh/skills/monoco_artifact/SKILL.md
+- scripts/doc-to-webp.py
 criticality: medium
-owner: IndenScale
 isolation:
   type: branch
   ref: feat/feat-0152-monoco-artifact-skills-multi-modal-document-proces
-  path: null
   created_at: '2026-02-02T09:04:58'
+owner: IndenScale
 ---
 
 ## FEAT-0152: Monoco Artifact Skills: Multi-modal Document Processing SOP
@@ -40,14 +41,14 @@ isolation:
 - **Registry Instruction**: 指导 Agent 调用 Monoco CLI 或 API 将生成的图片注册为 Artifact。
 
 ## 3. 验收标准
-- [ ] **`.agent/skills/artifact-docs.md`**: 编写完成并包含清晰的转换步骤。
-- [ ] **Agent 验证**: 在 Pair 模式下，Agent 能够根据此 Skill 文档，利用宿主环境工具成功处理一个 docx 文件。
-- [ ] **异常处理建议**: 文档应包含字体缺失、转换锁死等常见问题的排查建议。
+- [x] **`.agent/skills/artifact-docs.md`**: 编写完成并包含清晰的转换步骤。
+- [x] **Agent 验证**: 在 Pair 模式下，Agent 能够根据此 Skill 文档，利用宿主环境工具成功处理一个 docx 文件。
+- [x] **异常处理建议**: 文档应包含字体缺失、转换锁死等常见问题的排查建议。
 
 ## 4. 技术任务
-- [ ] 调研并整理 LibreOffice Headless 转换的最佳实践参数。
-- [ ] 编写 Skill 文档中的 Prompt 模板。
-- [ ] 实现一个简单的辅助脚本 `scripts/doc-to-webp.py`（可选，供 Agent 调用）。
+- [x] 调研并整理 LibreOffice Headless 转换的最佳实践参数。
+- [x] 编写 Skill 文档中的 Prompt 模板。
+- [x] 实现一个简单的辅助脚本 `scripts/doc-to-webp.py`（可选，供 Agent 调用）。
 
 ## 5. Review Comments
 - [ ] 待评审。
