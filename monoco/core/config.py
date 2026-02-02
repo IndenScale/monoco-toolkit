@@ -160,7 +160,7 @@ class AgentConcurrencyConfig(BaseModel):
     engineer: int = Field(default=1, description="Maximum concurrent Engineer agents")
     architect: int = Field(default=1, description="Maximum concurrent Architect agents")
     reviewer: int = Field(default=1, description="Maximum concurrent Reviewer agents")
-    planner: int = Field(default=1, description="Maximum concurrent Planner agents")
+    # Note: Planner role removed in FEAT-0155 (was never used)
     # Cool-down configuration
     failure_cooldown_seconds: int = Field(default=60, description="Cooldown period after a failure before retrying")
 
