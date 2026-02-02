@@ -3,10 +3,10 @@ id: FEAT-0145
 uid: 6d6bf7
 type: feature
 status: open
-stage: draft
-title: Integrate Git Hooks for Development Workflow
+stage: doing
+title: 集成 Git Hooks 到开发工作流
 created_at: '2026-02-01T20:57:03'
-updated_at: '2026-02-01T20:57:03'
+updated_at: '2026-02-02T12:27:48'
 parent: EPIC-0030
 dependencies: []
 related:
@@ -21,28 +21,25 @@ criticality: medium
 opened_at: '2026-02-01T20:57:03'
 ---
 
-## FEAT-0145: Integrate Git Hooks for Development Workflow
+## FEAT-0145: 集成 Git Hooks 到开发工作流
 
 ## 背景与目标
 
-将 Git Hooks 集成到 Monoco 工作流中，确保开发规范在提交阶段被强制执行。当前缺少必要字段（如关闭 Issue 的 `solution` 字段）的问题可能破坏索引器或依赖关系，手动修复容易出错。通过 `pre-commit` 钩子运行 `monoco issue lint` 可以在提交前拦截不合规的更改，`pre-push` 钩子可检查关键 Issue 状态（可选配置）。本功能需要创建钩子模板、实现安装逻辑，并确保与现有 Monoco 命令的集成。
+将 Git Hooks（pre-commit, pre-push）集成到 Monoco 工作流中，确保数据完整性和流程合规。
 
-## Objective
-Integrate Git Hooks (pre-commit, pre-push) into the Monoco workflow to ensure data integrity and process compliance.
+**上下文**:
+- **问题**: Issue 缺失必要字段（如已关闭 Issue 的 `solution` 字段）可能会破坏索引器或依赖关系。手动修复容易出错。
+- **解决方案**: 使用 `pre-commit` 钩子运行 `monoco issue lint` 并拦截不合规的提交。
 
-**Context**:
-- **Problem**: Issues with missing required fields (e.g., `solution` for closed issues) can break the indexer or dependencies. Manual fixes are error-prone.
-- **Solution**: Use `pre-commit` to run `monoco issue lint` and prevent non-compliant commits.
+## 验收标准
+- [ ] `monoco sync`（或类似命令）安装/更新 Git Hooks。
+- [ ] `pre-commit` 钩子运行 `monoco issue lint`，并在失败时阻止提交。
+- [ ] `pre-push` 钩子检查未完成的关键 Issue（可选/可配置）。
 
-## Acceptance Criteria
-- [ ] `monoco sync` (or similar command) installs/updates git hooks.
-- [ ] `pre-commit` hook runs `monoco issue lint` and blocks commit on failure.
-- [ ] `pre-push` hook checks for uncompleted critical issues (optional/configurable).
-
-## Technical Tasks
-- [ ] Create hook templates in `monoco/assets/hooks`.
-- [ ] Extend `monoco sync` to install hooks into `.git/hooks`.
-- [ ] Implement the `pre-commit` logic (calling the linter).
+## 技术任务
+- [ ] 在 `monoco/assets/hooks` 中创建钩子模板。
+- [ ] 扩展 `monoco sync` 以将钩子安装到 `.git/hooks` 中。
+- [ ] 实现 `pre-commit` 逻辑（调用 Linter）。
 - [ ] 设计 Hooks 模板存放目录 (`monoco/core/githooks/templates/`)
 - [ ] 实现 `pre-push` hook：检查关键 Issue 状态（可选配置）
 - [ ] 实现 `post-checkout` hook：自动同步 Issue 状态（可选）
