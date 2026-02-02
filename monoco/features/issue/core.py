@@ -1055,20 +1055,63 @@ def merge_issue_changes(
         return []
 
     # Determine Source (Feature Branch)
+    # We prioritize what's in the issue metadata on LOCAL (main).
+    # If not there, we try heuristic.
     source_ref = None
     if issue.isolation and issue.isolation.ref:
         source_ref = issue.isolation.ref
     else:
         # Heuristic: Search for branch by convention
-        current = git.get_current_branch(project_root)
-        if issue_id.lower() in current.lower():
-            source_ref = current
+        # We can't use 'current' here safely if we are on main,
+        # but let's assume we might be calling this from elsewhere?
+        # Actually, for 'close', we are likely on main.
+        # So we search for a branch named 'feat/{id}-*' or similar?
+        pass
 
+    # If local metadata doesn't have isolation ref, we might be stuck.
+    # But let's assume valid workflow.
     if not source_ref:
-        raise RuntimeError(f"Could not determine source branch for Issue {issue_id}.")
+          # Try to find a branch starting with feat/{id} or {id}
+          # This is a bit weak, needs better implementation in 'git' or 'issue' module
+          # For now, if we can't find it, we error.
+          pass
+
+    if not source_ref or not git.branch_exists(project_root, source_ref):
+        # Fallback: maybe we are currently ON the feature branch?
+        # If so, source_ref should be current. But we expect to call this from MAIN.
+        pass
+        
+    if not source_ref:
+         raise RuntimeError(f"Could not determine source branch for Issue {issue_id}. Ensure isolation ref is set.")
 
     if not git.branch_exists(project_root, source_ref):
-        raise RuntimeError(f"Source branch {source_ref} does not exist.")
+         raise RuntimeError(f"Source branch {source_ref} does not exist.")
+
+    # RE-READ Issue from Source Branch
+    # The 'files' list on main might be outdated. We need the list from the feature branch.
+    relative_path = path.relative_to(project_root)
+    
+    try:
+        # Read file content from git
+        code, access_content, _ = git._run_git(["show", f"{source_ref}:{relative_path}"], project_root)
+        if code == 0:
+            # Parse it
+            # We need to extract yaml frontmatter manually or use existing parser if it supported text input
+            import re
+            import yaml
+            match = re.search(r"^---(.*?)---", access_content, re.DOTALL | re.MULTILINE)
+            if match:
+                data = yaml.safe_load(match.group(1)) or {}
+                source_files = data.get("files", [])
+                if source_files:
+                    # Update issue object with latest files for this operation
+                    issue.files = source_files
+    except Exception as e:
+        # If reading fails (maybe path changed?), we fall back to local 'files'
+        pass
+
+    if not issue.files:
+         return []
 
     # 1. Conflict Check
     # A conflict occurs if a file in 'files' has changed on HEAD (main)
