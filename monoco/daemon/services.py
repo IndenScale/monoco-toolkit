@@ -88,12 +88,12 @@ class SemaphoreManager:
         self._failure_registry: Dict[str, datetime] = {}  # issue_id -> last_failure_time
         
         # Default conservative limits
+        # Roles: Engineer, Architect, Reviewer (Planner removed in FEAT-0155)
         self._global_max = 3
         self._role_limits: Dict[str, int] = {
             "Engineer": 1,
             "Architect": 1,
             "Reviewer": 1,
-            "Planner": 1,
         }
         self._failure_cooldown_seconds = 60
         
@@ -110,7 +110,7 @@ class SemaphoreManager:
             self._failure_cooldown_seconds = config.failure_cooldown_seconds
         
         # Role-specific limits
-        for role in ["Engineer", "Architect", "Reviewer", "Planner"]:
+        for role in ["Engineer", "Architect", "Reviewer"]:
             if hasattr(config, role.lower()):
                 self._role_limits[role] = getattr(config, role.lower())
     
