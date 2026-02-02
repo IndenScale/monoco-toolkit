@@ -2,17 +2,21 @@
 Skill Manager for Monoco Toolkit.
 
 This module provides centralized management and distribution of Agent Skills
-following the agentskills.io standard and the three-level architecture:
-- Atom Skills: Atomic capabilities
-- Workflow Skills: Orchestration of atoms
-- Role Skills: Configuration layer
+following the standardized architecture:
+- Atom Skills: monoco_atom_{name} - Atomic capabilities
+- Workflow Skills: monoco_workflow_{name} - Orchestration of atoms
+- Role Skills: monoco_role_{name} - Configuration layer
 
 Key Responsibilities:
-1. Discover skills from resources/{lang}/skills/ directory (legacy)
-2. Discover skills from resources/atoms/, workflows/, roles/ (new three-level)
-3. Validate skill structure and metadata
-4. Distribute skills to target agent framework directories
-5. Support i18n for skill content
+1. Discover skills from features (monoco/features/{feature}/resources/)
+2. Validate skill structure and metadata
+3. Distribute skills to target agent framework directories
+4. Support i18n for skill content
+
+Architecture Principle:
+- Core is framework-only, no skills
+- All skills are defined in Features (value delivery atoms)
+- All skills follow naming convention: monoco_{type}_{name}
 """
 
 import shutil
@@ -165,22 +169,17 @@ class Skill:
 
 class SkillManager:
     """
-    Central manager for Monoco skills supporting both legacy and three-level architecture.
+    Central manager for Monoco skills.
     
-    Three-Level Architecture:
-    - Atom Skills: resources/atoms/*.yaml
-    - Workflow Skills: resources/workflows/*.yaml  
-    - Role Skills: resources/roles/*.yaml
+    Architecture:
+    - Atom Skills: resources/{lang}/skills/monoco_atom_*/SKILL.md or resources/atoms/*.yaml
+    - Workflow Skills: resources/{lang}/skills/monoco_workflow_*/SKILL.md or resources/workflows/*.yaml
+    - Role Skills: resources/{lang}/roles/monoco_role_*.yaml
     
-    Legacy Architecture:
-    - Standard Skills: resources/{lang}/skills/{name}/SKILL.md
-    - Flow Skills: resources/{lang}/skills/flow_*/SKILL.md
+    All skills follow the naming convention: monoco_{type}_{name}
     """
 
-    # Default prefix for flow skills
-    FLOW_SKILL_PREFIX = "monoco_flow_"
-    
-    # Prefix for three-level architecture skills
+    # Prefix for standardized skill naming
     ATOM_PREFIX = "monoco_atom_"
     WORKFLOW_PREFIX = "monoco_workflow_"
     ROLE_PREFIX = "monoco_role_"
@@ -189,37 +188,24 @@ class SkillManager:
         self,
         root: Path,
         features: Optional[List] = None,
-        flow_skill_prefix: str = FLOW_SKILL_PREFIX,
     ):
         self.root = root
         self.features = features or []
-        self.flow_skill_prefix = flow_skill_prefix
         
-        # Legacy skills
+        # Skills discovered from resources/{lang}/skills/monoco_*/SKILL.md
         self.skills: Dict[str, Skill] = {}
         
-        # New three-level architecture skills
+        # Three-level architecture skills
         self._skill_loaders: Dict[str, SkillLoader] = {}
         self._atoms: Dict[str, AtomSkillMetadata] = {}
         self._workflows: Dict[str, WorkflowSkillMetadata] = {}
         self._roles: Dict[str, RoleSkillMetadata] = {}
 
-        # Load legacy skills
+        # Discover skills from features only (core is framework-only, no skills)
         if self.features:
             self._discover_skills_from_features()
-        self._discover_core_skills()
-        
-        # Load new three-level skills
-        self._discover_three_level_skills()
+            self._discover_three_level_skills()
 
-    def _discover_core_skills(self) -> None:
-        """Discover skills from monoco/core/resources/{lang}/skills/."""
-        core_resources_dir = self.root / "monoco" / "core" / "resources"
-
-        if not core_resources_dir.exists():
-            return
-
-        self._discover_skills_in_resources(core_resources_dir, "monoco_core")
 
     def _discover_skills_from_features(self) -> None:
         """Discover skills from Feature resources."""
@@ -250,7 +236,7 @@ class SkillManager:
         if not resources_dir.exists():
             return
 
-        skill_names: Set[str] = set()
+        skill_folders: Set[Path] = set()
 
         for lang_dir in resources_dir.iterdir():
             if not lang_dir.is_dir() or len(lang_dir.name) != 2:
@@ -262,9 +248,11 @@ class SkillManager:
 
             for skill_subdir in skills_dir.iterdir():
                 if skill_subdir.is_dir() and (skill_subdir / "SKILL.md").exists():
-                    skill_names.add(skill_subdir.name)
+                    print(f"DEBUG: Found skill folder {skill_subdir} in feature {feature_name}")
+                    skill_folders.add(skill_subdir)
 
-        for skill_name in skill_names:
+        for skill_dir in skill_folders:
+            skill_name = skill_dir.name
             skill = Skill(
                 root_dir=self.root,
                 skill_name=skill_name,
@@ -277,40 +265,96 @@ class SkillManager:
                 )
                 continue
 
-            skill_type = skill.get_type()
-            if skill_type == "flow":
-                name = skill_name
-                if name.startswith("flow_"):
-                    name = name[5:]
-                skill_key = f"{self.flow_skill_prefix}{name}"
+            # Naming Logic: All skills must follow monoco_{type}_{name} convention
+            # The skill_key is the folder name (which should match the metadata name)
+            if skill_name.startswith("monoco_"):
+                skill_key = skill_name
             else:
-                skill_key = f"{feature_name}_{skill_name}"
+                # Non-compliant skills are skipped (should not happen after standardization)
+                console.print(
+                    f"[yellow]Warning: Skill {skill_name} does not follow monoco_{{type}}_{{name}} naming, skipping[/yellow]"
+                )
+                continue
 
             skill.name = skill_key
             self.skills[skill_key] = skill
 
     def _discover_three_level_skills(self) -> None:
-        """Discover skills from the new three-level architecture."""
-        # Discover from agent feature resources
-        agent_resources_dir = self.root / "monoco" / "features" / "agent" / "resources"
+        """Discover skills from the new three-level architecture in resources/{atoms,workflows,roles}/."""
+        from monoco.core.feature import MonocoFeature
         
-        if not agent_resources_dir.exists():
-            return
-            
-        loader = SkillLoader(agent_resources_dir)
-        loader.load_all()
-        
-        self._skill_loaders["agent"] = loader
-        
-        # Merge loaded skills
-        for name, atom in loader._atoms.items():
-            self._atoms[f"{self.ATOM_PREFIX}{name}"] = atom
-            
-        for name, workflow in loader._workflows.items():
-            self._workflows[f"{self.WORKFLOW_PREFIX}{name}"] = workflow
-            
-        for name, role in loader._roles.items():
-            self._roles[f"{self.ROLE_PREFIX}{name}"] = role
+        for feature in self.features:
+            if not isinstance(feature, MonocoFeature):
+                continue
+                
+            module_parts = feature.__class__.__module__.split(".")
+            if (
+                len(module_parts) >= 3
+                and module_parts[0] == "monoco"
+                and module_parts[1] == "features"
+            ):
+                feature_name = module_parts[2]; print(f"DEBUG: Feature {feature_name} found path {skill_subdir}")
+                resources_dir = self.root / "monoco" / "features" / feature_name / "resources"
+                
+                if not resources_dir.exists():
+                    continue
+                
+                # Discover atoms from resources/atoms/*.yaml
+                atoms_dir = resources_dir / "atoms"
+                if atoms_dir.exists():
+                    for atom_file in atoms_dir.glob("*.yaml"):
+                        try:
+                            data = yaml.safe_load(atom_file.read_text())
+                            atom = AtomSkillMetadata(**data)
+                            
+                            # Ensure name follows monoco_atom_ prefix
+                            atom_key = atom.name
+                            if not atom_key.startswith(self.ATOM_PREFIX):
+                                atom_key = f"{self.ATOM_PREFIX}{atom_key}"
+                            
+                            self._atoms[atom_key] = atom
+                        except Exception as e:
+                            console.print(f"[red]Failed to load atom skill {atom_file}: {e}[/red]")
+                
+                # Discover workflows from resources/workflows/*.yaml
+                workflows_dir = resources_dir / "workflows"
+                if workflows_dir.exists():
+                    for workflow_file in workflows_dir.glob("*.yaml"):
+                        try:
+                            data = yaml.safe_load(workflow_file.read_text())
+                            workflow = WorkflowSkillMetadata(**data)
+                            
+                            # Ensure name follows monoco_workflow_ prefix
+                            workflow_key = workflow.name
+                            if not workflow_key.startswith(self.WORKFLOW_PREFIX):
+                                workflow_key = f"{self.WORKFLOW_PREFIX}{workflow_key}"
+                            
+                            self._workflows[workflow_key] = workflow
+                        except Exception as e:
+                            console.print(f"[red]Failed to load workflow skill {workflow_file}: {e}[/red]")
+                
+                # Discover roles from resources/{lang}/roles/*.yaml
+                for lang_dir in resources_dir.iterdir():
+                    if not lang_dir.is_dir() or len(lang_dir.name) != 2:
+                        continue
+                    
+                    roles_dir = lang_dir / "roles"
+                    if not roles_dir.exists():
+                        continue
+                    
+                    for role_file in roles_dir.glob("*.yaml"):
+                        try:
+                            data = yaml.safe_load(role_file.read_text())
+                            role = RoleSkillMetadata(**data)
+                            
+                            # Ensure name follows monoco_role_ prefix
+                            role_key = role.name
+                            if not role_key.startswith(self.ROLE_PREFIX):
+                                role_key = f"{self.ROLE_PREFIX}{role_key}"
+                            
+                            self._roles[role_key] = role
+                        except Exception as e:
+                            console.print(f"[red]Failed to load role skill {role_file}: {e}[/red]")
 
     # ========================================================================
     # Legacy Skill API (backward compatible)
@@ -688,19 +732,13 @@ class SkillManager:
         """Get list of available flow skill commands."""
         commands = []
         
-        # Legacy flow skills
-        for skill in self.get_flow_skills():
+        # Workflow skills with role attribute
+        for skill in self.list_skills_by_type("workflow"):
             role = skill.get_role()
             if role:
                 commands.append(f"/flow:{role}")
-            else:
-                name = skill.name
-                if name.startswith(self.flow_skill_prefix):
-                    role = name[len(self.flow_skill_prefix):]
-                    if role:
-                        commands.append(f"/flow:{role}")
         
-        # New role skills
+        # Role skills from three-level architecture
         for role_name in self._roles.keys():
             short_name = role_name.replace(self.ROLE_PREFIX, "")
             commands.append(f"/flow:{short_name}")
