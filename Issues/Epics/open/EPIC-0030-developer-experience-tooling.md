@@ -22,7 +22,7 @@ tags:
 files: []
 criticality: high
 opened_at: '2026-02-01T10:37:05'
-progress: 2/3
+progress: 1/3
 files_count: 0
 ---
 
