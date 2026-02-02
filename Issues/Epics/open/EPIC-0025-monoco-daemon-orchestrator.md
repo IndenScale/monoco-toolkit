@@ -25,7 +25,7 @@ tags:
 - '#daemon'
 - narrative
 criticality: high
-progress: 2/8
+progress: 3/8
 files_count: 0
 ---
 
