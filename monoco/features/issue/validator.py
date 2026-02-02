@@ -4,7 +4,7 @@ from pathlib import Path
 
 from monoco.core.lsp import Diagnostic, DiagnosticSeverity, Range, Position
 from monoco.core.config import get_config
-from monoco.features.i18n.core import detect_language
+from monoco.features.i18n.core import detect_language, has_language_mismatch_blocks, detect_language_blocks
 from .models import IssueMetadata
 from .domain.parser import MarkdownParser
 from .domain.models import ContentBlock
@@ -111,23 +111,61 @@ class IssueValidator:
     def _validate_language_consistency(
         self, meta: IssueMetadata, content: str
     ) -> List[Diagnostic]:
+        """
+        Validate language consistency using block-level detection.
+        
+        FEAT-0143: Block-level language detection to avoid false positives
+        in mixed-language documents. Key features:
+        - Code blocks are skipped (they always contain English keywords)
+        - Review Comments sections in Chinese docs are skipped (English feedback is expected)
+        - Each paragraph is checked independently
+        """
         diagnostics = []
         try:
             config = get_config()
             source_lang = config.i18n.source_lang
 
-            # Check for language mismatch (specifically zh vs en)
-            if source_lang.lower() == "zh":
-                detected = detect_language(content)
-                if detected == "en":
-                    diagnostics.append(
-                        self._create_diagnostic(
-                            "Language Mismatch: Project source language is 'zh' but content appears to be 'en'.",
-                            DiagnosticSeverity.Warning,
+            # Only perform detailed block-level check for Chinese source language
+            # (where English content might be a mistake, except in specific sections)
+            if source_lang.lower() in ["zh", "cn"]:
+                has_mismatch, mismatched_blocks = has_language_mismatch_blocks(content, source_lang)
+                
+                if has_mismatch:
+                    # Report each mismatched block with its line number
+                    for block in mismatched_blocks:
+                        # Create a descriptive message based on block type
+                        block_type_desc = {
+                            "heading": "heading",
+                            "paragraph": "paragraph",
+                            "list_item": "list item",
+                            "quote": "quote",
+                            "table": "table",
+                        }.get(block.type.value, "content")
+                        
+                        diagnostics.append(
+                            self._create_diagnostic(
+                                f"Language Mismatch: Detected English {block_type_desc} in Chinese document. "
+                                f"Consider translating or mark as intentional.",
+                                DiagnosticSeverity.Warning,
+                                line=block.line_start,
+                            )
                         )
-                    )
         except Exception:
-            pass
+            # Fall back to simple check if block-level detection fails
+            try:
+                config = get_config()
+                source_lang = config.i18n.source_lang
+                if source_lang.lower() == "zh":
+                    detected = detect_language(content)
+                    if detected == "en":
+                        diagnostics.append(
+                            self._create_diagnostic(
+                                "Language Mismatch: Project source language is 'zh' but content appears to be 'en'.",
+                                DiagnosticSeverity.Warning,
+                            )
+                        )
+            except Exception:
+                pass
         return diagnostics
 
     def _create_diagnostic(

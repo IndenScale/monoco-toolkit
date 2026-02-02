@@ -7,7 +7,6 @@ import React from 'react'
 import {
   VSCodeCheckbox,
   VSCodeTextField,
-  VSCodeLabel,
   VSCodeDivider,
   VSCodeButton,
   VSCodeTag,
@@ -65,7 +64,7 @@ export const CapabilitiesPanel: React.FC<CapabilitiesPanelProps> = ({
             </p>
 
             <div className="form-group">
-              <VSCodeLabel htmlFor="skills-directory">Skills Directory</VSCodeLabel>
+              <label htmlFor="skills-directory">Skills Directory</label>
               <div className="input-with-button">
                 <VSCodeTextField
                   id="skills-directory"
@@ -211,7 +210,7 @@ export const CapabilitiesPanel: React.FC<CapabilitiesPanelProps> = ({
                 <VSCodeDivider />
 
                 <div className="form-group">
-                  <VSCodeLabel>Restricted Commands</VSCodeLabel>
+                  <label>Restricted Commands</label>
                   <p className="field-hint">
                     Commands that require explicit confirmation before execution
                   </p>

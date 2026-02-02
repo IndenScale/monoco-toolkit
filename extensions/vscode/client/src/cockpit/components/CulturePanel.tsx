@@ -7,7 +7,6 @@ import React from 'react'
 import {
   VSCodeDropdown,
   VSCodeOption,
-  VSCodeLabel,
   VSCodeRadioGroup,
   VSCodeRadio,
 } from '@vscode/webview-ui-toolkit/react'
@@ -52,7 +51,7 @@ export const CulturePanel: React.FC<CulturePanelProps> = ({
         </p>
 
         <div className="form-group">
-          <VSCodeLabel htmlFor="language-select">Language</VSCodeLabel>
+          <label htmlFor="language-select">Language</label>
           <VSCodeDropdown
             id="language-select"
             value={culture.language}
@@ -80,7 +79,7 @@ export const CulturePanel: React.FC<CulturePanelProps> = ({
         </p>
 
         <div className="form-group">
-          <VSCodeLabel>Tone</VSCodeLabel>
+          <label>Tone</label>
           <VSCodeRadioGroup
             value={culture.tone}
             onChange={(e: any) => onCultureChange({ tone: e.target.value })}
@@ -97,7 +96,7 @@ export const CulturePanel: React.FC<CulturePanelProps> = ({
         </div>
 
         <div className="form-group">
-          <VSCodeLabel>Response Style</VSCodeLabel>
+          <label>Response Style</label>
           <VSCodeRadioGroup
             value={culture.responseStyle}
             onChange={(e: any) => onCultureChange({ responseStyle: e.target.value })}
