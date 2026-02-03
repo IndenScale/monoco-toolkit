@@ -6,7 +6,7 @@ status: open
 stage: review
 title: ConfigMonitor 重复 watcher 和异步 handler 未 await 问题
 created_at: '2026-02-03T13:16:34'
-updated_at: '2026-02-03T13:21:41'
+updated_at: '2026-02-03T13:40:37'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -15,12 +15,14 @@ tags:
 - '#EPIC-0000'
 - '#FIX-0009'
 files:
+- '"Issues/Fixes/open/FIX-0009-configmonitor-\351\207\215\345\244\215-watcher-\345\222\214\345\274\202\346\255\245-handler-\346\234\252-await-\351\227\256\351\242\230.md"'
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
 - monoco/core/config.py
 - monoco/core/scheduler/events.py
 - monoco/core/watcher/base.py
 - monoco/daemon/app.py
 - monoco/daemon/services.py
-- '"Issues/Fixes/open/FIX-0009-configmonitor-\351\207\215\345\244\215-watcher-\345\222\214\345\274\202\346\255\245-handler-\346\234\252-await-\351\227\256\351\242\230.md"'
+- uv.lock
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T13:16:34'
