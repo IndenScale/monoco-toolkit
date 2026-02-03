@@ -20,6 +20,7 @@ files:
   - monoco/features/issue/core.py
   - tests/features/issue/test_cross_branch_search.py
   - tests/features/issue/test_close_multi_branch.py
+  - tests/features/issue/test_sync_files_uncommitted.py
 criticality: high
 solution: null
 opened_at: '2026-02-03T13:43:22'
@@ -66,6 +67,7 @@ Error: Issue XXX found in multiple branches: main, feat/xxx
 - [x] 当检测到多分支时，直接使用 feature 分支版本覆盖
 - [x] 删除 main 分支的旧 Issue 文件
 - [x] 测试中文文件名的处理
+- [x] sync-files 检测未提交变更并报错
 
 ## Design Notes
 
