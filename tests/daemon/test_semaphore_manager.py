@@ -20,7 +20,6 @@ class TestSemaphoreManager:
         assert status["roles"]["Engineer"]["limit"] == 1
         assert status["roles"]["Architect"]["limit"] == 1
         assert status["roles"]["Reviewer"]["limit"] == 1
-        assert status["roles"]["Planner"]["limit"] == 1
 
     def test_custom_config(self):
         """Test that custom config overrides defaults."""
@@ -29,7 +28,6 @@ class TestSemaphoreManager:
         config.engineer = 2
         config.architect = 1
         config.reviewer = 2
-        config.planner = 1
         config.failure_cooldown_seconds = 120
         
         manager = SemaphoreManager(config)
@@ -65,7 +63,6 @@ class TestSemaphoreManager:
         config.engineer = 2
         config.architect = 1
         config.reviewer = 1
-        config.planner = 1
         config.failure_cooldown_seconds = 60
         
         manager = SemaphoreManager(config)
@@ -90,7 +87,6 @@ class TestSemaphoreManager:
         config.engineer = 5  # High role limit
         config.architect = 5
         config.reviewer = 5
-        config.planner = 5
         config.failure_cooldown_seconds = 60
         
         manager = SemaphoreManager(config)
@@ -102,7 +98,7 @@ class TestSemaphoreManager:
         
         # Global limit reached
         assert manager.can_acquire("Engineer") is False
-        assert manager.can_acquire("Planner") is False
+        assert manager.can_acquire("Architect") is False
         
         status = manager.get_status()
         assert status["global"]["active"] == 3
@@ -114,7 +110,6 @@ class TestSemaphoreManager:
         config.engineer = 2
         config.architect = 1
         config.reviewer = 1
-        config.planner = 1
         config.failure_cooldown_seconds = 60
         
         manager = SemaphoreManager(config)
@@ -135,7 +130,6 @@ class TestSemaphoreManager:
         config.engineer = 2
         config.architect = 1
         config.reviewer = 1
-        config.planner = 1
         config.failure_cooldown_seconds = 60
         
         manager = SemaphoreManager(config)
@@ -154,7 +148,6 @@ class TestSemaphoreManager:
         config.engineer = 2
         config.architect = 1
         config.reviewer = 1
-        config.planner = 1
         config.failure_cooldown_seconds = 60
         
         manager = SemaphoreManager(config)
@@ -196,7 +189,6 @@ class TestSemaphoreManager:
         config.engineer = 2
         config.architect = 1
         config.reviewer = 1
-        config.planner = 1
         config.failure_cooldown_seconds = 60
         
         manager = SemaphoreManager(config)
@@ -229,7 +221,6 @@ class TestSemaphoreManagerIntegration:
         config.engineer = 1  # Only 1 engineer allowed
         config.architect = 1
         config.reviewer = 1
-        config.planner = 1
         config.failure_cooldown_seconds = 60
         
         manager = SemaphoreManager(config)
@@ -260,7 +251,6 @@ class TestSemaphoreManagerIntegration:
         config.engineer = 2
         config.architect = 1
         config.reviewer = 2
-        config.planner = 1
         config.failure_cooldown_seconds = 60
         
         manager = SemaphoreManager(config)
@@ -285,11 +275,8 @@ class TestSemaphoreManagerIntegration:
         status = manager.get_status()
         assert status["global"]["active"] == 4
         
-        # One more slot available
-        assert manager.can_acquire("Planner") is True
-        manager.acquire("plan-1", "Planner")
-        
         # Global limit reached
+        assert manager.acquire("rev-2", "Reviewer") is True
         assert manager.can_acquire("Engineer") is False
         assert manager.can_acquire("Reviewer") is False
 
@@ -302,7 +289,6 @@ class TestSemaphoreManagerIntegration:
         config.engineer = 5  # High role limits
         config.architect = 5
         config.reviewer = 5
-        config.planner = 5
         config.failure_cooldown_seconds = 60
         
         manager = SemaphoreManager(config)
@@ -314,7 +300,6 @@ class TestSemaphoreManagerIntegration:
         # All subsequent attempts should gracefully fail
         assert manager.can_acquire("Engineer") is False
         assert manager.can_acquire("Reviewer") is False
-        assert manager.can_acquire("Planner") is False
         
         # Status should still be available
         status = manager.get_status()

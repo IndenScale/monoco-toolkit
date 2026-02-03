@@ -1,10 +1,11 @@
 import pytest
+import asyncio
 from unittest.mock import MagicMock, patch, AsyncMock
 from pathlib import Path
 from monoco.daemon.scheduler import SchedulerService
 from monoco.daemon.services import ProjectManager
-from monoco.features.agent.manager import SessionManager
 from monoco.features.issue.models import IssueMetadata
+from monoco.core.scheduler import AgentEventType
 
 @pytest.fixture
 def mock_project_manager():
@@ -17,85 +18,93 @@ def scheduler(mock_project_manager):
     return SchedulerService(mock_project_manager)
 
 @pytest.mark.anyio
-async def test_check_inbox_trigger_spawns_architect(scheduler):
-    # Setup
+async def test_memo_threshold_emits_event(scheduler, mock_project_manager):
+    """Test that crossing the memo threshold emits a MEMO_THRESHOLD event."""
+    # Setup project context
     project_ctx = MagicMock()
-    project_ctx.issues_root = Path("/tmp/issues")
-    project_ctx.path = Path("/tmp/project")
     project_ctx.id = "test-project"
+    project_ctx.issues_root = Path("/tmp/issues")
+    mock_project_manager.projects = {"test-project": project_ctx}
     
-    # Mock SessionManager
-    sm = MagicMock(spec=SessionManager)
-    am = MagicMock()
-    scheduler.get_managers = MagicMock(return_value=(sm, am))
+    # Mock load_memos to return 6 pending memos (threshold is 5)
+    mock_memo = MagicMock()
+    mock_memo.status = "pending"
     
-    # Mock existing architects (none)
-    sm.list_sessions.return_value = []
-    
-    # Mock spawn_architect
-    scheduler.spawn_architect = MagicMock()
-    
-    # Mock Policy
-    with patch("monoco.daemon.scheduler.MemoAccumulationPolicy") as MockPolicy:
-        policy_instance = MockPolicy.return_value
-        policy_instance.evaluate.return_value = True
+    with patch("monoco.daemon.scheduler.load_memos", return_value=[mock_memo] * 6), \
+         patch("monoco.daemon.scheduler.event_bus.publish", new_callable=AsyncMock) as mock_publish:
         
-        # Execute
-        await scheduler.process_project(project_ctx)
+        # Execute check
+        await scheduler._check_memo_thresholds()
         
-        # Verify
-        scheduler.spawn_architect.assert_called_once_with(sm, project_ctx)
+        # Verify event published
+        mock_publish.assert_called_once()
+        args, kwargs = mock_publish.call_args
+        assert args[0] == AgentEventType.MEMO_THRESHOLD
+        assert args[1]["project_id"] == "test-project"
+        assert args[1]["memo_count"] == 6
 
 @pytest.mark.anyio
-async def test_check_handover_trigger_spawns_engineer(scheduler):
-    # Setup
+async def test_issue_stage_change_emits_event(scheduler, mock_project_manager):
+    """Test that issue stage changes emit ISSUE_STAGE_CHANGED events."""
     project_ctx = MagicMock()
+    project_ctx.id = "test-project"
     project_ctx.issues_root = Path("/tmp/issues")
-    project_ctx.path = Path("/tmp/project")
+    mock_project_manager.projects = {"test-project": project_ctx}
     
-    sm = MagicMock(spec=SessionManager)
-    am = MagicMock()
-    scheduler.get_managers = MagicMock(return_value=(sm, am))
-    
-    # Mock list_sessions for Architect check (return generic list so it doesn't spawn architect)
-    # But wait, logic is: check existing architects. If I return empty, it tries to spawn architect.
-    # I want to test Handover.
-    # Let's say we have an architect so it doesn't trigger that part.
-    architect_session = MagicMock()
-    architect_session.model.role_name = "Architect"
-    architect_session.model.status = "running"
-    
-    # sm.list_sessions is called multiple times.
-    # 1. Check existing architects
-    # 2. Check active sessions for specific issue
-    # 3. Monitor active sessions
-    
-    # We can use side_effect or just return a list that covers needs if filtered.
-    # But list_sessions filtering happens in the code: `[s for s in sm.list_sessions() if ...]`
-    # So if I return [architect_session], it satisfies "existing architects".
-    
-    # For the specific issue check: `[s for s in sm.list_sessions(issue_id=issue.id) if ...]`
-    # The code calls sm.list_sessions(issue_id=...) which is a different call signature than sm.list_sessions().
-    # I need to mock properly.
-    
-    def list_sessions_side_effect(issue_id=None):
-        if issue_id:
-            return [] # No active session for the issue
-        return [architect_session] # Architect exists
-        
-    sm.list_sessions.side_effect = list_sessions_side_effect
-    
-    scheduler.spawn_engineer = MagicMock()
-    
-    # Mock list_issues
+    # Initial state: stage is None
     issue = MagicMock(spec=IssueMetadata)
     issue.id = "FEAT-123"
     issue.status = "open"
     issue.stage = "doing"
-    issue.title = "Test Feature"
+    issue.title = "Test Issue"
     
-    with patch("monoco.daemon.scheduler.list_issues", return_value=[issue]):
-        await scheduler.process_project(project_ctx)
+    with patch("monoco.daemon.scheduler.list_issues", return_value=[issue]), \
+         patch("monoco.daemon.scheduler.event_bus.publish", new_callable=AsyncMock) as mock_publish:
         
-        scheduler.spawn_engineer.assert_called_once_with(sm, issue)
+        # Establishing state - first check will emit event for new issue discovered
+        await scheduler._check_issue_changes()
+        assert mock_publish.call_count == 2  # One for stage change (None->doing), one for status change (None->open)
+        mock_publish.reset_mock()
+        
+        # Change stage
+        issue.stage = "review"
+        await scheduler._check_issue_changes()
+        
+        # Verify event
+        mock_publish.assert_called_once()
+        args, kwargs = mock_publish.call_args
+        assert args[0] == AgentEventType.ISSUE_STAGE_CHANGED
+        assert args[1]["issue_id"] == "FEAT-123"
+        assert args[1]["old_stage"] == "doing"
+        assert args[1]["new_stage"] == "review"
 
+@pytest.mark.anyio
+async def test_session_completion_emits_event(scheduler):
+    """Test that session completion emits SESSION_COMPLETED event."""
+    sm = MagicMock()
+    scheduler.session_managers = {"proj1": sm}
+    
+    session = MagicMock()
+    session.model.id = "sess-1"
+    session.model.issue_id = "FEAT-123"
+    session.model.role_name = "Engineer"
+    session.model.status = "completed"
+    
+    # Mock refresh_status to return "completed" while model.status was "running"
+    session.refresh_status.return_value = "completed"
+    session.model.status = "running"
+    
+    sm.list_sessions.return_value = [session]
+    
+    with patch("monoco.daemon.scheduler.event_bus.publish", new_callable=AsyncMock) as mock_publish:
+        await scheduler._monitor_sessions()
+        
+        mock_publish.assert_called_once_with(
+            AgentEventType.SESSION_COMPLETED,
+            {
+                "session_id": "sess-1",
+                "issue_id": "FEAT-123",
+                "role_name": "Engineer",
+            },
+            source="scheduler.session_monitor"
+        )

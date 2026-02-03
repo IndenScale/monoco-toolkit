@@ -476,6 +476,17 @@ def move_close(
 
     # Handle force-prune logic
     if force_prune:
+        # FEAT-0125: force-prune requires interactive confirmation to avoid accidental data loss 
+        # unless in agent mode (which is handled by typer.confirm's default)
+        if not OutputManager.is_agent_mode():
+            confirm = typer.confirm(
+                "⚠ FORCE PRUNE will permanently delete the feature branch without checking its merge status. Continue?",
+                default=False
+            )
+            if not confirm:
+                console.print("[yellow]Aborted.[/yellow]")
+                raise typer.Exit(code=1)
+        
         prune = True
         force = True
 
