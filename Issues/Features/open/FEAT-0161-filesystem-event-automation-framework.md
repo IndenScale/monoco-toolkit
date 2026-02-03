@@ -3,10 +3,10 @@ id: FEAT-0161
 uid: b2c3d4
 type: feature
 status: open
-stage: draft
+stage: doing
 title: 文件系统事件到业务事件的自动化映射框架
 created_at: '2026-02-03T09:25:00'
-updated_at: '2026-02-03T09:25:00'
+updated_at: '2026-02-03T10:03:42'
 parent: EPIC-0025
 dependencies:
 - FEAT-0160
@@ -16,9 +16,6 @@ related:
 - FEAT-0160
 domains:
 - AgentEmpowerment
-files:
-- monoco/daemon/scheduler.py
-- monoco/core/ingestion/watcher.py
 tags:
 - '#EPIC-0025'
 - '#FEAT-0161'
@@ -26,7 +23,11 @@ tags:
 - watcher
 - event-driven
 - three-layer
+files:
+- monoco/daemon/scheduler.py
+- monoco/core/ingestion/watcher.py
 criticality: high
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T09:25:00'
 ---
 
