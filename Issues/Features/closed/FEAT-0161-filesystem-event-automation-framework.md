@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 文件系统事件到业务事件的自动化映射框架
 created_at: '2026-02-03T09:25:00'
-updated_at: '2026-02-03T10:31:27'
+updated_at: 2026-02-03 10:31:28
 parent: EPIC-0025
 dependencies:
 - FEAT-0160
@@ -57,10 +57,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-03T09:25:00'
 closed_at: '2026-02-03T10:31:27'
-isolation:
-  type: branch
-  ref: feat/feat-0161-文件系统事件到业务事件的自动化映射框架
-  created_at: '2026-02-03T10:03:44'
 ---
 
 ## FEAT-0161: 文件系统事件到业务事件的自动化映射框架
