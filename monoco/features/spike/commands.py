@@ -81,13 +81,15 @@ def remove_repo(
     target_path = spikes_dir / name
     deleted = False
     if target_path.exists():
-        if force or typer.confirm(
-            f"Do you want to delete the directory {target_path}?", default=False
-        ):
+        if force:
             core.remove_repo_dir(spikes_dir, name)
             deleted = True
         else:
             deleted = False
+            if not OutputManager.is_agent_mode():
+                from rich.console import Console
+                console = Console()
+                console.print(f"[yellow]Skipping physical deletion of {target_path}. Use --force to delete.[/yellow]")
 
     OutputManager.print(
         {"status": "removed", "name": name, "directory_deleted": deleted}
