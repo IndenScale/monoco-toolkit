@@ -1,5 +1,5 @@
 ---
-id: FIX-0009
+id: FIX-0010
 uid: ba9d29
 type: fix
 status: open
@@ -15,7 +15,7 @@ domains:
 - Foundation
 tags:
 - '#EPIC-0028'
-- '#FIX-0009'
+- '#FIX-0010'
 - config
 - domain
 - authority
@@ -28,7 +28,7 @@ solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T20:28:09'
 ---
 
-## FIX-0009: Remove DomainConfig from config module - authority should be Issues/Domains files
+## FIX-0010: Remove DomainConfig from config module - authority should be Issues/Domains files
 
 ## Problem Statement
 
