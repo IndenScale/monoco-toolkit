@@ -462,8 +462,13 @@ class ConfigMonitor:
         self.config_path = config_path
         self.on_change = on_change
         self.observer = Observer()
+        self._started = False
 
     async def start(self):
+        if self._started:
+            logger.warning(f"Config Monitor already started for {self.config_path}")
+            return
+
         loop = asyncio.get_running_loop()
         event_handler = ConfigEventHandler(loop, self.on_change, self.config_path)
 
@@ -471,15 +476,28 @@ class ConfigMonitor:
             # Ensure parent exists at least
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # We watch the parent directory for the specific file
-        self.observer.schedule(
-            event_handler, str(self.config_path.parent), recursive=False
-        )
-        self.observer.start()
-        logger.info(f"Config Monitor started for {self.config_path}")
+        # Watch the specific file, not the parent directory
+        # This avoids "already scheduled" errors when multiple files are in the same directory
+        try:
+            self.observer.schedule(
+                event_handler, str(self.config_path), recursive=False
+            )
+            self.observer.start()
+            self._started = True
+            logger.info(f"Config Monitor started for {self.config_path}")
+        except RuntimeError as e:
+            logger.error(f"Failed to start Config Monitor for {self.config_path}: {e}")
+            raise
 
     def stop(self):
-        if self.observer.is_alive():
-            self.observer.stop()
-            self.observer.join()
-        logger.info(f"Config Monitor stopped for {self.config_path}")
+        if not self._started:
+            return
+        try:
+            if self.observer.is_alive():
+                self.observer.stop()
+                self.observer.join()
+            logger.info(f"Config Monitor stopped for {self.config_path}")
+        except Exception as e:
+            logger.warning(f"Error stopping Config Monitor: {e}")
+        finally:
+            self._started = False
