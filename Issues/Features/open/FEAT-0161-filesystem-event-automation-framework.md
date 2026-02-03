@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 文件系统事件到业务事件的自动化映射框架
 created_at: '2026-02-03T09:25:00'
-updated_at: '2026-02-03T10:26:12'
+updated_at: '2026-02-03T10:29:35'
 parent: EPIC-0025
 dependencies:
 - FEAT-0160
@@ -25,6 +25,34 @@ tags:
 - three-layer
 files:
 - Issues/Features/open/FEAT-0161-filesystem-event-automation-framework.md
+- monoco/core/automation/__init__.py
+- monoco/core/automation/config.py
+- monoco/core/automation/field_watcher.py
+- monoco/core/automation/orchestrator.py
+- monoco/core/executor/__init__.py
+- monoco/core/executor/agent_action.py
+- monoco/core/executor/git_action.py
+- monoco/core/executor/im_action.py
+- monoco/core/executor/pytest_action.py
+- monoco/core/router/__init__.py
+- monoco/core/router/action.py
+- monoco/core/router/router.py
+- monoco/core/watcher/__init__.py
+- monoco/core/watcher/base.py
+- monoco/core/watcher/dropzone.py
+- monoco/core/watcher/issue.py
+- monoco/core/watcher/memo.py
+- monoco/core/watcher/task.py
+- tests/core/automation/__init__.py
+- tests/core/automation/test_config.py
+- tests/core/automation/test_field_watcher.py
+- tests/core/router/__init__.py
+- tests/core/router/test_action.py
+- tests/core/router/test_router.py
+- tests/core/watcher/__init__.py
+- tests/core/watcher/test_base.py
+- tests/core/watcher/test_issue_watcher.py
+- tests/core/watcher/test_memo_watcher.py
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T09:25:00'
