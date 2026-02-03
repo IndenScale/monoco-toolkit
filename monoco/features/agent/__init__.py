@@ -6,6 +6,16 @@ from .session import Session, RuntimeSession
 from .manager import SessionManager
 from .apoptosis import ApoptosisManager
 
+# Re-export engines from core.scheduler for backward compatibility
+from monoco.core.scheduler import (
+    EngineAdapter,
+    EngineFactory,
+    GeminiAdapter,
+    ClaudeAdapter,
+    QwenAdapter,
+    KimiAdapter,
+)
+
 __all__ = [
     "RoleTemplate",
     "AgentConfig",
@@ -18,4 +28,11 @@ __all__ = [
     "RuntimeSession",
     "SessionManager",
     "ApoptosisManager",
+    # Re-exported from core.scheduler
+    "EngineAdapter",
+    "EngineFactory",
+    "GeminiAdapter",
+    "ClaudeAdapter",
+    "QwenAdapter",
+    "KimiAdapter",
 ]

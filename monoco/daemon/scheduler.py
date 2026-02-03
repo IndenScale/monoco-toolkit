@@ -1,7 +1,8 @@
 """
-Scheduler Service - Event-driven agent orchestration (FEAT-0155).
+Scheduler Service - Event-driven agent orchestration (FEAT-0155, FEAT-0160).
 
 Replaces polling-based trigger logic with event-driven architecture.
+Uses AgentScheduler abstraction for provider-agnostic task scheduling.
 """
 
 import asyncio
@@ -11,7 +12,7 @@ from typing import Dict, Optional, List, Any, Tuple
 from pathlib import Path
 
 from monoco.daemon.services import ProjectManager, SemaphoreManager
-from monoco.daemon.events import AgentEventType, event_bus
+from monoco.core.scheduler import AgentEventType, event_bus, AgentScheduler, LocalProcessScheduler
 from monoco.daemon.handlers import EventHandlerRegistry
 from monoco.features.agent.manager import SessionManager
 from monoco.features.agent.session import RuntimeSession
@@ -31,9 +32,9 @@ class SchedulerService:
     - Initialize and manage event handlers
     - Monitor sessions and emit lifecycle events
     - Watch for memo/issue changes and emit trigger events
-    - Coordinate with SemaphoreManager for concurrency control
+    - Coordinate with AgentScheduler for task execution
     
-    Note: FEAT-0155 removed polling-based triggers in favor of event-driven.
+    Note: FEAT-0160 refactored to use AgentScheduler abstraction.
     """
     
     MEMO_CHECK_INTERVAL = 5  # seconds
@@ -46,6 +47,13 @@ class SchedulerService:
         self.apoptosis_managers: Dict[str, ApoptosisManager] = {}
         self.handler_registry = EventHandlerRegistry()
         
+        # Initialize AgentScheduler (FEAT-0160)
+        scheduler_config = self._load_scheduler_config()
+        self.agent_scheduler: AgentScheduler = LocalProcessScheduler(
+            max_concurrent=scheduler_config.get("max_concurrent", 5),
+            project_root=Path.cwd(),
+        )
+        
         # Initialize SemaphoreManager with config
         config = self._load_concurrency_config()
         self.semaphore_manager = SemaphoreManager(config)
@@ -57,6 +65,33 @@ class SchedulerService:
         # State tracking for event emission
         self._memo_counts: Dict[str, int] = {}
         self._issue_states: Dict[str, Dict[str, Any]] = {}
+    
+    def _load_scheduler_config(self) -> Dict[str, Any]:
+        """Load scheduler configuration from config files and env vars."""
+        config = {"max_concurrent": 5}
+        
+        try:
+            settings = get_config()
+            
+            # Check for concurrency config
+            if hasattr(settings, "agent") and hasattr(settings.agent, "concurrency"):
+                concurrency_config = settings.agent.concurrency
+                if hasattr(concurrency_config, "global_max"):
+                    config["max_concurrent"] = concurrency_config.global_max
+            
+            # Check for environment variable override
+            env_max_agents = os.environ.get("MONOCO_MAX_AGENTS")
+            if env_max_agents:
+                try:
+                    config["max_concurrent"] = int(env_max_agents)
+                    logger.info(f"Overriding max_concurrent from environment: {env_max_agents}")
+                except ValueError:
+                    logger.warning(f"Invalid MONOCO_MAX_AGENTS value: {env_max_agents}")
+            
+            return config
+        except Exception as e:
+            logger.warning(f"Failed to load scheduler config: {e}. Using defaults.")
+            return config
     
     def _load_concurrency_config(self) -> Optional[Any]:
         """Load concurrency configuration from config files and env vars."""
@@ -119,6 +154,9 @@ class SchedulerService:
         # Start event bus
         await event_bus.start()
         
+        # Start agent scheduler (FEAT-0160)
+        await self.agent_scheduler.start()
+        
         # Initialize managers for all projects
         for project_ctx in self.project_manager.projects.values():
             self.get_managers(project_ctx.path)
@@ -140,6 +178,9 @@ class SchedulerService:
         # Cancel background tasks
         for task in self._tasks:
             task.cancel()
+        
+        # Stop agent scheduler (FEAT-0160)
+        asyncio.create_task(self.agent_scheduler.stop())
         
         # Stop event bus
         asyncio.create_task(event_bus.stop())
@@ -342,6 +383,7 @@ class SchedulerService:
         return {
             "running": self._running,
             "event_bus": event_bus.get_stats(),
+            "agent_scheduler": self.agent_scheduler.get_stats(),
             "semaphore": self.semaphore_manager.get_status(),
             "projects": len(self.session_managers),
             "memo_counts": self._memo_counts.copy(),
