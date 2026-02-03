@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-from monoco.daemon.events import AgentEvent, AgentEventType, event_bus
+from monoco.core.scheduler import AgentEvent, AgentEventType, event_bus
 from monoco.features.agent.manager import SessionManager
 from monoco.features.agent.models import RoleTemplate
 from monoco.features.agent.apoptosis import ApoptosisManager
