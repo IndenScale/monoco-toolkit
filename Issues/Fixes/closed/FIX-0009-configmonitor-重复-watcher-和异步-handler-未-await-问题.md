@@ -24,7 +24,7 @@ files:
 - monoco/daemon/services.py
 - uv.lock
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-03T13:16:34'
 isolation:
   type: branch
