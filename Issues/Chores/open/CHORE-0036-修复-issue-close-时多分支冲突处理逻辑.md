@@ -15,9 +15,14 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#CHORE-0036'
-files: []
+files:
+- monoco/features/issue/commands.py
+- monoco/features/issue/core.py
+- tests/features/issue/test_cross_branch_search.py
+- tests/features/issue/test_close_multi_branch.py
+- tests/features/issue/test_sync_files_uncommitted.py
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-03T13:43:22'
 isolation:
   type: branch
