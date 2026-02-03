@@ -3,11 +3,11 @@ id: FIX-0010
 uid: ba9d29
 type: fix
 status: open
-stage: draft
+stage: doing
 title: Remove DomainConfig from config module - authority should be Issues/Domains
   files
 created_at: '2026-02-03T20:28:09'
-updated_at: '2026-02-03T20:55:15'
+updated_at: '2026-02-03T20:55:17'
 parent: EPIC-0028
 dependencies: []
 related: []
