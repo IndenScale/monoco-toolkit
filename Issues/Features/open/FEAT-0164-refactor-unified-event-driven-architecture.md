@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 重构：清除旧 Handler 架构，统一事件驱动架构
 created_at: '2026-02-03T12:00:00'
-updated_at: '2026-02-03T12:32:51'
+updated_at: '2026-02-03T12:32:52'
 parent: EPIC-0032
 dependencies:
 - FEAT-0160
