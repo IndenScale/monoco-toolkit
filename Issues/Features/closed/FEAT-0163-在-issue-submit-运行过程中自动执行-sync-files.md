@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 在 issue submit 运行过程中自动执行 sync-files
 created_at: '2026-02-03T11:13:37'
-updated_at: '2026-02-03T11:17:56'
+updated_at: 2026-02-03 11:17:56
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,10 +19,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-03T11:13:37'
 closed_at: '2026-02-03T11:17:56'
-isolation:
-  type: branch
-  ref: feat/feat-0163-在-issue-submit-运行过程中自动执行-sync-files
-  created_at: '2026-02-03T11:13:39'
 ---
 
 ## FEAT-0163: 在 issue submit 运行过程中自动执行 sync-files
