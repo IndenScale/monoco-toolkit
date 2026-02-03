@@ -2,11 +2,11 @@
 id: FEAT-0162
 uid: c3d4e5
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: Agent 联调工作流 - 端到端自动化
 created_at: '2026-02-03T09:30:00'
-updated_at: '2026-02-03T11:19:06'
+updated_at: '2026-02-03T11:36:00'
 parent: EPIC-0025
 dependencies:
 - FEAT-0160
@@ -22,9 +22,12 @@ tags:
 - collaboration
 files:
 - Memos/agent-scheduler-architecture-assessment.md
+- monoco/core/automation/handlers.py
+- monoco/core/automation/__init__.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-03T09:30:00'
+closed_at: '2026-02-03T11:36:00'
 ---
 
 ## FEAT-0162: Agent 联调工作流 - 端到端自动化
