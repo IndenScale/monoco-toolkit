@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: ConfigMonitor 重复 watcher 和异步 handler 未 await 问题
 created_at: '2026-02-03T13:16:34'
-updated_at: '2026-02-03T13:21:26'
+updated_at: '2026-02-03T13:21:35'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,7 +14,8 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FIX-0009'
-files: []
+files:
+- '"Issues/Fixes/open/FIX-0009-configmonitor-\351\207\215\345\244\215-watcher-\345\222\214\345\274\202\346\255\245-handler-\346\234\252-await-\351\227\256\351\242\230.md"'
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T13:16:34'
@@ -94,10 +95,10 @@ MemoWatcher._handle_count_change()
   - [x] 修改 `PollingWatcher.emit()` 正确处理绑定方法
   - [x] 或使用 EventBus 订阅替代本地回调
 
-- [ ] **Task 3: 验证修复**
-  - [ ] 启动 `monoco serve` 确认无报错
-  - [ ] 修改 project.yaml 确认热更新生效
-  - [ ] 添加 memo 超过 threshold 确认 handler 被触发
+- [x] **Task 3: 验证修复**
+  - [x] 启动 `monoco serve` 确认无报错
+  - [x] 修改 project.yaml 确认热更新生效
+  - [x] 添加 memo 超过 threshold 确认 handler 被触发
 
 ## Files to Modify
 
