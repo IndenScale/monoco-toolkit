@@ -3,10 +3,10 @@ id: FEAT-0167
 uid: 68dadf
 type: feature
 status: open
-stage: draft
+stage: doing
 title: IM 基础设施：核心数据模型与存储
 created_at: '2026-02-03T23:23:32'
-updated_at: '2026-02-03T23:23:32'
+updated_at: '2026-02-03T23:44:32'
 parent: EPIC-0033
 dependencies: []
 related:
