@@ -137,7 +137,6 @@ Architect ──► Issues/FEAT-001.md (stage=draft)
 ### Phase 4: Future Extensions (未来工作)
 > 以下特性在核心架构稳定后考虑
 
-- [ ] **IM Integration**: 钉钉/飞书作为额外输入源 (写入 inbox/)
 - [ ] **Notification System**: 通知机制 (邮件/IM)
 - [ ] **Evolution Signaling**: 改进建议流转机制
 
@@ -214,7 +213,7 @@ EPIC-0032: Collaboration Bus (本 Epic)
 **重大变更**:
 1. **强调 Filesystem as Bus**: 明确文件系统是协作核心媒介
 2. **强调 Event-Driven**: 明确事件驱动是核心机制
-3. **删除 EPIC-0033**: IM 集成为未来工作，非当前核心
+3. **删除 IM Integration**: 集成为未来工作，非当前核心
 4. **去链式化**: Agent 间不直接调用，通过文件状态解耦
 5. **Human-in-the-Loop**: 关键节点由人工确认 (stage 变更)
 
