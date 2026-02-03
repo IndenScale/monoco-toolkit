@@ -675,10 +675,14 @@ def _search_issue_in_branches(
             if code != 0 or not stdout.strip():
                 continue
             
-            # Find matching issue file
+            # Find matching issue file (Handling quoted paths from git ls-tree)
             pattern = f"{parsed.local_id}-"
             for line in stdout.splitlines():
                 line = line.strip()
+                # Git quotes non-ASCII paths: "Issues/Chores/...md"
+                if line.startswith('"') and line.endswith('"'):
+                    line = line[1:-1]
+                
                 if pattern in line and line.endswith(".md"):
                     found_in_branches.append((branch, line))
     
