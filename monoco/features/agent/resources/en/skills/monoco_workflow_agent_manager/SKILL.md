@@ -1,6 +1,6 @@
 ---
 name: monoco_workflow_agent_manager
-description: Standardized workflow for the Manager role (Flow Skill). Defines the standard operating procedure from inbox organization to task assignment, ensuring clear requirements and reasonable task breakdown.
+description: Standardized workflow for Manager role (Flow Skill). Defines standard operating procedures from Inbox organization to task assignment, ensuring clear requirements and reasonable task decomposition.
 type: workflow
 role: manager
 version: 1.0.0
@@ -8,86 +8,81 @@ version: 1.0.0
 
 # Manager Flow
 
-Standardized workflow for the Manager role, focusing on inbox organization, requirement refinement, and task assignment.
+Standardized workflow for Manager role, ensuring the "Inbox → Clarify → Decompose → Assign" process.
 
 ## Workflow State Machine
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Inbox: New Input
+    [*] --> Inbox: New requirements/ideas
     
-    Inbox --> Triage: Review
+    Inbox --> Clarify: Start processing
+    Inbox --> Inbox: Park<br/>(low priority)
     
-    Triage --> Refine: Needs Clarification
-    Triage --> Assign: Ready
-    Triage --> Archive: Not Actionable
+    Clarify --> Decompose: Requirements clear
+    Clarify --> Clarify: Need more info<br/>(awaiting feedback)
     
-    Refine --> Assign: Refined
-    Refine --> Refine: Still Unclear
+    Decompose --> Assign: Decomposition complete
+    Decompose --> Decompose: Too complex<br/>(split into Epic)
     
-    Assign --> [*]: Task Assigned
-    Archive --> [*]: Discarded
+    Assign --> [*]: Assignment complete
 ```
 
 ## Execution Steps
 
-### 1. Inbox (收件箱)
+### 1. Inbox
 
-- **Goal**: Collect all new inputs (Memos, external requests, ideas)
-- **Input**: Raw notes, meeting minutes, user feedback
+- **Goal**: Collect and temporarily store all incoming requirements, ideas, and tasks
+- **Input**: Memo, user feedback, system alerts, technical debt
 - **Checkpoints**:
-  - [ ] Run `monoco memo list` to check pending memos
-  - [ ] Review external issue trackers (if any)
-  - [ ] Collect stakeholder requests
+  - [ ] Record requirement source and context
+  - [ ] Initial classification (Feature/Chore/Fix)
+  - [ ] Assess urgency
 
-### 2. Triage (分类)
+### 2. Clarify (Requirement Clarification)
 
-- **Goal**: Quick classification of inbox items
+- **Goal**: Transform vague requirements into clear descriptions
+- **Strategy**: 5W2H Analysis Method
 - **Checkpoints**:
-  - [ ] Is this actionable?
-  - [ ] Is this a bug, feature, chore, or epic?
-  - [ ] Does it need immediate attention?
-  - [ ] Is there enough context to proceed?
+  - [ ] **What**: What problem to solve?
+  - [ ] **Why**: Why is it important?
+  - [ ] **Who**: Who are the stakeholders?
+  - [ ] **When**: Expected completion time?
+  - [ ] **Where**: Scope of impact?
+  - [ ] **How**: Suggested implementation approach?
+  - [ ] **How Much**: Workload estimation?
 
-### 3. Refine (细化)
+### 3. Decompose (Task Decomposition)
 
-- **Goal**: Transform vague ideas into actionable requirements
+- **Goal**: Break down large tasks into independently deliverable subtasks
+- **Strategy**: Vertical Slicing
 - **Checkpoints**:
-  - [ ] Clarify the "Why" (business value)
-  - [ ] Define the "What" (acceptance criteria)
-  - [ ] Identify dependencies and blockers
-  - [ ] Estimate effort (rough sizing)
+  - [ ] Identify core value and dependencies
+  - [ ] Split into independently deliverable Feature/Chore/Fix
+  - [ ] Set reasonable priorities
+  - [ ] Create Epic for complex tasks
 
-### 4. Assign (指派)
+### 4. Assign (Task Assignment)
 
-- **Goal**: Create proper Issues and assign to team members
+- **Goal**: Assign tasks to appropriate executors
 - **Checkpoints**:
-  - [ ] Create Issue using `monoco issue create <type> -t "Title"`
-  - [ ] Link related Memos or Issues
-  - [ ] Set appropriate priority and labels
-  - [ ] Assign to team member (or leave unassigned for pickup)
+  - [ ] Assess team capacity and workload
+  - [ ] Define clear acceptance criteria
+  - [ ] Set reasonable deadlines
+  - [ ] Notify relevant members
 
-### 5. Archive (归档)
+## Decision Branches
 
-- **Goal**: Clean up non-actionable items
-- **Checkpoints**:
-  - [ ] Document why it's not actionable
-  - [ ] Move to appropriate archive location
-  - [ ] Update stakeholders if needed
+| Condition | Action |
+|-----------|--------|
+| Requirements too vague | Return to Inbox, wait for more information |
+| Task too complex | Create Epic, split into multiple Features |
+| Depends on other tasks | Set dependencies, adjust priorities |
+| Insufficient resources | Adjust scope or defer |
 
-## Decision Matrix
+## Compliance Requirements
 
-| Input Type | Action | Next Step |
-|------------|--------|-----------|
-| Clear bug report | Create Fix Issue | Assign |
-| Vague feature idea | Needs refinement | Refine |
-| Technical debt | Create Chore Issue | Assign |
-| Strategic initiative | Create Epic | Refine |
-| Pure reference material | Archive | Archive |
-
-## Best Practices
-
-1. **Inbox Zero**: Process inbox regularly, don't let items accumulate
-2. **Clear Acceptance Criteria**: Every Issue must have verifiable acceptance criteria
-3. **Right Sizing**: Break down large tasks into manageable Issues
-4. **Context Preservation**: Always link back to original memos or requests
+- **Must**: Every task has clear acceptance criteria
+- **Must**: Complex tasks must be split into Epic + Features
+- **Prohibited**: Assigning unclear requirements to Engineer
+- **Recommended**: Use `monoco memo` to manage temporary ideas
