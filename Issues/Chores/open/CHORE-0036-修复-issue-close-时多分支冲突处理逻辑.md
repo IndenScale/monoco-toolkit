@@ -110,3 +110,22 @@ if issue_exists_in_multiple_branches():
 - 多分支冲突处理场景
 - 中文文件名处理
 - 未提交变更检测（未提交、未暂存、未跟踪）
+
+## Delivery
+<!-- Monoco Auto Generated -->
+**Commits (2)**:
+- `8b055ed` feat(issue): CHORE-0036 改进 sync-files 检测未提交变更
+- `37a733d` fix(issue): CHORE-0036 修复 issue close 时多分支冲突处理逻辑
+
+**Touched Files (11)**:
+- `"Issues/Chores/open/CHORE-0036-\344\277\256\345\244\215-issue-close-\346\227\266\345\244\232\345\210\206\346\224\257\345\206\262\347\252\201\345\244\204\347\220\206\351\200\273\350\276\221.md"`
+- `"Issues/Features/open/FEAT-0165-enhance-issue-cli-and-templates-for-smoother-life\nc.md"`
+- `Issues/Features/open/FEAT-0165-enhance-issue-cli-and-templates-for-smoother-lifec.md`
+- `Issues/Fixes/open/FIX-0010-implement-backoff-strategy-for-daemon-scheduler-to.md`
+- `Issues/Fixes/open/FIX-0011-document-memo-storage-location-in-cli-help-and-doc.md`
+- `Memos/architect-trigger-issue-analysis.md`
+- `monoco/features/issue/commands.py`
+- `monoco/features/issue/core.py`
+- `tests/features/issue/test_close_multi_branch.py`
+- `tests/features/issue/test_cross_branch_search.py`
+- `tests/features/issue/test_sync_files_uncommitted.py`
