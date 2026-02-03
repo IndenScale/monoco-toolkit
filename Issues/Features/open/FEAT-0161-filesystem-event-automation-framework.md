@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 文件系统事件到业务事件的自动化映射框架
 created_at: '2026-02-03T09:25:00'
-updated_at: '2026-02-03T10:35:00'
+updated_at: '2026-02-03T10:31:14'
 parent: EPIC-0025
 dependencies:
 - FEAT-0160
@@ -24,6 +24,7 @@ tags:
 - event-driven
 - three-layer
 files:
+- Issues/Features/open/FEAT-0161-filesystem-event-automation-framework.md
 - monoco/core/automation/__init__.py
 - monoco/core/automation/config.py
 - monoco/core/automation/field_watcher.py
@@ -53,6 +54,7 @@ files:
 - tests/core/watcher/test_issue_watcher.py
 - tests/core/watcher/test_memo_watcher.py
 criticality: high
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T09:25:00'
 isolation:
   type: branch
