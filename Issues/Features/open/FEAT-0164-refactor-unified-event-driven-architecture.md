@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 重构：清除旧 Handler 架构，统一事件驱动架构
 created_at: '2026-02-03T12:00:00'
-updated_at: '2026-02-03T12:32:52'
+updated_at: '2026-02-03T12:37:47'
 parent: EPIC-0032
 dependencies:
 - FEAT-0160
@@ -23,6 +23,8 @@ tags:
 - '#event-driven'
 - '#cleanup'
 files:
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- Issues/Epics/open/EPIC-0032-collaboration-bus.md
 - Issues/Features/open/FEAT-0164-refactor-unified-event-driven-architecture.md
 - monoco/core/executor/agent_action.py
 - monoco/core/hooks/context.py
@@ -43,6 +45,10 @@ files:
 - tests/features/test_session_persistence.py
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
+isolation:
+  type: branch
+  ref: branch:feat/FEAT-0164-refactor-unified-event-driven-architecture
+  created_at: '2026-02-03T12:37:47'
 ---
 
 ## FEAT-0164: 重构：清除旧 Handler 架构，统一事件驱动架构
