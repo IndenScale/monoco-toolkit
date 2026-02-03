@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 在 issue submit 运行过程中自动执行 sync-files
 created_at: '2026-02-03T11:13:37'
-updated_at: 2026-02-03 11:13:39
+updated_at: '2026-02-03T11:16:49'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,14 +14,18 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0163'
-files: []
+files:
+- '"Issues/Chores/closed/CHORE-0035-\346\266\210\351\231\244-asyncio-iscoroutinefunction-\345\274\203\347\224\250\350\255\246\345\221\212.md"'
+- '"Issues/Chores/open/CHORE-0035-\346\266\210\351\231\244-asyncio-iscoroutinefunction-\345\274\203\347\224\250\350\255\246\345\221\212.md"'
+- '"Issues/Features/open/FEAT-0163-\345\234\250-issue-submit-\350\277\220\350\241\214\350\277\207\347\250\213\344\270\255\350\207\252\345\212\250\346\211\247\350\241\214-sync-files.md"'
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- monoco/features/issue/commands.py
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T11:13:37'
 isolation:
   type: branch
   ref: feat/feat-0163-在-issue-submit-运行过程中自动执行-sync-files
-  path: null
   created_at: '2026-02-03T11:13:39'
 ---
 
