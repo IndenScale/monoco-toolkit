@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 修复 issue close 时多分支冲突处理逻辑
 created_at: '2026-02-03T13:43:22'
-updated_at: '2026-02-03T14:09:34'
+updated_at: 2026-02-03 14:09:35
 parent: EPIC-0000
 dependencies: []
 related:
@@ -25,10 +25,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-03T13:43:22'
 closed_at: '2026-02-03T14:08:07'
-isolation:
-  type: branch
-  ref: feat/chore-0036-修复-issue-close-时多分支冲突处理逻辑
-  created_at: '2026-02-03T13:46:26'
 ---
 
 ## CHORE-0036: 修复 issue close 时多分支冲突处理逻辑
