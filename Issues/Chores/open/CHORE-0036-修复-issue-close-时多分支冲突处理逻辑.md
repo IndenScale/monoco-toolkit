@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 修复 issue close 时多分支冲突处理逻辑
 created_at: '2026-02-03T13:43:22'
-updated_at: '2026-02-03T13:46:26'
+updated_at: 2026-02-03 13:46:26
 parent: EPIC-0000
 dependencies: []
 related:
@@ -15,10 +15,19 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#CHORE-0036'
-files: []
+files:
+  - monoco/features/issue/commands.py
+  - monoco/features/issue/core.py
+  - tests/features/issue/test_cross_branch_search.py
+  - tests/features/issue/test_close_multi_branch.py
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-03T13:43:22'
+isolation:
+  type: branch
+  ref: feat/chore-0036-修复-issue-close-时多分支冲突处理逻辑
+  path: null
+  created_at: '2026-02-03T13:46:26'
 ---
 
 ## CHORE-0036: 修复 issue close 时多分支冲突处理逻辑
@@ -47,16 +56,16 @@ Error: Issue XXX found in multiple branches: main, feat/xxx
 3. 不需要复杂的选择性合并逻辑
 
 ## Acceptance Criteria
-- [ ] `monoco issue close` 在多分支冲突时，用 feature 分支版本覆盖 main
-- [ ] 正确处理中文/特殊字符文件路径
-- [ ] 简化合并逻辑，移除不必要的 selective checkout
+- [x] `monoco issue close` 在多分支冲突时，用 feature 分支版本覆盖 main
+- [x] 正确处理中文/特殊字符文件路径
+- [x] 简化合并逻辑，移除不必要的 selective checkout
 
 ## Technical Tasks
 
-- [ ] 修改 `monoco issue close` 命令的冲突处理逻辑
-- [ ] 当检测到多分支时，直接使用 feature 分支版本覆盖
-- [ ] 删除 main 分支的旧 Issue 文件
-- [ ] 测试中文文件名的处理
+- [x] 修改 `monoco issue close` 命令的冲突处理逻辑
+- [x] 当检测到多分支时，直接使用 feature 分支版本覆盖
+- [x] 删除 main 分支的旧 Issue 文件
+- [x] 测试中文文件名的处理
 
 ## Design Notes
 
