@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 修复 issue close 时多分支冲突处理逻辑
 created_at: '2026-02-03T13:43:22'
-updated_at: '2026-02-03T14:08:07'
+updated_at: '2026-02-03T14:09:34'
 parent: EPIC-0000
 dependencies: []
 related:
