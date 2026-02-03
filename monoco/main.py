@@ -212,9 +212,11 @@ from monoco.features.memo import app as memo_app
 app.add_typer(memo_app, name="memo", help="Manage fleeting notes (memos)")
 
 
-from monoco.daemon.commands import serve
+from monoco.daemon.commands import serve_app, serve
 
-app.command(name="serve")(serve)
+app.add_typer(serve_app, name="serve", help="Manage Monoco Daemon server")
+# Keep legacy 'serve' command for backward compatibility
+app.command(name="serve", hidden=True)(serve)
 
 if __name__ == "__main__":
     app()

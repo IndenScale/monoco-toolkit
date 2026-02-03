@@ -99,3 +99,26 @@ Architect 识别到自己上一轮的产物 → 自动放行 → 创建 Issue。
 - EPIC-0033: IM 集成
 - FEAT-0160: IM 核心消息闭环
 - FEAT-0161: IM 多模态附件处理
+
+## [81b0f8] 2026-02-03 20:43:28
+- **Status**: [ ] Pending
+- **Context**: `git-workflow`
+
+跨分支 commit 污染记录:
+
+现象: 在 FEAT-0166 开发过程中，发现 main 分支上存在本应在 feature 分支的 commit
+
+具体表现:
+- main 分支存在 f9fe028 'chore(issue): doing FEAT-0166' commit
+- 这导致执行 monoco issue close 时出现 'Issue found in multiple branches' 错误
+- 同时 FIX-0009 的 commit 也混入了 FEAT-0166 分支 (efb08d0, 95b5cb2 等)
+
+影响:
+1. Issue 状态同步混乱
+2. 无法直接执行 monoco issue close
+3. 分支隔离被破坏
+
+建议:
+- 严格遵循 '禁止在 main/master 分支直接修改代码' 的规则
+- 切换分支前先检查当前工作区状态
+- 考虑添加更强的 pre-checkout hook 保护
