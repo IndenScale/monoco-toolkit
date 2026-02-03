@@ -26,22 +26,3 @@ def list_domains():
         )
 
     console.print(table)
-
-
-@app.command("check")
-def check_domain(domain: str = typer.Argument(..., help="Domain name to check")):
-    """Check if a domain is valid and resolve it."""
-    service = DomainService()
-
-    if service.is_canonical(domain):
-        console.print(f"[green]✔ '{domain}' is a canonical domain.[/green]")
-    elif service.is_alias(domain):
-        canonical = service.get_canonical(domain)
-        console.print(f"[yellow]➜ '{domain}' is an alias for '{canonical}'.[/yellow]")
-    else:
-        if service.config.strict:
-            console.print(f"[red]✘ '{domain}' is NOT a valid domain.[/red]")
-        else:
-            console.print(
-                f"[yellow]⚠ '{domain}' is undefined (Strict Mode: OFF).[/yellow]"
-            )
