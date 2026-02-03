@@ -3,7 +3,7 @@ id: EPIC-0033
 uid: 3feda2
 type: epic
 status: open
-stage: draft
+stage: doing
 title: IM 系统集成：实时通信与 Agent 编排
 created_at: '2026-02-03T23:23:28'
 updated_at: '2026-02-03T23:23:28'
@@ -28,8 +28,10 @@ tags:
 - '#FEAT-0171'
 files: []
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-03T23:23:28'
+progress: 0/5
+files_count: 0
 ---
 
 ## EPIC-0033: IM 系统集成：实时通信与 Agent 编排
