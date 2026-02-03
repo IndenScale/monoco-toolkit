@@ -476,14 +476,6 @@ def move_close(
 
     # Handle force-prune logic
     if force_prune:
-        # Use OutputManager to check mode, as `json` arg might not be reliable with Typer Annotated
-        if not OutputManager.is_agent_mode() and not force:
-            confirm = typer.confirm(
-                "⚠️  [Bold Red]Warning:[/Bold Red] You are about to FORCE prune issue resources. Git merge checks will be bypassed.\nAre you sure you want to proceed?",
-                default=False,
-            )
-            if not confirm:
-                raise typer.Abort()
         prune = True
         force = True
 
@@ -575,28 +567,15 @@ def move_close(
             # Get isolation info for confirmation prompt
             isolation_info = None
             if issue.isolation:
-                isolation_type = issue.isolation.type.value if issue.isolation.type else None
+                isolation_type = issue.isolation.type if issue.isolation.type else None
                 isolation_ref = issue.isolation.ref
                 isolation_info = (isolation_type, isolation_ref)
 
-            # Interactive confirmation before pruning (non-agent mode only)
-            if not OutputManager.is_agent_mode() and isolation_info and not force:
+            # Auto-prune without confirmation (FEAT-0082 Update)
+            if not OutputManager.is_agent_mode() and isolation_info:
                 iso_type, iso_ref = isolation_info
                 if iso_ref:
-                    console.print(f"\n[bold yellow]⚠️  Resource Cleanup Confirmation[/bold yellow]")
-                    console.print(f"Issue [cyan]{issue_id}[/cyan] will be closed with the following action:")
-                    console.print(f"  • Delete {iso_type}: [bold]{iso_ref}[/bold]")
-                    console.print(f"\n[dim]This operation will permanently remove the {iso_type}. "
-                                f"Ensure all changes have been merged to main.[/dim]")
-                    confirm = typer.confirm(
-                        f"\nProceed with closing {issue_id} and deleting {iso_type}?",
-                        default=True,
-                    )
-                    if not confirm:
-                        console.print(f"[yellow]Close operation cancelled.[/yellow]")
-                        console.print(f"[dim]Tip: Use --no-prune to close without deleting {iso_type}.[/dim]")
-                        rollback_transaction()
-                        raise typer.Abort()
+                    console.print(f"[dim]Cleaning up {iso_type}: {iso_ref}...[/dim]")
 
             try:
                 pruned_resources = core.prune_issue_resources(
