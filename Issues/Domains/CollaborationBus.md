@@ -8,6 +8,7 @@
   - **Kanban**: 可视化工作流与任务看板
   - **IDE Extension**: 编辑器内集成界面
   - **CLI/Web UI**: 命令行与网页交互界面
+  - **IM Integration**: 钉钉、飞书等即时通讯平台集成
 - **Message Passing**: 异步消息传递机制
   - **Memo**: 快速笔记与想法捕捉
   - **Notification**: 系统通知与提醒

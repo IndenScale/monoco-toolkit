@@ -56,3 +56,46 @@ Artifacts & Mailroom 架构决策复盘：
 - **Context**: `workflow`
 
 monoco issue close 检查的是 main 分支上的 Issue 状态，但应该读取 dev branch 的 Issue ticket 状态。这导致在 feature branch 上完成工作后，回到 main 分支无法正确 close issue。影响自动 cherry-pick 工作流的价值。
+
+## [673948] 2026-02-03 01:40:17
+- **Status**: [ ] Pending
+- **Context**: `architecture`
+
+架构讨论: IM 协作模式与存储方案 (2026-02-03)
+
+## 参与
+- 人类架构师
+- Agent (Kimi CLI)
+
+## 核心结论
+
+### 1. Architect 双重职责设计 ✅
+Architect 统一处理 Memo Inbox + IM Inbox 是正确的。
+单一入口简化逻辑，Architect 具备需求分析能力。
+
+### 2. 非交互式确认机制 ✅
+人类不需要点击按钮，而是发送带 Proposal ID 的消息来确认。
+Architect 识别到自己上一轮的产物 → 自动放行 → 创建 Issue。
+符合 Filesystem as API 哲学。
+
+### 3. 三种协作模式
+- 模式 A (Quick): User → IM → Architect → outbox/ → IM Reply (无 Issue)
+- 模式 B (Proposal): User → IM → Architect → Proposal → 用户确认消息 → Issues/
+- 模式 C (Autopilot): Issue doing → Engineer → PR → Reviewer → 确认消息 → 合并
+
+### 4. 存储方案决策
+- 文件系统优先 (Filesystem as API)
+- 延迟引入数据库直到明确痛点
+- 索引层作为性能优化手段 (可重建)
+- 监控文件数量，>100k 时考虑 SQLite
+
+## 待办
+- [ ] 创建 FEAT Issue 实现 Proposal 机制
+- [ ] 定义 IMMessage 和 Proposal JSON Schema
+- [ ] 实现 .monoco/im/ 目录结构
+
+## 参考
+- EPIC-0032: Collaboration Bus
+- EPIC-0033: IM 集成
+- FEAT-0160: IM 核心消息闭环
+- FEAT-0161: IM 多模态附件处理
