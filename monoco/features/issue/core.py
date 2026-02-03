@@ -46,6 +46,30 @@ def get_issue_dir(issue_type: str, issues_root: Path) -> Path:
     return issues_root / folder
 
 
+def _parse_isolation_ref(ref: str) -> str:
+    """
+    Parse isolation ref and strip any 'branch:' or 'worktree:' prefix.
+    
+    The isolation.ref field may contain prefixes like 'branch:feat/xxx' or 'worktree:xxx'
+    for display/logging purposes, but git commands need the raw branch name.
+    
+    Args:
+        ref: The isolation ref string, may contain prefix
+        
+    Returns:
+        The clean branch name without prefix
+    """
+    if not ref:
+        return ref
+    
+    # Strip known prefixes
+    for prefix in ("branch:", "worktree:"):
+        if ref.startswith(prefix):
+            return ref[len(prefix):]
+    
+    return ref
+
+
 def _get_slug(title: str) -> str:
     slug = title.lower()
     # Replace non-word characters (including punctuation, spaces) with hyphens
@@ -1079,7 +1103,7 @@ def prune_issue_resources(
         return []
 
     if issue.isolation.type == IsolationType.BRANCH:
-        branch = issue.isolation.ref
+        branch = _parse_isolation_ref(issue.isolation.ref)
         current = git.get_current_branch(project_root)
         if current == branch:
             raise RuntimeError(
@@ -1105,7 +1129,7 @@ def prune_issue_resources(
             # Also delete the branch associated?
             # Worktree create makes a branch. When removing worktree, branch remains.
             # Usually we want to remove the branch too if it was created for this issue.
-            branch = issue.isolation.ref
+            branch = _parse_isolation_ref(issue.isolation.ref)
             if branch and git.branch_exists(project_root, branch):
                 # We can't delete branch if it is checked out in the worktree we just removed?
                 # git worktree remove unlocks the branch.
@@ -1163,7 +1187,7 @@ def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> Li
     target_ref = None
 
     if issue.isolation and issue.isolation.ref:
-        target_ref = issue.isolation.ref
+        target_ref = _parse_isolation_ref(issue.isolation.ref)
         if target_ref == "current":
              target_ref = git.get_current_branch(project_root)
     else:
@@ -1241,7 +1265,7 @@ def merge_issue_changes(
     # If not there, we try heuristic.
     source_ref = None
     if issue.isolation and issue.isolation.ref:
-        source_ref = issue.isolation.ref
+        source_ref = _parse_isolation_ref(issue.isolation.ref)
     else:
         # Heuristic: Search for branch by convention
         # We can't use 'current' here safely if we are on main,
