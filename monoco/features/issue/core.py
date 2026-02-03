@@ -494,14 +494,15 @@ def find_issue_path_across_branches(
     issues_root: Path, 
     issue_id: str, 
     project_root: Optional[Path] = None,
-    include_archived: bool = True
-) -> Tuple[Optional[Path], Optional[str]]:
+    include_archived: bool = True,
+    allow_multi_branch: bool = False
+) -> Tuple[Optional[Path], Optional[str], Optional[List[str]]]:
     """
     Find issue path across all local git branches.
     
     Implements the "Golden Path" logic:
     - If issue found in exactly one branch -> return it silently
-    - If issue found in multiple branches -> raise error (conflict)
+    - If issue found in multiple branches -> handle based on allow_multi_branch flag
     - If issue not found in any branch -> return None
     
     Args:
@@ -509,12 +510,14 @@ def find_issue_path_across_branches(
         issue_id: Issue ID to find
         project_root: Project root (defaults to issues_root.parent)
         include_archived: Whether to search in archived directory
+        allow_multi_branch: If True, return all conflicting branches instead of raising error
         
     Returns:
-        Tuple of (file_path, branch_name) or (None, None) if not found
+        Tuple of (file_path, branch_name, conflicting_branches) or (None, None, None) if not found
+        conflicting_branches is None if no conflict, or a list of branch names if conflict detected
         
     Raises:
-        RuntimeError: If issue found in multiple branches (conflict)
+        RuntimeError: If issue found in multiple branches and allow_multi_branch is False (conflict)
     """
     # First, try to find in current working tree
     local_path = find_issue_path(issues_root, issue_id, include_archived)
@@ -525,7 +528,7 @@ def find_issue_path_across_branches(
     
     # If not a git repo, just return local result
     if not git.is_git_repo(project_root):
-        return (local_path, None) if local_path else (None, None)
+        return (local_path, None, None) if local_path else (None, None, None)
     
     # Get current branch
     current_branch = git.get_current_branch(project_root)
@@ -538,14 +541,16 @@ def find_issue_path_across_branches(
             rel_path = local_path.relative_to(project_root)
         except ValueError:
             # If path is outside project root, we can't search other branches anyway
-            return local_path, current_branch
+            return local_path, current_branch, None
             
-        conflicting_branches = _find_branches_with_file(project_root, str(rel_path), current_branch)
+        raw_conflicting_branches = _find_branches_with_file(project_root, str(rel_path), current_branch)
         
         # SPECIAL CASE (FIX-0006): During 'issue close' or similar operations,
         # it is expected that the file exists in the feature branch (isolation branch)
         # and now in the target branch (e.g. main). This is NOT a conflict.
-        if conflicting_branches:
+        conflicting_branches = raw_conflicting_branches
+        isolation_branch = None
+        if raw_conflicting_branches:
             # Try to parse metadata to see if these "conflicts" are actually the isolation branch
             try:
                 meta = parse_issue(local_path)
@@ -560,18 +565,28 @@ def find_issue_path_across_branches(
                         source_branch = iso_ref[7:]
                     
                     if source_branch:
+                        isolation_branch = source_branch
                         # Filter out the source branch from conflicts
                         conflicting_branches = [b for b in conflicting_branches if b != source_branch]
             except Exception:
                 # If parsing fails, stick with raw conflicts to be safe
                 pass
 
-        if conflicting_branches:
-             raise RuntimeError(
-                f"Issue {issue_id} found in multiple branches: {current_branch}, {', '.join(conflicting_branches)}. "
-                f"Please resolve the conflict by merging branches or deleting duplicate issue files."
-            )
-        return local_path, current_branch
+        # CHORE-0036: When allow_multi_branch=True, report multi-branch including isolation branch
+        # This allows 'issue close' to handle the case where Issue file exists in both main and feature
+        if raw_conflicting_branches:
+            if allow_multi_branch:
+                # Return all branches including current and isolation branch for the caller to handle
+                # Include isolation_branch if it was found, so caller can use it for checkout
+                all_branches = [current_branch] + raw_conflicting_branches
+                return local_path, current_branch, all_branches
+            elif conflicting_branches:
+                # Not allowing multi-branch, and there are still conflicts after filtering isolation
+                raise RuntimeError(
+                    f"Issue {issue_id} found in multiple branches: {current_branch}, {', '.join(conflicting_branches)}. "
+                    f"Please resolve the conflict by merging branches or deleting duplicate issue files."
+                )
+        return local_path, current_branch, None
         
     # Not found locally, search in all branches
     return _search_issue_in_branches(issues_root, issue_id, project_root, include_archived)
@@ -615,33 +630,34 @@ def _search_issue_in_branches(
     issue_id: str,
     project_root: Path,
     include_archived: bool = True
-) -> Tuple[Optional[Path], Optional[str]]:
+) -> Tuple[Optional[Path], Optional[str], Optional[List[str]]]:
     """
     Search for an issue file across all branches.
     
     Returns:
-        Tuple of (file_path, branch_name) or (None, None)
+        Tuple of (file_path, branch_name, conflicting_branches) or (None, None, None)
+        conflicting_branches is None if no conflict, or a list of branch names if conflict detected
         
     Raises:
-        RuntimeError: If issue found in multiple branches
+        RuntimeError: If issue found in multiple branches and allow_multi_branch is False
     """
     parsed = IssueID(issue_id)
     
     if not parsed.is_local:
         # For workspace issues, just use standard find
         path = find_issue_path(issues_root, issue_id, include_archived)
-        return (path, None) if path else (None, None)
+        return (path, None, None) if path else (None, None, None)
     
     # Get issue type from prefix
     try:
         prefix = parsed.local_id.split("-")[0].upper()
     except IndexError:
-        return None, None
+        return None, None, None
     
     reverse_prefix_map = get_reverse_prefix_map(issues_root)
     issue_type = reverse_prefix_map.get(prefix)
     if not issue_type:
-        return None, None
+        return None, None, None
     
     # Build possible paths to search
     base_dir = get_issue_dir(issue_type, issues_root)
@@ -657,7 +673,7 @@ def _search_issue_in_branches(
     # Get all local branches
     code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
     if code != 0:
-        return None, None
+        return None, None, None
     
     all_branches = [b.strip() for b in stdout.splitlines() if b.strip()]
     
@@ -687,15 +703,14 @@ def _search_issue_in_branches(
                     found_in_branches.append((branch, line))
     
     if not found_in_branches:
-        return None, None
+        return None, None, None
     
     if len(found_in_branches) > 1:
-        # Found in multiple branches - conflict
+        # Found in multiple branches - return all branches for caller to handle
         branches = [b for b, _ in found_in_branches]
-        raise RuntimeError(
-            f"Issue {issue_id} found in multiple branches: {', '.join(branches)}. "
-            f"Please resolve the conflict by merging branches or deleting duplicate issue files."
-        )
+        branch, file_path = found_in_branches[0]
+        full_path = project_root / file_path
+        return full_path, branch, branches
     
     # Golden path: exactly one match
     branch, file_path = found_in_branches[0]
@@ -704,11 +719,11 @@ def _search_issue_in_branches(
     try:
         git.git_checkout_files(project_root, branch, [file_path])
         full_path = project_root / file_path
-        return full_path, branch
+        return full_path, branch, None
     except Exception:
         # If checkout fails, return the path anyway - caller can handle
         full_path = project_root / file_path
-        return full_path, branch
+        return full_path, branch, None
 
 
 def update_issue(

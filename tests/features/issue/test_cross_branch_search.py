@@ -90,12 +90,13 @@ class TestSearchIssueInBranches:
             mock_run.side_effect = mock_git_response
             mock_checkout.return_value = None
             
-            path, branch = _search_issue_in_branches(issues_root, "FIX-0001", tmp_path)
+            path, branch, conflicting = _search_issue_in_branches(issues_root, "FIX-0001", tmp_path)
             
-            # Function returns (path, branch) tuple
+            # Function returns (path, branch, conflicting_branches) tuple
             assert branch == "main"
             assert path is not None
             assert "FIX-0001" in str(path)
+            assert conflicting is None  # No conflict for single branch
 
     def test_search_not_found(self, tmp_path):
         """Test when issue is not found in any branch."""
@@ -117,10 +118,11 @@ class TestSearchIssueInBranches:
             
             mock_run.side_effect = mock_git_response
             
-            path, branch = _search_issue_in_branches(issues_root, "FIX-9999", tmp_path)
+            path, branch, conflicting = _search_issue_in_branches(issues_root, "FIX-9999", tmp_path)
             
             assert path is None
             assert branch is None
+            assert conflicting is None
 
     def test_search_conflict_multiple_branches(self, tmp_path):
         """Test error when issue exists in multiple branches."""
@@ -145,12 +147,12 @@ class TestSearchIssueInBranches:
             
             mock_run.side_effect = mock_git_response
             
-            with pytest.raises(RuntimeError) as exc_info:
-                _search_issue_in_branches(issues_root, "FIX-0001", tmp_path)
+            path, branch, conflicting = _search_issue_in_branches(issues_root, "FIX-0001", tmp_path)
             
-            assert "found in multiple branches" in str(exc_info.value)
-            assert "main" in str(exc_info.value)
-            assert "feature/test" in str(exc_info.value)
+            # Now returns conflict info instead of raising
+            assert conflicting is not None
+            assert "main" in conflicting
+            assert "feature/test" in conflicting
 
 
 class TestFindIssuePathAcrossBranches:
@@ -169,10 +171,11 @@ class TestFindIssuePathAcrossBranches:
         with patch("monoco.features.issue.core.git.is_git_repo") as mock_is_git:
             mock_is_git.return_value = False
             
-            path, branch = find_issue_path_across_branches(issues_root, "FIX-0001", tmp_path)
+            path, branch, conflicting = find_issue_path_across_branches(issues_root, "FIX-0001", tmp_path)
             
             assert path == issue_file
             assert branch is None
+            assert conflicting is None
 
     def test_local_file_in_git_repo(self, tmp_path):
         """Test finding issue locally when in git repo (golden path)."""
@@ -190,10 +193,11 @@ class TestFindIssuePathAcrossBranches:
             mock_branch.return_value = "main"
             mock_find.return_value = []  # No other branches have this file
             
-            path, branch = find_issue_path_across_branches(issues_root, "FIX-0001", tmp_path)
+            path, branch, conflicting = find_issue_path_across_branches(issues_root, "FIX-0001", tmp_path)
             
             assert path == issue_file
             assert branch == "main"
+            assert conflicting is None
 
     def test_local_file_conflict(self, tmp_path):
         """Test error when local file also exists in other branches."""
@@ -211,6 +215,7 @@ class TestFindIssuePathAcrossBranches:
             mock_branch.return_value = "main"
             mock_find.return_value = ["feature/test"]  # Conflict!
             
+            # With default allow_multi_branch=False, should raise RuntimeError
             with pytest.raises(RuntimeError) as exc_info:
                 find_issue_path_across_branches(issues_root, "FIX-0001", tmp_path)
             
@@ -227,11 +232,12 @@ class TestFindIssuePathAcrossBranches:
         with patch("monoco.features.issue.core.git.is_git_repo") as mock_is_git, \
              patch("monoco.features.issue.core._search_issue_in_branches") as mock_search:
             mock_is_git.return_value = True
-            mock_search.return_value = (Path("Issues/Fixes/open/FIX-0001-test.md"), "feature/test")
+            mock_search.return_value = (Path("Issues/Fixes/open/FIX-0001-test.md"), "feature/test", None)
             
-            path, branch = find_issue_path_across_branches(issues_root, "FIX-0001", tmp_path)
+            path, branch, conflicting = find_issue_path_across_branches(issues_root, "FIX-0001", tmp_path)
             
             assert branch == "feature/test"
+            assert conflicting is None
 
     def test_not_found_anywhere(self, tmp_path):
         """Test when issue is not found anywhere."""
@@ -242,12 +248,13 @@ class TestFindIssuePathAcrossBranches:
         with patch("monoco.features.issue.core.git.is_git_repo") as mock_is_git, \
              patch("monoco.features.issue.core._search_issue_in_branches") as mock_search:
             mock_is_git.return_value = True
-            mock_search.return_value = (None, None)
+            mock_search.return_value = (None, None, None)
             
-            path, branch = find_issue_path_across_branches(issues_root, "FIX-9999", tmp_path)
+            path, branch, conflicting = find_issue_path_across_branches(issues_root, "FIX-9999", tmp_path)
             
             assert path is None
             assert branch is None
+            assert conflicting is None
 
 
 class TestCrossBranchIntegration:
@@ -262,7 +269,7 @@ class TestCrossBranchIntegration:
             mock_is_git.return_value = True
             
             # Workspace issues should be handled differently
-            path, branch = find_issue_path_across_branches(
+            path, branch, conflicting = find_issue_path_across_branches(
                 issues_root, "other::FEAT-0001", tmp_path
             )
             
@@ -270,13 +277,15 @@ class TestCrossBranchIntegration:
             # but importantly should not search branches
             assert path is None
             assert branch is None
+            assert conflicting is None
 
     def test_invalid_issue_id(self, tmp_path):
         """Test handling of invalid issue IDs."""
         issues_root = tmp_path / "Issues"
         issues_root.mkdir()
         
-        path, branch = find_issue_path_across_branches(issues_root, "INVALID", tmp_path)
+        path, branch, conflicting = find_issue_path_across_branches(issues_root, "INVALID", tmp_path)
         
         assert path is None
         assert branch is None
+        assert conflicting is None
