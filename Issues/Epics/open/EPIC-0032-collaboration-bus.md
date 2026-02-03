@@ -25,8 +25,8 @@ tags:
 - event-driven
 criticality: high
 opened_at: '2026-02-01T20:24:49'
-progress: 0/1
-files_count: 1
+progress: 1/2
+files_count: 0
 ---
 
 ## EPIC-0032: 协作总线：文件系统作为总线，事件驱动架构
