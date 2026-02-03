@@ -19,6 +19,9 @@ domains:
 tags:
 - '#EPIC-0025'
 - '#FEAT-0161'
+- '#FEAT-0153'
+- '#FEAT-0160'
+- '#FEAT-0162'
 - architecture
 - watcher
 - event-driven
@@ -331,14 +334,14 @@ class ActionRouter:
 
 ## 依赖
 
-- FEAT-0165: AgentScheduler 抽象层
+- FEAT-0160: AgentScheduler 抽象层
   - `SpawnAgentAction` 依赖 `AgentScheduler`
 - FEAT-0153: Mailroom Automation
   - `DropzoneWatcher` 迁移依赖
 
 ## 被依赖
 
-- FEAT-0167: Agent 联调工作流
+- FEAT-0162: Agent 联调工作流
   - 依赖本任务的 Watcher 和 Action 框架
 - (IM 适配为未来工作，非核心)
   - 依赖本任务的文件监听框架
