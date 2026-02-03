@@ -391,6 +391,13 @@ def submit(
     )
 
     try:
+        # FEAT-0163: Automatically sync files before submission to ensure manifest completeness
+        try:
+             core.sync_issue_files(issues_root, issue_id, project_root)
+        except Exception as se:
+             # Just log warning, don't fail submit if sync fails (defensive)
+             logger.warning(f"Auto-sync failed during submit for {issue_id}: {se}")
+
         # Implicitly ensure status is Open
         issue = core.update_issue(
             issues_root,
