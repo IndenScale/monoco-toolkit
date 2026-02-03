@@ -2,8 +2,8 @@
 id: FIX-0009
 uid: 11b407
 type: fix
-status: open
-stage: review
+status: closed
+stage: done
 title: ConfigMonitor 重复 watcher 和异步 handler 未 await 问题
 created_at: '2026-02-03T13:16:34'
 updated_at: '2026-02-03T13:40:37'
