@@ -17,11 +17,12 @@ related:
 domains:
 - AgentEmpowerment
 tags:
+- '#EPIC-0032'
+- '#FEAT-0155'
+- '#FEAT-0160'
+- '#FEAT-0161'
+- '#FEAT-0162'
 - '#FEAT-0164'
-- '#refactor'
-- '#architecture'
-- '#event-driven'
-- '#cleanup'
 files:
 - Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
 - Issues/Epics/open/EPIC-0032-collaboration-bus.md

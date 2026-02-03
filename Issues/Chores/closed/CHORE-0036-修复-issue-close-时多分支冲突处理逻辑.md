@@ -14,6 +14,7 @@ related:
 domains: []
 tags:
 - '#EPIC-0000'
+- '#FIX-0009'
 - '#CHORE-0036'
 files:
 - monoco/features/issue/commands.py

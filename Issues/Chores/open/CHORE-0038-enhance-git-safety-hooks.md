@@ -12,7 +12,6 @@ dependencies: []
 related: []
 domains:
 - DevEx
-- Git
 tags:
 - '#CHORE-0038'
 - '#EPIC-0000'
