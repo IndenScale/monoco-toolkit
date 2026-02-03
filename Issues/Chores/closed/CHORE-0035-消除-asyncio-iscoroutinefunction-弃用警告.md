@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 消除 asyncio.iscoroutinefunction 弃用警告
 created_at: '2026-02-03T10:41:01'
-updated_at: '2026-02-03T11:12:07'
+updated_at: 2026-02-03 11:12:07
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,10 +19,6 @@ criticality: low
 solution: implemented
 opened_at: '2026-02-03T10:41:01'
 closed_at: '2026-02-03T11:12:07'
-isolation:
-  type: branch
-  ref: feat/chore-0035-消除-asyncio-iscoroutinefunction-弃用警告
-  created_at: '2026-02-03T10:41:01'
 ---
 
 ## CHORE-0035: 消除 asyncio.iscoroutinefunction 弃用警告
