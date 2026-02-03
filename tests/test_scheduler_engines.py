@@ -1,9 +1,11 @@
 """
 Unit tests for Agent Engine Adapters.
+
+Tests the engine adapters from monoco.core.scheduler.
 """
 
 import pytest
-from monoco.features.agent.engines import (
+from monoco.core.scheduler import (
     GeminiAdapter,
     ClaudeAdapter,
     QwenAdapter,
