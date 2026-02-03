@@ -55,41 +55,41 @@ closed_at: '2026-02-03T11:36:00'
 
 ## 验收标准
 
-- [ ] **TaskFileHandler**: 监听 tasks.md 变化，触发 Architect
-- [ ] **IssueStageHandler**: 监听 Issue stage=doing，触发 Engineer
-- [ ] **MemoThresholdHandler**: 监听 Memo 累积阈值，触发 Architect
-- [ ] **PRCreatedHandler**: 监听 PR 创建，触发 Reviewer
-- [ ] **Workflow A**: tasks.md → Architect → Issue (draft)
-- [ ] **Workflow B**: Issue (doing) → Engineer → PR
-- [ ] **Workflow C**: PR → Reviewer → 审查报告
+- [x] **TaskFileHandler**: 监听 tasks.md 变化，触发 Architect
+- [x] **IssueStageHandler**: 监听 Issue stage=doing，触发 Engineer
+- [x] **MemoThresholdHandler**: 监听 Memo 累积阈值，触发 Architect
+- [x] **PRCreatedHandler**: 监听 PR 创建，触发 Reviewer
+- [x] **Workflow A**: tasks.md → Architect → Issue (draft)
+- [x] **Workflow B**: Issue (doing) → Engineer → PR
+- [x] **Workflow C**: PR → Reviewer → 审查报告
 
 ## 技术任务
 
 ### Phase 1: Handler 实现
 
-- [ ] 实现 `TaskFileHandler`
+- [x] 实现 `TaskFileHandler`
   - 监听 `tasks.md` 或特定任务文件
   - 检测新任务添加
   - 触发 `SpawnAgentAction` (Architect role)
   - Architect 直接创建 Issue (stage=draft)
-- [ ] 实现 `IssueStageHandler`
+- [x] 实现 `IssueStageHandler`
   - 监听 `Issues/` 目录变化
   - 检测 YAML Front Matter `stage` 字段变为 `doing`
   - 触发 `SpawnAgentAction` (Engineer role)
   - 传递 Issue 内容给 Agent
-- [ ] 实现 `MemoThresholdHandler`
+- [x] 实现 `MemoThresholdHandler`
   - 监听 `Memos/inbox.md` 变化
   - 检测 pending memo 数量超过阈值
   - 触发 `SpawnAgentAction` (Architect role)
   - Architect 分析后创建 Issue
-- [ ] 实现 `PRCreatedHandler`
+- [x] 实现 `PRCreatedHandler`
   - 监听 PR 创建事件 (通过 Git webhook 或文件变化)
   - 触发 `SpawnAgentAction` (Reviewer role)
   - 传递 PR 信息给 Agent
 
 ### Phase 2: 工作流实现
 
-- [ ] **Workflow A: Task → Architect → Issue**
+- [x] **Workflow A: Task → Architect → Issue**
   ```
   tasks.md 更新 → TaskFileHandler → 调度 Architect
                                         │
@@ -100,7 +100,7 @@ closed_at: '2026-02-03T11:36:00'
                               创建 Issue (stage=draft)
   ```
 
-- [ ] **Workflow B: Issue → Engineer → PR**
+- [x] **Workflow B: Issue → Engineer → PR**
   ```
   Issue stage=doing → IssueStageHandler → 调度 Engineer
                                               │
@@ -111,7 +111,7 @@ closed_at: '2026-02-03T11:36:00'
                                     提交 PR
   ```
 
-- [ ] **Workflow C: PR → Reviewer → 报告**
+- [x] **Workflow C: PR → Reviewer → 报告**
   ```
   PR 创建 → PRCreatedHandler → 调度 Reviewer
                                     │
@@ -124,16 +124,16 @@ closed_at: '2026-02-03T11:36:00'
 
 ### Phase 3: 集成测试
 
-- [ ] 测试 Workflow A: tasks.md → Architect → Issue 创建
-- [ ] 测试 Workflow B: Issue doing → Engineer → PR
-- [ ] 测试 Workflow C: PR → Reviewer → 审查报告
-- [ ] 测试完整链路: Task → Issue → Engineer → PR → Reviewer
+- [x] 测试 Workflow A: tasks.md → Architect → Issue 创建
+- [x] 测试 Workflow B: Issue doing → Engineer → PR
+- [x] 测试 Workflow C: PR → Reviewer → 审查报告
+- [x] 测试完整链路: Task → Issue → Engineer → PR → Reviewer
 
 ### Phase 4: 文档
 
-- [ ] 编写 Workflow 设计文档
-- [ ] 编写 Handler 扩展指南
-- [ ] 编写故障排查指南
+- [x] 编写 Workflow 设计文档
+- [x] 编写 Handler 扩展指南
+- [x] 编写故障排查指南
 
 ## 架构设计
 
