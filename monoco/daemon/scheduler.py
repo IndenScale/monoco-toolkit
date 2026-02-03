@@ -4,8 +4,7 @@ Scheduler Service - Unified event-driven architecture (FEAT-0164).
 This module implements a unified event-driven scheduler service that:
 1. Uses AgentScheduler for agent lifecycle management (FEAT-0160)
 2. Integrates Watcher framework for file system events (FEAT-0161)
-3. Uses ActionRouter for event routing (FEAT-0161)
-4. Uses new Handler framework from core.automation (FEAT-0162)
+3. Uses new Handler framework from core.automation (FEAT-0162)
 
 Replaces the old architecture based on SessionManager + SemaphoreManager + polling loops.
 """
@@ -23,7 +22,6 @@ from monoco.core.scheduler import (
     AgentScheduler,
     LocalProcessScheduler,
 )
-from monoco.core.router import ActionRouter
 from monoco.core.watcher import WatchConfig, IssueWatcher, MemoWatcher, TaskWatcher
 from monoco.core.automation.handlers import start_all_handlers, stop_all_handlers
 from monoco.core.config import get_config
@@ -38,7 +36,6 @@ class SchedulerService:
     Responsibilities:
     - Initialize and manage AgentScheduler
     - Setup and manage Watchers for file system events
-    - Configure ActionRouter for event routing
     - Start/stop all handlers
     
     Architecture:
@@ -50,8 +47,6 @@ class SchedulerService:
     │   ├── IssueWatcher -> EventBus
     │   ├── MemoWatcher -> EventBus
     │   └── TaskWatcher -> EventBus
-    ├── ActionRouter
-    │   └── Routes events to Actions
     └── Handlers (from core.automation)
         ├── TaskFileHandler
         ├── IssueStageHandler
@@ -69,9 +64,6 @@ class SchedulerService:
             max_concurrent=scheduler_config.get("max_concurrent", 5),
             project_root=Path.cwd(),
         )
-        
-        # ActionRouter (FEAT-0161)
-        self.action_router = ActionRouter(event_bus)
         
         # Watchers (FEAT-0161)
         self.watchers: List[Any] = []
@@ -129,9 +121,6 @@ class SchedulerService:
         # 4. Start Handlers (FEAT-0162)
         self.handlers = start_all_handlers(self.agent_scheduler)
         
-        # 5. Start ActionRouter
-        await self.action_router.start()
-        
         logger.info("Scheduler Service started with unified event-driven architecture")
     
     def stop(self):
@@ -142,9 +131,6 @@ class SchedulerService:
         # Cancel background tasks
         for task in self._tasks:
             task.cancel()
-        
-        # Stop ActionRouter
-        asyncio.create_task(self.action_router.stop())
         
         # Stop Handlers
         stop_all_handlers(self.handlers)
@@ -202,6 +188,5 @@ class SchedulerService:
             "agent_scheduler": self.agent_scheduler.get_stats(),
             "watchers": len(self.watchers),
             "handlers": len(self.handlers),
-            "action_router": self.action_router.get_stats(),
             "projects": len(self.project_manager.projects),
         }

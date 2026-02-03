@@ -5,7 +5,7 @@ from sse_starlette.sse import EventSourceResponse
 import asyncio
 import logging
 import os
-from typing import Optional, List, Dict
+from typing import Optional, Dict
 from monoco.daemon.services import Broadcaster, ProjectManager
 from monoco.core.git import GitMonitor
 from monoco.core.config import get_config
@@ -18,11 +18,6 @@ logger = logging.getLogger("monoco.daemon")
 from pathlib import Path
 from monoco.core.config import get_config
 from monoco.features.issue.core import list_issues
-from monoco.core.execution import (
-    scan_execution_profiles,
-    get_profile_detail,
-    ExecutionProfile,
-)
 
 description = """
 Monoco Daemon Process
@@ -438,35 +433,6 @@ async def refresh_monitor():
     # To be "instant", we can manually broadcast if we know it changed?
     # Or just returning the hash confirms the daemon sees it.
     return {"status": "refreshed", "head": current_hash}
-
-
-# --- Execution Profiles ---
-
-
-@app.get("/api/v1/execution/profiles", response_model=List[ExecutionProfile])
-async def get_execution_profiles(project_id: Optional[str] = None):
-    """
-    List all execution profiles available for the project/workspace.
-    """
-    project = None
-    if project_id:
-        project = get_project_or_404(project_id)
-    elif project_manager and project_manager.projects:
-        # Fallback to first project if none specified
-        project = list(project_manager.projects.values())[0]
-
-    return scan_execution_profiles(project.path if project else None)
-
-
-@app.get("/api/v1/execution/profiles/detail", response_model=ExecutionProfile)
-async def get_execution_profile_detail(path: str):
-    """
-    Get full content of an execution profile.
-    """
-    profile = get_profile_detail(path)
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    return profile
 
 
 # --- Workspace State Management ---
