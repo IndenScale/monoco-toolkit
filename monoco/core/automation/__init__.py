@@ -1,11 +1,15 @@
 """
-Automation Module - Configuration and orchestration for the Event Automation Framework.
+Automation Module - Event-driven automation framework.
 
 This module provides:
 - YAML/JSON configuration parsing
 - Trigger configuration management
 - Field change detection
-- Automation orchestration
+- Independent Event Handlers for Agent collaboration (FEAT-0162)
+
+Architecture: No Workflow or Orchestration. Each handler is an independent,
+stateless microservice that responds to specific events. Workflow emerges
+from the natural interaction of handlers.
 """
 
 from .config import (
@@ -18,14 +22,30 @@ from .field_watcher import (
     FieldWatcher,
     FieldCondition,
 )
-from .orchestrator import AutomationOrchestrator
+from .handlers import (
+    TaskFileHandler,
+    IssueStageHandler,
+    MemoThresholdHandler,
+    PRCreatedHandler,
+    start_all_handlers,
+    stop_all_handlers,
+)
 
 __all__ = [
+    # Config
     "TriggerConfig",
     "AutomationConfig",
     "load_automation_config",
+    # Field watching
     "YAMLFrontMatterExtractor",
     "FieldWatcher",
     "FieldCondition",
-    "AutomationOrchestrator",
+    # Independent Event Handlers (FEAT-0162)
+    "TaskFileHandler",
+    "IssueStageHandler",
+    "MemoThresholdHandler",
+    "PRCreatedHandler",
+    # Convenience functions
+    "start_all_handlers",
+    "stop_all_handlers",
 ]
