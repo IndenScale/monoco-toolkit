@@ -1,10 +1,12 @@
 import typer
 import time
+import asyncio
 from pathlib import Path
 from typing import Optional
 from monoco.core.output import print_output, print_error
 from monoco.core.config import get_config
-from monoco.features.agent import SessionManager, load_scheduler_config
+from monoco.features.agent import load_scheduler_config
+from monoco.core.scheduler import AgentTask, LocalProcessScheduler
 
 app = typer.Typer(name="agent", help="Manage agent sessions and roles")
 session_app = typer.Typer(name="session", help="Manage active agent sessions")
@@ -50,12 +52,10 @@ def list_providers():
     """
     from monoco.core.integrations import get_all_integrations
 
-    # Ideally we'd pass project-specific integrations here if they existed in config objects
     integrations = get_all_integrations(enabled_only=False)
 
     output = []
     for key, integration in integrations.items():
-        # Perform health check
         health = integration.check_health()
         status_icon = "✅" if health.available else "❌"
         
@@ -127,14 +127,9 @@ def run(
     full_prompt = " ".join(prompt) if prompt else ""
     
     if issue:
-        # User explicitly linked an issue
         issue_id = issue.upper()
         description = full_prompt or None
     else:
-        # Ad-hoc task check
-        import re
-        # Heuristic: if prompt looks like an ID and is short, maybe they meant ID?
-        # But explicit is better. Let's assume everything in prompt is instructions.
         issue_id = "NEW_TASK"
         description = full_prompt
 
@@ -156,13 +151,11 @@ def run(
     
     integration = get_integration(target_engine)
     
-    # If integration is found, check health
     is_available = False
     if integration:
         health = integration.check_health()
         is_available = health.available
         if not is_available and provider:
-            # If user explicitly requested this provider, fail hard
             print_error(f"Requested provider '{target_engine}' is not available.")
             print_error(f"Error: {health.error}")
             raise typer.Exit(code=1)
@@ -173,23 +166,18 @@ def run(
         
         all_integrations = get_all_integrations(enabled_only=True)
         fallback_found = None
-        
-        # Priority list for fallback
         priority = ["cursor", "claude", "gemini", "qwen", "kimi"]
         
-        # Try priority matches first
         for key in priority:
             if key in all_integrations:
                 if all_integrations[key].check_health().available:
                     fallback_found = key
                     break
         
-        # Determine strict fallback
         if fallback_found:
              print_output(f"🔄 Falling back to available provider: [bold green]{fallback_found}[/bold green]")
              selected_role.engine = fallback_found
         else:
-             # If NO CLI tools available, maybe generic agent?
              if "agent" in all_integrations:
                  print_output("🔄 Falling back to Generic Agent (No CLI execution).", style="yellow")
                  selected_role.engine = "agent"
@@ -198,7 +186,6 @@ def run(
                  print_error("Please install Cursor, Claude Code, or Gemini CLI.")
                  raise typer.Exit(code=1)
     elif provider:
-        # If available and user overrode it
         print_output(f"Overriding provider: {selected_role.engine} -> {provider}")
         selected_role.engine = provider
 
@@ -208,89 +195,136 @@ def run(
         title="Agent Framework",
     )
 
-    # 4. Initialize Session
-    manager = SessionManager()
-    session = manager.create_session(issue_id, selected_role)
+    # 4. Initialize AgentScheduler and schedule task
+    scheduler = LocalProcessScheduler(
+        max_concurrent=5,
+        project_root=project_root,
+    )
 
+    task = AgentTask(
+        task_id=f"cli-{issue_id}-{int(time.time())}",
+        role_name=selected_role.name,
+        issue_id=issue_id,
+        prompt=description or "Execute task",
+        engine=selected_role.engine,
+        timeout=selected_role.timeout or 900,
+        metadata={
+            "role_description": selected_role.description,
+            "role_goal": selected_role.goal,
+        },
+    )
 
     try:
-        # Pass description if it's a new task
-        context = {"description": description} if description else None
-        session.start(context=context)
+        # Run async scheduler in sync context
+        asyncio.run(scheduler.start())
+        session_id = asyncio.run(scheduler.schedule(task))
+        
+        print_output(f"Session {session_id} started.")
 
         if detach:
             print_output(
-                 f"Session {session.model.id} started in background (detached)."
+                 f"Session {session_id} running in background (detached)."
             )
             return
 
-        # Monitoring Loop
-        while session.refresh_status() == "running":
+        # Monitoring Loop - poll for task status
+        while True:
+            status = scheduler.get_task_status(session_id)
+            if status in ["completed", "failed", "crashed"]:
+                break
             time.sleep(1)
 
-        if session.model.status == "failed":
+        final_status = scheduler.get_task_status(session_id)
+        if final_status == "failed":
             print_error(
-                f"Session {session.model.id} FAILED. Review logs for details."
+                f"Session {session_id} FAILED. Review logs for details."
             )
         else:
             print_output(
-                f"Session finished with status: {session.model.status}",
+                f"Session finished with status: {final_status}",
                 title="Agent Framework",
             )
 
     except KeyboardInterrupt:
         print("\nStopping...")
-        session.terminate()
+        asyncio.run(scheduler.cancel_task(session_id))
         print_output("Session terminated.")
+    finally:
+        asyncio.run(scheduler.stop())
 
 
 @session_app.command(name="kill")
 def kill_session(session_id: str):
     """
     Terminate a specific session.
+    
+    Note: Uses AgentScheduler to cancel the task.
     """
-    manager = SessionManager()
-    session = manager.get_session(session_id)
-    if session:
-        session.terminate()
+    settings = get_config()
+    project_root = Path(settings.paths.root).resolve()
+    
+    scheduler = LocalProcessScheduler(
+        max_concurrent=5,
+        project_root=project_root,
+    )
+    
+    try:
+        asyncio.run(scheduler.start())
+        asyncio.run(scheduler.cancel_task(session_id))
         print_output(f"Session {session_id} terminated.")
-    else:
-        print_output(f"Session {session_id} not found.", style="red")
+    except Exception as e:
+        print_error(f"Failed to terminate session: {e}")
+    finally:
+        asyncio.run(scheduler.stop())
 
 
 @session_app.command(name="list")
 def list_sessions():
     """
     List active agent sessions.
+    
+    Note: Shows tasks from AgentScheduler.
     """
-    manager = SessionManager()
-    sessions = manager.list_sessions()
-
-    output = []
-    for s in sessions:
-        output.append(
-            {
-                "id": s.model.id,
-                "issue": s.model.issue_id,
-                "role": s.model.role_name,
-                "status": s.model.status,
-                "branch": s.model.branch_name,
-            }
-        )
-
-    print_output(
-        output
-        or "No active sessions found (Note: Persistence not implemented in CLI list yet).",
-        title="Active Sessions",
+    settings = get_config()
+    project_root = Path(settings.paths.root).resolve()
+    
+    scheduler = LocalProcessScheduler(
+        max_concurrent=5,
+        project_root=project_root,
     )
+    
+    try:
+        asyncio.run(scheduler.start())
+        stats = scheduler.get_stats()
+        
+        output = {
+            "scheduler_status": "running" if stats.get("running") else "stopped",
+            "active_tasks": stats.get("active_tasks", 0),
+            "completed_tasks": stats.get("completed_tasks", 0),
+            "failed_tasks": stats.get("failed_tasks", 0),
+        }
+
+        print_output(output, title="Agent Scheduler Status")
+    finally:
+        asyncio.run(scheduler.stop())
 
 
 @session_app.command(name="logs")
 def session_logs(session_id: str):
     """
     Stream logs for a session.
+    
+    Note: Logs are stored in .monoco/sessions/{session_id}.log
     """
+    settings = get_config()
+    project_root = Path(settings.paths.root).resolve()
+    log_path = project_root / ".monoco" / "sessions" / f"{session_id}.log"
+    
     print_output(f"Streaming logs for {session_id}...", title="Session Logs")
-    # Placeholder
-    print("[12:00:00] Session started")
-    print("[12:00:01] Worker initialized")
+    
+    if log_path.exists():
+        print(log_path.read_text())
+    else:
+        print(f"[12:00:00] Session {session_id} started")
+        print("[12:00:01] Worker initialized")
+        print("(Log file not found - showing placeholder)")

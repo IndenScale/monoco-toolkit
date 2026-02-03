@@ -74,29 +74,27 @@ class HookContext:
     extra: Dict[str, Any] = field(default_factory=dict)
     
     @classmethod
-    def from_runtime_session(
+    def from_agent_task(
         cls,
-        runtime_session: Any,
+        task: Any,
         project_root: Optional[Path] = None,
     ) -> "HookContext":
         """
-        Create a HookContext from a RuntimeSession.
+        Create a HookContext from an AgentTask.
         
         Args:
-            runtime_session: The RuntimeSession object
+            task: The AgentTask object
             project_root: Optional project root path
             
         Returns:
             A populated HookContext
         """
-        model = runtime_session.model
-        
         # Build IssueInfo if we have an issue_id
         issue_info = None
-        if model.issue_id:
+        issue_id = getattr(task, "issue_id", None)
+        if issue_id:
             issue_info = IssueInfo(
-                id=model.issue_id,
-                branch_name=model.branch_name,
+                id=issue_id,
             )
             
             # Try to load full issue metadata
@@ -108,7 +106,7 @@ class HookContext:
                     project_root = find_monoco_root()
                 
                 issues_root = project_root / "Issues"
-                issue_path = find_issue_path(issues_root, model.issue_id)
+                issue_path = find_issue_path(issues_root, issue_id)
                 if issue_path:
                     metadata = parse_issue(issue_path)
                     if metadata:
@@ -122,10 +120,73 @@ class HookContext:
             git_info = GitInfo(project_root=project_root)
         
         return cls(
-            session_id=model.id,
-            role_name=model.role_name,
-            session_status=model.status,
-            created_at=model.created_at,
+            session_id=getattr(task, "task_id", "unknown"),
+            role_name=getattr(task, "role_name", "unknown"),
+            session_status="pending",
+            created_at=getattr(task, "created_at", datetime.now()),
+            issue=issue_info,
+            git=git_info,
+        )
+    
+    @classmethod
+    def from_session_state(
+        cls,
+        session_id: str,
+        role_name: str,
+        issue_id: Optional[str],
+        status: str,
+        project_root: Optional[Path] = None,
+    ) -> "HookContext":
+        """
+        Create a HookContext from session state parameters.
+        
+        This is a more flexible factory method that doesn't depend on
+        specific session implementations.
+        
+        Args:
+            session_id: The session/task ID
+            role_name: The role name
+            issue_id: Optional issue ID
+            status: Session status
+            project_root: Optional project root path
+            
+        Returns:
+            A populated HookContext
+        """
+        # Build IssueInfo if we have an issue_id
+        issue_info = None
+        if issue_id:
+            issue_info = IssueInfo(
+                id=issue_id,
+            )
+            
+            # Try to load full issue metadata
+            try:
+                from monoco.features.issue.core import find_issue_path, parse_issue
+                from monoco.core.config import find_monoco_root
+                
+                if project_root is None:
+                    project_root = find_monoco_root()
+                
+                issues_root = project_root / "Issues"
+                issue_path = find_issue_path(issues_root, issue_id)
+                if issue_path:
+                    metadata = parse_issue(issue_path)
+                    if metadata:
+                        issue_info = IssueInfo.from_metadata(metadata)
+            except Exception:
+                pass  # Use basic issue info
+        
+        # Build GitInfo
+        git_info = None
+        if project_root:
+            git_info = GitInfo(project_root=project_root)
+        
+        return cls(
+            session_id=session_id,
+            role_name=role_name,
+            session_status=status,
+            created_at=datetime.now(),
             issue=issue_info,
             git=git_info,
         )
