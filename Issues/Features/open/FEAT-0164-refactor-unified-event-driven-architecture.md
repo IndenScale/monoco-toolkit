@@ -3,10 +3,11 @@ id: FEAT-0164
 uid: d4e5f6
 type: feature
 status: open
-stage: doing
+stage: review
 title: 重构：清除旧 Handler 架构，统一事件驱动架构
 created_at: '2026-02-03T12:00:00'
-updated_at: '2026-02-03T12:30:00'
+updated_at: '2026-02-03T12:32:51'
+parent: EPIC-0032
 dependencies:
 - FEAT-0160
 - FEAT-0161
@@ -22,25 +23,26 @@ tags:
 - '#event-driven'
 - '#cleanup'
 files:
+- Issues/Features/open/FEAT-0164-refactor-unified-event-driven-architecture.md
+- monoco/core/executor/agent_action.py
+- monoco/core/hooks/context.py
+- monoco/daemon/handlers.py
 - monoco/daemon/scheduler.py
 - monoco/daemon/services.py
-- monoco/daemon/handlers.py
-- monoco/daemon/app.py
 - monoco/features/agent/__init__.py
+- monoco/features/agent/apoptosis.py
 - monoco/features/agent/cli.py
 - monoco/features/agent/manager.py
 - monoco/features/agent/session.py
-- monoco/features/agent/apoptosis.py
-- monoco/core/executor/agent_action.py
-- monoco/core/hooks/context.py
+- tests/daemon/test_scheduler_logic.py
 - tests/daemon/test_semaphore_manager.py
 - tests/daemon/test_session_api.py
-- tests/daemon/test_scheduler_logic.py
 - tests/features/test_reliability.py
 - tests/features/test_session.py
 - tests/features/test_session_manager_persistence.py
 - tests/features/test_session_persistence.py
 criticality: high
+solution: null # implemented, cancelled, wontfix, duplicate
 ---
 
 ## FEAT-0164: 重构：清除旧 Handler 架构，统一事件驱动架构
@@ -108,100 +110,23 @@ criticality: high
 - [x] 删除 `tests/features/test_session_persistence.py`
 - [x] 删除 `tests/daemon/test_scheduler_logic.py`（如果仅测试旧逻辑）
 
-### Phase 2: 重构 SchedulerService
+### Phase 2: 重构 SchedulerService ✅
 
 #### 2.1 简化 SchedulerService
-- [ ] 重写 `monoco/daemon/scheduler.py`:
-  ```python
-  class SchedulerService:
-      """Unified event-driven scheduler service."""
-      
-      def __init__(self, project_manager: ProjectManager):
-          self.project_manager = project_manager
-          
-          # AgentScheduler (FEAT-0160)
-          self.agent_scheduler = LocalProcessScheduler(...)
-          
-          # ActionRouter (FEAT-0161)
-          self.action_router = ActionRouter(event_bus)
-          
-          # Watchers (FEAT-0161)
-          self.watchers: List[FilesystemWatcher] = []
-          
-          # Handlers (FEAT-0162)
-          self.handlers: List[Any] = []
-      
-      async def start(self):
-          # 1. Start AgentScheduler
-          await self.agent_scheduler.start()
-          
-          # 2. Setup and start Watchers
-          self._setup_watchers()
-          for watcher in self.watchers:
-              await watcher.start()
-          
-          # 3. Register Actions to Router
-          self._register_actions()
-          
-          # 4. Start ActionRouter
-          await self.action_router.start()
-          
-          # 5. Start Handlers
-          self.handlers = start_all_handlers(self.agent_scheduler)
-      
-      def _setup_watchers(self):
-          """Initialize all filesystem watchers."""
-          for project_ctx in self.project_manager.projects.values():
-              # IssueWatcher
-              self.watchers.append(IssueWatcher(
-                  watch_path=project_ctx.issues_root,
-                  event_bus=event_bus,
-              ))
-              
-              # MemoWatcher
-              memo_path = project_ctx.path / "Memos" / "inbox.md"
-              if memo_path.exists():
-                  self.watchers.append(MemoWatcher(
-                      watch_path=memo_path,
-                      event_bus=event_bus,
-                  ))
-              
-              # TaskWatcher (if tasks.md exists)
-              task_path = project_ctx.path / "tasks.md"
-              if task_path.exists():
-                  self.watchers.append(TaskWatcher(
-                      watch_path=task_path,
-                      event_bus=event_bus,
-                  ))
-      
-      def _register_actions(self):
-          """Register all actions to the router."""
-          # SpawnAgentAction for different roles
-          self.action_router.register(
-              AgentEventType.MEMO_THRESHOLD,
-              SpawnAgentAction(self.agent_scheduler, role="Architect")
-          )
-          self.action_router.register(
-              AgentEventType.ISSUE_STAGE_CHANGED,
-              ConditionalAction(
-                  condition=lambda p: p.get("new_stage") == "doing",
-                  action=SpawnAgentAction(self.agent_scheduler, role="Engineer")
-              )
-          )
-          self.action_router.register(
-              AgentEventType.PR_CREATED,
-              SpawnAgentAction(self.agent_scheduler, role="Reviewer")
-          )
-      ```
+- [x] 重写 `monoco/daemon/scheduler.py`:
+  - 使用 `AgentScheduler` (LocalProcessScheduler) 替代旧架构
+  - 集成 `ActionRouter` 进行事件路由
+  - 集成 `Watcher` 框架（IssueWatcher, MemoWatcher, TaskWatcher）
+  - 集成 `Handler` 框架（来自 `core.automation.handlers`）
 
 #### 2.2 移除旧组件依赖
-- [ ] 移除 `session_managers` 字典
-- [ ] 移除 `apoptosis_managers` 字典
-- [ ] 移除 `_memo_watcher_loop()` 方法
-- [ ] 移除 `_issue_watcher_loop()` 方法
-- [ ] 移除 `_session_monitor_loop()` 方法
-- [ ] 移除 `_register_handlers()` 方法
-- [ ] 移除 `semaphore_manager`（如果已集成到 AgentScheduler）
+- [x] 移除 `session_managers` 字典
+- [x] 移除 `apoptosis_managers` 字典
+- [x] 移除 `_memo_watcher_loop()` 方法
+- [x] 移除 `_issue_watcher_loop()` 方法
+- [x] 移除 `_session_monitor_loop()` 方法
+- [x] 移除 `_register_handlers()` 方法
+- [x] 移除 `semaphore_manager`（已集成到 AgentScheduler）
 
 ### Phase 3: 集成 Watcher 框架 ✅
 
