@@ -17,6 +17,8 @@ domains:
 tags:
 - '#EPIC-0025'
 - '#FEAT-0162'
+- '#FEAT-0160'
+- '#FEAT-0161'
 - workflow
 - automation
 - collaboration
