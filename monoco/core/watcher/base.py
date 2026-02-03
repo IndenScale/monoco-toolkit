@@ -189,7 +189,7 @@ class FilesystemWatcher(ABC):
         # Call local callbacks
         for callback in self._callbacks:
             try:
-                if asyncio.iscoroutinefunction(callback):
+                if inspect.iscoroutinefunction(callback):
                     await callback(event)
                 else:
                     callback(event)
