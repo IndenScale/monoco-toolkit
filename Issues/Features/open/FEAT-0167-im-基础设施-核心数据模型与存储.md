@@ -3,10 +3,10 @@ id: FEAT-0167
 uid: 68dadf
 type: feature
 status: open
-stage: doing
+stage: review
 title: IM 基础设施：核心数据模型与存储
 created_at: '2026-02-03T23:23:32'
-updated_at: '2026-02-03T23:44:32'
+updated_at: '2026-02-03T23:51:28'
 parent: EPIC-0033
 dependencies: []
 related:
@@ -25,8 +25,13 @@ tags:
 - '#FEAT-0171'
 files: []
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-03T23:23:32'
+isolation:
+  type: branch
+  ref: feat/feat-0167-im-基础设施-核心数据模型与存储
+  path: null
+  created_at: '2026-02-03T23:44:33'
 ---
 
 ## FEAT-0167: IM 基础设施：核心数据模型与存储
@@ -41,39 +46,39 @@ opened_at: '2026-02-03T23:23:32'
 - 内置会话上下文窗口管理
 
 ## Acceptance Criteria
-- [ ] 定义 IMChannel、IMMessage、IMParticipant 核心模型
-- [ ] 实现 IM 独立存储目录结构 (.monoco/im/)
-- [ ] 实现消息持久化存储 (JSONL 格式)
-- [ ] 实现频道注册与会话管理
-- [ ] 定义 AgentEventType.IM_* 事件类型
-- [ ] 实现 IMWatcher 监控消息流入
+- [x] 定义 IMChannel、IMMessage、IMParticipant 核心模型
+- [x] 实现 IM 独立存储目录结构 (.monoco/im/)
+- [x] 实现消息持久化存储 (JSONL 格式)
+- [x] 实现频道注册与会话管理
+- [x] 定义 AgentEventType.IM_* 事件类型
+- [x] 实现 IMWatcher 监控消息流入
 
 ## Technical Tasks
-- [ ] 创建 `monoco/features/im/models.py`
-  - [ ] `PlatformType` 枚举 (feishu, dingtalk, slack)
-  - [ ] `IMChannel` 模型 - 频道/群聊信息
-  - [ ] `IMMessage` 模型 - 消息内容
-  - [ ] `IMParticipant` 模型 - 参与者信息
-  - [ ] `MessageContent` 模型 - 支持富媒体
-  - [ ] `IMAgentSession` 模型 - Agent 会话绑定
-- [ ] 创建 `monoco/features/im/core.py`
-  - [ ] `IMChannelManager` - 频道管理
-  - [ ] `MessageStore` - 消息存储
-  - [ ] `IMRouter` - 消息路由决策
-- [ ] 创建 `monoco/core/watcher/im.py`
-  - [ ] `IMWatcher` - 消息事件监控
-  - [ ] 发布 `IM_MESSAGE_RECEIVED` 事件
-- [ ] 扩展 `monoco/core/scheduler/events.py`
-  - [ ] `IM_MESSAGE_RECEIVED`
-  - [ ] `IM_MESSAGE_REPLIED`
-  - [ ] `IM_AGENT_TRIGGER`
-  - [ ] `IM_SESSION_STARTED`
-  - [ ] `IM_SESSION_CLOSED`
-- [ ] 创建 `.monoco/im/` 目录结构
-  - [ ] `channels.jsonl` - 频道注册表
-  - [ ] `messages/` - 消息历史
-  - [ ] `sessions/` - Agent 会话
-  - [ ] `webhooks/` - 平台配置
+- [x] 创建 `monoco/features/im/models.py`
+  - [x] `PlatformType` 枚举 (feishu, dingtalk, slack)
+  - [x] `IMChannel` 模型 - 频道/群聊信息
+  - [x] `IMMessage` 模型 - 消息内容
+  - [x] `IMParticipant` 模型 - 参与者信息
+  - [x] `MessageContent` 模型 - 支持富媒体
+  - [x] `IMAgentSession` 模型 - Agent 会话绑定
+- [x] 创建 `monoco/features/im/core.py`
+  - [x] `IMChannelManager` - 频道管理
+  - [x] `MessageStore` - 消息存储
+  - [x] `IMRouter` - 消息路由决策
+- [x] 创建 `monoco/core/watcher/im.py`
+  - [x] `IMWatcher` - 消息事件监控
+  - [x] 发布 `IM_MESSAGE_RECEIVED` 事件
+- [x] 扩展 `monoco/core/scheduler/events.py`
+  - [x] `IM_MESSAGE_RECEIVED`
+  - [x] `IM_MESSAGE_REPLIED`
+  - [x] `IM_AGENT_TRIGGER`
+  - [x] `IM_SESSION_STARTED`
+  - [x] `IM_SESSION_CLOSED`
+- [x] 创建 `.monoco/im/` 目录结构
+  - [x] `channels.jsonl` - 频道注册表
+  - [x] `messages/` - 消息历史
+  - [x] `sessions/` - Agent 会话
+  - [x] `webhooks/` - 平台配置
 
 ## Data Model Design
 
@@ -114,3 +119,48 @@ class MessageContent(BaseModel):
 ```
 
 ## Review Comments
+
+### 实现总结
+
+本次实现完成了 IM 系统的基础设施层，建立了独立于 Memo 的数据模型和存储架构。
+
+#### 已完成的工作
+
+1. **核心数据模型** (`monoco/features/im/models.py`):
+   - 定义了 6 个枚举类型: PlatformType, ChannelType, MessageStatus, ParticipantType, ContentType
+   - 实现了 8 个核心模型: IMParticipant, Attachment, MessageContent, ProcessingStep, IMMessage, IMChannel, IMAgentSession, IMWebhookConfig, IMStats
+   - 支持富媒体内容 (text/image/card/file/mixed)
+   - 内置处理状态追踪和处理日志
+
+2. **核心管理类** (`monoco/features/im/core.py`):
+   - IMChannelManager: 频道 CRUD、参与者管理、项目绑定
+   - MessageStore: JSONL 格式消息存储、上下文窗口查询
+   - IMRouter: 基于 mentions/keywords 的消息路由决策
+   - IMAgentSessionManager: Agent 会话生命周期管理、超时清理
+   - IMManager: 统一入口点，自动初始化存储目录
+
+3. **IMWatcher** (`monoco/core/watcher/im.py`):
+   - IMWatcher: 基础消息监控，支持自定义触发条件
+   - IMInboundWatcher: 入站消息专用监控，过滤 agent/bot 消息
+   - IMWebhookWatcher: Webhook 配置变更监控
+
+4. **事件系统扩展**:
+   - 添加了 6 个 IM 事件类型到 AgentEventType
+   - 事件自动发布到 EventBus
+
+5. **存储目录结构**:
+   - `.monoco/im/channels.jsonl`: 频道注册表
+   - `.monoco/im/messages/`: 按频道分片的 JSONL 消息文件
+   - `.monoco/im/sessions/`: Agent 会话状态
+   - `.monoco/im/webhooks/`: 平台 Webhook 配置
+
+#### 设计决策验证
+
+- ✅ IMMessage 与 Memo 完全独立，无继承关系
+- ✅ 存储结构独立于 `.monoco/memos/`
+- ✅ 支持富媒体内容
+- ✅ 内置上下文窗口管理 (sliding/summarized/full)
+
+#### 后续依赖
+
+本 Issue 完成后，FEAT-0168 (平台适配器)、FEAT-0169 (Agent 集成)、FEAT-0170 (安全与权限)、FEAT-0171 (测试与文档) 可以并行开发。

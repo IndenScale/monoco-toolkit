@@ -2,11 +2,11 @@
 id: FEAT-0164
 uid: d4e5f6
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: 重构：清除旧 Handler 架构，统一事件驱动架构
 created_at: '2026-02-03T12:00:00'
-updated_at: '2026-02-03T12:37:47'
+updated_at: '2026-02-03T23:40:00'
 parent: EPIC-0032
 dependencies:
 - FEAT-0160
@@ -45,7 +45,7 @@ files:
 - tests/features/test_session_manager_persistence.py
 - tests/features/test_session_persistence.py
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 isolation:
   type: branch
   ref: branch:feat/FEAT-0164-refactor-unified-event-driven-architecture

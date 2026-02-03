@@ -35,6 +35,7 @@ from .issue import IssueWatcher, IssueFileEvent
 from .memo import MemoWatcher, MemoFileEvent
 from .task import TaskWatcher, TaskFileEvent
 from .dropzone import DropzoneWatcher, DropzoneFileEvent
+from .im import IMWatcher, IMFileEvent, IMInboundWatcher, IMWebhookWatcher
 
 __all__ = [
     # Base classes
@@ -54,4 +55,9 @@ __all__ = [
     "TaskFileEvent",
     "DropzoneWatcher",
     "DropzoneFileEvent",
+    # IM watchers (FEAT-0167)
+    "IMWatcher",
+    "IMFileEvent",
+    "IMInboundWatcher",
+    "IMWebhookWatcher",
 ]
