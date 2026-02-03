@@ -6,19 +6,13 @@ status: open
 stage: doing
 title: Monoco Daemon Orchestrator
 created_at: '2026-02-01T00:18:00'
-updated_at: '2026-02-03T09:50:00'
-opened_at: '2026-02-01T00:18:00'
+updated_at: '2026-02-03T10:02:42'
 priority: high
-owner: IndenScale
 parent: EPIC-0000
 dependencies: []
 related: []
 domains:
 - AgentEmpowerment
-files:
-- Memos/agent-scheduler-architecture-assessment.md
-- Memos/architecture-layer-analysis.md
-- Memos/daemon-architecture-proposals-assessment.md
 tags:
 - '#EPIC-0000'
 - '#EPIC-0025'
@@ -26,7 +20,14 @@ tags:
 - '#daemon'
 - narrative
 - three-layer-architecture
+files:
+- Memos/agent-scheduler-architecture-assessment.md
+- Memos/architecture-layer-analysis.md
+- Memos/daemon-architecture-proposals-assessment.md
 criticality: high
+solution: null # implemented, cancelled, wontfix, duplicate
+opened_at: '2026-02-01T00:18:00'
+owner: IndenScale
 progress: 8/11
 files_count: 0
 ---
@@ -141,7 +142,7 @@ files_count: 0
 
 ### 未来工作 (非当前 Epic 范围)
 
-- **IM 集成** (钉钉/飞书): 作为额外的文件输入源，未来在 EPIC-0033 中实现
+- **IM 集成** (钉钉/飞书): 作为额外的文件输入源，未来视需求评估实现。
 - **Proposal 机制**: 如需预创建确认，未来再评估
 - **SQLite 存储**: 当前使用 JSON Lines，未来按需评估
 
@@ -173,7 +174,7 @@ FEAT-0162 (Collaboration Workflow)
 **重大变更**:
 1. **移除 IM 依赖**: 删除 FEAT-0161/0163/0164/0168，IM 为未来工作
 2. **移除 Proposal**: 删除 FEAT-0162 (原)，简化工作流
-3. **重新编号**: FEAT-0165→0160, 0166→0161, 0167→0162
+3. **重新编号**: 完成了从旧编号到 0160/0161/0162 的映射。
 4. **聚焦核心**: 三层架构 + 文件驱动工作流
 
 **架构决策记录 (ADR)**:
