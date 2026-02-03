@@ -4,6 +4,7 @@ from asyncio import Queue
 from pathlib import Path
 
 from monoco.core.workspace import MonocoProject, Workspace
+from monoco.core.config import ConfigMonitor, get_config_path
 
 logger = logging.getLogger("monoco.daemon.services")
 
@@ -53,6 +54,7 @@ class ProjectContext:
         self.name = project.name
         self.path = project.path
         self.issues_root = project.issues_root
+        self.broadcaster = broadcaster
 
         async def on_upsert(issue_data: dict):
             await broadcaster.broadcast(
@@ -66,6 +68,17 @@ class ProjectContext:
 
         from monoco.features.issue.monitor import IssueMonitor
         self.monitor = IssueMonitor(self.issues_root, on_upsert, on_delete)
+
+        # ConfigMonitor for project.yaml
+        async def on_config_change():
+            config_path = get_config_path(self.path)
+            logger.info(f"Config file changed: {config_path}, broadcasting update...")
+            await broadcaster.broadcast(
+                "CONFIG_UPDATED", {"scope": "project", "path": str(config_path), "project_id": self.id}
+            )
+
+        config_path = get_config_path(self.path)
+        self.config_monitor = ConfigMonitor(config_path, on_config_change)
 
     async def notify_move(self, old_path: str, new_path: str, issue_data: dict):
         """Explicitly notify frontend about a logical move (Physical path changed)."""
@@ -81,9 +94,11 @@ class ProjectContext:
 
     async def start(self):
         await self.monitor.start()
+        await self.config_monitor.start()
 
     def stop(self):
         self.monitor.stop()
+        self.config_monitor.stop()
 
 
 class ProjectManager:

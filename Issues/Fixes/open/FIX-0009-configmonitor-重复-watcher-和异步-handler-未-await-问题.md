@@ -15,6 +15,11 @@ tags:
 - '#EPIC-0000'
 - '#FIX-0009'
 files:
+- monoco/core/config.py
+- monoco/core/scheduler/events.py
+- monoco/core/watcher/base.py
+- monoco/daemon/app.py
+- monoco/daemon/services.py
 - '"Issues/Fixes/open/FIX-0009-configmonitor-\351\207\215\345\244\215-watcher-\345\222\214\345\274\202\346\255\245-handler-\346\234\252-await-\351\227\256\351\242\230.md"'
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
