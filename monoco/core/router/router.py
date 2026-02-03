@@ -7,6 +7,7 @@ This module implements the ActionRouter which routes events to appropriate actio
 from __future__ import annotations
 
 import asyncio
+import inspect
 import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional, Set, Union
@@ -47,7 +48,7 @@ class RoutingRule:
             return False
         
         if self.condition is not None:
-            if asyncio.iscoroutinefunction(self.condition):
+            if inspect.iscoroutinefunction(self.condition):
                 # Note: This is called from sync context, so we can't await
                 # For async conditions, use Action.can_execute instead
                 logger.warning("Async conditions in RoutingRule are not supported")
