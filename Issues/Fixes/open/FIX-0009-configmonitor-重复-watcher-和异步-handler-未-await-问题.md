@@ -3,10 +3,10 @@ id: FIX-0009
 uid: 11b407
 type: fix
 status: open
-stage: doing
+stage: review
 title: ConfigMonitor 重复 watcher 和异步 handler 未 await 问题
 created_at: '2026-02-03T13:16:34'
-updated_at: '2026-02-03T13:21:35'
+updated_at: '2026-02-03T13:21:41'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -140,4 +140,22 @@ daemon/app.py
 由于根目录是 project，workspace.yaml 变更可以通过重启 daemon 生效，暂不要求热更新。
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+### 代码变更摘要
+
+1. **monoco/daemon/app.py**: 移除了独立的 `config_monitors` 列表和相关生命周期管理代码，将配置监视职责下放到 `ProjectContext`。
+
+2. **monoco/daemon/services.py**: 
+   - 在 `ProjectContext.__init__` 中添加了 `ConfigMonitor` 初始化
+   - 在 `start()` 中启动 `config_monitor`
+   - 在 `stop()` 中停止 `config_monitor`
+   - 使用 broadcaster 广播配置变更事件（`CONFIG_UPDATED`）
+
+3. **monoco/core/config.py**: 
+   - 添加了 `_started` 标志防止重复启动
+   - 添加了异常处理，避免启动失败时崩溃
+   - 改进了日志记录
+
+4. **monoco/core/watcher/base.py**: 
+   - 添加了 `_is_async_callable()` 方法，正确检测实现了 `__call__` 的异步可调用对象
+   - 修复了 `MemoThresholdHandler` 等 handler 未被正确 await 的问题
