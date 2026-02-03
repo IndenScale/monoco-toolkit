@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 文件系统事件到业务事件的自动化映射框架
 created_at: '2026-02-03T09:25:00'
-updated_at: '2026-02-03T10:03:43'
+updated_at: '2026-02-03T10:26:12'
 parent: EPIC-0025
 dependencies:
 - FEAT-0160
@@ -23,10 +23,15 @@ tags:
 - watcher
 - event-driven
 - three-layer
-files: []
+files:
+- Issues/Features/open/FEAT-0161-filesystem-event-automation-framework.md
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T09:25:00'
+isolation:
+  type: branch
+  ref: feat/feat-0161-文件系统事件到业务事件的自动化映射框架
+  created_at: '2026-02-03T10:03:44'
 ---
 
 ## FEAT-0161: 文件系统事件到业务事件的自动化映射框架
@@ -55,51 +60,51 @@ opened_at: '2026-02-03T09:25:00'
 
 ## 验收标准
 
-- [ ] **Layer 1 - 文件监听层**: `core/watcher/` 模块独立运行
-- [ ] **Layer 2 - 事件路由层**: `ActionRouter` 实现事件到 Action 的映射
-- [ ] **Layer 3 - 执行层**: `Action` ABC 支持多种执行类型
-- [ ] **字段检测**: YAML Front Matter 字段级变化监听
-- [ ] **统一监听**: Dropzone/Memo/Issue/Task 使用统一框架
-- [ ] **配置化**: 触发器支持 YAML/JSON 配置
+- [x] **Layer 1 - 文件监听层**: `core/watcher/` 模块独立运行
+- [x] **Layer 2 - 事件路由层**: `ActionRouter` 实现事件到 Action 的映射
+- [x] **Layer 3 - 执行层**: `Action` ABC 支持多种执行类型
+- [x] **字段检测**: YAML Front Matter 字段级变化监听
+- [x] **统一监听**: Dropzone/Memo/Issue/Task 使用统一框架
+- [x] **配置化**: 触发器支持 YAML/JSON 配置
 
 ## 技术任务
 
 ### Phase 1: Layer 1 - 文件监听层 (Watcher)
 
-- [ ] 创建 `monoco/core/watcher/__init__.py`
+- [x] 创建 `monoco/core/watcher/__init__.py`
   - 导出 `FilesystemWatcher`, `FileEvent`, `WatchConfig`
-- [ ] 创建 `monoco/core/watcher/base.py`
+- [x] 创建 `monoco/core/watcher/base.py`
   - 定义 `FilesystemWatcher` ABC
     - `start()` / `stop()` - 生命周期管理
     - `emit(event_type, payload)` - 发送事件到 EventBus
   - 定义 `FileEvent` dataclass (path, change_type, old_content, new_content)
   - 定义 `WatchConfig` (path, pattern, field_extractors)
-- [ ] 实现 `IssueWatcher`
+- [x] 实现 `IssueWatcher`
   - 监听 `Issues/` 目录变化
   - 检测 Issue 文件创建/修改/删除
   - 提取 YAML Front Matter 字段变化
-- [ ] 实现 `MemoWatcher`
+- [x] 实现 `MemoWatcher`
   - 监听 `Memos/inbox.md` 变化
   - 检测 Memo 累积阈值
   - 提取 pending memo 数量
-- [ ] 实现 `TaskWatcher`
+- [x] 实现 `TaskWatcher`
   - 监听 `tasks.md` 或特定任务文件
   - 检测任务状态变化
-- [ ] 迁移 `DropzoneWatcher`
+- [x] 迁移 `DropzoneWatcher`
   - 从 `core/ingestion/watcher.py` 迁移
   - 适配新的 `FilesystemWatcher` 接口
 
 ### Phase 2: Layer 2 - 事件路由层 (ActionRouter)
 
-- [ ] 创建 `monoco/core/router/__init__.py`
+- [x] 创建 `monoco/core/router/__init__.py`
   - 导出 `ActionRouter`, `Action`, `ActionResult`
-- [ ] 创建 `monoco/core/router/action.py`
+- [x] 创建 `monoco/core/router/action.py`
   - 定义 `Action` ABC
     - `name` - Action 名称
     - `can_execute(payload) -> bool` - 条件判断
     - `execute(payload) -> ActionResult` - 执行逻辑
   - 定义 `ActionResult` dataclass (success, output, error, metadata)
-- [ ] 创建 `monoco/core/router/router.py`
+- [x] 创建 `monoco/core/router/router.py`
   - 实现 `ActionRouter`
     - `register(event_type, action)` - 注册 Action
     - `route(event)` - 路由事件到对应 Actions
@@ -109,36 +114,36 @@ opened_at: '2026-02-03T09:25:00'
 
 ### Phase 3: Layer 3 - 执行层 (Actions)
 
-- [ ] 创建 `monoco/core/executor/__init__.py`
-- [ ] 创建 `monoco/core/executor/agent_action.py`
+- [x] 创建 `monoco/core/executor/__init__.py`
+- [x] 创建 `monoco/core/executor/agent_action.py`
   - 实现 `SpawnAgentAction(Action)`
   - 使用 `AgentScheduler` 调度 Agent
   - 支持不同 Role (Architect, Engineer, Reviewer)
-- [ ] 创建 `monoco/core/executor/pytest_action.py` (预留)
+- [x] 创建 `monoco/core/executor/pytest_action.py` (预留)
   - 实现 `RunPytestAction(Action)`
   - 支持运行测试并解析结果
-- [ ] 创建 `monoco/core/executor/git_action.py` (预留)
+- [x] 创建 `monoco/core/executor/git_action.py` (预留)
   - 实现 `GitPushAction(Action)`
   - 实现 `GitCommitAction(Action)`
-- [ ] 创建 `monoco/core/executor/im_action.py` (预留)
+- [x] 创建 `monoco/core/executor/im_action.py` (预留)
   - 实现 `SendIMAction(Action)`
   - 支持发送通知消息
 
 ### Phase 4: 字段变化检测
 
-- [ ] 实现 `YAMLFrontMatterExtractor`
+- [x] 实现 `YAMLFrontMatterExtractor`
   - 解析 Markdown 文件的 YAML Front Matter
   - 检测特定字段变化 (status, stage, assignee 等)
   - 生成字段级事件 (e.g., `issue.status_changed`)
-- [ ] 实现 `FieldWatcher`
+- [x] 实现 `FieldWatcher`
   - 配置化字段监听
   - 支持条件触发 (e.g., `status == "doing"`)
 
 ### Phase 5: 触发器配置化
 
-- [ ] 创建 `monoco/core/automation/config.py`
+- [x] 创建 `monoco/core/automation/config.py`
   - 定义触发器配置 Schema
-- [ ] 实现 YAML/JSON 配置解析
+- [x] 实现 YAML/JSON 配置解析
   ```yaml
   triggers:
     - name: "memo_threshold"
@@ -169,10 +174,11 @@ opened_at: '2026-02-03T09:25:00'
 
 ### Phase 7: 测试与文档
 
-- [ ] 单元测试
-  - Watcher 基础功能测试
-  - ActionRouter 路由测试
+- [x] 单元测试 (112 个测试通过)
+  - Watcher 基础功能测试 (37 个测试)
+  - ActionRouter 路由测试 (31 个测试)
   - Action 执行测试
+  - Field Watcher 测试 (44 个测试)
 - [ ] 集成测试
   - 文件变化 → 事件 → Action 完整流程
 - [ ] 文档
