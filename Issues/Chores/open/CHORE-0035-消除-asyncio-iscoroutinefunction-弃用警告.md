@@ -18,6 +18,10 @@ files: []
 criticality: low
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T10:41:01'
+isolation:
+  type: branch
+  ref: feat/chore-0035-消除-asyncio-iscoroutinefunction-弃用警告
+  created_at: '2026-02-03T10:41:01'
 ---
 
 ## CHORE-0035: 消除 asyncio.iscoroutinefunction 弃用警告
