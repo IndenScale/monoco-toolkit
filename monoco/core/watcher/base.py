@@ -180,6 +180,23 @@ class FilesystemWatcher(ABC):
         if callback in self._callbacks:
             self._callbacks.remove(callback)
     
+    def _is_async_callable(self, callback: Callable) -> bool:
+        """
+        Check if a callable is async (coroutine function or has async __call__).
+        
+        This handles both:
+        - Regular async functions: async def func(): ...
+        - Callable objects with async __call__: class Handler: async def __call__(self, ...): ...
+        """
+        # Direct check for coroutine function
+        if inspect.iscoroutinefunction(callback):
+            return True
+        # Check for callable object with async __call__ method
+        if hasattr(callback, "__call__") and not inspect.ismethod(callback):
+            if inspect.iscoroutinefunction(callback.__call__):
+                return True
+        return False
+
     async def emit(self, event: FileEvent) -> None:
         """
         Emit a file event to all registered callbacks and EventBus.
@@ -190,7 +207,7 @@ class FilesystemWatcher(ABC):
         # Call local callbacks
         for callback in self._callbacks:
             try:
-                if inspect.iscoroutinefunction(callback):
+                if self._is_async_callable(callback):
                     await callback(event)
                 else:
                     callback(event)

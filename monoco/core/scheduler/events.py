@@ -9,9 +9,26 @@ import asyncio
 import inspect
 import logging
 from enum import Enum, auto
-from typing import Dict, List, Callable, Any, Optional
+from typing import Dict, List, Callable, Any, Optional, Union
 from dataclasses import dataclass, field
 from datetime import datetime
+
+
+def _is_async_handler(handler: Callable) -> bool:
+    """
+    Check if a handler is async (coroutine function or has async __call__).
+    
+    Handles both:
+    - Regular async functions: async def func(): ...
+    - Callable objects with async __call__: class Handler: async def __call__(self, ...): ...
+    """
+    # Direct check for coroutine function
+    if inspect.iscoroutinefunction(handler):
+        return True
+    # Check for callable object with async __call__ method
+    if hasattr(handler, "__call__") and inspect.iscoroutinefunction(handler.__call__):
+        return True
+    return False
 
 logger = logging.getLogger("monoco.core.scheduler.events")
 
@@ -122,7 +139,7 @@ class EventBus:
         tasks = []
         for handler in handlers:
             try:
-                if inspect.iscoroutinefunction(handler):
+                if _is_async_handler(handler):
                     tasks.append(asyncio.create_task(handler(event)))
                 else:
                     handler(event)
