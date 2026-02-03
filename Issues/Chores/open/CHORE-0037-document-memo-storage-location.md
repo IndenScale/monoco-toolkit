@@ -11,7 +11,7 @@ parent: EPIC-0000
 dependencies: []
 related: []
 domains:
-- Documentation
+- DevEx
 tags:
 - '#CHORE-0037'
 - '#EPIC-0000'
