@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: ConfigMonitor 重复 watcher 和异步 handler 未 await 问题
 created_at: '2026-02-03T13:16:34'
-updated_at: '2026-02-03T13:18:51'
+updated_at: '2026-02-03T13:21:26'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -18,6 +18,10 @@ files: []
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T13:16:34'
+isolation:
+  type: branch
+  ref: feat/fix-0009-configmonitor-重复-watcher-和异步-handler-未-await-问题
+  created_at: '2026-02-03T13:18:52'
 ---
 
 ## FIX-0009: ConfigMonitor 重复 watcher 和异步 handler 未 await 问题
@@ -81,14 +85,14 @@ MemoWatcher._handle_count_change()
 ## Technical Tasks
 <!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
 
-- [ ] **Task 1: 重构 ConfigMonitor 架构**
-  - [ ] 移除 `daemon/app.py` 中的独立 `config_monitors` 列表
-  - [ ] 在 `ProjectContext` 中添加配置监视能力
-  - [ ] 修改 `ConfigMonitor` 直接监视文件而非目录（避免重复 schedule）
+- [x] **Task 1: 重构 ConfigMonitor 架构**
+  - [x] 移除 `daemon/app.py` 中的独立 `config_monitors` 列表
+  - [x] 在 `ProjectContext` 中添加配置监视能力
+  - [x] 修改 `ConfigMonitor` 直接监视文件而非目录（避免重复 schedule）
   
-- [ ] **Task 2: 修复异步 handler 调用**
-  - [ ] 修改 `PollingWatcher.emit()` 正确处理绑定方法
-  - [ ] 或使用 EventBus 订阅替代本地回调
+- [x] **Task 2: 修复异步 handler 调用**
+  - [x] 修改 `PollingWatcher.emit()` 正确处理绑定方法
+  - [x] 或使用 EventBus 订阅替代本地回调
 
 - [ ] **Task 3: 验证修复**
   - [ ] 启动 `monoco serve` 确认无报错
