@@ -6,10 +6,10 @@ Agent lifecycle management.
 """
 
 import asyncio
+import inspect
 import logging
 from enum import Enum, auto
-from typing import Dict, List, Callable, Any, Optimport asyncio
-import inspect
+from typing import Dict, List, Callable, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 
