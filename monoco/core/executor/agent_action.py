@@ -10,9 +10,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from monoco.core.scheduler import AgentEvent, AgentEventType, AgentScheduler
+from monoco.core.scheduler import AgentEvent, AgentEventType, AgentScheduler, AgentTask
 from monoco.core.router import Action, ActionResult
-from monoco.features.agent.manager import SessionManager
 from monoco.features.agent.models import RoleTemplate
 
 logger = logging.getLogger(__name__)
@@ -24,12 +23,12 @@ class SpawnAgentAction(Action):
     
     This action creates and starts a new agent session based on the event.
     It supports different roles (Architect, Engineer, Reviewer, etc.)
-    and integrates with the SessionManager for lifecycle management.
+    and integrates with the AgentScheduler for lifecycle management.
     
     Example:
         >>> action = SpawnAgentAction(
         ...     role="Engineer",
-        ...     session_manager=session_manager,
+        ...     scheduler=scheduler,
         ... )
         >>> result = await action(event)
     """
@@ -68,13 +67,13 @@ class SpawnAgentAction(Action):
     def __init__(
         self,
         role: str,
-        session_manager: SessionManager,
+        scheduler: AgentScheduler,
         config: Optional[Dict[str, Any]] = None,
         custom_role_template: Optional[Dict[str, str]] = None,
     ):
         super().__init__(config)
         self.role = role
-        self.session_manager = session_manager
+        self.scheduler = scheduler
         self.custom_role_template = custom_role_template
         self._spawned_sessions: List[str] = []
     
@@ -87,18 +86,15 @@ class SpawnAgentAction(Action):
         Check if we should spawn an agent.
         
         Conditions:
-        - No existing session with same role for this issue
-        - Semaphore allows new session
+        - Scheduler has capacity for new tasks
         """
-        issue_id = event.payload.get("issue_id", "unknown")
+        # Check scheduler capacity
+        stats = self.scheduler.get_stats()
+        active_tasks = stats.get("active_tasks", 0)
+        max_concurrent = stats.get("max_concurrent", 5)
         
-        # Check if agent already running for this issue
-        existing = [
-            s for s in self.session_manager.list_sessions(issue_id=issue_id)
-            if s.model.role_name == self.role and s.model.status in ["running", "pending"]
-        ]
-        if existing:
-            logger.debug(f"{self.role} already running for {issue_id}, skipping")
+        if active_tasks >= max_concurrent:
+            logger.warning(f"Scheduler at capacity ({active_tasks}/{max_concurrent}), skipping")
             return False
         
         return True
@@ -111,31 +107,36 @@ class SpawnAgentAction(Action):
         logger.info(f"Spawning {self.role} agent for {issue_id}")
         
         try:
-            # Get role template
-            role = self._create_role_template(issue_title)
-            
-            # Create session
-            session = self.session_manager.create_session(
+            # Create AgentTask
+            task = AgentTask(
+                task_id=f"{self.role.lower()}-{issue_id}-{event.timestamp.timestamp()}",
+                role_name=self.role,
                 issue_id=issue_id,
-                role=role,
+                prompt=self._build_prompt(issue_id, issue_title),
+                engine=self._get_engine(),
+                timeout=self.config.get("timeout", 1800),
+                metadata={
+                    "trigger": event.type.value,
+                    "issue_title": issue_title,
+                },
             )
             
+            # Schedule task
+            session_id = await self.scheduler.schedule(task)
+            
             # Track spawned session
-            self._spawned_sessions.append(session.model.id)
+            self._spawned_sessions.append(session_id)
             
-            # Start session
-            session.start()
-            
-            logger.info(f"{self.role} session {session.model.id} started for {issue_id}")
+            logger.info(f"{self.role} scheduled: session={session_id}")
             
             return ActionResult.success_result(
                 output={
-                    "session_id": session.model.id,
+                    "session_id": session_id,
                     "issue_id": issue_id,
                     "role": self.role,
                 },
                 metadata={
-                    "session_status": session.model.status,
+                    "task_id": task.task_id,
                 },
             )
         
@@ -149,21 +150,25 @@ class SpawnAgentAction(Action):
                 },
             )
     
-    def _create_role_template(self, issue_title: str) -> RoleTemplate:
-        """Create a RoleTemplate for this action."""
-        if self.custom_role_template:
-            template = self.custom_role_template
-        else:
-            template = self.ROLE_TEMPLATES.get(self.role, self.ROLE_TEMPLATES["Engineer"])
+    def _build_prompt(self, issue_id: str, issue_title: str) -> str:
+        """Build the prompt for the agent."""
+        template = self.ROLE_TEMPLATES.get(self.role, self.ROLE_TEMPLATES["Engineer"])
         
-        return RoleTemplate(
-            name=self.role,
-            description=template["description"],
-            trigger=template["trigger"],
-            goal=template["goal"].replace("feature requirements", f"feature: {issue_title}"),
-            system_prompt=template["system_prompt"],
-            engine=template["engine"],
-        )
+        return f"""You are a {template['description']}. 
+
+Issue: {issue_id} - {issue_title}
+
+Goal: {template['goal']}
+
+{template['system_prompt']}
+"""
+    
+    def _get_engine(self) -> str:
+        """Get the engine for this role."""
+        if self.custom_role_template:
+            return self.custom_role_template.get("engine", "gemini")
+        template = self.ROLE_TEMPLATES.get(self.role, self.ROLE_TEMPLATES["Engineer"])
+        return template["engine"]
     
     def get_spawned_sessions(self) -> List[str]:
         """Get list of session IDs spawned by this action."""
@@ -184,12 +189,12 @@ class SpawnArchitectAction(SpawnAgentAction):
     
     def __init__(
         self,
-        session_manager: SessionManager,
+        scheduler: AgentScheduler,
         config: Optional[Dict[str, Any]] = None,
     ):
         super().__init__(
             role="Architect",
-            session_manager=session_manager,
+            scheduler=scheduler,
             config=config,
         )
     
@@ -205,12 +210,12 @@ class SpawnEngineerAction(SpawnAgentAction):
     
     def __init__(
         self,
-        session_manager: SessionManager,
+        scheduler: AgentScheduler,
         config: Optional[Dict[str, Any]] = None,
     ):
         super().__init__(
             role="Engineer",
-            session_manager=session_manager,
+            scheduler=scheduler,
             config=config,
         )
     
@@ -233,12 +238,12 @@ class SpawnReviewerAction(SpawnAgentAction):
     
     def __init__(
         self,
-        session_manager: SessionManager,
+        scheduler: AgentScheduler,
         config: Optional[Dict[str, Any]] = None,
     ):
         super().__init__(
             role="Reviewer",
-            session_manager=session_manager,
+            scheduler=scheduler,
             config=config,
         )
     
