@@ -39,12 +39,20 @@ def _get_workspace_root(root: Optional[str] = None) -> Path:
 
 
 def _setup_signal_handlers(pid_manager: PIDManager):
-    """Setup signal handlers for graceful shutdown."""
+    """Setup signal handlers for graceful shutdown.
+    
+    Note: We don't call sys.exit() here to allow uvicorn's graceful shutdown
+    to complete, which will execute the lifespan shutdown code and properly
+    stop all services (watchers, scheduler, etc.).
+    """
 
     def signal_handler(signum, frame):
-        console.print(f"\n[yellow]Received signal {signum}, shutting down...[/yellow]")
+        console.print(f"\n[yellow]Received signal {signum}, shutting down gracefully...[/yellow]")
+        # Only remove PID file here; let uvicorn handle the rest
+        # The lifespan shutdown in app.py will stop all services
         pid_manager.remove_pid_file()
-        sys.exit(0)
+        # Don't call sys.exit() - let uvicorn's signal handler continue
+        # to execute the shutdown sequence properly
 
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
@@ -181,9 +189,10 @@ def serve_start(
         console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(code=1)
 
-    # Setup signal handlers for foreground mode
-    if not daemon:
-        _setup_signal_handlers(pid_manager)
+    # Setup signal handlers for graceful shutdown in both modes
+    # - Foreground: Ctrl+C (SIGINT) or SIGTERM
+    # - Daemon: SIGTERM from `serve stop` command
+    _setup_signal_handlers(pid_manager)
 
     try:
         console.print(
