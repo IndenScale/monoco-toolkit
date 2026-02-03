@@ -2,6 +2,7 @@ import typer
 from pathlib import Path
 from typing import Optional, List
 from datetime import datetime
+import logging
 from rich.console import Console
 from rich.tree import Tree
 from rich.panel import Panel
@@ -24,6 +25,7 @@ from . import domain_commands
 
 app.add_typer(domain_commands.app, name="domain")
 console = Console()
+logger = logging.getLogger(__name__)
 
 
 @app.command("create")
