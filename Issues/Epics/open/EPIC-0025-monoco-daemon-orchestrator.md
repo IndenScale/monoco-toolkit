@@ -27,8 +27,8 @@ tags:
 - narrative
 - three-layer-architecture
 criticality: high
-progress: 3/6
-files_count: 3
+progress: 8/11
+files_count: 0
 ---
 
 ## EPIC-0025: Monoco Daemon Orchestrator
