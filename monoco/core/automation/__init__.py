@@ -2,8 +2,6 @@
 Automation Module - Event-driven automation framework.
 
 This module provides:
-- YAML/JSON configuration parsing
-- Trigger configuration management
 - Field change detection
 - Independent Event Handlers for Agent collaboration (FEAT-0162)
 
@@ -12,11 +10,6 @@ stateless microservice that responds to specific events. Workflow emerges
 from the natural interaction of handlers.
 """
 
-from .config import (
-    TriggerConfig,
-    AutomationConfig,
-    load_automation_config,
-)
 from .field_watcher import (
     YAMLFrontMatterExtractor,
     FieldWatcher,
@@ -32,10 +25,6 @@ from .handlers import (
 )
 
 __all__ = [
-    # Config
-    "TriggerConfig",
-    "AutomationConfig",
-    "load_automation_config",
     # Field watching
     "YAMLFrontMatterExtractor",
     "FieldWatcher",
