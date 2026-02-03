@@ -3,7 +3,7 @@ id: CHORE-0036
 uid: 11b40a
 type: chore
 status: open
-stage: doing
+stage: review
 title: 修复 issue close 时多分支冲突处理逻辑
 created_at: '2026-02-03T13:43:22'
 updated_at: '2026-02-03T14:03:20'
