@@ -1221,9 +1221,41 @@ def delete_issue_file(issues_root: Path, issue_id: str):
     path.unlink()
 
 
+def _has_uncommitted_changes(project_root: Path) -> Tuple[bool, List[str]]:
+    """
+    Check if there are uncommitted changes in the working directory.
+    
+    Returns:
+        Tuple of (has_changes, list_of_changed_files)
+    """
+    # Check for staged changes
+    cmd_staged = ["diff", "--cached", "--name-only"]
+    code, stdout, _ = git._run_git(cmd_staged, project_root)
+    staged_files = [f.strip() for f in stdout.splitlines() if f.strip()] if code == 0 else []
+    
+    # Check for unstaged changes
+    cmd_unstaged = ["diff", "--name-only"]
+    code, stdout, _ = git._run_git(cmd_unstaged, project_root)
+    unstaged_files = [f.strip() for f in stdout.splitlines() if f.strip()] if code == 0 else []
+    
+    # Check for untracked files
+    cmd_untracked = ["ls-files", "--others", "--exclude-standard"]
+    code, stdout, _ = git._run_git(cmd_untracked, project_root)
+    untracked_files = [f.strip() for f in stdout.splitlines() if f.strip()] if code == 0 else []
+    
+    all_changes = list(set(staged_files + unstaged_files + untracked_files))
+    all_changes.sort()
+    
+    return len(all_changes) > 0, all_changes
+
+
 def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> List[str]:
     """
     Sync 'files' field in issue metadata with actual changed files in git.
+    
+    Pre-condition: All changes must be committed. If there are uncommitted changes,
+    this function will raise an error with instructions on how to proceed.
+    
     Strategies:
     1. Isolation Ref: If issue has isolation (branch/worktree), use that ref.
     2. Convention: If no isolation, look for branch `*/<id>-*`.
@@ -1238,6 +1270,20 @@ def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> Li
     issue = parse_issue(path)
     if not issue:
         raise ValueError(f"Could not parse issue {issue_id}")
+
+    # CHORE-0036: Check for uncommitted changes
+    has_uncommitted, uncommitted_files = _has_uncommitted_changes(project_root)
+    if has_uncommitted:
+        files_list = "\n  - ".join([""] + uncommitted_files)
+        raise RuntimeError(
+            f"Uncommitted changes detected in working directory:{files_list}\n\n"
+            f"You must explicitly handle these files before syncing:\n"
+            f"  1. git add <files> && git commit -m '...'  (to commit)\n"
+            f"  2. git checkout -- <files>                   (to discard)\n"
+            f"  3. echo '<pattern>' >> .gitignore            (to ignore)\n"
+            f"  4. git rm <files>                            (to remove)\n\n"
+            f"After handling, run: monoco issue sync-files {issue_id}"
+        )
 
     # Determine Target Branch
     target_ref = None
