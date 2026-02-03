@@ -11,6 +11,7 @@ This module defines the core abstractions for file system event watching:
 from __future__ import annotations
 
 import asyncio
+import inspect
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
