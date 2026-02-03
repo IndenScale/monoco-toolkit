@@ -2,11 +2,11 @@
 id: FEAT-0167
 uid: 68dadf
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: IM 基础设施：核心数据模型与存储
 created_at: '2026-02-03T23:23:32'
-updated_at: '2026-02-03T23:51:28'
+updated_at: '2026-02-03T23:58:00'
 parent: EPIC-0033
 dependencies: []
 related:
@@ -25,7 +25,7 @@ tags:
 - '#FEAT-0171'
 files: []
 criticality: high
-solution: null
+solution: implemented
 opened_at: '2026-02-03T23:23:32'
 isolation:
   type: branch
