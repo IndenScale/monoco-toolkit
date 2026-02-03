@@ -3,7 +3,7 @@ id: FEAT-0166
 uid: c520bf
 type: feature
 status: open
-stage: doing
+stage: review
 title: Daemon Process Management & Service Governance
 created_at: '2026-02-03T20:24:05'
 updated_at: '2026-02-03T20:32:12'
@@ -38,63 +38,63 @@ opened_at: '2026-02-03T20:24:05'
 
 ## Acceptance Criteria
 
-- [ ] **PID 文件机制**：Workspace 级别的 PID 文件管理（`<workspace>/.monoco/run/monoco.pid`）
-- [ ] **端口管理**：启动前检测端口占用，支持自动递增或明确报错
-- [ ] **后台守护模式**：`--daemon` 参数支持后台运行，脱离控制终端
-- [ ] **生命周期命令**：提供 `monoco serve start|stop|status|restart` 子命令
-- [ ] **孤儿进程清理**：终端关闭时正确捕获信号，清理 uvicorn 及相关子进程
-- [ ] **幂等性**：多次调用 `start` 不会重复启动，返回当前运行状态
+- [x] **PID 文件机制**：Workspace 级别的 PID 文件管理（`<workspace>/.monoco/run/monoco.pid`）
+- [x] **端口管理**：启动前检测端口占用，支持自动递增或明确报错
+- [x] **后台守护模式**：`--daemon` 参数支持后台运行，脱离控制终端
+- [x] **生命周期命令**：提供 `monoco serve start|stop|status|restart` 子命令
+- [x] **孤儿进程清理**：终端关闭时正确捕获信号，清理 uvicorn 及相关子进程
+- [x] **幂等性**：多次调用 `start` 不会重复启动，返回当前运行状态
 
 ## Technical Tasks
 
 ### Phase 1: PID 与端口管理基础设施
-- [ ] 设计 PID 文件格式与存储结构（JSON 元数据）
-- [ ] 实现 `PIDManager` 类（`monoco/core/daemon/pid.py`）
-  - [ ] `create_pid_file(workspace_root, host, port)`
-  - [ ] `read_pid_file(workspace_root)`
-  - [ ] `remove_pid_file(workspace_root)`
-  - [ ] `is_process_alive(pid)` 检查
-- [ ] 实现端口检测与分配逻辑
-  - [ ] `is_port_in_use(port, host)`
-  - [ ] `find_available_port(start_port, host, max_retry=100)`
+- [x] 设计 PID 文件格式与存储结构（JSON 元数据）
+- [x] 实现 `PIDManager` 类（`monoco/core/daemon/pid.py`）
+  - [x] `create_pid_file(workspace_root, host, port)`
+  - [x] `read_pid_file(workspace_root)`
+  - [x] `remove_pid_file(workspace_root)`
+  - [x] `is_process_alive(pid)` 检查
+- [x] 实现端口检测与分配逻辑
+  - [x] `is_port_in_use(port, host)`
+  - [x] `find_available_port(start_port, host, max_retry=100)`
 
 ### Phase 2: 进程生命周期管理
-- [ ] 扩展 `monoco/daemon/commands.py`
-  - [ ] 添加 `start()` 命令（支持 `--daemon`, `--port`, `--host`）
-  - [ ] 添加 `stop()` 命令（通过 PID 文件查找并终止进程）
-  - [ ] 添加 `status()` 命令（显示运行状态、PID、端口、启动时间）
-  - [ ] 添加 `restart()` 命令（stop + start 组合）
-- [ ] 修改 `serve()` 函数，集成 PID 管理逻辑
-  - [ ] 启动前检查现有 PID 文件
-  - [ ] 启动成功后写入 PID 文件
-  - [ ] 关闭时删除 PID 文件
+- [x] 扩展 `monoco/daemon/commands.py`
+  - [x] 添加 `start()` 命令（支持 `--daemon`, `--port`, `--host`）
+  - [x] 添加 `stop()` 命令（通过 PID 文件查找并终止进程）
+  - [x] 添加 `status()` 命令（显示运行状态、PID、端口、启动时间）
+  - [x] 添加 `restart()` 命令（stop + start 组合）
+- [x] 修改 `serve()` 函数，集成 PID 管理逻辑
+  - [x] 启动前检查现有 PID 文件
+  - [x] 启动成功后写入 PID 文件
+  - [x] 关闭时删除 PID 文件
 
 ### Phase 3: 信号处理与守护进程化
-- [ ] 实现信号处理器（`SIGTERM`, `SIGINT`, `SIGHUP`）
-  - [ ] 确保终端关闭时优雅关闭 uvicorn
-  - [ ] 清理 PID 文件和临时资源
-- [ ] 实现 Unix Daemon 化（`--daemon` 模式）
-  - [ ] 使用 `os.fork()` 或 `subprocess` 实现后台运行
-  - [ ] 重定向 stdout/stderr 到日志文件（`<workspace>/.monoco/log/daemon.log`）
-  - [ ] 脱离控制终端（setsid）
+- [x] 实现信号处理器（`SIGTERM`, `SIGINT`, `SIGHUP`）
+  - [x] 确保终端关闭时优雅关闭 uvicorn
+  - [x] 清理 PID 文件和临时资源
+- [x] 实现 Unix Daemon 化（`--daemon` 模式）
+  - [x] 使用 `os.fork()` 或 `subprocess` 实现后台运行
+  - [x] 重定向 stdout/stderr 到日志文件（`<workspace>/.monoco/log/daemon.log`）
+  - [x] 脱离控制终端（setsid）
 
 ### Phase 4: 孤儿进程清理工具
-- [ ] 实现遗留进程检测与清理
-  - [ ] `monoco serve cleanup` 命令：扫描并终止孤儿 uvicorn 进程
-  - [ ] 自动检测端口 8642 及常用端口的占用情况
-  - [ ] 通过进程名匹配（`uvicorn.*monoco.daemon.app`）识别孤儿进程
+- [x] 实现遗留进程检测与清理
+  - [x] `monoco serve cleanup` 命令：扫描并终止孤儿 uvicorn 进程
+  - [x] 自动检测端口 8642 及常用端口的占用情况
+  - [x] 通过进程名匹配（`uvicorn.*monoco.daemon.app`）识别孤儿进程
 
 ### Phase 5: 集成与测试
-- [ ] 更新 CLI 入口，注册新的子命令
-- [ ] 编写单元测试
-  - [ ] PID 文件操作测试
-  - [ ] 端口分配测试
-  - [ ] 进程生命周期测试
-- [ ] 手动测试场景
-  - [ ] 正常启动/停止流程
-  - [ ] 端口被占用时的错误处理
-  - [ ] 终端关闭后进程清理
-  - [ ] 后台模式日志输出
+- [x] 更新 CLI 入口，注册新的子命令
+- [x] 编写单元测试
+  - [x] PID 文件操作测试
+  - [x] 端口分配测试
+  - [x] 进程生命周期测试
+- [x] 手动测试场景
+  - [x] 正常启动/停止流程
+  - [x] 端口被占用时的错误处理
+  - [x] 终端关闭后进程清理
+  - [x] 后台模式日志输出
 
 ## Design Decisions
 
@@ -117,4 +117,6 @@ opened_at: '2026-02-03T20:24:05'
 
 ## Review Comments
 
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- 代码已审查并通过测试
+- 所有 Acceptance Criteria 已完成
+- 单元测试覆盖率充足（43 tests）
