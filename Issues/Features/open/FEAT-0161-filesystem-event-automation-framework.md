@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 文件系统事件到业务事件的自动化映射框架
 created_at: '2026-02-03T09:25:00'
-updated_at: '2026-02-03T10:03:42'
+updated_at: '2026-02-03T10:03:43'
 parent: EPIC-0025
 dependencies:
 - FEAT-0160
@@ -23,9 +23,7 @@ tags:
 - watcher
 - event-driven
 - three-layer
-files:
-- monoco/daemon/scheduler.py
-- monoco/core/ingestion/watcher.py
+files: []
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T09:25:00'
