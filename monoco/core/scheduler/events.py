@@ -8,8 +8,9 @@ Agent lifecycle management.
 import asyncio
 import logging
 from enum import Enum, auto
-from typing import Dict, List, Callable, Any, Optional
-from dataclasses import dataclass
+from typing import Dict, List, Callable, Any, Optimport asyncio
+import inspect
+from dataclasses import dataclass, field
 from datetime import datetime
 
 logger = logging.getLogger("monoco.core.scheduler.events")
@@ -121,7 +122,7 @@ class EventBus:
         tasks = []
         for handler in handlers:
             try:
-                if asyncio.iscoroutinefunction(handler):
+                if inspect.iscoroutinefunction(handler):
                     tasks.append(asyncio.create_task(handler(event)))
                 else:
                     handler(event)
