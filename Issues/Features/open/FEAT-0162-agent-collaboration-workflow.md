@@ -3,10 +3,10 @@ id: FEAT-0162
 uid: c3d4e5
 type: feature
 status: open
-stage: draft
+stage: doing
 title: Agent 联调工作流 - 端到端自动化
 created_at: '2026-02-03T09:30:00'
-updated_at: '2026-02-03T09:45:00'
+updated_at: '2026-02-03T11:19:06'
 parent: EPIC-0025
 dependencies:
 - FEAT-0160
@@ -14,15 +14,16 @@ dependencies:
 related: []
 domains:
 - AgentEmpowerment
-files:
-- Memos/agent-scheduler-architecture-assessment.md
 tags:
 - '#EPIC-0025'
 - '#FEAT-0162'
 - workflow
 - automation
 - collaboration
+files:
+- Memos/agent-scheduler-architecture-assessment.md
 criticality: medium
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T09:30:00'
 ---
 
