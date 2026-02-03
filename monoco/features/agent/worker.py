@@ -1,6 +1,6 @@
 from typing import Optional
 from .models import RoleTemplate
-from .engines import EngineFactory
+from monoco.core.scheduler import EngineFactory
 
 
 class Worker:
