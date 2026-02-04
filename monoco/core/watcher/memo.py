@@ -68,12 +68,16 @@ class MemoFileEvent(FileEvent):
 
 class MemoWatcher(PollingWatcher):
     """
-    Watcher for Memo inbox file.
+    Watcher for Memo inbox file (Signal Queue Model).
     
     Monitors the Memos/inbox.md file for:
-    - New memo entries
-    - Pending memo count changes
-    - Threshold crossing events
+    - New memo signals (file non-empty)
+    - Threshold crossing events (memo count >= threshold)
+    
+    Signal Queue Semantics (FEAT-0165):
+    - File existence = signal pending
+    - File empty = no signals
+    - Consumer clears file = signals consumed
     
     Example:
         >>> config = WatchConfig(
@@ -84,10 +88,8 @@ class MemoWatcher(PollingWatcher):
         >>> await watcher.start()
     """
     
-    # Regex to match memo entries (lines starting with "- " that aren't checkboxes)
-    MEMO_PATTERN = re.compile(r"^-\s+(?!\[)[^\n]*$", re.MULTILINE)
-    # Regex to match checkbox items
-    CHECKBOX_PATTERN = re.compile(r"^-\s*\[([ xX-])\]", re.MULTILINE)
+    # Regex to match memo headers (## [uid])
+    MEMO_HEADER_PATTERN = re.compile(r"^##\s*\[[a-f0-9]+\]", re.MULTILINE)
     
     def __init__(
         self,
@@ -98,7 +100,7 @@ class MemoWatcher(PollingWatcher):
     ):
         super().__init__(config, event_bus, name)
         self.threshold = threshold
-        self._last_pending_count = 0
+        self._last_memo_count = 0
         self._threshold_crossed = False
     
     async def _check_changes(self) -> None:
@@ -108,92 +110,82 @@ class MemoWatcher(PollingWatcher):
         
         try:
             content = self._read_file_content(self.config.path) or ""
-            pending_count = self._count_pending_memos(content)
+            memo_count = self._count_memos(content)
             
             # Check if count changed
-            if pending_count != self._last_pending_count:
-                await self._handle_count_change(pending_count)
-                self._last_pending_count = pending_count
+            if memo_count != self._last_memo_count:
+                await self._handle_count_change(memo_count)
+                self._last_memo_count = memo_count
         
         except Exception as e:
             logger.error(f"Error checking memo file: {e}")
     
-    async def _handle_count_change(self, pending_count: int) -> None:
+    async def _handle_count_change(self, memo_count: int) -> None:
         """Handle memo count change."""
         # Check for threshold crossing
-        threshold_crossed = pending_count >= self.threshold
+        threshold_crossed = memo_count >= self.threshold
         
         if threshold_crossed and not self._threshold_crossed:
             # Threshold just crossed
             event = MemoFileEvent(
                 path=self.config.path,
                 change_type=ChangeType.MODIFIED,
-                pending_count=pending_count,
+                pending_count=memo_count,
                 threshold=self.threshold,
                 metadata={
-                    "previous_count": self._last_pending_count,
+                    "previous_count": self._last_memo_count,
                     "event_type": "threshold_crossed",
                 },
             )
             await self.emit(event)
-            logger.info(f"Memo threshold crossed: {pending_count} >= {self.threshold}")
+            logger.info(f"Memo threshold crossed: {memo_count} >= {self.threshold}")
         
-        elif pending_count > self._last_pending_count:
+        elif memo_count > self._last_memo_count:
             # New memos added
             event = MemoFileEvent(
                 path=self.config.path,
                 change_type=ChangeType.MODIFIED,
-                pending_count=pending_count,
+                pending_count=memo_count,
                 threshold=self.threshold,
                 metadata={
-                    "previous_count": self._last_pending_count,
+                    "previous_count": self._last_memo_count,
                     "event_type": "memos_added",
                 },
             )
             await self.emit(event)
-            logger.debug(f"New memos added: {pending_count} total")
+            logger.debug(f"New memos added: {memo_count} total")
+        
+        elif memo_count == 0 and self._last_memo_count > 0:
+            # Inbox was cleared (consumed)
+            logger.info(f"Inbox cleared (consumed {self._last_memo_count} memos)")
         
         self._threshold_crossed = threshold_crossed
     
-    def _count_pending_memos(self, content: str) -> int:
+    def _count_memos(self, content: str) -> int:
         """
-        Count pending (unchecked) memos in content.
+        Count memos in content by matching memo headers.
         
-        Counts:
-        - Lines starting with "- " that are not checkboxes
-        - Checkbox items with empty or "-" state
+        In Signal Queue Model:
+        - Each memo has a header like: ## [uid] YYYY-MM-DD HH:MM:SS
+        - We count headers to determine number of pending signals
         """
-        count = 0
-        lines = content.split("\n")
+        if not content or not content.strip():
+            return 0
         
-        for line in lines:
-            line = line.strip()
-            if not line.startswith("-"):
-                continue
-            
-            # Check if it's a checkbox
-            checkbox_match = self.CHECKBOX_PATTERN.match(line)
-            if checkbox_match:
-                state = checkbox_match.group(1).lower()
-                # Count if not checked (x or X)
-                if state not in ("x", "X"):
-                    count += 1
-            else:
-                # Regular memo entry
-                count += 1
-        
-        return count
+        # Count memo headers
+        matches = self.MEMO_HEADER_PATTERN.findall(content)
+        return len(matches)
     
     def set_threshold(self, threshold: int) -> None:
         """Update the threshold value."""
         self.threshold = threshold
-        self._threshold_crossed = self._last_pending_count >= threshold
+        self._threshold_crossed = self._last_memo_count >= threshold
     
     def get_stats(self) -> Dict[str, Any]:
         """Get watcher statistics."""
         stats = super().get_stats()
         stats.update({
-            "pending_count": self._last_pending_count,
+            "memo_count": self._last_memo_count,
             "threshold": self.threshold,
             "threshold_crossed": self._threshold_crossed,
         })

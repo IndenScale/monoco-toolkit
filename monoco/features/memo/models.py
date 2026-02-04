@@ -2,7 +2,26 @@ from datetime import datetime
 from typing import Optional, Literal
 from pydantic import BaseModel, Field
 
+
 class Memo(BaseModel):
+    """
+    Memo (Fleeting Note) - Signal Queue Model.
+    
+    In the Signal Queue paradigm (FEAT-0165):
+    - Memo is a signal, not an asset
+    - File existence = signal pending
+    - File deletion = signal consumed
+    - No status tracking - Git is the archive
+    
+    Attributes:
+        uid: Unique identifier (6-char hex)
+        content: The memo content
+        timestamp: When the memo was created
+        context: Optional context (file:line, etc.)
+        author: Who created the memo (User, Assistant, Agent name)
+        source: How the memo was created (cli, agent, mailroom)
+        type: Type of memo (insight, bug, feature, task)
+    """
     uid: str
     content: str
     timestamp: datetime = Field(default_factory=datetime.now)
@@ -10,16 +29,18 @@ class Memo(BaseModel):
     # Optional Context
     context: Optional[str] = None
     
-    # New Metadata Fields
+    # Metadata Fields
     author: str = "User"  # User, Assistant, or specific Agent Name
     source: str = "cli"   # cli, agent, mailroom, etc.
-    status: Literal["pending", "tracked", "resolved", "dismissed"] = "pending"
-    ref: Optional[str] = None  # Linked Issue ID or other reference
     type: Literal["insight", "bug", "feature", "task"] = "insight"
     
     def to_markdown(self) -> str:
         """
         Render the memo to Markdown format.
+        
+        Signal Queue Model:
+        - No status field (existence is the state)
+        - No ref field (traceability via git history)
         """
         ts_str = self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
         header = f"## [{self.uid}] {ts_str}"
@@ -33,18 +54,6 @@ class Memo(BaseModel):
         if self.type != "insight":
              meta.append(f"- **Type**: {self.type}")
         
-        # Status line with checkbox simulation
-        status_map = {
-            "pending": "[ ] Pending",
-            "tracked": "[x] Tracked",
-            "resolved": "[x] Resolved",
-            "dismissed": "[-] Dismissed"
-        }
-        meta.append(f"- **Status**: {status_map.get(self.status, '[ ] Pending')}")
-        
-        if self.ref:
-            meta.append(f"- **Ref**: {self.ref}")
-            
         if self.context:
             meta.append(f"- **Context**: `{self.context}`")
             

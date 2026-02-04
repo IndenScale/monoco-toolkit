@@ -39,6 +39,11 @@ def generate_memo_id() -> str:
 def parse_memo_block(block: str) -> Optional[Memo]:
     """
     Parse a text block into a Memo object.
+    
+    Signal Queue Model (FEAT-0165):
+    - No status field parsing (file existence is the state)
+    - No ref field parsing (traceability via git history)
+    
     Block format:
     ## [uid] YYYY-MM-DD HH:MM:SS
     - **Key**: Value
@@ -90,17 +95,6 @@ def parse_memo_block(block: str) -> Optional[Memo]:
             content_lines.append(line)
             
     content = "\n".join(content_lines).strip()
-    
-    # Map metadata to model fields
-    # Status map reverse
-    status_raw = metadata.get("status", "[ ] Pending")
-    status = "pending"
-    if "[x] Tracked" in status_raw:
-        status = "tracked"
-    elif "[x] Resolved" in status_raw:
-        status = "resolved"
-    elif "[-] Dismissed" in status_raw:
-        status = "dismissed"
         
     return Memo(
         uid=uid,
@@ -109,9 +103,7 @@ def parse_memo_block(block: str) -> Optional[Memo]:
         author=metadata.get("from", "User"),
         source=metadata.get("source", "cli"),
         type=metadata.get("type", "insight"),
-        status=status,
-        ref=metadata.get("ref"),
-        context=metadata.get("context") # Note: context might need cleanup if it was wrapped in code blocks
+        context=metadata.get("context")
     )
 
 def load_memos(issues_root: Path) -> List[Memo]:
@@ -194,26 +186,6 @@ def add_memo(
         f.write("\n" + memo.to_markdown().strip() + "\n")
         
     return uid
-
-def update_memo(issues_root: Path, memo_id: str, updates: dict) -> bool:
-    """
-    Update a memo's fields.
-    """
-    memos = load_memos(issues_root)
-    found = False
-    for i, m in enumerate(memos):
-        if m.uid == memo_id:
-            # Apply updates
-            updated_data = m.model_dump()
-            updated_data.update(updates)
-            memos[i] = Memo(**updated_data) # Re-validate
-            found = True
-            break
-            
-    if found:
-        save_memos(issues_root, memos)
-        
-    return found
 
 def delete_memo(issues_root: Path, memo_id: str) -> bool:
     """
