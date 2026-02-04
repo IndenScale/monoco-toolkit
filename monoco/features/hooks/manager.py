@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Optional
 
-from .universal_models import (
+from .models import (
     GitEvent,
     AgentEvent,
     IDEEvent,

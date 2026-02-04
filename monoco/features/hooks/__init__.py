@@ -5,7 +5,7 @@ Provides a unified hooks system for Git, IDE, and Agent integration
 with Front Matter metadata support.
 """
 
-from .universal_models import (
+from .models import (
     HookType,
     HookMetadata,
     GitEvent,
@@ -15,7 +15,7 @@ from .universal_models import (
     HookGroup,
 )
 from .parser import HookParser, ParseError
-from .universal_manager import UniversalHookManager, ValidationResult, HookDispatcher
+from .manager import UniversalHookManager, ValidationResult, HookDispatcher
 
 __all__ = [
     # Models

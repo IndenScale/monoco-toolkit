@@ -5,12 +5,12 @@ from pathlib import Path
 import tempfile
 import os
 
-from monoco.features.hooks.universal_manager import (
+from monoco.features.hooks.manager import (
     UniversalHookManager,
     ValidationResult,
     HookDispatcher,
 )
-from monoco.features.hooks.universal_models import (
+from monoco.features.hooks.models import (
     HookType,
     HookMetadata,
     ParsedHook,
