@@ -3,7 +3,7 @@ id: EPIC-0034
 uid: fc7d0a
 type: epic
 status: open
-stage: draft
+stage: doing
 title: 'Universal Hooks System: Git/IDE/Agent Integration'
 created_at: '2026-02-04T13:26:48'
 updated_at: '2026-02-04T14:50:00'
@@ -27,6 +27,8 @@ files:
 criticality: high
 solution: null
 opened_at: '2026-02-04T13:26:48'
+progress: 0/4
+files_count: 0
 ---
 
 ## EPIC-0034: Universal Hooks System: Git/IDE/Agent Integration

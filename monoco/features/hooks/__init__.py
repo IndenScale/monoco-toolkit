@@ -1,11 +1,36 @@
 """
-Git Hooks management feature for Monoco.
+Universal Hooks management feature for Monoco.
 
-Provides distributed hooks architecture where each Feature can contribute
-its own hooks in resources/hooks/, aggregated by this feature.
+Provides a unified hooks system for Git, IDE, and Agent integration
+with Front Matter metadata support.
 """
 
-from .core import GitHooksManager, HookDeclaration, HookType
-from .adapter import HooksFeature
+from .universal_models import (
+    HookType,
+    HookMetadata,
+    GitEvent,
+    AgentEvent,
+    IDEEvent,
+    ParsedHook,
+    HookGroup,
+)
+from .parser import HookParser, ParseError
+from .universal_manager import UniversalHookManager, ValidationResult, HookDispatcher
 
-__all__ = ["GitHooksManager", "HookDeclaration", "HookType", "HooksFeature"]
+__all__ = [
+    # Models
+    "HookType",
+    "HookMetadata",
+    "GitEvent",
+    "AgentEvent",
+    "IDEEvent",
+    "ParsedHook",
+    "HookGroup",
+    # Parser
+    "HookParser",
+    "ParseError",
+    # Manager
+    "UniversalHookManager",
+    "ValidationResult",
+    "HookDispatcher",
+]
