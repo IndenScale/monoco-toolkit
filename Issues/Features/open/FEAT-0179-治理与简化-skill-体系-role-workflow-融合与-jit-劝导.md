@@ -3,10 +3,10 @@ id: FEAT-0179
 uid: 283ca5
 type: feature
 status: open
-stage: draft
+stage: doing
 title: 治理与简化 Skill 体系：Role/Workflow 融合与 JIT 劝导
 created_at: '2026-02-04T20:40:16'
-updated_at: '2026-02-04T22:15:00'
+updated_at: '2026-02-04T22:19:10'
 parent: EPIC-0030
 dependencies:
 - CHORE-0039
