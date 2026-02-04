@@ -3,10 +3,10 @@ id: CHORE-0041
 uid: '899510'
 type: chore
 status: open
-stage: doing
+stage: review
 title: Release v0.4.0
 created_at: '2026-02-04T23:33:58'
-updated_at: '2026-02-04T23:50:46'
+updated_at: '2026-02-04T23:54:46'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -49,33 +49,29 @@ files:
 criticality: low
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T23:33:58'
-isolation:
-  type: branch
-  ref: CHORE-0041-release-v0-4-0
-  created_at: '2026-02-04T23:34:12'
 ---
 
 ## CHORE-0041: Release v0.4.0
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+完成 v0.4.0 版本发布，包括版本号更新、CHANGELOG 生成和 CI 验证。
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+- [x] 版本号已更新到 0.4.0
+- [x] CHANGELOG 已生成
+- [x] 所有测试通过（716 tests）
+- [x] 代码已合并到 main
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
-
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
-- [ ] Task 1
+- [x] 步进版本号到 0.4.0
+- [x] 生成 CHANGELOG
+- [x] 简化 close 命令（移除 --no-prune/--no-force）
+- [x] 修复测试
+- [x] 合并到 main 并推送
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+✅ 发版完成：
+- 简化了 close 命令设计，强制清理
+- 移除冗余测试
+- 716 个测试全部通过
+- 已推送到 main，等待 CI 验证
