@@ -27,7 +27,7 @@ files:
 criticality: high
 solution: null
 opened_at: '2026-02-04T13:26:48'
-progress: 1/4
+progress: 2/4
 files_count: 0
 ---
 
