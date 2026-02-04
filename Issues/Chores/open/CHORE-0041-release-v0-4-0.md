@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Release v0.4.0
 created_at: '2026-02-04T23:33:58'
-updated_at: '2026-02-04T23:34:11'
+updated_at: 2026-02-04 23:34:12
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,8 +16,13 @@ tags:
 - '#EPIC-0000'
 files: []
 criticality: low
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T23:33:58'
+isolation:
+  type: branch
+  ref: CHORE-0041-release-v0-4-0
+  path: null
+  created_at: '2026-02-04T23:34:12'
 ---
 
 ## CHORE-0041: Release v0.4.0
