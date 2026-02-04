@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 治理与简化 Skill 体系：Role/Workflow 融合与 JIT 劝导
 created_at: '2026-02-04T20:40:16'
-updated_at: 2026-02-04 22:19:11
+updated_at: '2026-02-04T22:25:55'
 parent: EPIC-0030
 dependencies:
 - CHORE-0039
@@ -18,21 +18,43 @@ tags:
 - '#EPIC-0030'
 - '#FEAT-0179'
 files:
-- monoco/features/agent/resources/
-- monoco/features/issue/resources/hooks/
-- monoco/features/hooks/resources/hooks/
-- .gemini/skills/
-- .claude/skills/
 - AGENTS.md
-- monoco/core/sync.py
-- monoco/core/injection.py
+- CLAUDE.md
+- GEMINI.md
+- monoco/features/agent/resources/en/skills/monoco_atom_code_dev/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_atom_core/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_atom_issue_lifecycle/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_atom_knowledge/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_atom_review/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_role_engineer/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_role_manager/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_role_planner/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_role_reviewer/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_workflow_agent_engineer/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_workflow_agent_manager/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_workflow_agent_planner/SKILL.md
+- monoco/features/agent/resources/en/skills/monoco_workflow_agent_reviewer/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_atom_code_dev/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_atom_core/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_atom_issue_lifecycle/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_atom_knowledge/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_atom_review/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_role_engineer/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_role_manager/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_role_planner/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_role_reviewer/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_workflow_agent_engineer/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_workflow_agent_manager/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_workflow_agent_planner/SKILL.md
+- monoco/features/agent/resources/zh/skills/monoco_workflow_agent_reviewer/SKILL.md
+- monoco/features/issue/resources/hooks/agent/before-tool.sh
+- monoco/features/issue/resources/hooks/agent/session-start.sh
 criticality: high
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T20:40:16'
 isolation:
   type: branch
   ref: FEAT-0179-治理与简化-skill-体系-role-workflow-融合与-jit-劝导
-  path: null
   created_at: '2026-02-04T22:19:11'
 ---
 
