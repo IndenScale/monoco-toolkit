@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 'Universal Hooks: Core Models and Parser'
 created_at: '2026-02-04T13:27:07'
-updated_at: '2026-02-04T14:09:29'
+updated_at: '2026-02-04T14:10:11'
 parent: EPIC-0034
 dependencies: []
 related: []
@@ -14,19 +14,7 @@ domains: []
 tags:
 - '#EPIC-0034'
 - '#FEAT-0174'
-files:
-- Issues/Epics/open/EPIC-0034-universal-hooks-system-git-ide-agent-integration.md
-- monoco/features/hooks/__init__.py
-- monoco/features/hooks/adapter.py
-- monoco/features/hooks/commands.py
-- monoco/features/hooks/core.py
-- monoco/features/hooks/manager.py
-- monoco/features/hooks/models.py
-- monoco/features/hooks/parser.py
-- tests/features/hooks/__init__.py
-- tests/features/hooks/test_manager.py
-- tests/features/hooks/test_models.py
-- tests/features/hooks/test_parser.py
+files: []
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T13:27:07'
