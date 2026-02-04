@@ -8,7 +8,7 @@ Usage:
     python -m monoco.features.hooks.universal_interceptor <hook_script_path>
 
 The interceptor:
-1. Auto-detects the Agent platform from environment variables
+1. Auto-detects the Agent platform from input format
 2. Translates agent-specific input to Monoco unified format
 3. Executes the actual hook script
 4. Translates the output back to agent-specific format
@@ -100,12 +100,15 @@ class AgentAdapter(ABC):
         self.provider = provider
 
     @abstractmethod
-    def detect(self) -> bool:
+    def detect(self, raw_input: str) -> bool:
         """
-        Detect if this adapter should be used based on environment.
+        Detect if this adapter should be used based on input format.
+
+        Args:
+            raw_input: Raw JSON string from stdin
 
         Returns:
-            True if this adapter should handle the current environment
+            True if this adapter should handle the input format
         """
         pass
 
@@ -153,9 +156,6 @@ class ClaudeAdapter(AgentAdapter):
         - Values: "allow", "deny", "ask"
     """
 
-    # Environment variable that indicates Claude Code
-    ENV_INDICATOR = "CLAUDE_CODE_REMOTE"
-
     # Event name mapping: Claude -> Monoco
     EVENT_MAP = {
         "PreToolUse": "before-tool",
@@ -172,9 +172,16 @@ class ClaudeAdapter(AgentAdapter):
     def __init__(self):
         super().__init__(AgentProvider.CLAUDE_CODE)
 
-    def detect(self) -> bool:
-        """Detect if running in Claude Code environment."""
-        return self.ENV_INDICATOR in os.environ
+    def detect(self, raw_input: str) -> bool:
+        """Detect if input is in Claude Code format."""
+        try:
+            data = json.loads(raw_input)
+            # Try both old and new field names
+            event = data.get("hook_event_name") or data.get("event", "")
+            # Claude Code uses specific event names
+            return event in self.EVENT_MAP
+        except json.JSONDecodeError:
+            return False
 
     def translate_input(self, raw_input: str) -> UnifiedHookInput:
         """
@@ -182,9 +189,9 @@ class ClaudeAdapter(AgentAdapter):
 
         Claude Code input format:
         {
-            "event": "PreToolUse",
-            "tool": "Bash",
-            "input": {"command": "ls -la"},
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Bash",
+            "tool_input": {"command": "ls -la"},
             ...
         }
         """
@@ -193,15 +200,16 @@ class ClaudeAdapter(AgentAdapter):
         except json.JSONDecodeError:
             data = {}
 
-        claude_event = data.get("event", "")
+        # Use real Claude Code field names (hook_event_name, tool_name, tool_input)
+        claude_event = data.get("hook_event_name") or data.get("event", "")
         monoco_event = self.EVENT_MAP.get(claude_event, claude_event.lower())
 
         return UnifiedHookInput(
             event=monoco_event,
-            tool=data.get("tool"),
-            input_data=data.get("input", {}),
+            tool=data.get("tool_name") or data.get("tool"),
+            input_data=data.get("tool_input") or data.get("input", {}),
             env=dict(os.environ),
-            metadata={k: v for k, v in data.items() if k not in ("event", "tool", "input")},
+            metadata={k: v for k, v in data.items() if k not in ("hook_event_name", "event", "tool_name", "tool", "tool_input", "input")},
         )
 
     def translate_output(self, decision: UnifiedDecision) -> str:
@@ -240,9 +248,6 @@ class GeminiAdapter(AgentAdapter):
         - Values: "allow", "deny", "ask"
     """
 
-    # Environment variable that indicates Gemini CLI
-    ENV_INDICATOR = "GEMINI_ENV_FILE"
-
     # Event name mapping: Gemini -> Monoco
     EVENT_MAP = {
         "BeforeTool": "before-tool",
@@ -259,9 +264,15 @@ class GeminiAdapter(AgentAdapter):
     def __init__(self):
         super().__init__(AgentProvider.GEMINI_CLI)
 
-    def detect(self) -> bool:
-        """Detect if running in Gemini CLI environment."""
-        return self.ENV_INDICATOR in os.environ
+    def detect(self, raw_input: str) -> bool:
+        """Detect if input is in Gemini CLI format."""
+        try:
+            data = json.loads(raw_input)
+            event = data.get("event", "")
+            # Gemini CLI uses specific event names
+            return event in self.EVENT_MAP
+        except json.JSONDecodeError:
+            return False
 
     def translate_input(self, raw_input: str) -> UnifiedHookInput:
         """
@@ -328,9 +339,12 @@ class UniversalInterceptor:
         ]
         self.adapter: Optional[AgentAdapter] = None
 
-    def detect_adapter(self) -> AgentAdapter:
+    def detect_adapter(self, raw_input: str) -> AgentAdapter:
         """
-        Auto-detect the appropriate adapter for the current environment.
+        Auto-detect the appropriate adapter based on input format.
+
+        Args:
+            raw_input: Raw JSON string from stdin
 
         Returns:
             The detected adapter
@@ -339,33 +353,35 @@ class UniversalInterceptor:
             RuntimeError: If no adapter can be detected
         """
         for adapter in self.adapters:
-            if adapter.detect():
+            if adapter.detect(raw_input):
                 return adapter
 
         raise RuntimeError(
-            "Could not detect agent environment. "
-            "Expected one of: CLAUDE_CODE_REMOTE, GEMINI_ENV_FILE"
+            "Could not detect agent input format. "
+            "Expected Claude Code or Gemini CLI event format."
         )
 
-    def run(self, hook_script_path: str) -> int:
+    def run(self, hook_script_path: str, is_debug: bool = False, stdin_data: Optional[str] = None) -> int:
         """
         Run the interceptor.
 
         Args:
             hook_script_path: Path to the actual hook script to execute
+            is_debug: Whether debug mode is enabled for this hook
+            stdin_data: Optional stdin data (if already read by caller)
 
         Returns:
             Exit code (0 for success, non-zero for failure)
         """
-        # 1. Detect adapter
+        # 1. Read raw input from stdin (or use provided data)
+        raw_input = stdin_data if stdin_data is not None else sys.stdin.read()
+
+        # 2. Detect adapter based on input format
         try:
-            adapter = self.detect_adapter()
+            adapter = self.detect_adapter(raw_input)
         except RuntimeError as e:
             print(json.dumps({"error": str(e)}), file=sys.stderr)
             return 1
-
-        # 2. Read raw input from stdin
-        raw_input = sys.stdin.read()
 
         # 3. Translate input to unified format
         unified_input = adapter.translate_input(raw_input)
@@ -373,7 +389,7 @@ class UniversalInterceptor:
         # 4. Execute the hook script
         try:
             unified_output = self._execute_hook(
-                hook_script_path, unified_input, adapter.provider.value
+                hook_script_path, unified_input, adapter.provider.value, is_debug
             )
         except subprocess.CalledProcessError as e:
             # Script failed - return deny decision
@@ -394,7 +410,7 @@ class UniversalInterceptor:
         return 0
 
     def _execute_hook(
-        self, script_path: str, unified_input: UnifiedHookInput, provider: str
+        self, script_path: str, unified_input: UnifiedHookInput, provider: str, is_debug: bool = False
     ) -> UnifiedDecision:
         """
         Execute the hook script with unified input.
@@ -421,6 +437,11 @@ class UniversalInterceptor:
         # Add tool info if available
         if unified_input.tool:
             env["MONOCO_HOOK_TOOL"] = unified_input.tool
+
+        # Propagate debug flag if set
+        if os.environ.get("MONOCO_HOOK_DEBUG") or is_debug:
+            env["MONOCO_HOOK_DEBUG"] = "1"
+            env["MONOCO_HOOK_IS_DEBUG"] = "true"
 
         # Execute the script
         input_json = json.dumps(unified_input.to_dict())
