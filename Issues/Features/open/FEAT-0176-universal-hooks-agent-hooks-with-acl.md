@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 'Universal Hooks: Agent Hooks with ACL'
 created_at: '2026-02-04T13:27:08'
-updated_at: '2026-02-04T17:00:56'
+updated_at: '2026-02-04T17:04:15'
 parent: EPIC-0034
 dependencies:
 - FEAT-0174
@@ -25,7 +25,7 @@ files:
 - monoco/features/hooks/dispatchers/agent_dispatcher.py
 - monoco/features/hooks/universal_interceptor.py
 criticality: high
-solution: implemented # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-04T13:27:08'
 isolation:
   type: branch
