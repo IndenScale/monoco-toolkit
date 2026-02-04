@@ -3,7 +3,7 @@ id: FEAT-0174
 uid: af0242
 type: feature
 status: open
-stage: doing
+stage: review
 title: 再次测试 issue close 合并策略
 created_at: '2026-02-04T11:26:04'
 updated_at: '2026-02-04T11:26:08'
