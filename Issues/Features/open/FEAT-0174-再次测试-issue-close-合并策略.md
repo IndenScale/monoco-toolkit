@@ -23,7 +23,8 @@ opened_at: '2026-02-04T11:26:04'
 ## FEAT-0174: 再次测试 issue close 合并策略
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+
+**Main 分支修改** - 用于测试当主线和 feature branch 都修改 Issue 文件时，close 是否能正常工作。
 
 ## Acceptance Criteria
 <!-- Define binary conditions for success. -->
