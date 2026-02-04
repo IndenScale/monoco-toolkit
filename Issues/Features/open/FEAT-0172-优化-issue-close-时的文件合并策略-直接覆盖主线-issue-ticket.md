@@ -14,16 +14,14 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0172'
-files:
-- '"Issues/Features/open/FEAT-0172-\344\274\230\345\214\226-issue-close-\346\227\266\347\232\204\346\226\207\344\273\266\345\220\210\345\271\266\347\255\226\347\225\245-\347\233\264\346\216\245\350\246\206\347\233\226\344\270\273\347\272\277-issue-ticket.md"'
-- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
-- monoco/features/issue/core.py
+files: []
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T11:17:02'
 isolation:
   type: branch
   ref: feat/feat-0172-优化-issue-close-时的文件合并策略-直接覆盖主线-issue-ticket
+  path: null
   created_at: '2026-02-04T11:17:28'
 ---
 
