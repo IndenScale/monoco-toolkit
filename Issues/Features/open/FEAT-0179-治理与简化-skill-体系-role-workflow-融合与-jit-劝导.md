@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 治理与简化 Skill 体系：Role/Workflow 融合与 JIT 劝导
 created_at: '2026-02-04T20:40:16'
-updated_at: '2026-02-04T22:19:10'
+updated_at: 2026-02-04 22:19:11
 parent: EPIC-0030
 dependencies:
 - CHORE-0039
@@ -18,15 +18,22 @@ tags:
 - '#EPIC-0030'
 - '#FEAT-0179'
 files:
+- monoco/features/agent/resources/
+- monoco/features/issue/resources/hooks/
+- monoco/features/hooks/resources/hooks/
 - .gemini/skills/
 - .claude/skills/
 - AGENTS.md
 - monoco/core/sync.py
 - monoco/core/injection.py
-- monoco/features/hooks/
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T20:40:16'
+isolation:
+  type: branch
+  ref: FEAT-0179-治理与简化-skill-体系-role-workflow-融合与-jit-劝导
+  path: null
+  created_at: '2026-02-04T22:19:11'
 ---
 
 ## FEAT-0179: 治理与简化 Skill 体系：Role/Workflow 融合与 JIT 劝导
@@ -247,19 +254,19 @@ Hook 脚本可通过 stdout 返回 JSON:
 ---
 
 ## Acceptance Criteria
-- [ ] `.gemini/skills` `.claude/skills` 目录下的冗余技能（Workflow/Atom）被移除
-- [ ] Role 技能整合了必要的工作流逻辑，初始化速度提升
-- [ ] `AGENTS.md` 中的资源声明得到简化
-- [ ] 实现至少一个工作流阶段的 JIT 劝导（如：start 分支检查）
+- [x] `.gemini/skills` `.claude/skills` 目录下的冗余技能（Workflow/Atom）被移除
+- [x] Role 技能整合了必要的工作流逻辑，初始化速度提升
+- [x] `AGENTS.md` 中的资源声明得到简化
+- [x] 实现至少一个工作流阶段的 JIT 劝导（如：start 分支检查）
 
 ## Technical Tasks
-- [ ] **Skill 融合**: 将 `monoco_workflow_agent_*` 逻辑合并入 `monoco_role_*`
-- [ ] **清理冗余**: 删除所有 `monoco_atom_*` 技能文件
-- [ ] **重构 AGENTS.md**: 简化角色资源配置，移除对已删除技能的引用
-- [ ] **实现 JIT 注入**: 基于 CHORE-0039 的设计，在关键工具调用前后注入劝导信息
-  - [ ] 创建 `features/issue/resources/hooks/before-tool.sh` - 分支检查劝导
-  - [ ] 创建 `features/issue/resources/hooks/session-start.sh` - Issue 上下文注入
-  - [ ] 验证 `universal_interceptor.py` 的 additionalContext 传递
+- [x] **Skill 融合**: 将 `monoco_workflow_agent_*` 逻辑合并入 `monoco_role_*`
+- [x] **清理冗余**: 删除所有 `monoco_atom_*` 技能文件
+- [x] **重构 AGENTS.md**: 简化角色资源配置，移除对已删除技能的引用
+- [x] **实现 JIT 注入**: 基于 CHORE-0039 的设计，在关键工具调用前后注入劝导信息
+  - [x] 创建 `features/issue/resources/hooks/agent/before-tool.sh` - 分支检查劝导
+  - [x] 创建 `features/issue/resources/hooks/agent/session-start.sh` - Issue 上下文注入
+  - [x] 验证 `universal_interceptor.py` 的 additionalContext 传递
 
 ## Implementation Notes
 
