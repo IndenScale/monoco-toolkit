@@ -582,61 +582,11 @@ def find_issue_path_across_branches(
     # Get current branch
     current_branch = git.get_current_branch(project_root)
     
-    # Search in all branches to detect conflicts (FIX-0006)
-    # If found locally, we still check other branches to detect potential duplicate files (conflict)
+    # Issue files existing in multiple branches is NORMAL - not a conflict
+    # Just return the local path without any conflict checking
     if local_path:
-        # Get relative path for git checking
-        try:
-            rel_path = local_path.relative_to(project_root)
-        except ValueError:
-            # If path is outside project root, we can't search other branches anyway
-            return local_path, current_branch, None
-            
-        raw_conflicting_branches = _find_branches_with_file(project_root, str(rel_path), current_branch)
-        
-        # SPECIAL CASE (FIX-0006): During 'issue close' or similar operations,
-        # it is expected that the file exists in the feature branch (isolation branch)
-        # and now in the target branch (e.g. main). This is NOT a conflict.
-        conflicting_branches = raw_conflicting_branches
-        isolation_branch = None
-        if raw_conflicting_branches:
-            # Try to parse metadata to see if these "conflicts" are actually the isolation branch
-            try:
-                meta = parse_issue(local_path)
-                if meta and meta.isolation:
-                    iso_type = getattr(meta.isolation, "type", None)
-                    iso_ref = getattr(meta.isolation, "ref", None)
-                    
-                    source_branch = None
-                    if iso_type == "branch":
-                        source_branch = iso_ref
-                    elif iso_ref and iso_ref.startswith("branch:"):
-                        source_branch = iso_ref[7:]
-                    
-                    if source_branch:
-                        isolation_branch = source_branch
-                        # Filter out the source branch from conflicts
-                        conflicting_branches = [b for b in conflicting_branches if b != source_branch]
-            except Exception:
-                # If parsing fails, stick with raw conflicts to be safe
-                pass
-
-        # CHORE-0036: When allow_multi_branch=True, report multi-branch including isolation branch
-        # This allows 'issue close' to handle the case where Issue file exists in both main and feature
-        if raw_conflicting_branches:
-            if allow_multi_branch:
-                # Return all branches including current and isolation branch for the caller to handle
-                # Include isolation_branch if it was found, so caller can use it for checkout
-                all_branches = [current_branch] + raw_conflicting_branches
-                return local_path, current_branch, all_branches
-            elif conflicting_branches:
-                # Not allowing multi-branch, and there are still conflicts after filtering isolation
-                raise RuntimeError(
-                    f"Issue {issue_id} found in multiple branches: {current_branch}, {', '.join(conflicting_branches)}. "
-                    f"Please resolve the conflict by merging branches or deleting duplicate issue files."
-                )
         return local_path, current_branch, None
-        
+
     # Not found locally, search in all branches
     return _search_issue_in_branches(issues_root, issue_id, project_root, include_archived)
 
