@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 测试简化后的 close 命令
 created_at: '2026-02-04T11:44:34'
-updated_at: '2026-02-04T11:56:16'
+updated_at: 2026-02-04 11:56:16
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,10 +19,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-04T11:44:34'
 closed_at: '2026-02-04T11:56:16'
-isolation:
-  type: branch
-  ref: feat/feat-0175-测试简化后的-close-命令
-  created_at: '2026-02-04T11:44:38'
 ---
 
 ## FEAT-0175: 测试简化后的 close 命令
