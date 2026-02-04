@@ -3,10 +3,10 @@ id: FEAT-0176
 uid: 2daae5
 type: feature
 status: open
-stage: doing
+stage: review
 title: 'Universal Hooks: Agent Hooks with ACL'
 created_at: '2026-02-04T13:27:08'
-updated_at: '2026-02-04T16:50:14'
+updated_at: '2026-02-04T17:00:01'
 parent: EPIC-0034
 dependencies:
 - FEAT-0174
@@ -22,6 +22,10 @@ files:
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T13:27:08'
+isolation:
+  type: branch
+  ref: FEAT-0176-universal-hooks-agent-hooks-with-acl
+  created_at: '2026-02-04T16:50:15'
 ---
 
 ## FEAT-0176: Universal Hooks: Agent Hooks with ACL
@@ -36,40 +40,40 @@ Agent Hooks 需要 ACL 层因为不同 Agent 平台的 JSON 协议、字段命�
 
 ## 验收标准
 
-- [ ] 实现 `AgentHookDispatcher` 基类
-- [ ] 实现 `ClaudeCodeDispatcher`：注入 `.claude/settings.json`
-- [ ] 实现 `GeminiDispatcher`：注入 `.gemini/settings.json`
-- [ ] 实现 `UniversalInterceptor` 运行时拦截器
-- [ ] Provider 自动探测（环境变量：`CLAUDE_CODE_REMOTE`, `GEMINI_ENV_FILE`）
-- [ ] 协议翻译：Claude/Gemini 协议 ↔ Monoco 统一协议
+- [x] 实现 `AgentHookDispatcher` 基类
+- [x] 实现 `ClaudeCodeDispatcher`：注入 `.claude/settings.json`
+- [x] 实现 `GeminiDispatcher`：注入 `.gemini/settings.json`
+- [x] 实现 `UniversalInterceptor` 运行时拦截器
+- [x] Provider 自动探测（环境变量：`CLAUDE_CODE_REMOTE`, `GEMINI_ENV_FILE`）
+- [x] 协议翻译：Claude/Gemini 协议 ↔ Monoco 统一协议
 
 ## 技术任务
 
 ### AgentHookDispatcher 框架
-- [ ] 实现 `AgentHookDispatcher` 基类
-  - [ ] 按 `provider` 字段路由到对应子分发器
-- [ ] 实现 `ClaudeCodeDispatcher`
-  - [ ] 注入/更新 `.claude/settings.json` 的 `hooks` 数组
-  - [ ] 支持事件映射：Monoco `before-tool` → Claude `PreToolUse`
-- [ ] 实现 `GeminiDispatcher`
-  - [ ] 注入/更新 `.gemini/settings.json` 的 `hooks` 数组
-  - [ ] 支持事件映射：Monoco `before-tool` → Gemini `BeforeTool`
+- [x] 实现 `AgentHookDispatcher` 基类
+  - [x] 按 `provider` 字段路由到对应子分发器
+- [x] 实现 `ClaudeCodeDispatcher`
+  - [x] 注入/更新 `.claude/settings.json` 的 `hooks` 数组
+  - [x] 支持事件映射：Monoco `before-tool` → Claude `PreToolUse`
+- [x] 实现 `GeminiDispatcher`
+  - [x] 注入/更新 `.gemini/settings.json` 的 `hooks` 数组
+  - [x] 支持事件映射：Monoco `before-tool` → Gemini `BeforeTool`
 
 ### UniversalInterceptor (ACL 层)
-- [ ] 实现 `universal-interceptor` 脚本（Python）
-- [ ] Provider 自动探测：
-  - [ ] Claude: 检测 `CLAUDE_CODE_REMOTE` 环境变量
-  - [ ] Gemini: 检测 `GEMINI_ENV_FILE` 环境变量
-- [ ] 实现适配器：
-  - [ ] `ClaudeAdapter`: 翻译输入/输出协议
+- [x] 实现 `universal-interceptor` 脚本（Python）
+- [x] Provider 自动探测：
+  - [x] Claude: 检测 `CLAUDE_CODE_REMOTE` 环境变量
+  - [x] Gemini: 检测 `GEMINI_ENV_FILE` 环境变量
+- [x] 实现适配器：
+  - [x] `ClaudeAdapter`: 翻译输入/输出协议
     - `PreToolUse` ↔ `before-tool`
     - `UserPromptSubmit` ↔ `before-agent`
     - `permissionDecision` → `decision`
-  - [ ] `GeminiAdapter`: 翻译输入/输出协议
+  - [x] `GeminiAdapter`: 翻译输入/输出协议
     - `BeforeTool` ↔ `before-tool`
     - `BeforeAgent` ↔ `before-agent`
     - `decision` 字段直通
-- [ ] 统一决策模型：`{ decision: allow/deny/ask, reason, message }`
+- [x] 统一决策模型：`{ decision: allow/deny/ask, reason, message }`
 
 ### Hook 配置生成
 生成的配置示例：
@@ -92,9 +96,41 @@ Agent Hooks 需要 ACL 层因为不同 Agent 平台的 JSON 协议、字段命�
 ```
 
 ### 集成
-- [ ] 注册 `ClaudeCodeDispatcher` 和 `GeminiDispatcher` 到 `UniversalHookManager`
-- [ ] 在 `monoco sync` 中触发 Agent Hooks 同步
-- [ ] 在 `monoco uninstall` 中清理 Agent Hooks
+- [x] 注册 `ClaudeCodeDispatcher` 和 `GeminiDispatcher` 到 `UniversalHookManager`
+- [x] 在 `monoco sync` 中触发 Agent Hooks 同步
+- [x] 在 `monoco uninstall` 中清理 Agent Hooks
 
 ## Review Comments
 <!-- 评审阶段时填写 -->
+
+### Implementation Summary
+
+#### 1. AgentHookDispatcher Framework
+- **Base Class** (`AgentHookDispatcher`): Abstract base class with provider auto-detection via environment variables (`CLAUDE_CODE_REMOTE`, `GEMINI_ENV_FILE`)
+- **ClaudeCodeDispatcher**: Specialized dispatcher for Claude Code that:
+  - Injects hook configurations into `.claude/settings.json`
+  - Maps Monoco events to Claude events: `before-tool` → `PreToolUse`, `before-agent` → `UserPromptSubmit`
+  - Generates matcher-based hook configurations
+- **GeminiDispatcher**: Specialized dispatcher for Gemini CLI that:
+  - Injects hook configurations into `.gemini/settings.json`
+  - Maps Monoco events to Gemini events: `before-tool` → `BeforeTool`, `before-agent` → `BeforeAgent`
+
+#### 2. UniversalInterceptor (ACL Layer)
+- **Runtime Detection**: Auto-detects agent platform from environment variables
+- **Protocol Translation**:
+  - `ClaudeAdapter`: Translates Claude's `permissionDecision` to unified `decision`, `PreToolUse` to `before-tool`
+  - `GeminiAdapter`: Translates Gemini's `decision` field directly, `BeforeTool` to `before-tool`
+- **Unified Decision Model**: `{ decision: allow/deny/ask, reason, message }`
+
+#### 3. Integration
+- Updated `monoco sync` to use new dispatchers with `sync()` method for full synchronization
+- Updated `monoco uninstall` to clean up Agent hooks from settings files
+- Updated `monoco hook run` to use UniversalInterceptor for agent hooks
+
+### Files Changed
+- `monoco/features/hooks/dispatchers/agent_dispatcher.py` - Complete rewrite with ACL support
+- `monoco/features/hooks/dispatchers/__init__.py` - Export new classes
+- `monoco/features/hooks/universal_interceptor.py` - New file (ACL runtime)
+- `monoco/features/hooks/__init__.py` - Export UniversalInterceptor and adapters
+- `monoco/features/hooks/commands.py` - Updated `run` command for agent hooks
+- `monoco/core/sync.py` - Updated sync and uninstall for agent hooks
