@@ -18,24 +18,24 @@ version: 1.0.0
 ```mermaid
 stateDiagram-v2
     [*] --> Setup: 开始开发
-    
+
     Setup --> Develop: 环境就绪
     Setup --> Setup: 依赖未满足<br/>(等待解决)
-    
+
     Develop --> Test: 编码完成
     Develop --> Develop: 需要迭代<br/>(继续开发)
-    
+
     Test --> Submit: 测试通过
     Test --> Develop: 测试失败<br/>(修复代码)
-    
+
     state "Review Loop" as ReviewLoop {
         Submit --> Review: 提交评审
         Review --> Fix: 需要修改
         Fix --> Submit: 重新提交
     }
-    
+
     Review --> Merge: 评审通过
-    
+
     Merge --> [*]: 合并完成
 ```
 
@@ -89,6 +89,7 @@ stateDiagram-v2
   - [ ] 检查测试覆盖率
 
 **测试层次**:
+
 ```
 单元测试 → 集成测试 → 端到端测试 → 手动验证
    ↑          ↑            ↑            ↑
@@ -106,6 +107,7 @@ stateDiagram-v2
   - [ ] 运行 `monoco issue submit <ID>`
 
 **提交信息规范**:
+
 ```
 <type>(<scope>): <subject>
 
@@ -114,15 +116,15 @@ stateDiagram-v2
 Refs: <ISSUE-ID>
 ```
 
-| 类型 | 用途 |
-|------|------|
-| feat | 新功能 |
-| fix | 缺陷修复 |
-| docs | 文档更新 |
-| style | 代码格式 |
-| refactor | 重构 |
-| test | 测试相关 |
-| chore | 构建/工具 |
+| 类型     | 用途      |
+| -------- | --------- |
+| feat     | 新功能    |
+| fix      | 缺陷修复  |
+| docs     | 文档更新  |
+| style    | 代码格式  |
+| refactor | 重构      |
+| test     | 测试相关  |
+| chore    | 构建/工具 |
 
 ### 5. Review (评审)
 
@@ -152,19 +154,19 @@ Refs: <ISSUE-ID>
   - [ ] 代码已通过评审
   - [ ] 所有 CI 检查通过
   - [ ] 代码已合并到主分支
-  - [ ] 运行 `monoco issue close <ID> --solution completed --prune`
+  - [ ] 运行 `monoco issue close <ID> --solution completed `
   - [ ] 验证分支已清理
   - [ ] 更新 Review Comments（记录评审反馈）
 
 ## 决策分支
 
-| 条件 | 动作 |
-|------|------|
-| 依赖 Issue 未完成 | 返回 Setup，等待依赖 |
-| 测试失败 | 返回 Develop，修复代码 |
-| Lint 失败 | 修复合规性问题，重新 Submit |
-| 评审需要修改 | 返回 Fix，按反馈修改 |
-| 评审通过 | 进入 Merge，合并并清理 |
+| 条件              | 动作                        |
+| ----------------- | --------------------------- |
+| 依赖 Issue 未完成 | 返回 Setup，等待依赖        |
+| 测试失败          | 返回 Develop，修复代码      |
+| Lint 失败         | 修复合规性问题，重新 Submit |
+| 评审需要修改      | 返回 Fix，按反馈修改        |
+| 评审通过          | 进入 Merge，合并并清理      |
 
 ## 合规要求
 
@@ -191,7 +193,7 @@ monoco issue lint
 monoco issue submit FEAT-0001
 
 # 关闭 Issue
-monoco issue close FEAT-0001 --solution completed --prune
+monoco issue close FEAT-0001 --solution completed
 ```
 
 ## 与 flow_engineer 的关系
@@ -217,6 +219,7 @@ issue-develop-workflow          flow_engineer
 ## Copilot 模式提示
 
 作为 AI Copilot，你应该：
+
 1. **协助编码**: 帮助实现功能、修复缺陷
 2. **代码审查**: 在提交前进行预审查，发现潜在问题
 3. **测试协助**: 帮助编写测试用例，确保覆盖

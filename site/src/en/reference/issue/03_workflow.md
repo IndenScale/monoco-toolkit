@@ -61,7 +61,7 @@ monoco issue sync-files
 
 ```bash
 # Submit and Prune Resources (Delete branch)
-monoco issue submit FEAT-101 --prune
+monoco issue submit FEAT-101
 ```
 
 ### 2.4 Closing

@@ -15,24 +15,24 @@ Standardized workflow for Issue lifecycle, ensuring "Open → Start → Develop 
 ```mermaid
 stateDiagram-v2
     [*] --> Open: Create Issue
-    
+
     Open --> Start: Prepare Development
     Open --> Open: Requirements Unclear<br/>(Wait for Clarification)
-    
+
     Start --> Develop: Branch Created
     Start --> Start: Branch Conflict<br/>(Resolve Conflict)
-    
+
     Develop --> Submit: Development Complete
     Develop --> Develop: Tests Fail<br/>(Fix Code)
-    
+
     state "Oracle Loop" as ReviewLoop {
         Submit --> Review: Submit for Review
         Review --> Fix: Rejected
         Fix --> Submit: Resubmit
     }
-    
+
     Review --> Close: Approved for Merge
-    
+
     Close --> [*]: Cleanup Complete
 ```
 
@@ -95,20 +95,20 @@ stateDiagram-v2
 - **Goal**: Complete Issue, cleanup environment
 - **Checkpoints**:
   - [ ] Code is merged to main branch
-  - [ ] Run `monoco issue close <ID> --solution completed --prune`
+  - [ ] Run `monoco issue close <ID> --solution completed `
   - [ ] Verify branch is cleaned up
   - [ ] Update Review Comments (if needed)
 
 ## Decision Branches
 
-| Condition | Action |
-|-----------|--------|
-| Requirements unclear | Return to Open, request clarification |
-| Branch creation fails | Check Git status, resolve conflicts |
-| Tests fail | Return to Develop, fix code |
-| Lint fails | Fix compliance issues, resubmit |
-| Review rejected | Return to Develop, modify per feedback |
-| Review passed | Enter Close, merge and cleanup |
+| Condition             | Action                                 |
+| --------------------- | -------------------------------------- |
+| Requirements unclear  | Return to Open, request clarification  |
+| Branch creation fails | Check Git status, resolve conflicts    |
+| Tests fail            | Return to Develop, fix code            |
+| Lint fails            | Fix compliance issues, resubmit        |
+| Review rejected       | Return to Develop, modify per feedback |
+| Review passed         | Enter Close, merge and cleanup         |
 
 ## Compliance Requirements
 
@@ -138,21 +138,22 @@ monoco issue lint
 monoco issue submit FEAT-0001
 
 # Close Issue
-monoco issue close FEAT-0001 --solution completed --prune
+monoco issue close FEAT-0001 --solution completed
 ```
 
 ## Issue Type Guide
 
-| Type | Purpose | Prefix | Mindset |
-|------|---------|--------|---------|
-| Epic | Grand goals, vision container | EPIC- | Architect |
-| Feature | User value increment | FEAT- | Product Owner |
-| Chore | Engineering tasks | CHORE- | Builder |
-| Fix | Bug fixes | FIX- | Debugger |
+| Type    | Purpose                       | Prefix | Mindset       |
+| ------- | ----------------------------- | ------ | ------------- |
+| Epic    | Grand goals, vision container | EPIC-  | Architect     |
+| Feature | User value increment          | FEAT-  | Product Owner |
+| Chore   | Engineering tasks             | CHORE- | Builder       |
+| Fix     | Bug fixes                     | FIX-   | Debugger      |
 
 ## Relationship with flow_engineer
 
 This workflow complements `flow_engineer`:
+
 - `issue-lifecycle-workflow`: Focuses on Issue management process
 - `flow_engineer`: Focuses on code implementation process
 

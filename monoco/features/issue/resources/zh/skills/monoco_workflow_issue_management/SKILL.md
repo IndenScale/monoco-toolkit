@@ -15,24 +15,24 @@ Issue 生命周期的标准化工作流，确保 "Open → Start → Develop →
 ```mermaid
 stateDiagram-v2
     [*] --> Open: 创建 Issue
-    
+
     Open --> Start: 准备开发
     Open --> Open: 需求不清<br/>(等待澄清)
-    
+
     Start --> Develop: 分支创建
     Start --> Start: 分支冲突<br/>(解决冲突)
-    
+
     Develop --> Submit: 开发完成
     Develop --> Develop: 测试失败<br/>(修复代码)
-    
+
     state "Oracle Loop" as ReviewLoop {
         Submit --> Review: 提交评审
         Review --> Fix: 拒绝
         Fix --> Submit: 重新提交
     }
-    
+
     Review --> Close: 批准合并
-    
+
     Close --> [*]: 清理完成
 ```
 
@@ -95,20 +95,20 @@ stateDiagram-v2
 - **目标**: 完成 Issue，清理环境
 - **检查点**:
   - [ ] 代码已合并到主分支
-  - [ ] 运行 `monoco issue close <ID> --solution completed --prune`
+  - [ ] 运行 `monoco issue close <ID> --solution completed `
   - [ ] 验证分支已清理
   - [ ] 更新 Review Comments（如需要）
 
 ## 决策分支
 
-| 条件 | 动作 |
-|------|------|
-| 需求不清晰 | 返回 Open，请求澄清 |
-| 分支创建失败 | 检查 Git 状态，解决冲突 |
-| 测试失败 | 返回 Develop，修复代码 |
-| Lint 失败 | 修复合规性问题，重新 Submit |
-| 评审拒绝 | 返回 Develop，按反馈修改 |
-| 评审通过 | 进入 Close，合并并清理 |
+| 条件         | 动作                        |
+| ------------ | --------------------------- |
+| 需求不清晰   | 返回 Open，请求澄清         |
+| 分支创建失败 | 检查 Git 状态，解决冲突     |
+| 测试失败     | 返回 Develop，修复代码      |
+| Lint 失败    | 修复合规性问题，重新 Submit |
+| 评审拒绝     | 返回 Develop，按反馈修改    |
+| 评审通过     | 进入 Close，合并并清理      |
 
 ## 合规要求
 
@@ -138,21 +138,22 @@ monoco issue lint
 monoco issue submit FEAT-0001
 
 # 关闭 Issue
-monoco issue close FEAT-0001 --solution completed --prune
+monoco issue close FEAT-0001 --solution completed
 ```
 
 ## Issue 类型指南
 
-| 类型 | 用途 | 前缀 | Mindset |
-|------|------|------|---------|
-| Epic | 宏大目标、愿景容器 | EPIC- | Architect |
-| Feature | 用户价值增量 | FEAT- | Product Owner |
-| Chore | 工程性事务 | CHORE- | Builder |
-| Fix | 缺陷修复 | FIX- | Debugger |
+| 类型    | 用途               | 前缀   | Mindset       |
+| ------- | ------------------ | ------ | ------------- |
+| Epic    | 宏大目标、愿景容器 | EPIC-  | Architect     |
+| Feature | 用户价值增量       | FEAT-  | Product Owner |
+| Chore   | 工程性事务         | CHORE- | Builder       |
+| Fix     | 缺陷修复           | FIX-   | Debugger      |
 
 ## 与 flow_engineer 的关系
 
 此工作流与 `flow_engineer` 互补：
+
 - `issue-lifecycle-workflow`: 关注 Issue 管理流程
 - `flow_engineer`: 关注代码实现流程
 
