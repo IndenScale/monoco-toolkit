@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 治理与简化 Skill 体系：Role/Workflow 融合与 JIT 劝导
 created_at: '2026-02-04T20:40:16'
-updated_at: '2026-02-04T22:25:55'
+updated_at: '2026-02-04T22:30:43'
 parent: EPIC-0030
 dependencies:
 - CHORE-0039
@@ -47,8 +47,33 @@ files:
 - monoco/features/agent/resources/zh/skills/monoco_workflow_agent_manager/SKILL.md
 - monoco/features/agent/resources/zh/skills/monoco_workflow_agent_planner/SKILL.md
 - monoco/features/agent/resources/zh/skills/monoco_workflow_agent_reviewer/SKILL.md
+- monoco/features/artifact/resources/zh/skills/monoco_atom_artifact/SKILL.md
+- monoco/features/glossary/resources/en/skills/monoco_atom_glossary/SKILL.md
+- monoco/features/glossary/resources/zh/skills/monoco_atom_glossary/SKILL.md
+- monoco/features/i18n/resources/en/skills/monoco_atom_i18n/SKILL.md
+- monoco/features/i18n/resources/en/skills/monoco_workflow_i18n_scan/SKILL.md
+- monoco/features/i18n/resources/zh/skills/monoco_atom_i18n/SKILL.md
+- monoco/features/i18n/resources/zh/skills/monoco_workflow_i18n_scan/SKILL.md
+- monoco/features/issue/resources/en/skills/monoco_atom_issue/SKILL.md
+- monoco/features/issue/resources/en/skills/monoco_workflow_issue_creation/SKILL.md
+- monoco/features/issue/resources/en/skills/monoco_workflow_issue_development/SKILL.md
+- monoco/features/issue/resources/en/skills/monoco_workflow_issue_management/SKILL.md
+- monoco/features/issue/resources/en/skills/monoco_workflow_issue_refinement/SKILL.md
 - monoco/features/issue/resources/hooks/agent/before-tool.sh
 - monoco/features/issue/resources/hooks/agent/session-start.sh
+- monoco/features/issue/resources/zh/skills/monoco_atom_issue_lifecycle/SKILL.md
+- monoco/features/issue/resources/zh/skills/monoco_workflow_issue_creation/SKILL.md
+- monoco/features/issue/resources/zh/skills/monoco_workflow_issue_development/SKILL.md
+- monoco/features/issue/resources/zh/skills/monoco_workflow_issue_management/SKILL.md
+- monoco/features/issue/resources/zh/skills/monoco_workflow_issue_refinement/SKILL.md
+- monoco/features/memo/resources/en/skills/monoco_atom_memo/SKILL.md
+- monoco/features/memo/resources/en/skills/monoco_workflow_note_processing/SKILL.md
+- monoco/features/memo/resources/zh/skills/monoco_atom_memo/SKILL.md
+- monoco/features/memo/resources/zh/skills/monoco_workflow_note_processing/SKILL.md
+- monoco/features/spike/resources/en/skills/monoco_atom_spike/SKILL.md
+- monoco/features/spike/resources/en/skills/monoco_workflow_research/SKILL.md
+- monoco/features/spike/resources/zh/skills/monoco_atom_spike/SKILL.md
+- monoco/features/spike/resources/zh/skills/monoco_workflow_research/SKILL.md
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T20:40:16'
