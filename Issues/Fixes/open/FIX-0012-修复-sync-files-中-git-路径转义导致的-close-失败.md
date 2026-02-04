@@ -80,7 +80,7 @@ feat/feat-0165-xxx: error: pathspec
 - [x] 修改 `merge_issue_changes()` (core.py:1449-1453)
   - [x] 检出文件前检查路径是否仍为转义格式
   - [x] 如有需要，解码后尝试检出
-- [-] 更新 `find_issue_path_across_branches()` 中的路径处理（如适用）
+- [x] 更新 `find_issue_path_across_branches()` 中的路径处理（如适用）
 
 ### Phase 3: 测试与验证
 
@@ -90,10 +90,10 @@ feat/feat-0165-xxx: error: pathspec
     - [x] 中文路径 `"path-\351\207\215.md"` → `path-重.md`
     - [x] 空格路径 `"path\ with\ space.md"` → `path with space.md`
     - [x] 已解码路径（无引号，无变化）
-- [-] 手动验证修复流程
-  - [-] 创建含中文标题的 Feature
-  - [-] 执行 `sync-files` 验证 YAML 存储格式
-  - [-] 执行 `close` 验证能成功完成
+- [x] 手动验证修复流程
+  - [x] 创建含中文标题的 Feature
+  - [x] 执行 `sync-files` 验证 YAML 存储格式
+  - [x] 执行 `close` 验证能成功完成
 
 ## Review Comments
 
