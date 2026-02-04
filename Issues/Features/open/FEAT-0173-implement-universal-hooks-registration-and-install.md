@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 实现通用 Hooks 注册与安装机制
 created_at: '2026-02-04T13:02:30'
-updated_at: '2026-02-04T13:02:55'
+updated_at: 2026-02-04 13:02:56
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,8 +16,13 @@ tags:
 - '#FEAT-0173'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T13:02:30'
+isolation:
+  type: branch
+  ref: feat/feat-0173-实现通用-hooks-注册与安装机制
+  path: null
+  created_at: '2026-02-04T13:02:56'
 ---
 
 ## FEAT-0173: 实现通用 Hooks 注册与安装机制
@@ -36,6 +41,10 @@ opened_at: '2026-02-04T13:02:30'
 - [ ] 确保与现有 Git Hooks 管理逻辑（如 Marker 标记、权限修改）完全兼容。
 
 ## 技术任务
+- [ ] **前期调研**:
+  - [x] 完成 Agent Hooks (Claude Code, Gemini CLI) 调查报告。
+  - [x] 完善 Git Hooks 标准化方案方案。
+  - [x] 调研 IDE Hooks 集成可行性。
 - [ ] **建模与解析**:
   - [ ] 定义 `HookMetadata` Pydantic 模型。
   - [ ] 实现 `HookParser`，支持多种注释风格（`#`, `//`, `--`）下的 YAML 提取。
