@@ -35,10 +35,10 @@ isolation:
 调查并设计一套统一的钩子系统，用于实现 Just-in-Time (JIT) 劝导。该系统需整合 Git Hooks、IDE Hooks 以及 Agent 框架 Hooks，通过反馈环将环境约束动态注入 Agent 会话。
 
 ## Acceptance Criteria
-- [ ] 完成对 Gemini CLI 和 Claude Code 钩子机制的调研
-- [ ] 创建并完善 `docs/zh/40_hooks/` 目录下的架构文档
-- [ ] 定义统一的 Hook 触发与 Prompt 注入协议
-- [ ] 论证 JIT 劝导在减少 Skill 冗余方面的有效性
+- [x] 完成对 Gemini CLI 和 Claude Code 钩子机制的调研
+- [x] 创建并完善 `docs/zh/40_hooks/` 目录下的架构文档
+- [x] 定义统一的 Hook 触发与 Prompt 注入协议
+- [x] 论证 JIT 劝导在减少 Skill 冗余方面的有效性
 
 ## Technical Tasks
 - [x] 调研现有 Agent 框架的 Middleware/Hooks 注入点
