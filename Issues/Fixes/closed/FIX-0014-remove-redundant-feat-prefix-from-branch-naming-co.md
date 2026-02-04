@@ -27,7 +27,6 @@ files:
 - tests/features/issue/test_sync_files_uncommitted.py
 - tests/features/issue/test_branch_id_matching.py
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T12:26:05'
 ---
 
@@ -41,15 +40,15 @@ opened_at: '2026-02-04T12:26:05'
 3. **额外层级**: 增加路径深度，无实际收益
 
 改为 `{id}-{slug}` 扁平格式：
-- `FEAT-0123-login-page`
-- `FIX-0001-critical-bug`
-- `CHORE-0099-refactor`
+- `FEAT-XXXX-login-page`
+- `FIX-XXXX-critical-bug`
+- `CHORE-XXXX-refactor`
 
 ## Acceptance Criteria
-- [ ] 分支命名改为 `{id}-{slug}` 格式
-- [ ] 更新所有 Issue resources 中的文档（AGENTS.md, SKILL.md）
-- [ ] 更新所有相关测试用例
-- [ ] 向后兼容：能识别旧格式的 isolation.ref
+- [x] 分支命名改为 `{id}-{slug}` 格式
+- [x] 更新所有 Issue resources 中的文档（AGENTS.md, SKILL.md）
+- [x] 更新所有相关测试用例
+- [x] 向后兼容：能识别旧格式的 isolation.ref
 
 ## Technical Tasks
 - [x] 修改 `core.py` 中 `start_issue_isolation()` 的分支命名逻辑
@@ -63,4 +62,5 @@ opened_at: '2026-02-04T12:26:05'
 - [x] 移除向后兼容逻辑（彻底放弃旧格式）
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- 验证通过。分支命名已统一为 `{id}-{slug}`，显著减少了路径嵌套深度。
+- 文档与测试已同步更新。
