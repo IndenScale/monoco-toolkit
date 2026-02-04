@@ -13,6 +13,7 @@ project:
     agentskills: https://github.com/agentskills/agentskills
     claude-agent-sdk-python: https://github.com/anthropics/claude-agent-sdk-python
     claude-code: https://github.com/anthropics/claude-code
+    codex: https://github.com/openai/codex
     gemini-cli: https://github.com/google-gemini/gemini-cli
     kimi-agent-sdk: https://github.com/MoonshotAI/kimi-agent-sdk
     monoco-toolkit: https://github.com/IndenScale/monoco-toolkit
