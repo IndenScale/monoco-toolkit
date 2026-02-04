@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 优化 issue close 时的文件合并策略：直接覆盖主线 issue ticket
 created_at: '2026-02-04T11:17:02'
-updated_at: '2026-02-04T13:48:28'
+updated_at: '2026-02-04T13:48:37'
 parent: EPIC-0000
 dependencies: []
 related: []
