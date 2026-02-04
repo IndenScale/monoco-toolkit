@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 重构 Memo Inbox 为信号队列模型：消费即销毁
 created_at: '2026-02-03T14:24:54'
-updated_at: 2026-02-04 10:30:00
+updated_at: '2026-02-04T10:03:49'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -15,24 +15,25 @@ tags:
 - '#EPIC-0000'
 - '#FEAT-0165'
 files:
+- '"Issues/Features/open/FEAT-0165-\351\207\215\346\236\204-memo-inbox-\344\270\272\344\277\241\345\217\267\351\230\237\345\210\227\346\250\241\345\236\213-\346\266\210\350\264\271\345\215\263\351\224\200\346\257\201.md"'
+- .monoco/project.yaml
+- AGENTS.md
 - monoco/core/automation/handlers.py
 - monoco/core/watcher/memo.py
 - monoco/features/memo/cli.py
 - monoco/features/memo/core.py
 - monoco/features/memo/models.py
-- monoco/features/memo/resources/zh/AGENTS.md
 - monoco/features/memo/resources/en/AGENTS.md
-- AGENTS.md
-- tests/core/watcher/test_memo_watcher.py
+- monoco/features/memo/resources/zh/AGENTS.md
 - tests/core/automation/test_memo_threshold_handler.py
+- tests/core/watcher/test_memo_watcher.py
 - tests/features/memo/test_memo_lifecycle.py
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-03T14:24:54'
 isolation:
   type: branch
   ref: feat/feat-0165-重构-memo-inbox-为信号队列模型-消费即销毁
-  path: null
   created_at: '2026-02-04T09:54:17'
 ---
 
