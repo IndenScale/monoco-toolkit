@@ -1383,12 +1383,6 @@ def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> Li
     # Decode Git C-quoting format paths to native paths
     changed_files = [_unquote_git_path(f) for f in changed_files]
 
-    # FEAT-0172: Exclude the issue file itself from changed_files
-    # Issue files are metadata and should not be merged via git checkout.
-    # They are handled separately by update_issue (moving directories + status update).
-    relative_issue_path = str(path.relative_to(project_root))
-    changed_files = [f for f in changed_files if f != relative_issue_path]
-
     # Sort for consistency
     changed_files.sort()
 
@@ -1483,20 +1477,16 @@ def merge_issue_changes(
     # This handles files stored before the _unquote_git_path fix was applied
     decoded_files = [_unquote_git_path(f) for f in issue.files]
 
-    # FEAT-0172: Exclude the issue file itself from merge operations
-    # Issue files are metadata and should be handled by update_issue, not git checkout.
-    # The feature branch version always takes precedence.
-    relative_issue_path = str(path.relative_to(project_root))
-    files_to_merge = [f for f in decoded_files if f != relative_issue_path]
-
-    if not files_to_merge:
-        # Nothing to merge except the issue file itself (handled by update_issue)
+    if not decoded_files:
         return []
 
-    # 1. Conflict Check
-    # A conflict occurs if a file in 'files' has changed on HEAD (main)
-    # since the common ancestor of HEAD and source_ref.
+    # Identify the issue file path
+    relative_issue_path = str(path.relative_to(project_root))
 
+    # Separate files: issue file vs code files
+    code_files = [f for f in decoded_files if f != relative_issue_path]
+
+    # 1. Conflict Check (only for code files, issue file skips conflict check)
     current_head = git.get_current_branch(project_root)
     try:
         base = git.get_merge_base(project_root, current_head, source_ref)
@@ -1504,7 +1494,7 @@ def merge_issue_changes(
         raise RuntimeError(f"Failed to determine merge base: {e}")
 
     conflicts = []
-    for f in files_to_merge:
+    for f in code_files:
         # Has main changed this file?
         if git.has_diff(project_root, base, current_head, [f]):
             # Has feature also changed this file?
@@ -1519,6 +1509,8 @@ def merge_issue_changes(
         )
 
     # 2. Perform Atomic Merge (Selective Checkout)
+    # Issue file is always included (no conflict check), along with conflict-free code files
+    files_to_merge = decoded_files
     try:
         git.git_checkout_files(project_root, source_ref, files_to_merge)
     except Exception as e:
