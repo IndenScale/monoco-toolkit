@@ -165,7 +165,7 @@ def sync_command(
     # 5. Distribute Workflows (if --workflows flag is set)
     if workflows:
         console.print("[bold blue]Distributing Flow Skills as Workflows...[/bold blue]")
-        
+
         try:
             workflow_results = skill_manager.distribute_workflows(force=False, lang=skill_lang)
             success_count = sum(1 for v in workflow_results.values() if v)
@@ -181,6 +181,87 @@ def sync_command(
             console.print(
                 f"[red]  Failed to distribute workflows: {e}[/red]"
             )
+
+    # 6. Sync Universal Hooks (Git & Agent)
+    console.print("[bold blue]Synchronizing Universal Hooks...[/bold blue]")
+
+    try:
+        from monoco.features.hooks import UniversalHookManager, HookType
+        from monoco.features.hooks.dispatchers import GitHookDispatcher, AgentHookDispatcher
+
+        hooks_manager = UniversalHookManager()
+        
+        # Register Dispatchers
+        git_dispatcher = GitHookDispatcher()
+        hooks_manager.register_dispatcher(HookType.GIT, git_dispatcher)
+        
+        # Register Agent Dispatchers for active platforms
+        agent_dispatchers = {}
+        for provider in ["claude-code", "gemini-cli"]:
+            dispatcher = AgentHookDispatcher(provider=provider)
+            hooks_manager.register_dispatcher(HookType.AGENT, dispatcher)
+            agent_dispatchers[provider] = dispatcher
+
+        # 6.1 Scan for hooks
+        all_hooks = []
+        
+        # 6.1.1 Scan builtin hooks from hooks feature
+        try:
+            from monoco.features import hooks as hooks_module
+            hooks_feature_dir = Path(hooks_module.__file__).parent
+            builtin_hooks_dir = hooks_feature_dir / "resources" / "hooks"
+            if builtin_hooks_dir.exists():
+                groups = hooks_manager.scan(builtin_hooks_dir)
+                for group in groups.values():
+                    all_hooks.extend(group.hooks)
+        except Exception as e:
+            console.print(f"[dim]  No builtin hooks found: {e}[/dim]")
+
+        # 6.1.2 Scan for hooks in all active features
+        for feature in active_features:
+            if feature.name == "hooks":
+                continue # Already scanned
+                
+            import importlib
+            try:
+                # Use the module where the feature class is defined (usually adapter.py)
+                module_name = feature.__class__.__module__
+                module = importlib.import_module(module_name)
+                
+                if hasattr(module, "__file__") and module.__file__:
+                    # feature_dir is the directory containing adapter.py
+                    feature_dir = Path(module.__file__).parent
+                    hooks_resource_dir = feature_dir / "resources" / "hooks"
+                    
+                    if hooks_resource_dir.exists():
+                        groups = hooks_manager.scan(hooks_resource_dir)
+                        for group in groups.values():
+                            all_hooks.extend(group.hooks)
+            except Exception:
+                continue
+
+        # 6.2 Sync Git Hooks
+        git_hooks = [h for h in all_hooks if h.metadata.type == HookType.GIT]
+        git_results = git_dispatcher.sync(git_hooks, root)
+        
+        git_installed = sum(1 for v in git_results.values() if v)
+        if git_installed > 0:
+            console.print(f"[green]  ✓ Synchronized {git_installed} Git hooks[/green]")
+        elif git_hooks:
+            console.print("[yellow]  No Git hooks were successfully synchronized[/yellow]")
+
+        # 6.3 Sync Agent Hooks (Distribution)
+        agent_hooks = [h for h in all_hooks if h.metadata.type == HookType.AGENT]
+        for hook in agent_hooks:
+            provider = hook.metadata.provider
+            if provider in agent_dispatchers:
+                if agent_dispatchers[provider].install(hook, root):
+                    console.print(f"[green]  ✓ Distributed agent hook: {hook.script_path.name} to {provider}[/green]")
+
+    except Exception as e:
+        console.print(f"[red]  Failed to synchronize Universal Hooks: {e}[/red]")
+        import traceback
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
 
     # 4. Determine Targets
     targets = _get_targets(root, config, target)
@@ -299,7 +380,7 @@ def uninstall_command(
 
     # 3. Clean up Workflows
     console.print("[bold blue]Cleaning up distributed workflows...[/bold blue]")
-    
+
     try:
         removed_count = skill_manager.cleanup_workflows()
         if removed_count > 0:
@@ -310,3 +391,26 @@ def uninstall_command(
         console.print(
             f"[red]  Failed to clean workflows: {e}[/red]"
         )
+
+    # 4. Clean up Git Hooks
+    console.print("[bold blue]Cleaning up Git Hooks...[/bold blue]")
+
+    try:
+        from monoco.features.hooks.dispatchers import GitHookDispatcher
+
+        git_dispatcher = GitHookDispatcher()
+        installed = git_dispatcher.list_installed(root)
+
+        uninstalled = 0
+        for hook_info in installed:
+            if git_dispatcher.uninstall(hook_info["event"], root):
+                uninstalled += 1
+
+        if uninstalled > 0:
+            console.print(
+                f"[green]  ✓ Removed {uninstalled} Git hooks[/green]"
+            )
+        else:
+            console.print("[dim]  No Monoco Git hooks to clean up[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Failed to clean Git hooks: {e}[/red]")
