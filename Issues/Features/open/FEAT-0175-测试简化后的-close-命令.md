@@ -14,10 +14,7 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0175'
-files:
-- '"Issues/Features/open/FEAT-0175-\346\265\213\350\257\225\347\256\200\345\214\226\345\220\216\347\232\204-close-\345\221\275\344\273\244.md"'
-- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
-- test_feat_0175.py
+files: []
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T11:44:34'
