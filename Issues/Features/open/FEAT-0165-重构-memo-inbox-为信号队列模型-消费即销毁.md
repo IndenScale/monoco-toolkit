@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 重构 Memo Inbox 为信号队列模型：消费即销毁
 created_at: '2026-02-03T14:24:54'
-updated_at: '2026-02-04T09:54:16'
+updated_at: 2026-02-04 10:30:00
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,10 +14,26 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0165'
-files: []
+files:
+- monoco/core/automation/handlers.py
+- monoco/core/watcher/memo.py
+- monoco/features/memo/cli.py
+- monoco/features/memo/core.py
+- monoco/features/memo/models.py
+- monoco/features/memo/resources/zh/AGENTS.md
+- monoco/features/memo/resources/en/AGENTS.md
+- AGENTS.md
+- tests/core/watcher/test_memo_watcher.py
+- tests/core/automation/test_memo_threshold_handler.py
+- tests/features/memo/test_memo_lifecycle.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-03T14:24:54'
+isolation:
+  type: branch
+  ref: feat/feat-0165-重构-memo-inbox-为信号队列模型-消费即销毁
+  path: null
+  created_at: '2026-02-04T09:54:17'
 ---
 
 ## FEAT-0165: 重构 Memo Inbox 为信号队列模型：消费即销毁
@@ -57,45 +73,45 @@ opened_at: '2026-02-03T14:24:54'
 
 ## Acceptance Criteria
 
-- [ ] MemoWatcher 检测到 inbox.md 有内容时触发事件
-- [ ] MemoThresholdHandler 在调度 Architect 前**原子性清空** inbox.md
-- [ ] Architect Prompt 携带 memo 内容，不再读取文件
-- [ ] 删除 `Memo.status` 字段及其相关逻辑
-- [ ] 删除 `Memo.ref` 字段（Issue 通过 `source_memo` 追溯，非 memo 指向 issue）
-- [ ] 删除 `monoco memo link`、`monoco memo resolve` 命令
-- [ ] 更新 `monoco memo list` 只显示当前 inbox 内容（无 status 过滤）
-- [ ] 系统重启后不会重复处理已消费的 memo
+- [x] MemoWatcher 检测到 inbox.md 有内容时触发事件
+- [x] MemoThresholdHandler 在调度 Architect 前**原子性清空** inbox.md
+- [x] Architect Prompt 携带 memo 内容，不再读取文件
+- [x] 删除 `Memo.status` 字段及其相关逻辑
+- [x] 删除 `Memo.ref` 字段（Issue 通过 `source_memo` 追溯，非 memo 指向 issue）
+- [x] 删除 `monoco memo link`、`monoco memo resolve` 命令
+- [x] 更新 `monoco memo list` 只显示当前 inbox 内容（无 status 过滤）
+- [x] 系统重启后不会重复处理已消费的 memo
 
 ## Technical Tasks
 
 ### Phase 1: 核心逻辑重构
 
-- [ ] 修改 `MemoThresholdHandler._handle()` 实现"读取即清空"语义
+- [x] 修改 `MemoThresholdHandler._handle()` 实现"读取即清空"语义
   - 在 `await self.scheduler.schedule(task)` 之前清空 inbox.md
   - 将解析后的 memos 列表嵌入 Prompt，而非让 Architect 读取文件
-- [ ] 修改 `MemoWatcher._count_pending_memos()` 为检测"文件非空"而非"统计数量"
-- [ ] 添加文件锁或原子写操作，防止并发问题
+- [x] 修改 `MemoWatcher._count_pending_memos()` 为检测"文件非空"而非"统计数量"
+- [x] 使用原子文件写操作，防止并发问题
 
 ### Phase 2: 模型简化
 
-- [ ] 删除 `Memo.status` 字段（Literal["pending", "tracked", "resolved", "dismissed"]）
-- [ ] 删除 `Memo.ref` 字段
-- [ ] 简化 `Memo.to_markdown()`，移除 status 相关渲染
-- [ ] 更新 `parse_memo_block()`，移除 status 解析逻辑
+- [x] 删除 `Memo.status` 字段（Literal["pending", "tracked", "resolved", "dismissed"]
+- [x] 删除 `Memo.ref` 字段
+- [x] 简化 `Memo.to_markdown()`，移除 status 相关渲染
+- [x] 更新 `parse_memo_block()`，移除 status 解析逻辑
 
 ### Phase 3: CLI 清理
 
-- [ ] 删除 `monoco memo link` 命令
-- [ ] 删除 `monoco memo resolve` 命令
-- [ ] 简化 `monoco memo list`，移除 `--status` 过滤参数
-- [ ] 更新 `monoco memo delete` 为物理删除（保持现有行为）
+- [x] 删除 `monoco memo link` 命令
+- [x] 删除 `monoco memo resolve` 命令
+- [x] 简化 `monoco memo list`，移除 `--status` 过滤参数
+- [x] 更新 `monoco memo delete` 为物理删除（保持现有行为）
 
 ### Phase 4: 文档与测试
 
-- [ ] 更新 AGENTS.md 中关于 Memo 的描述
-- [ ] 更新 Architect Prompt 模板，说明新语义
-- [ ] 编写测试：模拟 serve 重启，验证 memo 不被重复处理
-- [ ] 编写测试：验证 inbox 清空后 Architect 仍能获得内容
+- [x] 更新 AGENTS.md 中关于 Memo 的描述
+- [x] 更新 Architect Prompt 模板，说明新语义
+- [x] 编写测试：模拟 serve 重启，验证 memo 不被重复处理
+- [x] 编写测试：验证 inbox 清空后 Architect 仍能获得内容
 
 ## Design Principles
 
@@ -118,3 +134,41 @@ Atomic Consumption
 
 ## Review Comments
 
+### 实现总结
+
+1. **MemoThresholdHandler** (`monoco/core/automation/handlers.py`):
+   - 新增 `_load_and_clear_memos()` 方法，在调度前原子性加载并清空 inbox
+   - 更新 `_build_prompt()` 将 memos 嵌入 prompt，而非让 Architect 读取文件
+   - 移除 `_last_processed_count` 状态依赖
+
+2. **MemoWatcher** (`monoco/core/watcher/memo.py`):
+   - 从 `_count_pending_memos()` 改为 `_count_memos()`，基于 header 模式匹配
+   - 简化统计逻辑，移除 checkbox 状态检查
+   - 更新 stats 字段名从 `pending_count` 到 `memo_count`
+
+3. **Memo 模型** (`monoco/features/memo/models.py`):
+   - 删除 `status` 和 `ref` 字段
+   - 更新 `to_markdown()` 移除 status 相关渲染
+
+4. **Core 模块** (`monoco/features/memo/core.py`):
+   - 更新 `parse_memo_block()` 移除 status/ref 解析
+   - 删除 `update_memo()` 函数（不再需要状态更新）
+
+5. **CLI** (`monoco/features/memo/cli.py`):
+   - 删除 `link` 和 `resolve` 命令
+   - 简化 `list` 命令，移除 `--status` 过滤
+   - 更新提示信息说明 Signal Queue 语义
+
+6. **文档**:
+   - 更新根目录 `AGENTS.md` 和 feature 资源文件
+   - 创建英文版 `AGENTS.md`
+
+7. **测试**:
+   - 更新 `test_memo_watcher.py` 匹配新实现
+   - 新增 `test_memo_threshold_handler.py` 测试 Signal Queue 语义
+   - 更新 `test_memo_lifecycle.py` 测试新模型
+
+### 测试覆盖
+
+- 32 个测试全部通过
+- 包含关键测试：`test_restart_does_not_reprocess` 验证重启幂等性

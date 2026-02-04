@@ -1,5 +1,5 @@
 """
-Unit tests for MemoWatcher.
+Unit tests for MemoWatcher (Signal Queue Model).
 """
 
 import asyncio
@@ -12,30 +12,27 @@ from monoco.core.scheduler import AgentEventType, EventBus
 
 
 class TestMemoWatcher:
-    """Test suite for MemoWatcher."""
+    """Test suite for MemoWatcher (Signal Queue Model)."""
     
     @pytest.fixture
     def sample_memo_content(self):
-        """Sample memo inbox content."""
-        return """# Memo Inbox
+        """Sample memo inbox content with headers."""
+        return """# Monoco Memos Inbox
 
-- Idea 1
-- Idea 2
-- Idea 3
-- Idea 4
-- Idea 5
-"""
-    
-    @pytest.fixture
-    def memo_with_checkboxes(self):
-        """Memo content with checkboxes."""
-        return """# Memo Inbox
+## [abc123] 2026-01-15 10:00:00
+- **Type**: insight
 
-- [ ] Pending idea 1
-- [ ] Pending idea 2
-- [x] Completed idea 3
-- [/] In progress idea 4
-- [ ] Pending idea 5
+Idea 1
+
+## [def456] 2026-01-15 10:30:00
+- **Type**: feature
+
+Idea 2
+
+## [ghi789] 2026-01-15 11:00:00
+- **Type**: bug
+
+Idea 3
 """
     
     @pytest.mark.asyncio
@@ -59,60 +56,62 @@ class TestMemoWatcher:
         await watcher.stop()
         assert not watcher.is_running()
     
-    def test_count_pending_memos_simple(self, tmp_path):
-        """MemoWatcher counts simple memo entries."""
+    def test_count_memos_simple(self, tmp_path):
+        """MemoWatcher counts memos by header pattern."""
         config = WatchConfig(path=tmp_path / "inbox.md")
         watcher = MemoWatcher(config)
         
-        content = """# Memo Inbox
+        content = """# Monoco Memos Inbox
 
-- Idea 1
-- Idea 2
-- Idea 3
+## [abc123] 2026-01-15 10:00:00
+Content 1
+
+## [def456] 2026-01-15 10:30:00
+Content 2
+
+## [abc789] 2026-01-15 11:00:00
+Content 3
 """
         
-        count = watcher._count_pending_memos(content)
+        count = watcher._count_memos(content)
         assert count == 3
     
-    def test_count_pending_memos_with_checkboxes(self, tmp_path):
-        """MemoWatcher counts only unchecked items."""
+    def test_count_memos_empty(self, tmp_path):
+        """MemoWatcher returns 0 for empty or header-only content."""
         config = WatchConfig(path=tmp_path / "inbox.md")
         watcher = MemoWatcher(config)
         
-        content = """# Memo Inbox
-
-- [ ] Pending 1
-- [x] Completed
-- [ ] Pending 2
-- [X] Also completed
-- [/] In progress
-- [-] Also in progress
-"""
+        # Empty content
+        assert watcher._count_memos("") == 0
+        assert watcher._count_memos("   ") == 0
         
-        count = watcher._count_pending_memos(content)
-        assert count == 4  # 2 pending + 2 in progress
+        # Header only (no memos)
+        header_only = "# Monoco Memos Inbox\n\n"
+        assert watcher._count_memos(header_only) == 0
     
-    def test_count_pending_memos_mixed(self, tmp_path):
-        """MemoWatcher handles mixed content."""
+    def test_count_memos_with_metadata(self, tmp_path):
+        """MemoWatcher counts memos with metadata correctly."""
         config = WatchConfig(path=tmp_path / "inbox.md")
         watcher = MemoWatcher(config)
         
-        content = """# Memo Inbox
+        content = """# Monoco Memos Inbox
 
-Some intro text
+## [abc123] 2026-01-15 10:00:00
+- **From**: User
+- **Type**: insight
+- **Context**: `file.py:10`
 
-- Regular memo
-- [ ] Checkbox pending
-- [x] Checkbox done
-- Another regular memo
+This is the memo content
+with multiple lines
 
-## Section
+## [def456] 2026-01-15 10:30:00
+- **Type**: feature
 
-- [ ] More pending
+Another memo
 """
         
-        count = watcher._count_pending_memos(content)
-        assert count == 4  # 2 regular + 2 checkbox pending (in progress counts as pending)
+        count = watcher._count_memos(content)
+        assert count == 2
     
     @pytest.mark.asyncio
     async def test_threshold_crossing(self, tmp_path):
@@ -129,7 +128,7 @@ Some intro text
         watcher.register_callback(lambda e: emitted_events.append(e))
         
         # Simulate crossing threshold (0 -> 4)
-        watcher._last_pending_count = 0
+        watcher._last_memo_count = 0
         await watcher._handle_count_change(4)
         
         # Should emit threshold event
@@ -152,7 +151,7 @@ Some intro text
         watcher.register_callback(lambda e: emitted_events.append(e))
         
         # Simulate adding memos (1 -> 3)
-        watcher._last_pending_count = 1
+        watcher._last_memo_count = 1
         await watcher._handle_count_change(3)
         
         # Should emit event but not threshold
@@ -162,7 +161,7 @@ Some intro text
     
     @pytest.mark.asyncio
     async def test_no_event_when_count_decreases(self, tmp_path):
-        """MemoWatcher doesn't emit event when count decreases."""
+        """MemoWatcher doesn't emit event when count decreases without consumption."""
         memo_file = tmp_path / "inbox.md"
         memo_file.write_text("")
         
@@ -174,12 +173,39 @@ Some intro text
         watcher.register_callback(lambda e: emitted_events.append(e))
         
         # Simulate decreasing count (5 -> 2)
-        watcher._last_pending_count = 5
+        watcher._last_memo_count = 5
         watcher._threshold_crossed = True
         await watcher._handle_count_change(2)
         
-        # Should not emit event
+        # Should not emit event for simple decrease
         assert len(emitted_events) == 0
+    
+    @pytest.mark.asyncio
+    async def test_inbox_cleared_no_event(self, tmp_path):
+        """MemoWatcher doesn't emit event when inbox is cleared (consumed).
+        
+        Note: State update (_last_memo_count) is done by _check_changes, 
+        not _handle_count_change. This test verifies no event is emitted.
+        """
+        memo_file = tmp_path / "inbox.md"
+        memo_file.write_text("")
+        
+        config = WatchConfig(path=memo_file)
+        watcher = MemoWatcher(config, threshold=5)
+        
+        # Track emitted events
+        emitted_events = []
+        watcher.register_callback(lambda e: emitted_events.append(e))
+        
+        # Simulate inbox cleared (3 -> 0)
+        watcher._last_memo_count = 3
+        watcher._threshold_crossed = False
+        await watcher._handle_count_change(0)
+        
+        # Should not emit an event when count decreases to 0
+        assert len(emitted_events) == 0
+        # _last_memo_count is not updated by _handle_count_change
+        # It's updated by _check_changes which calls _handle_count_change
     
     def test_set_threshold(self, tmp_path):
         """Threshold can be updated dynamically."""
@@ -199,13 +225,13 @@ Some intro text
         config = WatchConfig(path=memo_file)
         watcher = MemoWatcher(config, threshold=5)
         
-        watcher._last_pending_count = 3
+        watcher._last_memo_count = 3
         watcher._threshold_crossed = False
         
         stats = watcher.get_stats()
         
         assert stats["name"] == "MemoWatcher"
-        assert stats["pending_count"] == 3
+        assert stats["memo_count"] == 3
         assert stats["threshold"] == 5
         assert stats["threshold_crossed"] is False
 
