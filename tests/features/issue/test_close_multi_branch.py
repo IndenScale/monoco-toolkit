@@ -22,7 +22,7 @@ class TestMultiBranchIssueClose:
     def _create_ready_issue_with_isolation(self, project_env):
         """Create an issue file directly with isolation info for review stage."""
         # Create epic first
-        result = runner.invoke(app, ["create", "epic", "-t", "Test Epic"])
+        result = runner.invoke(app, ["create", "epic", "-t", "Test Epic", "--force"])
         assert result.exit_code == 0
 
         # Create the feature issue file directly with proper content
@@ -157,8 +157,7 @@ Review passed with updates.
         # Close should succeed and use feature branch version
         result = runner.invoke(app, [
             "close", "FEAT-0001",
-            "--solution", "implemented",
-            "--no-prune"
+            "--solution", "implemented"
         ])
 
         # Should succeed
@@ -185,8 +184,7 @@ Review passed with updates.
         # Close should show resolution message
         result = runner.invoke(app, [
             "close", "FEAT-0001",
-            "--solution", "implemented",
-            "--no-prune"
+            "--solution", "implemented"
         ])
 
         # Should succeed
@@ -210,8 +208,7 @@ Review passed with updates.
         # Close should succeed without conflict
         result = runner.invoke(app, [
             "close", "FEAT-0001",
-            "--solution", "implemented",
-            "--no-prune"
+            "--solution", "implemented"
         ])
 
         assert result.exit_code == 0, f"Close failed: {result.stdout}"
@@ -226,7 +223,7 @@ class TestMultiBranchWithChineseFilename:
     def _create_issue_with_chinese_title(self, project_env):
         """Create an issue with Chinese title."""
         # Create epic first
-        result = runner.invoke(app, ["create", "epic", "-t", "Test Epic"])
+        result = runner.invoke(app, ["create", "epic", "-t", "Test Epic", "--force"])
         assert result.exit_code == 0
 
         issues_dir = project_env / "Issues" / "Features" / "open"
@@ -338,8 +335,7 @@ Review passed.
         # Close should succeed with Chinese filename
         result = runner.invoke(app, [
             "close", "FEAT-0002",
-            "--solution", "implemented",
-            "--no-prune"
+            "--solution", "implemented"
         ])
 
         assert result.exit_code == 0, f"Close failed: {result.stdout}"
