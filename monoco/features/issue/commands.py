@@ -618,9 +618,11 @@ def move_close(
                 if pruned_resources and not OutputManager.is_agent_mode():
                     console.print(f"[green]✔ Cleaned up:[/green] {', '.join(pruned_resources)}")
             except Exception as e:
-                OutputManager.error(f"Prune Error: {e}")
-                rollback_transaction()
-                raise typer.Exit(code=1)
+                # Prune failure should NOT rollback successful close
+                # Just warn the user to clean up manually
+                if not OutputManager.is_agent_mode():
+                    console.print(f"[yellow]⚠ Cleanup warning: {e}[/yellow]")
+                    console.print(f"[dim]   Issue closed successfully. Clean up manually if needed.[/dim]")
 
         # Success: Clear transaction state as all operations completed
         OutputManager.print(
