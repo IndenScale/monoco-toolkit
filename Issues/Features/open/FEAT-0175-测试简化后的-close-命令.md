@@ -18,16 +18,21 @@ files: []
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T11:44:34'
+isolation:
+  type: branch
+  ref: feat/feat-0175-测试简化后的-close-命令
+  path: null
+  created_at: '2026-02-04T11:44:38'
 ---
 
 ## FEAT-0175: 测试简化后的 close 命令
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+
+**Main 分支版本** - 用于测试简化后的 close 命令。
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+- [x] 测试通过
 
 ## Technical Tasks
 <!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
