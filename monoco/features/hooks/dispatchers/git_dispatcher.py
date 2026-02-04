@@ -269,7 +269,7 @@ fi
 
 {staged_check}
 # Execute Monoco hook
-exec monoco hook run git {event} "$@"
+exec uv run python3 -m monoco hook run git {event} "$@"
 """
 
     def _install_merged(
