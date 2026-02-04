@@ -16,7 +16,22 @@ from .models import (
 )
 from .parser import HookParser, ParseError
 from .manager import UniversalHookManager, ValidationResult, HookDispatcher
-from .dispatchers import GitHookDispatcher
+from .dispatchers import (
+    GitHookDispatcher,
+    AgentHookDispatcher,
+    ClaudeCodeDispatcher,
+    GeminiDispatcher,
+    create_agent_dispatchers,
+    get_dispatcher_for_provider,
+)
+from .universal_interceptor import (
+    UniversalInterceptor,
+    AgentAdapter,
+    ClaudeAdapter,
+    GeminiAdapter,
+    UnifiedDecision,
+    UnifiedHookInput,
+)
 
 __all__ = [
     # Models
@@ -36,4 +51,16 @@ __all__ = [
     "HookDispatcher",
     # Dispatchers
     "GitHookDispatcher",
+    "AgentHookDispatcher",
+    "ClaudeCodeDispatcher",
+    "GeminiDispatcher",
+    "create_agent_dispatchers",
+    "get_dispatcher_for_provider",
+    # Universal Interceptor (ACL)
+    "UniversalInterceptor",
+    "AgentAdapter",
+    "ClaudeAdapter",
+    "GeminiAdapter",
+    "UnifiedDecision",
+    "UnifiedHookInput",
 ]
