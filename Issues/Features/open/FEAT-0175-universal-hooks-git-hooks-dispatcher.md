@@ -87,4 +87,8 @@ isolation:
 - [x] 在 `monoco uninstall` 中清理 Git Hooks
 
 ## Review Comments
-<!-- 评审阶段时填写 -->
+
+- 实现了结构化的 Hooks 分发机制。
+- 支持业务模块（如 issue）自主管理资源路径。
+- 生成的 Git Hooks 代理现在使用 `uv run python3 -m monoco` 以确保在隔离环境下的稳健性。
+- 在 `.local/bin/monoco` 为用户创建了全局 Shim 脚本，提升开发体验。
