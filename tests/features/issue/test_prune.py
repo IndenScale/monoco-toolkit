@@ -30,6 +30,16 @@ def test_force_prune_confirmation(project_env):
     core.update_issue(issues_root, meta.id, stage=core.IssueStage.DOING)
     core.update_issue(issues_root, meta.id, stage=core.IssueStage.REVIEW)
 
+    # Create a feature branch so close validation passes
+    import subprocess
+
+    subprocess.run(
+        ["git", "checkout", "-b", f"{meta.id}-test-feature"],
+        cwd=project_env,
+        check=True,
+        capture_output=True,
+    )
+
     # 1. User says No
     result = runner.invoke(
         app,
@@ -81,6 +91,16 @@ def test_force_prune_json_no_prompt(project_env):
     # Transition to Review
     core.update_issue(issues_root, meta.id, stage=core.IssueStage.DOING)
     core.update_issue(issues_root, meta.id, stage=core.IssueStage.REVIEW)
+
+    # Create a feature branch so close validation passes
+    import subprocess
+
+    subprocess.run(
+        ["git", "checkout", "-b", f"{meta.id}-test-feature"],
+        cwd=project_env,
+        check=True,
+        capture_output=True,
+    )
 
     with patch("monoco.features.issue.core.prune_issue_resources") as mock_prune:
         mock_prune.return_value = []  # Return serializable list
