@@ -33,7 +33,7 @@ isolation:
 
 ## Acceptance Criteria
 <!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+- [x] 测试通过：主线和 feature branch 都修改 Issue 文件时能正常 close
 
 ## Technical Tasks
 <!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
