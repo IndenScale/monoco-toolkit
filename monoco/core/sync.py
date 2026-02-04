@@ -191,24 +191,29 @@ def sync_command(
 
     try:
         from monoco.features.hooks import UniversalHookManager, HookType
-        from monoco.features.hooks.dispatchers import GitHookDispatcher, AgentHookDispatcher
+        from monoco.features.hooks.dispatchers import (
+            GitHookDispatcher,
+            ClaudeCodeDispatcher,
+            GeminiDispatcher,
+        )
 
         hooks_manager = UniversalHookManager()
-        
+
         # Register Dispatchers
         git_dispatcher = GitHookDispatcher()
         hooks_manager.register_dispatcher(HookType.GIT, git_dispatcher)
-        
+
         # Register Agent Dispatchers for active platforms
-        agent_dispatchers = {}
-        for provider in ["claude-code", "gemini-cli"]:
-            dispatcher = AgentHookDispatcher(provider=provider)
+        agent_dispatchers = {
+            "claude-code": ClaudeCodeDispatcher(),
+            "gemini-cli": GeminiDispatcher(),
+        }
+        for dispatcher in agent_dispatchers.values():
             hooks_manager.register_dispatcher(HookType.AGENT, dispatcher)
-            agent_dispatchers[provider] = dispatcher
 
         # 6.1 Scan for hooks
         all_hooks = []
-        
+
         # 6.1.1 Scan builtin hooks from hooks feature
         try:
             from monoco.features import hooks as hooks_module
@@ -224,19 +229,19 @@ def sync_command(
         # 6.1.2 Scan for hooks in all active features
         for feature in active_features:
             if feature.name == "hooks":
-                continue # Already scanned
-                
+                continue  # Already scanned
+
             import importlib
             try:
                 # Use the module where the feature class is defined (usually adapter.py)
                 module_name = feature.__class__.__module__
                 module = importlib.import_module(module_name)
-                
+
                 if hasattr(module, "__file__") and module.__file__:
                     # feature_dir is the directory containing adapter.py
                     feature_dir = Path(module.__file__).parent
                     hooks_resource_dir = feature_dir / "resources" / "hooks"
-                    
+
                     if hooks_resource_dir.exists():
                         groups = hooks_manager.scan(hooks_resource_dir)
                         for group in groups.values():
@@ -246,7 +251,7 @@ def sync_command(
 
         # 6.2 Sync Git Hooks
         git_hooks = [h for h in all_hooks if h.metadata.type == HookType.GIT]
-        
+
         if not (root / ".git").exists():
             console.print("[dim]  Git repository not found. Initializing...[/dim]")
             # Set global default branch to main
@@ -254,20 +259,23 @@ def sync_command(
             subprocess.run(["git", "init"], cwd=root, check=False)
 
         git_results = git_dispatcher.sync(git_hooks, root)
-        
+
         git_installed = sum(1 for v in git_results.values() if v)
         if git_installed > 0:
             console.print(f"[green]  ✓ Synchronized {git_installed} Git hooks[/green]")
         elif git_hooks:
             console.print("[yellow]  No Git hooks were successfully synchronized[/yellow]")
 
-        # 6.3 Sync Agent Hooks (Distribution)
+        # 6.3 Sync Agent Hooks using the new ACL-based dispatchers
         agent_hooks = [h for h in all_hooks if h.metadata.type == HookType.AGENT]
-        for hook in agent_hooks:
-            provider = hook.metadata.provider
-            if provider in agent_dispatchers:
-                if agent_dispatchers[provider].install(hook, root):
-                    console.print(f"[green]  ✓ Distributed agent hook: {hook.script_path.name} to {provider}[/green]")
+
+        for provider, dispatcher in agent_dispatchers.items():
+            provider_hooks = [h for h in agent_hooks if h.metadata.provider == provider]
+            if provider_hooks:
+                results = dispatcher.sync(provider_hooks, root)
+                success_count = sum(1 for v in results.values() if v)
+                if success_count > 0:
+                    console.print(f"[green]  ✓ Synchronized {success_count} agent hooks to {provider}[/green]")
 
     except Exception as e:
         console.print(f"[red]  Failed to synchronize Universal Hooks: {e}[/red]")
@@ -425,3 +433,74 @@ def uninstall_command(
             console.print("[dim]  No Monoco Git hooks to clean up[/dim]")
     except Exception as e:
         console.print(f"[red]  Failed to clean Git hooks: {e}[/red]")
+
+    # 5. Clean up Agent Hooks
+    console.print("[bold blue]Cleaning up Agent Hooks...[/bold blue]")
+
+    try:
+        from monoco.features.hooks.dispatchers import (
+            ClaudeCodeDispatcher,
+            GeminiDispatcher,
+        )
+
+        # Clean up Claude Code hooks
+        claude_dispatcher = ClaudeCodeDispatcher()
+        claude_settings = claude_dispatcher.get_settings_path(root)
+        if claude_settings and claude_settings.exists():
+            try:
+                import json
+                with open(claude_settings, "r", encoding="utf-8") as f:
+                    settings = json.load(f)
+
+                if "hooks" in settings:
+                    original_count = len(settings["hooks"])
+                    # Remove Monoco-managed hooks
+                    for event in list(settings["hooks"].keys()):
+                        configs = settings["hooks"][event]
+                        if isinstance(configs, list):
+                            settings["hooks"][event] = [
+                                c for c in configs if not c.get("_monoco_managed")
+                            ]
+                    # Clean up empty events
+                    settings["hooks"] = {
+                        k: v for k, v in settings["hooks"].items() if v
+                    }
+
+                    with open(claude_settings, "w", encoding="utf-8") as f:
+                        json.dump(settings, f, indent=2, ensure_ascii=False)
+
+                    console.print("[green]  ✓ Cleaned up Claude Code hooks[/green]")
+            except Exception as e:
+                console.print(f"[red]  Failed to clean Claude Code hooks: {e}[/red]")
+
+        # Clean up Gemini CLI hooks
+        gemini_dispatcher = GeminiDispatcher()
+        gemini_settings = gemini_dispatcher.get_settings_path(root)
+        if gemini_settings and gemini_settings.exists():
+            try:
+                import json
+                with open(gemini_settings, "r", encoding="utf-8") as f:
+                    settings = json.load(f)
+
+                if "hooks" in settings:
+                    # Remove Monoco-managed hooks
+                    for event in list(settings["hooks"].keys()):
+                        configs = settings["hooks"][event]
+                        if isinstance(configs, list):
+                            settings["hooks"][event] = [
+                                c for c in configs if not c.get("_monoco_managed")
+                            ]
+                    # Clean up empty events
+                    settings["hooks"] = {
+                        k: v for k, v in settings["hooks"].items() if v
+                    }
+
+                    with open(gemini_settings, "w", encoding="utf-8") as f:
+                        json.dump(settings, f, indent=2, ensure_ascii=False)
+
+                    console.print("[green]  ✓ Cleaned up Gemini CLI hooks[/green]")
+            except Exception as e:
+                console.print(f"[red]  Failed to clean Gemini CLI hooks: {e}[/red]")
+
+    except Exception as e:
+        console.print(f"[red]  Failed to clean Agent hooks: {e}[/red]")
