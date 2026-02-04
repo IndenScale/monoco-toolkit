@@ -47,4 +47,8 @@ isolation:
 - [x] 设计首批 JIT 场景（如：代码提交前的 sync-files 劝导）
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+已完成 Monoco Unified Hooks System 的代码现状调研。核心发现如下：
+1. **ACL 层已就绪**：`UniversalInterceptor` 已实现 Gemini CLI 和 Claude Code 的协议转换。
+2. **分发器已就绪**：`GitHookDispatcher` 和 `AgentHookDispatcher` 支持自动化安装和配置注入。
+3. **JIT 潜力巨大**：通过 `UnifiedDecision` 的 `metadata.additionalContext` 字段，可实现动态指令注入。
+4. **文档同步**：已更新 `docs/zh/40_hooks/` 作为 FEAT-0179 的实施指南。建议后续优先重构 Engineer 角色以验证 JIT 效果。
