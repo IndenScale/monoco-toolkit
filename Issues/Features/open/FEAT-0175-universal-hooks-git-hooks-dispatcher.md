@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 'Universal Hooks: Git Hooks Dispatcher'
 created_at: '2026-02-04T13:27:07'
-updated_at: 2026-02-04 14:20:04
+updated_at: '2026-02-04T14:27:22'
 parent: EPIC-0034
 dependencies:
 - FEAT-0174
@@ -17,14 +17,19 @@ tags:
 - '#EPIC-0034'
 - '#FEAT-0174'
 - '#FEAT-0175'
-files: []
+files:
+- monoco/core/sync.py
+- monoco/features/hooks/__init__.py
+- monoco/features/hooks/commands.py
+- monoco/features/hooks/dispatchers/__init__.py
+- monoco/features/hooks/dispatchers/git_dispatcher.py
+- tests/features/hooks/test_git_dispatcher.py
 criticality: high
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T13:27:07'
 isolation:
   type: branch
   ref: FEAT-0175-universal-hooks-git-hooks-dispatcher
-  path: null
   created_at: '2026-02-04T14:20:04'
 ---
 
