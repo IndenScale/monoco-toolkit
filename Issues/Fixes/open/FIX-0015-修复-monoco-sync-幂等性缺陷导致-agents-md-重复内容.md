@@ -113,13 +113,13 @@ $ grep -n "MONOCO_GENERATED" AGENTS.md
   - [x] 测试外部内容检测: 验证警告信息正确输出
   - [x] 测试边界情况: 空文件、仅 Managed Block、混合内容
 
-- [ ] **集成测试**:
-  - [ ] 在测试项目中执行 `monoco sync` 3 次
-  - [ ] 验证 AGENTS.md 内容完全一致
-  - [ ] 验证无重复内容生成
+- [x] **集成测试**:
+  - [x] 在测试项目中执行 `monoco sync` 3 次
+  - [x] 验证 AGENTS.md 内容完全一致
+  - [x] 验证无重复内容生成
 
 ### Phase 4: 文档与发布
-- [ ] 更新 `docs/` 中关于 AGENTS.md 管理的说明
-- [ ] 在 CHANGELOG 中记录此修复
+- [x] 更新 `docs/` 中关于 AGENTS.md 管理的说明
+- [x] 在 CHANGELOG 中记录此修复
 
 ## Review Comments
