@@ -64,6 +64,8 @@ test.pdf
 # IDEs
 .vscode/
 .idea/
+.cursor/
+.cursorrules
 *.swp
 *.swo
 .archives/
