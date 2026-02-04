@@ -18,6 +18,11 @@ files: []
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T11:26:04'
+isolation:
+  type: branch
+  ref: feat/feat-0174-再次测试-issue-close-合并策略
+  path: null
+  created_at: '2026-02-04T11:26:09'
 ---
 
 ## FEAT-0174: 再次测试 issue close 合并策略
