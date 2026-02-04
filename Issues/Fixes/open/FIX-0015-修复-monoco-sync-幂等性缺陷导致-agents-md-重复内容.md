@@ -3,10 +3,10 @@ id: FIX-0015
 uid: 649dbf
 type: fix
 status: open
-stage: doing
+stage: review
 title: 修复 monoco sync 幂等性缺陷导致 AGENTS.md 重复内容
 created_at: '2026-02-04T21:32:48'
-updated_at: '2026-02-04T21:39:31'
+updated_at: '2026-02-04T21:40:15'
 parent: EPIC-0030
 dependencies: []
 related:
