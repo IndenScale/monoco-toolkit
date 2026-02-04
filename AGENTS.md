@@ -153,7 +153,7 @@ $ git checkout feature/FEAT-XXXX -- <files...>
 ```bash
 #### 默认清理分支
 $ monoco issue close FEAT-XXXX --solution implemented
-#### ✔ Cleaned up: branch:feat/feat-XXXX-xxx
+#### ✔ Cleaned up: branch:FEAT-XXXX-xxx
 
 #### 保留分支
 $ monoco issue close FEAT-XXXX --solution implemented --no-prune
@@ -175,41 +175,37 @@ $ monoco issue close FEAT-XXXX --solution implemented --force
 
 > ⚠️ **警告**: 任何绕过 `monoco issue close` 的手动合并操作都可能导致主线状态污染，违反工作流合规要求。
 
-### Git Hooks
-
-
-
 ### Memo (Fleeting Notes)
 
-Lightweight note-taking for ideas and quick thoughts. **Signal Queue Model** (FEAT-0165).
+轻量级笔记，用于快速记录想法。**信号队列模型** (FEAT-0165)。
 
-#### Signal Queue Semantics
+####### 信号队列语义
 
-- **Memo is a signal, not an asset** - Its value is in triggering action
-- **File existence = signal pending** - Inbox has unprocessed memos
-- **File cleared = signal consumed** - Memos are deleted after processing
-- **Git is the archive** - History is in git, not app state
+- **Memo 是信号，不是资产** - 其价值在于触发行动
+- **文件存在 = 信号待处理** - Inbox 有未处理的 memo
+- **文件清空 = 信号已消费** - Memo 在处理后被删除
+- **Git 是档案** - 历史记录在 git 中，不在应用状态里
 
-#### Commands
+####### 命令
 
-- **Add**: `monoco memo add "Content" [-c context]` - Create a signal
-- **List**: `monoco memo list` - Show pending signals (consumed memos are in git history)
-- **Delete**: `monoco memo delete <id>` - Manual delete (normally auto-consumed)
-- **Open**: `monoco memo open` - Edit inbox directly
+- **添加**: `monoco memo add "内容" [-c 上下文]` - 创建信号
+- **列表**: `monoco memo list` - 显示待处理信号（已消费的 memo 在 git 历史中）
+- **删除**: `monoco memo delete <id>` - 手动删除（通常自动消费）
+- **打开**: `monoco memo open` - 直接编辑 inbox
 
-#### Workflow
+####### 工作流
 
-1. Capture ideas as memos
-2. When threshold (5) is reached, Architect is auto-triggered
-3. Memos are consumed (deleted) and embedded in Architect's prompt
-4. Architect creates Issues from memos
-5. No need to "link" or "resolve" memos - they're gone after consumption
+1. 将想法捕获为 memo
+2. 当阈值（5个）达到时，自动触发 Architect
+3. Memo 被消费（删除）并嵌入 Architect 的 prompt
+4. Architect 从 memo 创建 Issue
+5. 不需要"链接"或"解决" memo - 消费后即消失
 
-#### Guideline
+####### 指南
 
-- Use Memos for **fleeting ideas** - things that might become Issues
-- Use Issues for **actionable work** - structured, tracked, with lifecycle
-- Never manually link memos to Issues - if important, create an Issue
+- 使用 Memo 记录** fleeting 想法** - 可能成为 Issue 的事情
+- 使用 Issue 进行**可操作的工作** - 结构化、可跟踪、有生命周期
+- 永远不要手动将 memo 链接到 Issue - 如果重要，创建一个 Issue
 
 ### Glossary
 
