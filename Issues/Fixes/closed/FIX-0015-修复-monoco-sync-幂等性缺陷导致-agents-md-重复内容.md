@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 修复 monoco sync 幂等性缺陷导致 AGENTS.md 重复内容
 created_at: '2026-02-04T21:32:48'
-updated_at: '2026-02-04T21:40:38'
+updated_at: '2026-02-04T22:09:16'
 parent: EPIC-0030
 dependencies: []
 related:
@@ -23,7 +23,7 @@ files:
 criticality: high
 solution: implemented
 opened_at: '2026-02-04T21:32:48'
-closed_at: '2026-02-04T21:40:38'
+closed_at: '2026-02-04T22:09:16'
 isolation:
   type: branch
   ref: FIX-0015-修复-monoco-sync-幂等性缺陷导致-agents-md-重复内容
