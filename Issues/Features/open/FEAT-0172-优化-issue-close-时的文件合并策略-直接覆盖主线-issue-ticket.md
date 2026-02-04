@@ -3,10 +3,10 @@ id: FEAT-0172
 uid: 9fb8f8
 type: feature
 status: open
-stage: doing
+stage: review
 title: 优化 issue close 时的文件合并策略：直接覆盖主线 issue ticket
 created_at: '2026-02-04T11:17:02'
-updated_at: '2026-02-04T13:41:52'
+updated_at: 2026-02-04 13:41:53
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,12 +16,13 @@ tags:
 - '#FEAT-0172'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T11:17:02'
 isolation:
   type: branch
-  ref: feat/feat-0172-优化-issue-close-时的文件合并策略-直接覆盖主线-issue-ticket
-  created_at: '2026-02-04T11:17:28'
+  ref: FEAT-0172-优化-issue-close-时的文件合并策略-直接覆盖主线-issue-ticket
+  path: null
+  created_at: '2026-02-04T13:41:53'
 ---
 
 ## FEAT-0172: 优化 issue close 时的文件合并策略：直接覆盖主线 issue ticket

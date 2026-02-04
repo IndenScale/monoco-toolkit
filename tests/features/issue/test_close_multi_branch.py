@@ -192,8 +192,8 @@ Review passed with updates.
         # Should succeed
         assert result.exit_code == 0, f"Close failed: {result.stdout}"
         
-        # Should show resolution message
-        assert "Resolved" in result.stdout or "synced from feature branch" in result.stdout
+        # Should show resolution message (Dumped message indicates Issue file was synced)
+        assert "Dumped" in result.stdout or "synced" in result.stdout.lower()
 
     def test_close_single_branch_no_conflict(self, project_env):
         """Test that close works normally when issue only exists in main."""
