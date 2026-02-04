@@ -90,3 +90,85 @@ Some other text.
 def test_remove_nonexistent(temp_file):
     injector = PromptInjector(temp_file)  # Empty file
     assert injector.remove() is False
+
+
+def test_idempotence_multiple_runs(temp_file):
+    """Test that running inject multiple times produces the same result."""
+    injector = PromptInjector(temp_file, verbose=False)
+    prompts = {"Feature A": "Content A", "Feature B": "Content B"}
+
+    # First run
+    injector.inject(prompts)
+    content1 = temp_file.read_text(encoding="utf-8")
+
+    # Second run
+    injector.inject(prompts)
+    content2 = temp_file.read_text(encoding="utf-8")
+
+    # Third run
+    injector.inject(prompts)
+    content3 = temp_file.read_text(encoding="utf-8")
+
+    assert content1 == content2 == content3
+
+
+def test_external_content_detection(temp_file, capsys):
+    """Test that external content after MANAGED_END triggers a warning."""
+    content = """# My Document
+
+<!-- MONOCO_GENERATED_START -->
+
+## Monoco Toolkit
+
+> **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
+
+### Feature
+Content
+
+<!-- MONOCO_GENERATED_END -->
+
+# Manual Section
+This is external content that should trigger a warning.
+"""
+    temp_file.write_text(content, encoding="utf-8")
+
+    injector = PromptInjector(temp_file, verbose=True)
+    injector.inject({"Feature": "Updated Content"})
+
+    captured = capsys.readouterr()
+    assert "Warning: Manual content detected" in captured.out
+
+
+def test_no_warning_without_external_content(temp_file, capsys):
+    """Test that no warning is issued when there's no external content."""
+    injector = PromptInjector(temp_file, verbose=True)
+    injector.inject({"Feature": "Content"})
+
+    captured = capsys.readouterr()
+    assert "Warning: Manual content detected" not in captured.out
+
+
+def test_file_header_comment_added(temp_file):
+    """Test that file header comment is added to new files."""
+    injector = PromptInjector(temp_file, verbose=False)
+    injector.inject({"Feature": "Content"})
+
+    content = temp_file.read_text(encoding="utf-8")
+    assert "This file is partially managed by Monoco" in content
+    assert "Do NOT manually edit the managed block" in content
+
+
+def test_file_header_not_duplicated(temp_file):
+    """Test that file header comment is not duplicated on subsequent injections."""
+    injector = PromptInjector(temp_file, verbose=False)
+    prompts = {"Feature": "Content"}
+
+    injector.inject(prompts)
+    content1 = temp_file.read_text(encoding="utf-8")
+
+    injector.inject(prompts)
+    content2 = temp_file.read_text(encoding="utf-8")
+
+    # Header should appear exactly once
+    assert content1.count("This file is partially managed by Monoco") == 1
+    assert content2.count("This file is partially managed by Monoco") == 1
