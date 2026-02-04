@@ -529,25 +529,36 @@ def move_close(
             raise typer.Exit(code=1)
         
         # CHORE-0036: Always dump Issue file from feature branch to main first
-        # Issue files are metadata - always use feature branch version
-        issue = core.parse_issue(found_path)
-        if issue and issue.isolation:
-            feature_branch = core._parse_isolation_ref(issue.isolation.ref)
-            if feature_branch and git.branch_exists(project_root, feature_branch):
-                # Checkout Issue file from feature branch to override main's version
-                try:
-                    rel_path = found_path.relative_to(project_root)
-                    git.git_checkout_files(project_root, feature_branch, [str(rel_path)])
-                    # Re-read issue after dumping to get latest state
-                    issue = core.parse_issue(found_path)
-                    if not OutputManager.is_agent_mode():
-                        console.print(
-                            f"[green]✔ Dumped:[/green] Issue file synced from '{feature_branch}'"
-                        )
-                except Exception as e:
-                    OutputManager.error(f"Failed to sync Issue file from feature branch: {e}")
-                    rollback_transaction()
-                    raise typer.Exit(code=1)
+        # Find feature branch by convention: feat/feat-{issue_id}-*
+        feature_branch = None
+        import re
+        code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
+        if code == 0:
+            for branch in stdout.splitlines():
+                branch = branch.strip()
+                # Match feat/feat-XXXX-* pattern
+                if re.match(rf"feat/{issue_id.lower()}-", branch, re.IGNORECASE):
+                    feature_branch = branch
+                    break
+
+        if feature_branch and git.branch_exists(project_root, feature_branch):
+            # Checkout Issue file from feature branch to override main's version
+            try:
+                rel_path = found_path.relative_to(project_root)
+                git.git_checkout_files(project_root, feature_branch, [str(rel_path)])
+                # Re-read issue after dumping to get latest state
+                issue = core.parse_issue(found_path)
+                if not OutputManager.is_agent_mode():
+                    console.print(
+                        f"[green]✔ Dumped:[/green] Issue file synced from '{feature_branch}'"
+                    )
+            except Exception as e:
+                OutputManager.error(f"Failed to sync Issue file from feature branch: {e}")
+                rollback_transaction()
+                raise typer.Exit(code=1)
+        else:
+            # No feature branch found, use current issue state
+            issue = core.parse_issue(found_path)
 
         # 1. Perform Smart Atomic Merge (FEAT-0154)
         merged_files = []
