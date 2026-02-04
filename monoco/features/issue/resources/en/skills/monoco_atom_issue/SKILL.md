@@ -32,7 +32,7 @@ Use this skill to create and manage **Issues** (Universal Atoms) in Monoco proje
 Monoco enforces a **Feature Branch** model.
 
 - **Start**: Agents **MUST** use `monoco issue start <ID> --branch` to start working.
-  - This creates and switches to a standard `feat/<ID>-<slug>` branch.
+  - This creates and switches to a standard `<ID>-<slug>` branch (e.g., `FEAT-0123-login-page`).
   - **Do NOT** manually create branches using `git checkout -b`.
 - **Protected Main**: **NO** direct modification on `main`, `master`, or `production` branches. Linter will block this.
 - **Submit**: Run `monoco issue submit <ID>` when work is ready for review.

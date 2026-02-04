@@ -21,7 +21,7 @@ def test_start_command_default_branch(issues_root):
     with patch("monoco.features.issue.core.start_issue_isolation") as mock_isolation:
         # Mock return value of start_issue_isolation
         mock_issue = MagicMock()
-        mock_issue.isolation.ref = "feat/test-branch"
+        mock_issue.isolation.ref = "FEAT-0001-test-issue-branch"
         mock_isolation.return_value = mock_issue
 
         # Invoke command with --no-commit and --force to avoid git issues in temp directories

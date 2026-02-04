@@ -65,7 +65,7 @@ Monoco 不仅仅复刻 Jira，而是基于 **"思维模式 (Mindset)"** 重新�
 
 Monoco 强制采用 **Feature Branch** 模式。
 
-- **Start**: 必须使用 `monoco issue start <ID> --branch` 启动任务。这会自动创建 `feat/<ID>-<slug>` 分支。
+- **Start**: 必须使用 `monoco issue start <ID> --branch` 启动任务。这会自动创建 `<ID>-<slug>` 分支（如 `FEAT-0123-login-page`）。
 - **禁止主干开发**: **严禁** 直接在 `main`, `master`, `production` 分支上修改代码。Linter 会拦截此类行为。
 - **Submit**: 在提交 PR 前，运行 `monoco issue submit <ID>` 进行清理和预发布检查。
 
