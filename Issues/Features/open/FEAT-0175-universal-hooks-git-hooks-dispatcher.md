@@ -3,10 +3,10 @@ id: FEAT-0175
 uid: ddde11
 type: feature
 status: open
-stage: doing
+stage: review
 title: 'Universal Hooks: Git Hooks Dispatcher'
 created_at: '2026-02-04T13:27:07'
-updated_at: '2026-02-04T14:27:22'
+updated_at: '2026-02-04T14:27:26'
 parent: EPIC-0034
 dependencies:
 - FEAT-0174
