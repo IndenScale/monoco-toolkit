@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 'Universal Hooks: Core Models and Parser'
 created_at: '2026-02-04T13:27:07'
-updated_at: '2026-02-04T14:05:34'
+updated_at: '2026-02-04T14:09:03'
 parent: EPIC-0034
 dependencies: []
 related: []
@@ -16,13 +16,14 @@ tags:
 - '#FEAT-0174'
 files:
 - Issues/Epics/open/EPIC-0034-universal-hooks-system-git-ide-agent-integration.md
+- Issues/Features/open/FEAT-0174-universal-hooks-core-models-and-parser.md
 - monoco/features/hooks/__init__.py
 - monoco/features/hooks/adapter.py
 - monoco/features/hooks/commands.py
 - monoco/features/hooks/core.py
+- monoco/features/hooks/manager.py
+- monoco/features/hooks/models.py
 - monoco/features/hooks/parser.py
-- monoco/features/hooks/universal_manager.py
-- monoco/features/hooks/universal_models.py
 - tests/features/hooks/__init__.py
 - tests/features/hooks/test_manager.py
 - tests/features/hooks/test_models.py
@@ -82,4 +83,14 @@ isolation:
   - [x] `register_dispatcher(type, dispatcher)`: 注册类型分发器（为后续 Feature 预留）
 
 ## Review Comments
-<!-- 评审阶段时填写 -->
+
+验收通过。
+
+1. **模型定义**: 完整实现了 `HookType`, `HookMetadata`, 以及 `GitEvent`/`AgentEvent`/`IDEEvent` 枚举。Pydantic 模型包含必要的校验逻辑（如 `provider` 必填项和 `event` 类型校验）。
+2. **解析器**: `HookParser` 能够正确识别不同注释风格（`#`, `//`, `--`, `<!--`）并提取 YAML Front Matter。处理了 Shebang 跳过和解析错误定位。
+3. **管理器**: `UniversalHookManager` 实现了递归扫描、分组管理和验证能力，并预留了 `HookDispatcher` 接口。
+4. **测试**: 74 个单元测试全部通过，覆盖了各种边界情况和注释风格。
+
+文件名微调：
+- 实际实现的文件名为 `models.py` 和 `manager.py`（去掉了 `universal_` 前缀，更符合包内命名惯例）。
+- 未使用计划中的 `core.py` 和 `adapter.py`，相关功能已整合至上述核心模块中。
