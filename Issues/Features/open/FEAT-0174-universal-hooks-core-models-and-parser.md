@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 'Universal Hooks: Core Models and Parser'
 created_at: '2026-02-04T13:27:07'
-updated_at: '2026-02-04T13:56:57'
+updated_at: 2026-02-04 13:57:01
 parent: EPIC-0034
 dependencies: []
 related: []
@@ -16,8 +16,12 @@ tags:
 - '#FEAT-0174'
 files: []
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T13:27:07'
+isolation:
+  type: branch
+  ref: branch:FEAT-0174-universal-hooks-core-models-and-parser
+  created_at: '2026-02-04T13:56:58'
 ---
 
 ## FEAT-0174: Universal Hooks: Core Models and Parser
