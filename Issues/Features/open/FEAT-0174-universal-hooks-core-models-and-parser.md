@@ -3,10 +3,10 @@ id: FEAT-0174
 uid: 41571d
 type: feature
 status: open
-stage: doing
+stage: review
 title: 'Universal Hooks: Core Models and Parser'
 created_at: '2026-02-04T13:27:07'
-updated_at: '2026-02-04T14:04:50'
+updated_at: '2026-02-04T14:05:34'
 parent: EPIC-0034
 dependencies: []
 related: []
