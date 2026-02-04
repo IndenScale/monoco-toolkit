@@ -529,59 +529,25 @@ def move_close(
             raise typer.Exit(code=1)
         
         # CHORE-0036: Handle multi-branch conflict for Issue files
-        # Issue files are metadata - always use feature branch version
+        # Issue files are metadata - always use feature branch version, no conflict check
         if conflicting_branches:
-            # Get the feature branch slug from isolation info
+            # Get the feature branch from isolation info
             issue = core.parse_issue(found_path)
-            feature_branch_slug = None
             if issue and issue.isolation:
-                isolation_ref = core._parse_isolation_ref(issue.isolation.ref)
-                # Extract slug ID (e.g., "feat/feat-0002-xxxx" -> "feat-0002")
-                if isolation_ref:
-                    parts = isolation_ref.split("/")
-                    if len(parts) >= 2:
-                        feature_branch_slug = parts[1]  # "feat-0002-xxx"
-            
-            # Find matching branches by slug ID
-            matching_branches = []
-            if feature_branch_slug:
-                for branch in conflicting_branches:
-                    # Extract slug from branch name (e.g., "feat/feat-0002-xxxx" -> "feat-0002")
-                    branch_parts = branch.split("/")
-                    if len(branch_parts) >= 2:
-                        branch_slug = branch_parts[1]
-                        # Match by issue ID prefix (e.g., "feat-0002" matches "feat-0002-xxx")
-                        if branch_slug.startswith(feature_branch_slug.split("-")[0] + "-" + feature_branch_slug.split("-")[1]):
-                            matching_branches.append(branch)
-            
-            if len(matching_branches) == 1:
-                feature_branch = matching_branches[0]
-                # Checkout Issue file from feature branch to override main's version
-                try:
-                    rel_path = found_path.relative_to(project_root)
-                    git.git_checkout_files(project_root, feature_branch, [str(rel_path)])
-                    if not OutputManager.is_agent_mode():
-                        console.print(
-                            f"[green]✔ Resolved:[/green] Issue file synced from feature branch '{feature_branch}'"
-                        )
-                except Exception as e:
-                    OutputManager.error(f"Failed to sync Issue file from feature branch: {e}")
-                    rollback_transaction()
-                    raise typer.Exit(code=1)
-            elif len(matching_branches) > 1:
-                # Multiple branches match - ambiguous
-                OutputManager.error(
-                    f"Issue {issue_id} found in multiple matching branches: {', '.join(matching_branches)}. "
-                    f"Cannot determine which version to use."
-                )
-                raise typer.Exit(code=1)
-            else:
-                # No isolation info or no matching branch found - report conflict
-                OutputManager.error(
-                    f"Issue {issue_id} found in multiple branches: {', '.join(conflicting_branches)}. "
-                    f"Cannot determine which version to use."
-                )
-                raise typer.Exit(code=1)
+                feature_branch = core._parse_isolation_ref(issue.isolation.ref)
+                if feature_branch:
+                    # Directly checkout Issue file from feature branch to override main's version
+                    try:
+                        rel_path = found_path.relative_to(project_root)
+                        git.git_checkout_files(project_root, feature_branch, [str(rel_path)])
+                        if not OutputManager.is_agent_mode():
+                            console.print(
+                                f"[green]✔ Resolved:[/green] Issue file synced from feature branch '{feature_branch}'"
+                            )
+                    except Exception as e:
+                        OutputManager.error(f"Failed to sync Issue file from feature branch: {e}")
+                        rollback_transaction()
+                        raise typer.Exit(code=1)
         
         # If issue was found in a different branch, notify user
         if source_branch and source_branch != git.get_current_branch(project_root):
