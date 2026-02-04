@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 'Universal Hooks: Git Hooks Dispatcher'
 created_at: '2026-02-04T13:27:07'
-updated_at: '2026-02-04T14:45:15'
+updated_at: '2026-02-04T14:49:53'
 parent: EPIC-0034
 dependencies:
 - FEAT-0174
