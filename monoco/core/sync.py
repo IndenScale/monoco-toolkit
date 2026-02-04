@@ -204,6 +204,7 @@ def sync_command(
         hooks_manager.register_dispatcher(HookType.GIT, git_dispatcher)
 
         # Register Agent Dispatchers for active platforms
+        # NOTE: Only Claude Code and Gemini CLI are officially supported
         agent_dispatchers = {
             "claude-code": ClaudeCodeDispatcher(),
             "gemini-cli": GeminiDispatcher(),
