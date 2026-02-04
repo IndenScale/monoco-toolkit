@@ -6,7 +6,7 @@ import tempfile
 import os
 
 from monoco.features.hooks.parser import HookParser, ParseError
-from monoco.features.hooks.universal_models import HookType, HookMetadata
+from monoco.features.hooks.models import HookType, HookMetadata
 
 
 class TestHookParserCommentStyles:

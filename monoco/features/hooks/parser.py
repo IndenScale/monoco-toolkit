@@ -12,7 +12,7 @@ from typing import Optional
 
 import yaml
 
-from .universal_models import HookMetadata, ParsedHook
+from .models import HookMetadata, ParsedHook
 
 
 @dataclass

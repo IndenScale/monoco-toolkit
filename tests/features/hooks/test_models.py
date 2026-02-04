@@ -3,7 +3,7 @@
 import pytest
 from pathlib import Path
 
-from monoco.features.hooks.universal_models import (
+from monoco.features.hooks.models import (
     HookType,
     GitEvent,
     AgentEvent,
