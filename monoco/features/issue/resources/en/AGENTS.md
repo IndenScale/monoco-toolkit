@@ -18,7 +18,7 @@ System for managing tasks using `monoco issue`.
   5. **Environment Policies**:
      - Must use `monoco issue start --branch`.
      - 🛑 **NO** direct coding on `main`/`master` (Linter will fail).
-     - **Prune Timing**: ONLY prune environment (branch/worktree) during `monoco issue close --prune`. NEVER prune at `submit` stage.
+     - **Prune Timing**: ONLY prune environment (branch/worktree) during `monoco issue close `. NEVER prune at `submit` stage.
      - Must update `files` field after coding (via `sync-files` or manual).
 
 ## Git Merge Strategy
@@ -64,22 +64,23 @@ When Feature branch conflicts with mainline:
    - Use `git cherry-pick <commit>` to apply valid commits one by one
 
 3. **Fallback Strategy**:
+
    ```bash
    # 1. Create temporary branch for conflict resolution
    $ git checkout main
    $ git checkout -b temp/FEAT-XXXX-resolve
-   
+
    # 2. Cherry-pick valid commits one by one
    $ git cherry-pick <commit-hash-1>
    $ git cherry-pick <commit-hash-2>
-   
+
    # 3. If conflicts occur, only keep changes from this Feature
    #    Discard any modifications that would overwrite other Issue updates on mainline
-   
+
    # 4. Merge temporary branch when done
    $ git checkout main
    $ git merge temp/FEAT-XXXX-resolve
-   
+
    # 5. Close Issue
    $ monoco issue close FEAT-XXXX --solution implemented
    ```
@@ -93,6 +94,7 @@ The Issue's `files` field records the Actual Impact Scope of the Feature branch:
 - **Limitation**: Cannot defend against explicit accidental modifications (e.g., inadvertently formatting other Issue files)
 
 **Future Enhancement**: Implement selective merge logic based on `files` list:
+
 ```bash
 # Selective merge (planned)
 $ git checkout main
@@ -101,7 +103,7 @@ $ git checkout feature/FEAT-XXXX -- <files...>
 
 #### 5. Cleanup Strategy
 
-- **Default Cleanup**: `monoco issue close` executes `--prune` by default, deleting Feature branch/worktree
+- **Default Cleanup**: `monoco issue close` executes `` by default, deleting Feature branch/worktree
 - **Keep Branch**: To preserve branch, explicitly use `--no-prune`
 - **Force Cleanup**: Use `--force` to force delete unmerged branches (use with caution)
 
@@ -119,13 +121,13 @@ $ monoco issue close FEAT-XXXX --solution implemented --force
 
 ### Summary
 
-| Operation | Command | Description |
-|-----------|---------|-------------|
-| Create Issue | `monoco issue create feature -t "Title"` | Create Issue before development |
-| Start Development | `monoco issue start FEAT-XXXX --branch` | Create Feature branch |
-| Sync Files | `monoco issue sync-files` | Update files field |
-| Submit Review | `monoco issue submit FEAT-XXXX` | Enter Review stage |
-| Close Issue | `monoco issue close FEAT-XXXX --solution implemented` | Only merge path |
-| Keep Branch | `monoco issue close ... --no-prune` | Close without deleting branch |
+| Operation         | Command                                               | Description                     |
+| ----------------- | ----------------------------------------------------- | ------------------------------- |
+| Create Issue      | `monoco issue create feature -t "Title"`              | Create Issue before development |
+| Start Development | `monoco issue start FEAT-XXXX --branch`               | Create Feature branch           |
+| Sync Files        | `monoco issue sync-files`                             | Update files field              |
+| Submit Review     | `monoco issue submit FEAT-XXXX`                       | Enter Review stage              |
+| Close Issue       | `monoco issue close FEAT-XXXX --solution implemented` | Only merge path                 |
+| Keep Branch       | `monoco issue close ... --no-prune`                   | Close without deleting branch   |
 
 > ⚠️ **WARNING**: Any manual merge operation bypassing `monoco issue close` may cause mainline state pollution and violate workflow compliance requirements.

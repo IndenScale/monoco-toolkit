@@ -438,7 +438,7 @@ def move_close(
         None, "--solution", "-s", help="Solution type"
     ),
     prune: bool = typer.Option(
-        True, "--prune/--no-prune", help="Delete branch/worktree after close (default: True)"
+        True, "/--no-prune", help="Delete branch/worktree after close (default: True)"
     ),
     force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
     force_prune: bool = typer.Option(

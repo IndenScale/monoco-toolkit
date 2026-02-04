@@ -111,7 +111,7 @@ stateDiagram-v2
 
 4.  **Merge (合并/关闭阶段)**:
     - 一旦获得批准 (人工或自动)：
-    - 运行 `monoco issue close <ID> --solution completed --prune` 清理环境并下线。
+    - 运行 `monoco issue close <ID> --solution completed ` 清理环境并下线。
 
 ### 2. 文件追踪 (File Tracking)
 

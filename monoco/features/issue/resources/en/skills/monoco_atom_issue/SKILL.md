@@ -79,7 +79,7 @@ stateDiagram-v2
 
 4.  **Merge Phase**:
     - Once approved:
-    - Run `monoco issue close <ID> --solution completed --prune`.
+    - Run `monoco issue close <ID> --solution completed `.
 
 ### 2. File Tracking
 

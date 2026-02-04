@@ -40,7 +40,7 @@ closed_at: '2026-02-02T15:53:00'
 
 ## 验收标准
 
-- [x] `monoco issue close` 默认执行 `--prune` 操作（删除分支/Worktree），除非显式指定 `--no-prune`。
+- [x] `monoco issue close` 默认执行 `` 操作（删除分支/Worktree），除非显式指定 `--no-prune`。
 - [x] `monoco issue close` 实现基于 `files` 字段的原子化合并 (Smart Atomic Merge)。
 - [x] 完成对 `touched files` (Issue `files` 字段) 追踪机制的深度调查报告。
 - [x] 更新 `monoco/features/issue/resources/zh/AGENTS.md` 和相关 Skill 文档。
@@ -80,6 +80,6 @@ closed_at: '2026-02-02T15:53:00'
 
 ## Review Comments
 
-- **实现 (Implementation)**: `monoco issue close` 命令已更新，默认执行 `--prune=True`。同时实现了基于 `files` 字段的 Smart Atomic Merge 逻辑。
+- **实现 (Implementation)**: `monoco issue close` 命令已更新，默认执行 `=True`。同时实现了基于 `files` 字段的 Smart Atomic Merge 逻辑。
 - **文档 (Documentation)**: 更新了 `AGENTS.md` 和 Skill 文档，明确了严格的合并策略及冲突处理规范。
 - **验证 (Verification)**: 经过对 `touched files` 追踪机制的调研及代码集成，初步确保了主线同步的安全性。
