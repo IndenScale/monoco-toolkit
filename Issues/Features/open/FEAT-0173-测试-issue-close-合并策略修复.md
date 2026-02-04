@@ -16,33 +16,27 @@ tags:
 - '#FEAT-0173'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T11:22:05'
+isolation:
+  type: branch
+  ref: feat/feat-0173-测试-issue-close-合并策略修复
+  path: null
+  created_at: '2026-02-04T11:22:05'
 ---
 
 ## FEAT-0173: 测试 issue close 合并策略修复
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
 
 **这是 main 分支的修改** - 用于测试当主线和 feature branch 都修改 Issue 文件时，close 是否能正常工作。
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+- [x] 测试完成
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
-
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
-- [ ] Task 1
+- [x] 完成测试
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+测试已完成，关闭此 Issue。
