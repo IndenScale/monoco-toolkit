@@ -10,8 +10,11 @@ updated_at: '2026-02-04T14:50:00'
 parent: EPIC-0000
 dependencies: []
 related: []
-domains: []
+domains:
+- Foundation
+- DevEx
 tags:
+- '#EPIC-0000'
 - '#EPIC-0034'
 - '#FEAT-0174'
 - '#FEAT-0175'
@@ -27,7 +30,7 @@ files:
 criticality: high
 solution: null
 opened_at: '2026-02-04T13:26:48'
-progress: 2/4
+progress: 3/4
 files_count: 0
 ---
 
@@ -88,6 +91,13 @@ files_count: 0
 | FEAT-0175 | Git Hooks Dispatcher | FEAT-0174 |
 | FEAT-0176 | Agent Hooks with ACL | FEAT-0174 |
 | FEAT-0177 | IDE Hooks Dispatcher | FEAT-0174 |
+
+## Technical Tasks
+
+- [/] FEAT-0174: 基于 Front Matter 的脚本注释解析器实现
+- [ ] FEAT-0175: 原生 Git Hooks 分发与安装逻辑
+- [x] FEAT-0176: Agent Hooks ACL 与通用分发协议设计
+- [ ] FEAT-0177: IDE (VS Code) Hooks 分发逻辑集成
 
 ## 验收标准
 
