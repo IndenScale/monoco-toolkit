@@ -182,40 +182,86 @@ def sync_command(
                 f"[red]  Failed to distribute workflows: {e}[/red]"
             )
 
-    # 6. Sync Git Hooks
-    console.print("[bold blue]Synchronizing Git Hooks...[/bold blue]")
+    # 6. Sync Universal Hooks (Git & Agent)
+    console.print("[bold blue]Synchronizing Universal Hooks...[/bold blue]")
 
     try:
         from monoco.features.hooks import UniversalHookManager, HookType
-        from monoco.features.hooks.dispatchers import GitHookDispatcher
+        from monoco.features.hooks.dispatchers import GitHookDispatcher, AgentHookDispatcher
 
         hooks_manager = UniversalHookManager()
+        
+        # Register Dispatchers
         git_dispatcher = GitHookDispatcher()
         hooks_manager.register_dispatcher(HookType.GIT, git_dispatcher)
+        
+        # Register Agent Dispatchers for active platforms
+        agent_dispatchers = {}
+        for provider in ["claude-code", "gemini-cli"]:
+            dispatcher = AgentHookDispatcher(provider=provider)
+            hooks_manager.register_dispatcher(HookType.AGENT, dispatcher)
+            agent_dispatchers[provider] = dispatcher
 
-        hooks_dir = root / ".monoco" / "hooks"
-        if hooks_dir.exists():
-            groups = hooks_manager.scan(hooks_dir)
+        # 6.1 Scan for hooks
+        all_hooks = []
+        
+        # 6.1.1 Scan builtin hooks from hooks feature
+        try:
+            from monoco.features import hooks as hooks_module
+            hooks_feature_dir = Path(hooks_module.__file__).parent
+            builtin_hooks_dir = hooks_feature_dir / "resources" / "hooks"
+            if builtin_hooks_dir.exists():
+                groups = hooks_manager.scan(builtin_hooks_dir)
+                for group in groups.values():
+                    all_hooks.extend(group.hooks)
+        except Exception as e:
+            console.print(f"[dim]  No builtin hooks found: {e}[/dim]")
 
-            if "git" in groups:
-                group = groups["git"]
-                results = git_dispatcher.sync(group.hooks, root)
+        # 6.1.2 Scan for hooks in all active features
+        for feature in active_features:
+            if feature.name == "hooks":
+                continue # Already scanned
+                
+            import importlib
+            try:
+                # Use the module where the feature class is defined (usually adapter.py)
+                module_name = feature.__class__.__module__
+                module = importlib.import_module(module_name)
+                
+                if hasattr(module, "__file__") and module.__file__:
+                    # feature_dir is the directory containing adapter.py
+                    feature_dir = Path(module.__file__).parent
+                    hooks_resource_dir = feature_dir / "resources" / "hooks"
+                    
+                    if hooks_resource_dir.exists():
+                        groups = hooks_manager.scan(hooks_resource_dir)
+                        for group in groups.values():
+                            all_hooks.extend(group.hooks)
+            except Exception:
+                continue
 
-                installed = sum(1 for v in results.values() if v)
-                total = len(results)
+        # 6.2 Sync Git Hooks
+        git_hooks = [h for h in all_hooks if h.metadata.type == HookType.GIT]
+        git_results = git_dispatcher.sync(git_hooks, root)
+        
+        git_installed = sum(1 for v in git_results.values() if v)
+        if git_installed > 0:
+            console.print(f"[green]  ✓ Synchronized {git_installed} Git hooks[/green]")
+        elif git_hooks:
+            console.print("[yellow]  No Git hooks were successfully synchronized[/yellow]")
 
-                if total > 0:
-                    console.print(
-                        f"[green]  ✓ Synchronized {installed}/{total} Git hooks[/green]"
-                    )
-                else:
-                    console.print("[dim]  No Git hooks to synchronize[/dim]")
-            else:
-                console.print("[dim]  No Git hooks configured[/dim]")
-        else:
-            console.print("[dim]  No hooks directory found (.monoco/hooks)[/dim]")
+        # 6.3 Sync Agent Hooks (Distribution)
+        agent_hooks = [h for h in all_hooks if h.metadata.type == HookType.AGENT]
+        for hook in agent_hooks:
+            provider = hook.metadata.provider
+            if provider in agent_dispatchers:
+                if agent_dispatchers[provider].install(hook, root):
+                    console.print(f"[green]  ✓ Distributed agent hook: {hook.script_path.name} to {provider}[/green]")
+
     except Exception as e:
-        console.print(f"[red]  Failed to synchronize Git hooks: {e}[/red]")
+        console.print(f"[red]  Failed to synchronize Universal Hooks: {e}[/red]")
+        import traceback
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
 
     # 4. Determine Targets
     targets = _get_targets(root, config, target)
