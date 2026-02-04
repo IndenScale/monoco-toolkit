@@ -3,7 +3,7 @@ id: FEAT-0165
 uid: a5a9ae
 type: feature
 status: open
-stage: doing
+stage: review
 title: 重构 Memo Inbox 为信号队列模型：消费即销毁
 created_at: '2026-02-03T14:24:54'
 updated_at: '2026-02-04T10:03:49'
