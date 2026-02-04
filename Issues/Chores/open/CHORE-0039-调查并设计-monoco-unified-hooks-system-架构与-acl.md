@@ -41,10 +41,10 @@ isolation:
 - [ ] 论证 JIT 劝导在减少 Skill 冗余方面的有效性
 
 ## Technical Tasks
-- [ ] 调研现有 Agent 框架的 Middleware/Hooks 注入点
-- [ ] 设计 Monoco Unified Hooks 的注册与分发逻辑
-- [ ] 更新 `docs/zh/40_hooks/README.md`，定义架构草案
-- [ ] 设计首批 JIT 场景（如：代码提交前的 sync-files 劝导）
+- [x] 调研现有 Agent 框架的 Middleware/Hooks 注入点
+- [x] 设计 Monoco Unified Hooks 的注册与分发逻辑
+- [x] 更新 `docs/zh/40_hooks/README.md`，定义架构草案
+- [x] 设计首批 JIT 场景（如：代码提交前的 sync-files 劝导）
 
 ## Review Comments
 <!-- Required for Review/Done stage. Record review feedback here. -->
