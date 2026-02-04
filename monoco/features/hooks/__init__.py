@@ -16,6 +16,7 @@ from .models import (
 )
 from .parser import HookParser, ParseError
 from .manager import UniversalHookManager, ValidationResult, HookDispatcher
+from .dispatchers import GitHookDispatcher
 
 __all__ = [
     # Models
@@ -33,4 +34,6 @@ __all__ = [
     "UniversalHookManager",
     "ValidationResult",
     "HookDispatcher",
+    # Dispatchers
+    "GitHookDispatcher",
 ]
