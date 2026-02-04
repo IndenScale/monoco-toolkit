@@ -3,10 +3,10 @@ id: FEAT-0172
 uid: 9fb8f8
 type: feature
 status: open
-stage: doing
+stage: review
 title: 优化 issue close 时的文件合并策略：直接覆盖主线 issue ticket
 created_at: '2026-02-04T11:17:02'
-updated_at: '2026-02-04T11:17:27'
+updated_at: '2026-02-04T11:18:58'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,10 +14,17 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0172'
-files: []
+files:
+- '"Issues/Features/open/FEAT-0172-\344\274\230\345\214\226-issue-close-\346\227\266\347\232\204\346\226\207\344\273\266\345\220\210\345\271\266\347\255\226\347\225\245-\347\233\264\346\216\245\350\246\206\347\233\226\344\270\273\347\272\277-issue-ticket.md"'
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- monoco/features/issue/core.py
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T11:17:02'
+isolation:
+  type: branch
+  ref: feat/feat-0172-优化-issue-close-时的文件合并策略-直接覆盖主线-issue-ticket
+  created_at: '2026-02-04T11:17:28'
 ---
 
 ## FEAT-0172: 优化 issue close 时的文件合并策略：直接覆盖主线 issue ticket
@@ -35,11 +42,11 @@ opened_at: '2026-02-04T11:17:02'
 
 ## Acceptance Criteria
 <!-- Define binary conditions for success. -->
-- [ ] `sync_files` 不再将 Issue 文件本身加入 `files` 列表
-- [ ] `merge_issue_changes` 在冲突检测时排除 Issue 文件
-- [ ] `merge_issue_changes` 使用 `git checkout` 合并文件时跳过 Issue 文件
-- [ ] Issue 文件由 `update_issue` 统一处理（移动目录 + 状态更新）
-- [ ] 测试验证主线和 feature branch 都有 Issue 修改时能正常 close
+- [x] `sync_files` 不再将 Issue 文件本身加入 `files` 列表
+- [x] `merge_issue_changes` 在冲突检测时排除 Issue 文件
+- [x] `merge_issue_changes` 使用 `git checkout` 合并文件时跳过 Issue 文件
+- [x] Issue 文件由 `update_issue` 统一处理（移动目录 + 状态更新）
+- [x] 测试验证主线和 feature branch 都有 Issue 修改时能正常 close
 
 ## Technical Tasks
 <!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
@@ -52,10 +59,26 @@ opened_at: '2026-02-04T11:17:02'
 <!-- - [ ] Parent Task -->
 <!--   - [ ] Sub Task -->
 
-- [ ] 修改 `core.py::sync_issue_files`：从 changed_files 中排除 Issue 文件本身
-- [ ] 修改 `core.py::merge_issue_changes`：从 files_to_merge 中排除 Issue 文件
-- [ ] 验证 `update_issue` 正确处理 Issue 文件的目录移动和状态更新
-- [ ] 运行测试验证场景：主线和 feature branch 都有 Issue 修改时能正常 close
+- [x] 修改 `core.py::sync_issue_files`：从 changed_files 中排除 Issue 文件本身
+- [x] 修改 `core.py::merge_issue_changes`：从 files_to_merge 中排除 Issue 文件
+- [x] 验证 `update_issue` 正确处理 Issue 文件的目录移动和状态更新
+- [x] 运行测试验证场景：主线和 feature branch 都有 Issue 修改时能正常 close
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+### 实现总结
+
+**问题**: 当主线和 feature branch 都修改了 Issue ticket 文件时，`monoco issue close` 会因冲突检测而失败。
+
+**解决方案**: Issue 文件作为工作流元数据，在 close 时直接以 feature branch 版本为准，不做冲突检查。
+
+**修改位置** (`monoco/features/issue/core.py`):
+
+1. **sync_issue_files** (line ~1381): 从 `changed_files` 中过滤掉 Issue 文件本身，确保 `files` 字段不包含 Issue 文件
+
+2. **merge_issue_changes** (line ~1478):
+   - 创建新的 `files_to_merge` 列表，排除 Issue 文件
+   - 只对 `files_to_merge` 进行冲突检测
+   - 只对 `files_to_merge` 执行 `git_checkout_files`
+
+**验证**: Issue 文件由 `update_issue` 函数单独处理（负责移动目录 `open/` → `closed/` 和更新状态），无需通过 git merge 合并。
