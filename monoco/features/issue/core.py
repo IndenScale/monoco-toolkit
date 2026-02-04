@@ -83,6 +83,55 @@ def _get_slug(title: str) -> str:
     return slug
 
 
+def _unquote_git_path(path: str) -> str:
+    """
+    Decode Git C-quoting format paths to native strings.
+
+    Git uses C-quoting for paths containing non-ASCII characters or special characters:
+    - Wraps the path in double quotes: "path"
+    - Escapes bytes as octal: \351\207\215 represents UTF-8 bytes
+
+    Args:
+        path: Path string, potentially in Git C-quoting format
+
+    Returns:
+        Decoded native path string
+
+    Examples:
+        >>> _unquote_git_path('"path-\\351\\207\\215.md"')
+        'path-重.md'
+        >>> _unquote_git_path('"path\\ with\\ space.md"')
+        'path with space.md'
+        >>> _unquote_git_path('normal/path.md')
+        'normal/path.md'
+    """
+    path = path.strip()
+
+    # Check if the path is wrapped in double quotes (C-quoting format)
+    if not (path.startswith('"') and path.endswith('"')):
+        return path
+
+    # Remove outer quotes
+    path = path[1:-1]
+
+    # Collect all bytes (octal escapes -> bytes, ASCII chars -> their byte values)
+    bytes_list = []
+    i = 0
+    while i < len(path):
+        if path[i] == '\\' and i + 3 < len(path) and path[i+1:i+4].isdigit():
+            # This is an octal escape sequence (e.g., \351)
+            byte_val = int(path[i+1:i+4], 8)
+            bytes_list.append(byte_val)
+            i += 4
+        else:
+            # Regular ASCII character
+            bytes_list.append(ord(path[i]))
+            i += 1
+
+    # Decode the entire byte sequence as UTF-8
+    return bytes(bytes_list).decode('utf-8')
+
+
 def parse_issue(file_path: Path, raise_error: bool = False) -> Optional[IssueMetadata]:
     if not file_path.suffix == ".md":
         return None
@@ -1331,6 +1380,9 @@ def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> Li
 
     changed_files = [f.strip() for f in stdout.splitlines() if f.strip()]
 
+    # Decode Git C-quoting format paths to native paths
+    changed_files = [_unquote_git_path(f) for f in changed_files]
+
     # Sort for consistency
     changed_files.sort()
 
@@ -1421,6 +1473,10 @@ def merge_issue_changes(
     if not issue.files:
          return []
 
+    # Compatibility: Decode any legacy escaped paths in files field
+    # This handles files stored before the _unquote_git_path fix was applied
+    decoded_files = [_unquote_git_path(f) for f in issue.files]
+
     # 1. Conflict Check
     # A conflict occurs if a file in 'files' has changed on HEAD (main)
     # since the common ancestor of HEAD and source_ref.
@@ -1432,7 +1488,7 @@ def merge_issue_changes(
         raise RuntimeError(f"Failed to determine merge base: {e}")
 
     conflicts = []
-    for f in issue.files:
+    for f in decoded_files:
         # Has main changed this file?
         if git.has_diff(project_root, base, current_head, [f]):
             # Has feature also changed this file?
@@ -1448,11 +1504,11 @@ def merge_issue_changes(
 
     # 2. Perform Atomic Merge (Selective Checkout)
     try:
-        git.git_checkout_files(project_root, source_ref, issue.files)
+        git.git_checkout_files(project_root, source_ref, decoded_files)
     except Exception as e:
         raise RuntimeError(f"Selective checkout failed: {e}")
 
-    return issue.files
+    return decoded_files
 
 
 # Resources
