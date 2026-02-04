@@ -18,24 +18,24 @@ Complete standardized workflow for Issue development, testing, submission, revie
 ```mermaid
 stateDiagram-v2
     [*] --> Setup: Start Development
-    
+
     Setup --> Develop: Environment Ready
     Setup --> Setup: Dependencies Not Met<br/>(Wait for Resolution)
-    
+
     Develop --> Test: Coding Complete
     Develop --> Develop: Needs Iteration<br/>(Continue Development)
-    
+
     Test --> Submit: Tests Pass
     Test --> Develop: Tests Fail<br/>(Fix Code)
-    
+
     state "Review Loop" as ReviewLoop {
         Submit --> Review: Submit for Review
         Review --> Fix: Changes Required
         Fix --> Submit: Resubmit
     }
-    
+
     Review --> Merge: Review Passed
-    
+
     Merge --> [*]: Merge Complete
 ```
 
@@ -89,6 +89,7 @@ stateDiagram-v2
   - [ ] Check test coverage
 
 **Test Levels**:
+
 ```
 Unit Test → Integration Test → E2E Test → Manual Verification
    ↑          ↑            ↑            ↑
@@ -106,6 +107,7 @@ Unit Test → Integration Test → E2E Test → Manual Verification
   - [ ] Run `monoco issue submit <ID>`
 
 **Commit Message Specification**:
+
 ```
 <type>(<scope>): <subject>
 
@@ -114,15 +116,15 @@ Unit Test → Integration Test → E2E Test → Manual Verification
 Refs: <ISSUE-ID>
 ```
 
-| Type | Purpose |
-|------|---------|
-| feat | New feature |
-| fix | Bug fix |
-| docs | Documentation update |
-| style | Code formatting |
-| refactor | Refactoring |
-| test | Test related |
-| chore | Build/tools |
+| Type     | Purpose              |
+| -------- | -------------------- |
+| feat     | New feature          |
+| fix      | Bug fix              |
+| docs     | Documentation update |
+| style    | Code formatting      |
+| refactor | Refactoring          |
+| test     | Test related         |
+| chore    | Build/tools          |
 
 ### 5. Review
 
@@ -152,19 +154,19 @@ Refs: <ISSUE-ID>
   - [ ] Code has passed review
   - [ ] All CI checks pass
   - [ ] Code is merged to main branch
-  - [ ] Run `monoco issue close <ID> --solution completed --prune`
+  - [ ] Run `monoco issue close <ID> --solution completed `
   - [ ] Verify branch is cleaned up
   - [ ] Update Review Comments (record review feedback)
 
 ## Decision Branches
 
-| Condition | Action |
-|-----------|--------|
+| Condition                       | Action                                 |
+| ------------------------------- | -------------------------------------- |
 | Dependency Issues not completed | Return to Setup, wait for dependencies |
-| Tests fail | Return to Develop, fix code |
-| Lint fails | Fix compliance issues, resubmit |
-| Review requires changes | Return to Fix, modify per feedback |
-| Review passed | Enter Merge, merge and cleanup |
+| Tests fail                      | Return to Develop, fix code            |
+| Lint fails                      | Fix compliance issues, resubmit        |
+| Review requires changes         | Return to Fix, modify per feedback     |
+| Review passed                   | Enter Merge, merge and cleanup         |
 
 ## Compliance Requirements
 
@@ -191,7 +193,7 @@ monoco issue lint
 monoco issue submit FEAT-0001
 
 # Close Issue
-monoco issue close FEAT-0001 --solution completed --prune
+monoco issue close FEAT-0001 --solution completed
 ```
 
 ## Relationship with flow_engineer
@@ -217,6 +219,7 @@ During the Develop phase, developers should follow `flow_engineer`'s Investigate
 ## Copilot Mode Tips
 
 As an AI Copilot, you should:
+
 1. **Assist coding**: Help implement features, fix bugs
 2. **Code review**: Pre-review before submission to find potential issues
 3. **Test assistance**: Help write test cases, ensure coverage

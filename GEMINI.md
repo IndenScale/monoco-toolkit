@@ -55,6 +55,7 @@ Monoco is not just a toolkit; it is a **Headless Project Management Operating Sy
 _This file is the root configuration for the Monoco Agent. Read `.agent/GLOSSARY.md` next._
 
 <!-- MONOCO_GENERATED_START -->
+
 ## Monoco Toolkit
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
@@ -157,31 +158,40 @@ $ monoco issue close FEAT-XXXX --solution implemented --no-prune
 
 1. **自动合并停止**: 如果 `touched files` (Issue `files` 字段) 与主线产生冲突，自动化工具**必须立即停止合并**，并抛出明确错误。
 
-2. **手动 Cherry-Pick 模式**: 
+2. **手动 Cherry-Pick 模式**:
    - 错误信息会指示 Agent 转入手动 Cherry-Pick 模式
    - **核心原则**: 仅挑选属于本 Feature 的有效变更，严禁覆盖主线上无关 Issue 的更新
    - 使用 `git cherry-pick <commit>` 逐个应用有效提交
 
 3. **Fallback 策略**:
    ```bash
-###   # 1. 创建临时分支用于解决冲突
-   $ git checkout main
-   $ git checkout -b temp/FEAT-XXXX-resolve
-   
-###   # 2. 逐个 Cherry-Pick 有效提交
-   $ git cherry-pick <commit-hash-1>
-   $ git cherry-pick <commit-hash-2>
-   
-###   # 3. 如有冲突，仅保留本 Feature 的变更
-###   #    放弃任何会覆盖主线上其他 Issue 更新的修改
-   
-###   # 4. 完成后合并临时分支
-   $ git checkout main
-   $ git merge temp/FEAT-XXXX-resolve
-   
-###   # 5. 关闭 Issue
-   $ monoco issue close FEAT-XXXX --solution implemented
+
    ```
+
+### # 1. 创建临时分支用于解决冲突
+
+$ git checkout main
+$ git checkout -b temp/FEAT-XXXX-resolve
+
+### # 2. 逐个 Cherry-Pick 有效提交
+
+$ git cherry-pick <commit-hash-1>
+$ git cherry-pick <commit-hash-2>
+
+### # 3. 如有冲突，仅保留本 Feature 的变更
+
+### # 放弃任何会覆盖主线上其他 Issue 更新的修改
+
+### # 4. 完成后合并临时分支
+
+$ git checkout main
+$ git merge temp/FEAT-XXXX-resolve
+
+### # 5. 关闭 Issue
+
+$ monoco issue close FEAT-XXXX --solution implemented
+
+````
 
 ####### 4. 基于 files 字段的智能合并 (Smart Atomic Merge)
 
@@ -196,11 +206,11 @@ Issue 的 `files` 字段记录了 Feature 分支的真实影响范围 (Actual Im
 #### 选择性合并（规划中）
 $ git checkout main
 $ git checkout feature/FEAT-XXXX -- <files...>
-```
+````
 
 ####### 5. 清理策略
 
-- **默认清理**: `monoco issue close` 默认执行 `--prune`，删除 Feature 分支/Worktree
+- **默认清理**: `monoco issue close` 默认执行 ``，删除 Feature 分支/Worktree
 - **保留分支**: 如需保留分支，显式使用 `--no-prune`
 - **强制清理**: 使用 `--force` 强制删除未完全合并的分支（谨慎使用）
 
@@ -218,14 +228,14 @@ $ monoco issue close FEAT-XXXX --solution implemented --force
 
 ###### 总结
 
-| 操作 | 命令 | 说明 |
-|------|------|------|
-| 创建 Issue | `monoco issue create feature -t "标题"` | 先创建 Issue 再开发 |
-| 启动开发 | `monoco issue start FEAT-XXXX --branch` | 创建 Feature 分支 |
-| 同步文件 | `monoco issue sync-files` | 更新 files 字段 |
-| 提交评审 | `monoco issue submit FEAT-XXXX` | 进入 Review 阶段 |
-| 关闭 Issue | `monoco issue close FEAT-XXXX --solution implemented` | 唯一合并途径 |
-| 保留分支 | `monoco issue close ... --no-prune` | 关闭但不删除分支 |
+| 操作       | 命令                                                  | 说明                |
+| ---------- | ----------------------------------------------------- | ------------------- |
+| 创建 Issue | `monoco issue create feature -t "标题"`               | 先创建 Issue 再开发 |
+| 启动开发   | `monoco issue start FEAT-XXXX --branch`               | 创建 Feature 分支   |
+| 同步文件   | `monoco issue sync-files`                             | 更新 files 字段     |
+| 提交评审   | `monoco issue submit FEAT-XXXX`                       | 进入 Review 阶段    |
+| 关闭 Issue | `monoco issue close FEAT-XXXX --solution implemented` | 唯一合并途径        |
+| 保留分支   | `monoco issue close ... --no-prune`                   | 关闭但不删除分支    |
 
 > ⚠️ **警告**: 任何绕过 `monoco issue close` 的手动合并操作都可能导致主线状态污染，违反工作流合规要求。
 
@@ -269,15 +279,15 @@ $ monoco issue close FEAT-XXXX --solution implemented --force
 
 ######## 核心架构隐喻: "Linux 发行版"
 
-| 术语 | 定义 | 隐喻 |
-| :--- | :--- | :--- |
-| **Monoco** | 智能体操作系统发行版。管理策略、工作流和包系统。 | **发行版** (如 Ubuntu, Arch) |
-| **Kimi CLI** | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。 | **内核** (Linux Kernel) |
-| **Session** | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。 | **初始化系统/守护进程** (systemd) |
-| **Issue** | 具有状态（Open/Done）和严格生命周期的原子工作单元。 | **单元文件** (systemd unit) |
-| **Skill** | 扩展智能体功能的工具、提示词和流程包。 | **软件包** (apt/pacman package) |
-| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。 | **配置** (`/etc/config`) |
-| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。 | **桌面环境** (GNOME/KDE) |
+| 术语             | 定义                                                              | 隐喻                              |
+| :--------------- | :---------------------------------------------------------------- | :-------------------------------- |
+| **Monoco**       | 智能体操作系统发行版。管理策略、工作流和包系统。                  | **发行版** (如 Ubuntu, Arch)      |
+| **Kimi CLI**     | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。           | **内核** (Linux Kernel)           |
+| **Session**      | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。          | **初始化系统/守护进程** (systemd) |
+| **Issue**        | 具有状态（Open/Done）和严格生命周期的原子工作单元。               | **单元文件** (systemd unit)       |
+| **Skill**        | 扩展智能体功能的工具、提示词和流程包。                            | **软件包** (apt/pacman package)   |
+| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。 | **配置** (`/etc/config`)          |
+| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。                      | **桌面环境** (GNOME/KDE)          |
 
 ######## 关键概念
 
