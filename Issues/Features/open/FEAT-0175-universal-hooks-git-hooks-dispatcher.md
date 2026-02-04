@@ -3,10 +3,10 @@ id: FEAT-0175
 uid: ddde11
 type: feature
 status: open
-stage: draft
+stage: doing
 title: 'Universal Hooks: Git Hooks Dispatcher'
 created_at: '2026-02-04T13:27:07'
-updated_at: '2026-02-04T14:50:00'
+updated_at: '2026-02-04T14:20:03'
 parent: EPIC-0034
 dependencies:
 - FEAT-0174
@@ -19,7 +19,7 @@ tags:
 - '#FEAT-0175'
 files: []
 criticality: high
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T13:27:07'
 ---
 
