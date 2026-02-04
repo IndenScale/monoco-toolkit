@@ -123,3 +123,11 @@ $ grep -n "MONOCO_GENERATED" AGENTS.md
 - [x] 在 CHANGELOG 中记录此修复
 
 ## Review Comments
+
+### Self-Review
+
+1. **幂等性验证**: 通过 `test_idempotence_multiple_runs` 测试验证，连续 3 次 inject 产生完全相同的内容。
+2. **警告机制**: 通过 `test_external_content_detection` 测试验证，检测到外部内容时正确输出警告。
+3. **文件头注释**: 新创建的文件自动添加管理注释，防止用户误编辑。
+4. **向后兼容**: 现有文件的清理逻辑正确处理文件头注释，remove() 方法完全清空文件。
+5. **代码质量**: 所有 11 个单元测试通过，包括原有的和新添加的测试。
