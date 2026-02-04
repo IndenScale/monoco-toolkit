@@ -44,42 +44,42 @@ isolation:
 
 ## 验收标准
 
-- [ ] 定义 `HookType` Enum: `git`, `ide`, `agent`
-- [ ] 实现 `HookMetadata` Pydantic 模型：
-  - [ ] 基础字段：`type`, `event`, `matcher`, `priority`, `description`
-  - [ ] 条件字段：`provider` (当 type=agent/ide 时必填)
-- [ ] 实现 `HookParser`，支持从脚本头部解析 YAML Front Matter
-- [ ] 支持多语言注释风格：`#` (Shell/Python), `//` (JS/TS), `--` (Lua/SQL)
-- [ ] 实现 `UniversalHookManager` 核心类框架：
-  - [ ] `scan(directory)`: 递归扫描并按 `type` + `provider` 分组
-  - [ ] `validate(hook)`: 校验元数据完整性
+- [x] 定义 `HookType` Enum: `git`, `ide`, `agent`
+- [x] 实现 `HookMetadata` Pydantic 模型：
+  - [x] 基础字段：`type`, `event`, `matcher`, `priority`, `description`
+  - [x] 条件字段：`provider` (当 type=agent/ide 时必填)
+- [x] 实现 `HookParser`，支持从脚本头部解析 YAML Front Matter
+- [x] 支持多语言注释风格：`#` (Shell/Python), `//` (JS/TS), `--` (Lua/SQL)
+- [x] 实现 `UniversalHookManager` 核心类框架：
+  - [x] `scan(directory)`: 递归扫描并按 `type` + `provider` 分组
+  - [x] `validate(hook)`: 校验元数据完整性
 
 ## 技术任务
 
 ### 模型定义
-- [ ] 定义 `HookType` Enum: `git`, `ide`, `agent`
-- [ ] 定义 `HookMetadata` Pydantic 模型：
-  - [ ] 基础字段：`type` (HookType), `event`, `matcher`, `priority`, `description`
-  - [ ] Provider 字段：`provider` (Optional[str], 当 type=agent/ide 时必填)
-- [ ] 定义各类型的事件枚举：
-  - [ ] `GitEvent`: pre-commit, prepare-commit-msg, commit-msg, post-merge, pre-push
-  - [ ] `AgentEvent`: session-start, before-tool, after-tool, before-agent, after-agent
-  - [ ] `IDEEvent`: on-save, on-open, on-close, on-build
+- [x] 定义 `HookType` Enum: `git`, `ide`, `agent`
+- [x] 定义 `HookMetadata` Pydantic 模型：
+  - [x] 基础字段：`type` (HookType), `event`, `matcher`, `priority`, `description`
+  - [x] Provider 字段：`provider` (Optional[str], 当 type=agent/ide 时必填)
+- [x] 定义各类型的事件枚举：
+  - [x] `GitEvent`: pre-commit, prepare-commit-msg, commit-msg, post-merge, pre-push
+  - [x] `AgentEvent`: session-start, before-tool, after-tool, before-agent, after-agent
+  - [x] `IDEEvent`: on-save, on-open, on-close, on-build
 
 ### Front Matter 解析器
-- [ ] 实现 `HookParser` 类
-  - [ ] 从脚本头部提取 YAML Front Matter
-  - [ ] 支持多行注释边界检测 (`# ---` / `# ---`)
-  - [ ] 支持多语言注释风格检测
-- [ ] 实现解析错误处理和行号定位
-- [ ] 编写单元测试覆盖各种注释风格
+- [x] 实现 `HookParser` 类
+  - [x] 从脚本头部提取 YAML Front Matter
+  - [x] 支持多行注释边界检测 (`# ---` / `# ---`)
+  - [x] 支持多语言注释风格检测
+- [x] 实现解析错误处理和行号定位
+- [x] 编写单元测试覆盖各种注释风格 (74 个测试通过)
 
 ### UniversalHookManager 框架
-- [ ] 创建 `monoco/features/hooks/core.py`
-- [ ] 实现 `UniversalHookManager` 类框架
-  - [ ] `scan(directory)`: 递归扫描 Hook 脚本，按 `type` + `provider` 分组返回
-  - [ ] `validate(hook)`: 校验元数据（如 type=agent 时 provider 必填）
-  - [ ] `register_dispatcher(type, dispatcher)`: 注册类型分发器（为后续 Feature 预留）
+- [x] 创建 `monoco/features/hooks/universal_manager.py`
+- [x] 实现 `UniversalHookManager` 类框架
+  - [x] `scan(directory)`: 递归扫描 Hook 脚本，按 `type` + `provider` 分组返回
+  - [x] `validate(hook)`: 校验元数据（如 type=agent 时 provider 必填）
+  - [x] `register_dispatcher(type, dispatcher)`: 注册类型分发器（为后续 Feature 预留）
 
 ## Review Comments
 <!-- 评审阶段时填写 -->
