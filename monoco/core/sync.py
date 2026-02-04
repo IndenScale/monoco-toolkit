@@ -1,4 +1,5 @@
 import typer
+import subprocess
 from pathlib import Path
 from typing import Optional, List
 from monoco.core.registry import FeatureRegistry
@@ -21,8 +22,10 @@ def _get_targets(root: Path, config, cli_target: Optional[Path]) -> List[Path]:
         return targets
 
     # 2. Registry Defaults (Dynamic Detection)
+    # We now default to ALL integrations instead of auto-detecting
+    # because we want to enable all agents by default.
     integrations = get_active_integrations(
-        root, config_overrides=None, auto_detect=True
+        root, config_overrides=None, auto_detect=False
     )
 
     if integrations:
@@ -133,8 +136,9 @@ def sync_command(
     skill_manager = SkillManager(root, active_features)
 
     # Get active integrations
+    # Disable auto-detect to distribute to all supported frameworks
     integrations = get_active_integrations(
-        root, config_overrides=None, auto_detect=True
+        root, config_overrides=None, auto_detect=False
     )
 
     if integrations:
@@ -242,6 +246,13 @@ def sync_command(
 
         # 6.2 Sync Git Hooks
         git_hooks = [h for h in all_hooks if h.metadata.type == HookType.GIT]
+        
+        if not (root / ".git").exists():
+            console.print("[dim]  Git repository not found. Initializing...[/dim]")
+            # Set global default branch to main
+            subprocess.run(["git", "config", "--global", "init.defaultBranch", "main"], check=False)
+            subprocess.run(["git", "init"], cwd=root, check=False)
+
         git_results = git_dispatcher.sync(git_hooks, root)
         
         git_installed = sum(1 for v in git_results.values() if v)
