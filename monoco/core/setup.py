@@ -211,6 +211,8 @@ def init_cli(
     project_config_path = project_config_dir / "project.yaml"
 
     project_initialized = False
+    workspace_config = {}
+    project_key = "MON"
 
     # Check if we should init project
     if workspace_config_path.exists() or project_config_path.exists():
@@ -322,6 +324,13 @@ def init_cli(
     # Initialize Hooks
     try:
         from monoco.core.githooks import install_hooks
+
+        # Check if git initialized, if not, do it
+        if not (cwd / ".git").exists():
+            console.print("[dim]Git repository not found. Initializing...[/dim]")
+            # Set global default branch to main
+            subprocess.run(["git", "config", "--global", "init.defaultBranch", "main"], check=False)
+            subprocess.run(["git", "init"], cwd=cwd, check=False)
 
         # Re-load config to get the just-written hooks (or default ones)
         # Actually we have the dict right here in workspace_config['hooks']
