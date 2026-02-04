@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 'Universal Hooks: Git Hooks Dispatcher'
 created_at: '2026-02-04T13:27:07'
-updated_at: '2026-02-04T14:27:26'
+updated_at: '2026-02-04T14:45:15'
 parent: EPIC-0034
 dependencies:
 - FEAT-0174
@@ -18,11 +18,20 @@ tags:
 - '#FEAT-0174'
 - '#FEAT-0175'
 files:
+- AGENTS.md
+- CLAUDE.md
+- GEMINI.md
+- QWEN.md
 - monoco/core/sync.py
 - monoco/features/hooks/__init__.py
 - monoco/features/hooks/commands.py
 - monoco/features/hooks/dispatchers/__init__.py
+- monoco/features/hooks/dispatchers/agent_dispatcher.py
 - monoco/features/hooks/dispatchers/git_dispatcher.py
+- monoco/features/issue/resources/hooks/git/git-post-checkout.sh
+- monoco/features/issue/resources/hooks/git/git-pre-commit.sh
+- monoco/features/issue/resources/hooks/git/git-pre-push.sh
+- monoco/features/issue/resources/hooks/pre-commit.sh
 - tests/features/hooks/test_git_dispatcher.py
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
