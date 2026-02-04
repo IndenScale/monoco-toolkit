@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 实现通用 Hooks 注册与安装机制
 created_at: '2026-02-04T13:02:30'
-updated_at: 2026-02-04 13:02:56
+updated_at: '2026-02-04T13:18:50'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,14 +14,21 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0173'
-files: []
+files:
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- Issues/Features/open/FEAT-0173-implement-universal-hooks-registration-and-install.md
+- docs/zh/90_Spikes/hooks-system/README.md
+- docs/zh/90_Spikes/hooks-system/agent_hooks/acl_unified_protocol_ZH.md
+- docs/zh/90_Spikes/hooks-system/agent_hooks/claude_code_hooks_ZH.md
+- docs/zh/90_Spikes/hooks-system/agent_hooks/gemini_cli_hooks_ZH.md
+- docs/zh/90_Spikes/hooks-system/git_hooks/git_hooks_standard_ZH.md
+- docs/zh/90_Spikes/hooks-system/ide_hooks/ide_hooks_standard_ZH.md
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T13:02:30'
 isolation:
   type: branch
   ref: feat/feat-0173-实现通用-hooks-注册与安装机制
-  path: null
   created_at: '2026-02-04T13:02:56'
 ---
 
