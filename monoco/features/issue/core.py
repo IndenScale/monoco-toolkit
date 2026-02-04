@@ -46,6 +46,32 @@ def get_issue_dir(issue_type: str, issues_root: Path) -> Path:
     return issues_root / folder
 
 
+def _extract_issue_id_from_branch(branch: str) -> Optional[str]:
+    """
+    Extract issue ID from a branch name.
+
+    Supported patterns:
+    - <ID>-slug (e.g., FEAT-0123-login-page)
+    - <ID> (e.g., FEAT-0123)
+
+    Args:
+        branch: Branch name to parse
+
+    Returns:
+        The extracted issue ID (uppercase) or None if no match
+    """
+    # Pattern: <prefix>-<number> at start of branch name
+    # Examples:
+    #   FEAT-0123-login-page -> FEAT-0123
+    #   FEAT-0123 -> FEAT-0123
+    #   FIX-0001-critical -> FIX-0001
+    pattern = r'^([a-z]+-\d+)'
+    match = re.match(pattern, branch, re.IGNORECASE)
+    if match:
+        return match.group(1).upper()
+    return None
+
+
 def _parse_isolation_ref(ref: str) -> str:
     """
     Parse isolation ref and strip any 'branch:' or 'worktree:' prefix.
@@ -1082,7 +1108,7 @@ def start_issue_isolation(
             )
 
     slug = _get_slug(issue.title)
-    branch_name = f"feat/{issue_id.lower()}-{slug}"
+    branch_name = f"{issue_id}-{slug}"
 
     isolation_meta = None
 
@@ -1292,15 +1318,15 @@ def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> Li
         if target_ref == "current":
              target_ref = git.get_current_branch(project_root)
     else:
-        # Heuristic Search
-        # 1. Is current branch related?
+        # Heuristic Search - STRICT ID MATCHING ONLY
+        # 1. Is current branch's extracted ID exactly matching the issue ID?
         current = git.get_current_branch(project_root)
-        if issue_id.lower() in current.lower():
+        branch_issue_id = _extract_issue_id_from_branch(current)
+        if branch_issue_id and branch_issue_id.upper() == issue_id.upper():
             target_ref = current
         else:
-            # 2. Search for branch
-            # Limitation: core.git doesn't list all branches yet.
-            # We skip this for now to avoid complexity, relying on isolation or current context.
+            # 2. Search for branch - not implemented yet
+            # To avoid ambiguity, we only match current branch if it exactly matches
             pass
 
     if not target_ref:
@@ -1371,28 +1397,21 @@ def merge_issue_changes(
     if issue.isolation and issue.isolation.ref:
         source_ref = _parse_isolation_ref(issue.isolation.ref)
     else:
-        # Heuristic: Search for branch by convention
-        # We can't use 'current' here safely if we are on main,
-        # but let's assume we might be calling this from elsewhere?
-        # Actually, for 'close', we are likely on main.
-        # So we search for a branch named 'feat/{id}-*' or similar?
-        pass
+        # Heuristic: Search for branch by convention {id}-*
+        import re
+        code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
+        if code == 0:
+            for branch in stdout.splitlines():
+                branch = branch.strip()
+                if re.match(rf"{re.escape(issue_id)}-", branch, re.IGNORECASE):
+                    source_ref = branch
+                    break
 
-    # If local metadata doesn't have isolation ref, we might be stuck.
-    # But let's assume valid workflow.
     if not source_ref:
-          # Try to find a branch starting with feat/{id} or {id}
-          # This is a bit weak, needs better implementation in 'git' or 'issue' module
-          # For now, if we can't find it, we error.
-          pass
-
-    if not source_ref or not git.branch_exists(project_root, source_ref):
-        # Fallback: maybe we are currently ON the feature branch?
-        # If so, source_ref should be current. But we expect to call this from MAIN.
-        pass
-        
-    if not source_ref:
-         raise RuntimeError(f"Could not determine source branch for Issue {issue_id}. Ensure isolation ref is set.")
+        # No branch found - files should already be in current branch
+        # This is valid for direct workflow (no feature branch created)
+        # Nothing to merge, files are already in place
+        return issue.files
 
     if not git.branch_exists(project_root, source_ref):
          raise RuntimeError(f"Source branch {source_ref} does not exist.")

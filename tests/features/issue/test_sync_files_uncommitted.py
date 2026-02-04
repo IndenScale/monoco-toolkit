@@ -42,7 +42,7 @@ tags:
 files: []
 isolation:
   type: branch
-  ref: feat/feat-0001-test-feature
+  ref: FEAT-0001-test-feature
 ---
 
 ## FEAT-0001: Test Feature
@@ -66,7 +66,7 @@ Test.
 
     def _create_feature_branch(self, project_env):
         """Create feature branch."""
-        subprocess.run(["git", "checkout", "-b", "feat/feat-0001-test-feature"], 
+        subprocess.run(["git", "checkout", "-b", "FEAT-0001-test-feature"], 
                       cwd=project_env, check=True, capture_output=True)
 
     def test_sync_files_rejects_uncommitted_changes(self, project_env):
