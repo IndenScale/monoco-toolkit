@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 优化 issue close 时的文件合并策略：直接覆盖主线 issue ticket
 created_at: '2026-02-04T11:17:02'
-updated_at: 2026-02-04 13:41:53
+updated_at: '2026-02-04T13:48:28'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,14 +14,16 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0172'
-files: []
+files:
+- monoco/features/issue/commands.py
+- monoco/features/issue/core.py
+- tests/features/issue/test_close_multi_branch.py
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T11:17:02'
 isolation:
   type: branch
   ref: FEAT-0172-优化-issue-close-时的文件合并策略-直接覆盖主线-issue-ticket
-  path: null
   created_at: '2026-02-04T13:41:53'
 ---
 
