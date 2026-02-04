@@ -256,6 +256,10 @@ class GeminiAdapter(AgentAdapter):
         "AfterAgent": "after-agent",
         "SessionStart": "session-start",
         "SessionEnd": "session-end",
+        "BeforeModel": "before-model",
+        "AfterModel": "after-model",
+        "BeforeToolSelection": "before-tool-selection",
+        "Notification": "notification",
     }
 
     # Reverse mapping: Monoco -> Gemini
@@ -268,7 +272,8 @@ class GeminiAdapter(AgentAdapter):
         """Detect if input is in Gemini CLI format."""
         try:
             data = json.loads(raw_input)
-            event = data.get("event", "")
+            # Gemini CLI uses hook_event_name or event
+            event = data.get("hook_event_name") or data.get("event", "")
             # Gemini CLI uses specific event names
             return event in self.EVENT_MAP
         except json.JSONDecodeError:
@@ -280,9 +285,9 @@ class GeminiAdapter(AgentAdapter):
 
         Gemini CLI input format:
         {
-            "event": "BeforeTool",
-            "tool": "Bash",
-            "input": {"command": "ls -la"},
+            "hook_event_name": "BeforeTool",
+            "tool_name": "Bash",
+            "tool_input": {"command": "ls -la"},
             ...
         }
         """
@@ -291,15 +296,15 @@ class GeminiAdapter(AgentAdapter):
         except json.JSONDecodeError:
             data = {}
 
-        gemini_event = data.get("event", "")
+        gemini_event = data.get("hook_event_name") or data.get("event", "")
         monoco_event = self.EVENT_MAP.get(gemini_event, gemini_event.lower())
 
         return UnifiedHookInput(
             event=monoco_event,
-            tool=data.get("tool"),
-            input_data=data.get("input", {}),
+            tool=data.get("tool_name") or data.get("tool"),
+            input_data=data.get("tool_input") or data.get("input", {}),
             env=dict(os.environ),
-            metadata={k: v for k, v in data.items() if k not in ("event", "tool", "input")},
+            metadata={k: v for k, v in data.items() if k not in ("hook_event_name", "event", "tool_name", "tool", "tool_input", "input")},
         )
 
     def translate_output(self, decision: UnifiedDecision) -> str:
