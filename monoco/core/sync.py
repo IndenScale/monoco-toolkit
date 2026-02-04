@@ -165,7 +165,7 @@ def sync_command(
     # 5. Distribute Workflows (if --workflows flag is set)
     if workflows:
         console.print("[bold blue]Distributing Flow Skills as Workflows...[/bold blue]")
-        
+
         try:
             workflow_results = skill_manager.distribute_workflows(force=False, lang=skill_lang)
             success_count = sum(1 for v in workflow_results.values() if v)
@@ -181,6 +181,41 @@ def sync_command(
             console.print(
                 f"[red]  Failed to distribute workflows: {e}[/red]"
             )
+
+    # 6. Sync Git Hooks
+    console.print("[bold blue]Synchronizing Git Hooks...[/bold blue]")
+
+    try:
+        from monoco.features.hooks import UniversalHookManager, HookType
+        from monoco.features.hooks.dispatchers import GitHookDispatcher
+
+        hooks_manager = UniversalHookManager()
+        git_dispatcher = GitHookDispatcher()
+        hooks_manager.register_dispatcher(HookType.GIT, git_dispatcher)
+
+        hooks_dir = root / ".monoco" / "hooks"
+        if hooks_dir.exists():
+            groups = hooks_manager.scan(hooks_dir)
+
+            if "git" in groups:
+                group = groups["git"]
+                results = git_dispatcher.sync(group.hooks, root)
+
+                installed = sum(1 for v in results.values() if v)
+                total = len(results)
+
+                if total > 0:
+                    console.print(
+                        f"[green]  ✓ Synchronized {installed}/{total} Git hooks[/green]"
+                    )
+                else:
+                    console.print("[dim]  No Git hooks to synchronize[/dim]")
+            else:
+                console.print("[dim]  No Git hooks configured[/dim]")
+        else:
+            console.print("[dim]  No hooks directory found (.monoco/hooks)[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Failed to synchronize Git hooks: {e}[/red]")
 
     # 4. Determine Targets
     targets = _get_targets(root, config, target)
@@ -299,7 +334,7 @@ def uninstall_command(
 
     # 3. Clean up Workflows
     console.print("[bold blue]Cleaning up distributed workflows...[/bold blue]")
-    
+
     try:
         removed_count = skill_manager.cleanup_workflows()
         if removed_count > 0:
@@ -310,3 +345,26 @@ def uninstall_command(
         console.print(
             f"[red]  Failed to clean workflows: {e}[/red]"
         )
+
+    # 4. Clean up Git Hooks
+    console.print("[bold blue]Cleaning up Git Hooks...[/bold blue]")
+
+    try:
+        from monoco.features.hooks.dispatchers import GitHookDispatcher
+
+        git_dispatcher = GitHookDispatcher()
+        installed = git_dispatcher.list_installed(root)
+
+        uninstalled = 0
+        for hook_info in installed:
+            if git_dispatcher.uninstall(hook_info["event"], root):
+                uninstalled += 1
+
+        if uninstalled > 0:
+            console.print(
+                f"[green]  ✓ Removed {uninstalled} Git hooks[/green]"
+            )
+        else:
+            console.print("[dim]  No Monoco Git hooks to clean up[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Failed to clean Git hooks: {e}[/red]")
