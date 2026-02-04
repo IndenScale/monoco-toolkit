@@ -3,10 +3,10 @@ id: CHORE-0039
 uid: 93cd6c
 type: chore
 status: open
-stage: doing
+stage: review
 title: 调查并设计 Monoco Unified Hooks System 架构与 ACL
 created_at: '2026-02-04T20:40:16'
-updated_at: '2026-02-04T20:58:16'
+updated_at: '2026-02-04T21:00:57'
 parent: EPIC-0034
 dependencies: []
 related: []
