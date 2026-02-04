@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Fix agent hook format detection for Gemini CLI
 created_at: '2026-02-04T23:23:50'
-updated_at: '2026-02-04T23:28:17'
+updated_at: 2026-02-04 23:28:17
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -20,10 +20,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-04T23:23:50'
 closed_at: '2026-02-04T23:28:17'
-isolation:
-  type: branch
-  ref: FIX-0017-fix-agent-hook-format-detection-for-gemini-cli
-  created_at: '2026-02-04T23:23:56'
 ---
 
 ## FIX-0017: Fix agent hook format detection for Gemini CLI
