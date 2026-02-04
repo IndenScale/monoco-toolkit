@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 优化 issue close 时的文件合并策略：直接覆盖主线 issue ticket
 created_at: '2026-02-04T11:17:02'
-updated_at: '2026-02-04T13:48:51'
+updated_at: 2026-02-04 13:48:51
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -22,10 +22,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-04T11:17:02'
 closed_at: '2026-02-04T13:48:51'
-isolation:
-  type: branch
-  ref: FEAT-0172-优化-issue-close-时的文件合并策略-直接覆盖主线-issue-ticket
-  created_at: '2026-02-04T13:41:53'
 ---
 
 ## FEAT-0172: 优化 issue close 时的文件合并策略：直接覆盖主线 issue ticket
