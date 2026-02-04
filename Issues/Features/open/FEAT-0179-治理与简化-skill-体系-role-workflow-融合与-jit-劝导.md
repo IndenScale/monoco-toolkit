@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 治理与简化 Skill 体系：Role/Workflow 融合与 JIT 劝导
 created_at: '2026-02-04T20:40:16'
-updated_at: '2026-02-04T22:30:43'
+updated_at: '2026-02-04T22:50:00'
 parent: EPIC-0030
 dependencies:
 - CHORE-0039
@@ -21,61 +21,18 @@ files:
 - AGENTS.md
 - CLAUDE.md
 - GEMINI.md
-- monoco/features/agent/resources/en/skills/monoco_atom_code_dev/SKILL.md
-- monoco/features/agent/resources/en/skills/monoco_atom_core/SKILL.md
-- monoco/features/agent/resources/en/skills/monoco_atom_issue_lifecycle/SKILL.md
-- monoco/features/agent/resources/en/skills/monoco_atom_knowledge/SKILL.md
-- monoco/features/agent/resources/en/skills/monoco_atom_review/SKILL.md
 - monoco/features/agent/resources/en/skills/monoco_role_engineer/SKILL.md
 - monoco/features/agent/resources/en/skills/monoco_role_manager/SKILL.md
 - monoco/features/agent/resources/en/skills/monoco_role_planner/SKILL.md
 - monoco/features/agent/resources/en/skills/monoco_role_reviewer/SKILL.md
-- monoco/features/agent/resources/en/skills/monoco_workflow_agent_engineer/SKILL.md
-- monoco/features/agent/resources/en/skills/monoco_workflow_agent_manager/SKILL.md
-- monoco/features/agent/resources/en/skills/monoco_workflow_agent_planner/SKILL.md
-- monoco/features/agent/resources/en/skills/monoco_workflow_agent_reviewer/SKILL.md
-- monoco/features/agent/resources/zh/skills/monoco_atom_code_dev/SKILL.md
-- monoco/features/agent/resources/zh/skills/monoco_atom_core/SKILL.md
-- monoco/features/agent/resources/zh/skills/monoco_atom_issue_lifecycle/SKILL.md
-- monoco/features/agent/resources/zh/skills/monoco_atom_knowledge/SKILL.md
-- monoco/features/agent/resources/zh/skills/monoco_atom_review/SKILL.md
 - monoco/features/agent/resources/zh/skills/monoco_role_engineer/SKILL.md
 - monoco/features/agent/resources/zh/skills/monoco_role_manager/SKILL.md
 - monoco/features/agent/resources/zh/skills/monoco_role_planner/SKILL.md
 - monoco/features/agent/resources/zh/skills/monoco_role_reviewer/SKILL.md
-- monoco/features/agent/resources/zh/skills/monoco_workflow_agent_engineer/SKILL.md
-- monoco/features/agent/resources/zh/skills/monoco_workflow_agent_manager/SKILL.md
-- monoco/features/agent/resources/zh/skills/monoco_workflow_agent_planner/SKILL.md
-- monoco/features/agent/resources/zh/skills/monoco_workflow_agent_reviewer/SKILL.md
-- monoco/features/artifact/resources/zh/skills/monoco_atom_artifact/SKILL.md
-- monoco/features/glossary/resources/en/skills/monoco_atom_glossary/SKILL.md
-- monoco/features/glossary/resources/zh/skills/monoco_atom_glossary/SKILL.md
-- monoco/features/i18n/resources/en/skills/monoco_atom_i18n/SKILL.md
-- monoco/features/i18n/resources/en/skills/monoco_workflow_i18n_scan/SKILL.md
-- monoco/features/i18n/resources/zh/skills/monoco_atom_i18n/SKILL.md
-- monoco/features/i18n/resources/zh/skills/monoco_workflow_i18n_scan/SKILL.md
-- monoco/features/issue/resources/en/skills/monoco_atom_issue/SKILL.md
-- monoco/features/issue/resources/en/skills/monoco_workflow_issue_creation/SKILL.md
-- monoco/features/issue/resources/en/skills/monoco_workflow_issue_development/SKILL.md
-- monoco/features/issue/resources/en/skills/monoco_workflow_issue_management/SKILL.md
-- monoco/features/issue/resources/en/skills/monoco_workflow_issue_refinement/SKILL.md
 - monoco/features/issue/resources/hooks/agent/before-tool.sh
 - monoco/features/issue/resources/hooks/agent/session-start.sh
-- monoco/features/issue/resources/zh/skills/monoco_atom_issue_lifecycle/SKILL.md
-- monoco/features/issue/resources/zh/skills/monoco_workflow_issue_creation/SKILL.md
-- monoco/features/issue/resources/zh/skills/monoco_workflow_issue_development/SKILL.md
-- monoco/features/issue/resources/zh/skills/monoco_workflow_issue_management/SKILL.md
-- monoco/features/issue/resources/zh/skills/monoco_workflow_issue_refinement/SKILL.md
-- monoco/features/memo/resources/en/skills/monoco_atom_memo/SKILL.md
-- monoco/features/memo/resources/en/skills/monoco_workflow_note_processing/SKILL.md
-- monoco/features/memo/resources/zh/skills/monoco_atom_memo/SKILL.md
-- monoco/features/memo/resources/zh/skills/monoco_workflow_note_processing/SKILL.md
-- monoco/features/spike/resources/en/skills/monoco_atom_spike/SKILL.md
-- monoco/features/spike/resources/en/skills/monoco_workflow_research/SKILL.md
-- monoco/features/spike/resources/zh/skills/monoco_atom_spike/SKILL.md
-- monoco/features/spike/resources/zh/skills/monoco_workflow_research/SKILL.md
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T20:40:16'
 isolation:
   type: branch
@@ -228,17 +185,18 @@ class UnifiedDecision:
 
 ### 3. Skill 体系现状分析
 
-#### 3.1 当前冗余结构
+#### 3.1 治理前的冗余结构
 
 | 类型 | 数量 | 示例 | 问题 |
 |------|------|------|------|
 | **Atom** | 11 | `monoco_atom_code_dev`, `monoco_atom_issue` | 过于碎片化，功能重叠 |
 | **Role** | 4 | `monoco_role_engineer`, `monoco_role_manager` | 缺少动态上下文 |
-| **Workflow** | 9 | `monoco_workflow_agent_engineer` | 与 Role 逻辑重复 |
+| **Workflow** | 16 | `monoco_workflow_agent_*`, `monoco_workflow_issue_*` | 与 Role/AGENTS.md 逻辑重复 |
 
 **重复案例**:
 - `monoco_role_engineer` vs `monoco_workflow_agent_engineer`: 都定义 Engineer 角色职责
 - `monoco_atom_issue` + `monoco_atom_issue_lifecycle` vs Issue Feature 本身
+- `monoco_workflow_issue_*` vs `AGENTS.md` Issue 章节
 
 #### 3.2 JIT 劝导可替代的场景
 
@@ -251,38 +209,19 @@ class UnifiedDecision:
 
 ### 4. JIT 劝导实现方案
 
-#### 4.1 推荐的 Hook 部署策略
+#### 4.1 已部署的 Hooks
 
-**阶段 1: before-tool 劝导** (高优先级)
-```yaml
-# 示例: features/issue/resources/hooks/before-tool.sh
----
-type: agent
-provider: claude-code
-event: before-tool
-matcher: ["Bash", "WriteFile"]
-priority: 10
-description: "检查代码修改合规性"
----
-# 脚本内容：检测是否在正确的分支、是否已 sync-files
-```
+**before-tool.sh** (分支检查劝导)
+- 触发: Bash, WriteFile 工具调用前
+- 功能: 检测当前分支是否为 feature/*，阻止 main/master 直接修改
 
-**阶段 2: session-start 上下文注入**
-```yaml
-# 示例: features/issue/resources/hooks/session-start.sh
----
-type: agent
-provider: claude-code  
-event: session-start
-priority: 5
-description: "注入当前 Issue 上下文"
----
-# 脚本内容：读取当前 Issue 状态，通过 additionalContext 注入
-```
+**session-start.sh** (Issue 上下文注入)
+- 触发: Agent 会话开始时
+- 功能: 从分支名提取 Issue ID，注入当前 Issue 上下文和提醒
 
 #### 4.2 JIT 注入协议
 
-Hook 脚本可通过 stdout 返回 JSON:
+Hook 脚本通过 stdout 返回 JSON:
 ```json
 {
   "decision": "allow",
@@ -309,6 +248,7 @@ Hook 脚本可通过 stdout 返回 JSON:
 ## Technical Tasks
 - [x] **Skill 融合**: 将 `monoco_workflow_agent_*` 逻辑合并入 `monoco_role_*`
 - [x] **清理冗余**: 删除所有 `monoco_atom_*` 技能文件
+- [x] **删除业务 Workflow**: 删除所有 `monoco_workflow_issue_*`, `monoco_workflow_note_processing`, `monoco_workflow_research`, `monoco_workflow_i18n_scan`
 - [x] **重构 AGENTS.md**: 简化角色资源配置，移除对已删除技能的引用
 - [x] **实现 JIT 注入**: 基于 CHORE-0039 的设计，在关键工具调用前后注入劝导信息
   - [x] 创建 `features/issue/resources/hooks/agent/before-tool.sh` - 分支检查劝导
@@ -321,6 +261,16 @@ Hook 脚本可通过 stdout 返回 JSON:
 1. **Hooks 扫描**: `monoco/core/sync.py:216-251` - 扫描各 feature 的 resources/hooks/
 2. **Agent 配置注入**: `monoco/features/hooks/dispatchers/agent_dispatcher.py:186-231`
 3. **协议转换**: `monoco/features/hooks/universal_interceptor.py:412-478` - _execute_hook 方法
+
+### 治理后的 Skills 结构
+
+```
+.claude/skills/  和  .gemini/skills/
+├── monoco_role_engineer      (合并 workflow-dev 后)
+├── monoco_role_manager       (合并 workflow-management 后)
+├── monoco_role_planner       (合并 workflow-planner 后)
+└── monoco_role_reviewer      (合并 workflow-reviewer 后)
+```
 
 ### 依赖准备
 - CHORE-0039 已完成，ACL 层已就绪
