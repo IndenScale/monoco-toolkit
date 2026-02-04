@@ -101,6 +101,7 @@ def run(
         "-p",
         help="Project root directory",
     ),
+    extra_args: Optional[list[str]] = typer.Argument(None),
 ) -> None:
     """Run hooks for a specific type and event."""
     try:
@@ -111,23 +112,47 @@ def run(
         raise typer.Exit(1)
 
     manager = UniversalHookManager()
-    hooks_dir = project_root / ".monoco" / "hooks"
+    
+    # Discover hooks from all active features
+    from monoco.core.registry import FeatureRegistry
+    active_features = FeatureRegistry.get_features()
+    
+    all_hooks_list = []
+    
+    # 1. Builtin hooks
+    try:
+        from monoco.features import hooks as hooks_module
+        hooks_feature_dir = Path(hooks_module.__file__).parent
+        builtin_hooks_dir = hooks_feature_dir / "resources" / "hooks"
+        if builtin_hooks_dir.exists():
+            groups = manager.scan(builtin_hooks_dir)
+            for group in groups.values():
+                all_hooks_list.extend(group.hooks)
+    except Exception:
+        pass
 
-    if not hooks_dir.exists():
-        # No hooks configured, exit silently
-        raise typer.Exit(0)
-
-    # Scan for hooks
-    groups = manager.scan(hooks_dir)
+    # 2. Feature hooks
+    for feature in active_features:
+        if feature.name == "hooks":
+            continue
+        try:
+            import importlib
+            module_name = feature.__class__.__module__
+            module = importlib.import_module(module_name)
+            if hasattr(module, "__file__") and module.__file__:
+                feature_dir = Path(module.__file__).parent
+                hooks_resource_dir = feature_dir / "resources" / "hooks"
+                if hooks_resource_dir.exists():
+                    groups = manager.scan(hooks_resource_dir)
+                    for group in groups.values():
+                        all_hooks_list.extend(group.hooks)
+        except Exception:
+            continue
 
     # Find matching hooks
-    key = hook_type_enum.value
-    if key not in groups:
-        raise typer.Exit(0)
-
-    group = groups[key]
     matching_hooks = [
-        h for h in group.hooks if h.metadata.event == event
+        h for h in all_hooks_list 
+        if h.metadata.type == hook_type_enum and h.metadata.event == event
     ]
 
     if not matching_hooks:
@@ -149,6 +174,7 @@ def run(
         context = {
             "event": event,
             "git_root": str(project_root),
+            "args": extra_args or [],
         }
         if not dispatcher.execute(hook, context):
             exit_code = 1
