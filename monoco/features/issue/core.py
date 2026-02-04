@@ -1359,6 +1359,11 @@ def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> Li
     # Decode Git C-quoting format paths to native paths
     changed_files = [_unquote_git_path(f) for f in changed_files]
 
+    # FEAT-0172: Exclude issue file itself from files list
+    # Issue file is handled separately by update_issue (directory move + status update)
+    relative_issue_path = str(path.relative_to(project_root))
+    changed_files = [f for f in changed_files if f != relative_issue_path]
+
     # Sort for consistency
     changed_files.sort()
 
@@ -1478,12 +1483,13 @@ def merge_issue_changes(
         )
 
     # 2. Perform Atomic Merge (Selective Checkout)
-    # Issue file is always included (no conflict check), along with conflict-free code files
-    files_to_merge = decoded_files
-    try:
-        git.git_checkout_files(project_root, source_ref, files_to_merge)
-    except Exception as e:
-        raise RuntimeError(f"Selective checkout failed: {e}")
+    # FEAT-0172: Only merge code files, issue file is handled separately
+    files_to_merge = code_files
+    if files_to_merge:
+        try:
+            git.git_checkout_files(project_root, source_ref, files_to_merge)
+        except Exception as e:
+            raise RuntimeError(f"Selective checkout failed: {e}")
 
     return files_to_merge
 

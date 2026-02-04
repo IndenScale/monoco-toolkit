@@ -527,19 +527,26 @@ def move_close(
         if not found_path:
             OutputManager.error(f"Issue {issue_id} not found in any branch.")
             raise typer.Exit(code=1)
-        
+
         # CHORE-0036: Always dump Issue file from feature branch to main first
-        # Find feature branch by convention: {issue_id}-*
+        # First, parse issue to get isolation ref if available
+        issue = core.parse_issue(found_path)
+
+        # Determine feature branch: use isolation.ref if available, otherwise heuristic search
         feature_branch = None
-        import re
-        code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
-        if code == 0:
-            for branch in stdout.splitlines():
-                branch = branch.strip()
-                # Match format: FEAT-XXXX-*
-                if re.match(rf"{re.escape(issue_id)}-", branch, re.IGNORECASE):
-                    feature_branch = branch
-                    break
+        if issue and issue.isolation and issue.isolation.ref:
+            feature_branch = issue.isolation.ref
+        else:
+            # Heuristic: Find feature branch by convention {issue_id}-*
+            import re
+            code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
+            if code == 0:
+                for branch in stdout.splitlines():
+                    branch = branch.strip()
+                    # Match format: FEAT-XXXX-*
+                    if re.match(rf"{re.escape(issue_id)}-", branch, re.IGNORECASE):
+                        feature_branch = branch
+                        break
 
         if feature_branch and git.branch_exists(project_root, feature_branch):
             # Checkout Issue file from feature branch to override main's version
