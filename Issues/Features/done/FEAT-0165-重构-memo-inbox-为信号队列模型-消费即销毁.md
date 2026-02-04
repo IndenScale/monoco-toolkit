@@ -2,11 +2,11 @@
 id: FEAT-0165
 uid: a5a9ae
 type: feature
-status: open
-stage: review
+status: done
+stage: done
 title: 重构 Memo Inbox 为信号队列模型：消费即销毁
 created_at: '2026-02-03T14:24:54'
-updated_at: '2026-02-04T10:03:49'
+updated_at: '2026-02-04T10:30:00'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -15,7 +15,6 @@ tags:
 - '#EPIC-0000'
 - '#FEAT-0165'
 files:
-- '"Issues/Features/open/FEAT-0165-\351\207\215\346\236\204-memo-inbox-\344\270\272\344\277\241\345\217\267\351\230\237\345\210\227\346\250\241\345\236\213-\346\266\210\350\264\271\345\215\263\351\224\200\346\257\201.md"'
 - .monoco/project.yaml
 - AGENTS.md
 - monoco/core/automation/handlers.py
@@ -29,12 +28,14 @@ files:
 - tests/core/watcher/test_memo_watcher.py
 - tests/features/memo/test_memo_lifecycle.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-03T14:24:54'
+closed_at: '2026-02-04T10:30:00'
 isolation:
   type: branch
   ref: feat/feat-0165-重构-memo-inbox-为信号队列模型-消费即销毁
   created_at: '2026-02-04T09:54:17'
+  pruned_at: '2026-02-04T10:30:00'
 ---
 
 ## FEAT-0165: 重构 Memo Inbox 为信号队列模型：消费即销毁
