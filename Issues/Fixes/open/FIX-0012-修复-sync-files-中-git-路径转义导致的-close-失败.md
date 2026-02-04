@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 修复 sync-files 中 Git 路径转义导致的 close 失败
 created_at: '2026-02-04T10:42:32'
-updated_at: 2026-02-04 11:00:05
+updated_at: '2026-02-04T11:02:55'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,14 +14,17 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FIX-0012'
-files: []
+files:
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- Issues/Fixes/open/FIX-0012-修复-sync-files-中-git-路径转义导致的-close-失败.md
+- monoco/features/issue/core.py
+- tests/features/issue/test_git_path_unquote.py
 criticality: high
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T10:42:32'
 isolation:
   type: branch
   ref: feat/fix-0012-修复-sync-files-中-git-路径转义导致的-close-失败
-  path: null
   created_at: '2026-02-04T11:00:05'
 ---
 
