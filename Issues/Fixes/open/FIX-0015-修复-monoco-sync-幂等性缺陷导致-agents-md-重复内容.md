@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 修复 monoco sync 幂等性缺陷导致 AGENTS.md 重复内容
 created_at: '2026-02-04T21:32:48'
-updated_at: 2026-02-04 21:35:46
+updated_at: '2026-02-04T21:39:31'
 parent: EPIC-0030
 dependencies: []
 related:
@@ -16,14 +16,16 @@ tags:
 - '#EPIC-0030'
 - '#FEAT-0179'
 - '#FIX-0015'
-files: []
+files:
+- AGENTS.md
+- monoco/core/injection.py
+- tests/core/test_injector.py
 criticality: high
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T21:32:48'
 isolation:
   type: branch
   ref: FIX-0015-修复-monoco-sync-幂等性缺陷导致-agents-md-重复内容
-  path: null
   created_at: '2026-02-04T21:35:46'
 ---
 
