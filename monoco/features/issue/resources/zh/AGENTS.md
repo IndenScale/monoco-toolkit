@@ -108,7 +108,7 @@ $ git checkout feature/FEAT-XXXX -- <files...>
 ```bash
 # 默认清理分支
 $ monoco issue close FEAT-XXXX --solution implemented
-# ✔ Cleaned up: branch:feat/feat-XXXX-xxx
+# ✔ Cleaned up: branch:FEAT-XXXX-xxx
 
 # 保留分支
 $ monoco issue close FEAT-XXXX --solution implemented --no-prune

@@ -529,15 +529,15 @@ def move_close(
             raise typer.Exit(code=1)
         
         # CHORE-0036: Always dump Issue file from feature branch to main first
-        # Find feature branch by convention: feat/feat-{issue_id}-*
+        # Find feature branch by convention: {issue_id}-*
         feature_branch = None
         import re
         code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
         if code == 0:
             for branch in stdout.splitlines():
                 branch = branch.strip()
-                # Match feat/feat-XXXX-* pattern
-                if re.match(rf"feat/{issue_id.lower()}-", branch, re.IGNORECASE):
+                # Match format: FEAT-XXXX-*
+                if re.match(rf"{re.escape(issue_id)}-", branch, re.IGNORECASE):
                     feature_branch = branch
                     break
 
@@ -561,6 +561,14 @@ def move_close(
             issue = core.parse_issue(found_path)
 
         # 1. Perform Smart Atomic Merge (FEAT-0154)
+        # Validate: if no branch and no files, issue didn't do any work
+        if not feature_branch and not issue.files:
+            OutputManager.error(
+                f"Cannot close {issue_id}: No feature branch found and no files tracked. "
+                "Issue appears to have no work done."
+            )
+            raise typer.Exit(code=1)
+
         merged_files = []
         try:
             merged_files = core.merge_issue_changes(issues_root, issue_id, project_root)
@@ -629,11 +637,10 @@ def move_close(
                 if pruned_resources and not OutputManager.is_agent_mode():
                     console.print(f"[green]✔ Cleaned up:[/green] {', '.join(pruned_resources)}")
             except Exception as e:
-                # Prune failure should NOT rollback successful close
-                # Just warn the user to clean up manually
-                if not OutputManager.is_agent_mode():
-                    console.print(f"[yellow]⚠ Cleanup warning: {e}[/yellow]")
-                    console.print(f"[dim]   Issue closed successfully. Clean up manually if needed.[/dim]")
+                # Prune failure triggers rollback
+                OutputManager.error(f"Prune Error: {e}")
+                rollback_transaction()
+                raise typer.Exit(code=1)
 
         # Success: Clear transaction state as all operations completed
         OutputManager.print(
@@ -1113,10 +1120,11 @@ def sync_files(
         from monoco.core import git
 
         current = git.get_current_branch(project_root)
-        # Try to parse ID from branch "feat/issue-123-slug"
+        # Try to parse ID from branch: FEAT-123-slug format
         import re
 
-        match = re.search(r"(?:feat|fix|chore|epic)/([a-zA-Z]+-\d+)", current)
+        # Format: ID at start followed by dash (e.g., FEAT-123-login-page)
+        match = re.match(r"([a-zA-Z]+-\d+)-", current)
         if match:
             issue_id = match.group(1).upper()
         else:
