@@ -16,7 +16,7 @@ tags:
 - '#FEAT-0174'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T11:26:04'
 isolation:
   type: branch
@@ -32,21 +32,11 @@ isolation:
 **Main 分支修改** - 用于测试当主线和 feature branch 都修改 Issue 文件时，close 是否能正常工作。
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
 - [x] 测试通过：主线和 feature branch 都修改 Issue 文件时能正常 close
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
-
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
 - [x] 测试完成
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+测试成功！FEAT-0172 的修复已生效。当主线和 feature branch 都修改 Issue 文件时，`monoco issue close` 现在可以正常工作。
