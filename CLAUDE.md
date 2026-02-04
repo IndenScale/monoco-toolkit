@@ -1,4 +1,7 @@
+# Monoco Toolkit
+
 <!-- MONOCO_GENERATED_START -->
+
 ## Monoco Toolkit
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
@@ -101,31 +104,40 @@ $ monoco issue close FEAT-XXXX --solution implemented --no-prune
 
 1. **自动合并停止**: 如果 `touched files` (Issue `files` 字段) 与主线产生冲突，自动化工具**必须立即停止合并**，并抛出明确错误。
 
-2. **手动 Cherry-Pick 模式**: 
+2. **手动 Cherry-Pick 模式**:
    - 错误信息会指示 Agent 转入手动 Cherry-Pick 模式
    - **核心原则**: 仅挑选属于本 Feature 的有效变更，严禁覆盖主线上无关 Issue 的更新
    - 使用 `git cherry-pick <commit>` 逐个应用有效提交
 
 3. **Fallback 策略**:
    ```bash
-###   # 1. 创建临时分支用于解决冲突
-   $ git checkout main
-   $ git checkout -b temp/FEAT-XXXX-resolve
-   
-###   # 2. 逐个 Cherry-Pick 有效提交
-   $ git cherry-pick <commit-hash-1>
-   $ git cherry-pick <commit-hash-2>
-   
-###   # 3. 如有冲突，仅保留本 Feature 的变更
-###   #    放弃任何会覆盖主线上其他 Issue 更新的修改
-   
-###   # 4. 完成后合并临时分支
-   $ git checkout main
-   $ git merge temp/FEAT-XXXX-resolve
-   
-###   # 5. 关闭 Issue
-   $ monoco issue close FEAT-XXXX --solution implemented
+
    ```
+
+### # 1. 创建临时分支用于解决冲突
+
+$ git checkout main
+$ git checkout -b temp/FEAT-XXXX-resolve
+
+### # 2. 逐个 Cherry-Pick 有效提交
+
+$ git cherry-pick <commit-hash-1>
+$ git cherry-pick <commit-hash-2>
+
+### # 3. 如有冲突，仅保留本 Feature 的变更
+
+### # 放弃任何会覆盖主线上其他 Issue 更新的修改
+
+### # 4. 完成后合并临时分支
+
+$ git checkout main
+$ git merge temp/FEAT-XXXX-resolve
+
+### # 5. 关闭 Issue
+
+$ monoco issue close FEAT-XXXX --solution implemented
+
+````
 
 ####### 4. 基于 files 字段的智能合并 (Smart Atomic Merge)
 
@@ -140,7 +152,7 @@ Issue 的 `files` 字段记录了 Feature 分支的真实影响范围 (Actual Im
 #### 选择性合并（规划中）
 $ git checkout main
 $ git checkout feature/FEAT-XXXX -- <files...>
-```
+````
 
 ####### 5. 清理策略
 
@@ -162,29 +174,50 @@ $ monoco issue close FEAT-XXXX --solution implemented --force
 
 ###### 总结
 
-| 操作 | 命令 | 说明 |
-|------|------|------|
-| 创建 Issue | `monoco issue create feature -t "标题"` | 先创建 Issue 再开发 |
-| 启动开发 | `monoco issue start FEAT-XXXX --branch` | 创建 Feature 分支 |
-| 同步文件 | `monoco issue sync-files` | 更新 files 字段 |
-| 提交评审 | `monoco issue submit FEAT-XXXX` | 进入 Review 阶段 |
-| 关闭 Issue | `monoco issue close FEAT-XXXX --solution implemented` | 唯一合并途径 |
-| 保留分支 | `monoco issue close ... --no-prune` | 关闭但不删除分支 |
+| 操作       | 命令                                                  | 说明                |
+| ---------- | ----------------------------------------------------- | ------------------- |
+| 创建 Issue | `monoco issue create feature -t "标题"`               | 先创建 Issue 再开发 |
+| 启动开发   | `monoco issue start FEAT-XXXX --branch`               | 创建 Feature 分支   |
+| 同步文件   | `monoco issue sync-files`                             | 更新 files 字段     |
+| 提交评审   | `monoco issue submit FEAT-XXXX`                       | 进入 Review 阶段    |
+| 关闭 Issue | `monoco issue close FEAT-XXXX --solution implemented` | 唯一合并途径        |
+| 保留分支   | `monoco issue close ... --no-prune`                   | 关闭但不删除分支    |
 
 > ⚠️ **警告**: 任何绕过 `monoco issue close` 的手动合并操作都可能导致主线状态污染，违反工作流合规要求。
 
 ### Git Hooks
 
-
-
 ### Memo (Fleeting Notes)
 
-Lightweight note-taking for ideas and quick thoughts.
+Lightweight note-taking for ideas and quick thoughts. **Signal Queue Model** (FEAT-0165).
 
-- **Add**: `monoco memo add "Content" [-c context]`
-- **List**: `monoco memo list`
-- **Open**: `monoco memo open` (Edit in default editor)
-- **Guideline**: Use Memos for ideas; use Issues for actionable tasks.
+#### Signal Queue Semantics
+
+- **Memo is a signal, not an asset** - Its value is in triggering action
+- **File existence = signal pending** - Inbox has unprocessed memos
+- **File cleared = signal consumed** - Memos are deleted after processing
+- **Git is the archive** - History is in git, not app state
+
+#### Commands
+
+- **Add**: `monoco memo add "Content" [-c context]` - Create a signal
+- **List**: `monoco memo list` - Show pending signals (consumed memos are in git history)
+- **Delete**: `monoco memo delete <id>` - Manual delete (normally auto-consumed)
+- **Open**: `monoco memo open` - Edit inbox directly
+
+#### Workflow
+
+1. Capture ideas as memos
+2. When threshold (5) is reached, Architect is auto-triggered
+3. Memos are consumed (deleted) and embedded in Architect's prompt
+4. Architect creates Issues from memos
+5. No need to "link" or "resolve" memos - they're gone after consumption
+
+#### Guideline
+
+- Use Memos for **fleeting ideas** - things that might become Issues
+- Use Issues for **actionable work** - structured, tracked, with lifecycle
+- Never manually link memos to Issues - if important, create an Issue
 
 ### Glossary
 
@@ -194,15 +227,15 @@ Lightweight note-taking for ideas and quick thoughts.
 
 ######## 核心架构隐喻: "Linux 发行版"
 
-| 术语 | 定义 | 隐喻 |
-| :--- | :--- | :--- |
-| **Monoco** | 智能体操作系统发行版。管理策略、工作流和包系统。 | **发行版** (如 Ubuntu, Arch) |
-| **Kimi CLI** | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。 | **内核** (Linux Kernel) |
-| **Session** | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。 | **初始化系统/守护进程** (systemd) |
-| **Issue** | 具有状态（Open/Done）和严格生命周期的原子工作单元。 | **单元文件** (systemd unit) |
-| **Skill** | 扩展智能体功能的工具、提示词和流程包。 | **软件包** (apt/pacman package) |
-| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。 | **配置** (`/etc/config`) |
-| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。 | **桌面环境** (GNOME/KDE) |
+| 术语             | 定义                                                              | 隐喻                              |
+| :--------------- | :---------------------------------------------------------------- | :-------------------------------- |
+| **Monoco**       | 智能体操作系统发行版。管理策略、工作流和包系统。                  | **发行版** (如 Ubuntu, Arch)      |
+| **Kimi CLI**     | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。           | **内核** (Linux Kernel)           |
+| **Session**      | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。          | **初始化系统/守护进程** (systemd) |
+| **Issue**        | 具有状态（Open/Done）和严格生命周期的原子工作单元。               | **单元文件** (systemd unit)       |
+| **Skill**        | 扩展智能体功能的工具、提示词和流程包。                            | **软件包** (apt/pacman package)   |
+| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。 | **配置** (`/etc/config`)          |
+| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。                      | **桌面环境** (GNOME/KDE)          |
 
 ######## 关键概念
 
@@ -302,65 +335,35 @@ Monoco Artifacts 系统提供了多模态产物的生命周期管理能力，包
 
 ### Memo (Fleeting Notes)
 
-Lightweight note-taking for ideas and quick thoughts.
+Lightweight note-taking for ideas and quick thoughts. **Signal Queue Model** (FEAT-0165).
 
-- **Add**: `monoco memo add "Content" [-c context]`
-- **List**: `monoco memo list`
-- **Open**: `monoco memo open` (Edit in default editor)
-- **Guideline**: Use Memos for ideas; use Issues for actionable tasks.
+#### Signal Queue Semantics
 
-# Issue 管理 (Agent 指引)
+- **Memo is a signal, not an asset** - Its value is in triggering action
+- **File existence = signal pending** - Inbox has unprocessed memos
+- **File cleared = signal consumed** - Memos are deleted after processing
+- **Git is the archive** - History is in git, not app state
 
-## Issue 管理
+#### Commands
 
-使用 `monoco issue` 管理任务的系统。
+- **Add**: `monoco memo add "Content" [-c context]` - Create a signal
+- **List**: `monoco memo list` - Show pending signals (consumed memos are in git history)
+- **Delete**: `monoco memo delete <id>` - Manual delete (normally auto-consumed)
+- **Open**: `monoco memo open` - Edit inbox directly
 
-- **创建**: `monoco issue create <type> -t "标题"` (类型: epic, feature, chore, fix)
-- **状态**: `monoco issue open|close|backlog <id>`
-- **检查**: `monoco issue lint` (手动编辑后必须运行)
-- **生命周期**: `monoco issue start|submit|delete <id>`
-- **上下文同步**: `monoco issue sync-files [id]` (更新文件追踪)
-- **结构**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (如 `Issues/Features/open/`)。
-- **强制规则**:
-  1. **先有 Issue**: 在进行任何调研、设计或 Draft 之前，必须先使用 `monoco issue create` 创建 Issue。
-  2. **标题**: 必须包含 `## {ID}: {Title}` 标题（与 Front Matter 一致）。
-  3. **内容**: 至少 2 个 Checkbox，使用 `- [ ]`, `- [x]`, `- [-]`, `- [/]`。
-  4. **评审**: `review`/`done` 阶段必须包含 `## Review Comments` 章节且内容不为空。
-  5. **环境策略**:
-     - 必须使用 `monoco issue start --branch` 创建 Feature 分支。
-     - 🛑 **禁止**直接在 `main`/`master` 分支修改代码 (Linter 会报错)。
-     - **清理时机**: 环境清理仅应在 `close` 时执行。**禁止**在 `submit` 阶段清理环境。
-     - 修改代码后**必须**更新 `files` 字段（通过 `sync-files` 或手动）。
+#### Workflow
 
-### Spike (Research)
+1. Capture ideas as memos
+2. When threshold (5) is reached, Architect is auto-triggered
+3. Memos are consumed (deleted) and embedded in Architect's prompt
+4. Architect creates Issues from memos
+5. No need to "link" or "resolve" memos - they're gone after consumption
 
-### Spike (研究)
+#### Guideline
 
-管理外部参考仓库。
-
-- **添加仓库**: `monoco spike add <url>` (在 `.reference/<name>` 中可读)
-- **同步**: `monoco spike sync` (运行以下载内容)
-- **约束**: 永远不要编辑 `.reference/` 中的文件。将它们视为只读的外部知识。
-
-### Documentation I18n
-
-### 文档国际化
-
-管理国际化。
-
-- **扫描**: `monoco i18n scan` (检查缺失的翻译)
-- **结构**:
-  - 根文件: `FILE_ZH.md`
-  - 子目录: `folder/zh/file.md`
-
-### Memo (Fleeting Notes)
-
-Lightweight note-taking for ideas and quick thoughts.
-
-- **Add**: `monoco memo add "Content" [-c context]`
-- **List**: `monoco memo list`
-- **Open**: `monoco memo open` (Edit in default editor)
-- **Guideline**: Use Memos for ideas; use Issues for actionable tasks.
+- Use Memos for **fleeting ideas** - things that might become Issues
+- Use Issues for **actionable work** - structured, tracked, with lifecycle
+- Never manually link memos to Issues - if important, create an Issue
 
 # Issue 管理 (Agent 指引)
 
@@ -408,12 +411,35 @@ Lightweight note-taking for ideas and quick thoughts.
 
 ### Memo (Fleeting Notes)
 
-Lightweight note-taking for ideas and quick thoughts.
+Lightweight note-taking for ideas and quick thoughts. **Signal Queue Model** (FEAT-0165).
 
-- **Add**: `monoco memo add "Content" [-c context]`
-- **List**: `monoco memo list`
-- **Open**: `monoco memo open` (Edit in default editor)
-- **Guideline**: Use Memos for ideas; use Issues for actionable tasks.
+#### Signal Queue Semantics
+
+- **Memo is a signal, not an asset** - Its value is in triggering action
+- **File existence = signal pending** - Inbox has unprocessed memos
+- **File cleared = signal consumed** - Memos are deleted after processing
+- **Git is the archive** - History is in git, not app state
+
+#### Commands
+
+- **Add**: `monoco memo add "Content" [-c context]` - Create a signal
+- **List**: `monoco memo list` - Show pending signals (consumed memos are in git history)
+- **Delete**: `monoco memo delete <id>` - Manual delete (normally auto-consumed)
+- **Open**: `monoco memo open` - Edit inbox directly
+
+#### Workflow
+
+1. Capture ideas as memos
+2. When threshold (5) is reached, Architect is auto-triggered
+3. Memos are consumed (deleted) and embedded in Architect's prompt
+4. Architect creates Issues from memos
+5. No need to "link" or "resolve" memos - they're gone after consumption
+
+#### Guideline
+
+- Use Memos for **fleeting ideas** - things that might become Issues
+- Use Issues for **actionable work** - structured, tracked, with lifecycle
+- Never manually link memos to Issues - if important, create an Issue
 
 # Issue 管理 (Agent 指引)
 
@@ -461,9 +487,108 @@ Lightweight note-taking for ideas and quick thoughts.
 
 ### Memo (Fleeting Notes)
 
-Lightweight note-taking for ideas and quick thoughts.
+Lightweight note-taking for ideas and quick thoughts. **Signal Queue Model** (FEAT-0165).
 
-- **Add**: `monoco memo add "Content" [-c context]`
-- **List**: `monoco memo list`
-- **Open**: `monoco memo open` (Edit in default editor)
-- **Guideline**: Use Memos for ideas; use Issues for actionable tasks.
+#### Signal Queue Semantics
+
+- **Memo is a signal, not an asset** - Its value is in triggering action
+- **File existence = signal pending** - Inbox has unprocessed memos
+- **File cleared = signal consumed** - Memos are deleted after processing
+- **Git is the archive** - History is in git, not app state
+
+#### Commands
+
+- **Add**: `monoco memo add "Content" [-c context]` - Create a signal
+- **List**: `monoco memo list` - Show pending signals (consumed memos are in git history)
+- **Delete**: `monoco memo delete <id>` - Manual delete (normally auto-consumed)
+- **Open**: `monoco memo open` - Edit inbox directly
+
+#### Workflow
+
+1. Capture ideas as memos
+2. When threshold (5) is reached, Architect is auto-triggered
+3. Memos are consumed (deleted) and embedded in Architect's prompt
+4. Architect creates Issues from memos
+5. No need to "link" or "resolve" memos - they're gone after consumption
+
+#### Guideline
+
+- Use Memos for **fleeting ideas** - things that might become Issues
+- Use Issues for **actionable work** - structured, tracked, with lifecycle
+- Never manually link memos to Issues - if important, create an Issue
+
+# Issue 管理 (Agent 指引)
+
+## Issue 管理
+
+使用 `monoco issue` 管理任务的系统。
+
+- **创建**: `monoco issue create <type> -t "标题"` (类型: epic, feature, chore, fix)
+- **状态**: `monoco issue open|close|backlog <id>`
+- **检查**: `monoco issue lint` (手动编辑后必须运行)
+- **生命周期**: `monoco issue start|submit|delete <id>`
+- **上下文同步**: `monoco issue sync-files [id]` (更新文件追踪)
+- **结构**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (如 `Issues/Features/open/`)。
+- **强制规则**:
+  1. **先有 Issue**: 在进行任何调研、设计或 Draft 之前，必须先使用 `monoco issue create` 创建 Issue。
+  2. **标题**: 必须包含 `## {ID}: {Title}` 标题（与 Front Matter 一致）。
+  3. **内容**: 至少 2 个 Checkbox，使用 `- [ ]`, `- [x]`, `- [-]`, `- [/]`。
+  4. **评审**: `review`/`done` 阶段必须包含 `## Review Comments` 章节且内容不为空。
+  5. **环境策略**:
+     - 必须使用 `monoco issue start --branch` 创建 Feature 分支。
+     - 🛑 **禁止**直接在 `main`/`master` 分支修改代码 (Linter 会报错)。
+     - **清理时机**: 环境清理仅应在 `close` 时执行。**禁止**在 `submit` 阶段清理环境。
+     - 修改代码后**必须**更新 `files` 字段（通过 `sync-files` 或手动）。
+
+### Spike (Research)
+
+### Spike (研究)
+
+管理外部参考仓库。
+
+- **添加仓库**: `monoco spike add <url>` (在 `.reference/<name>` 中可读)
+- **同步**: `monoco spike sync` (运行以下载内容)
+- **约束**: 永远不要编辑 `.reference/` 中的文件。将它们视为只读的外部知识。
+
+### Documentation I18n
+
+### 文档国际化
+
+管理国际化。
+
+- **扫描**: `monoco i18n scan` (检查缺失的翻译)
+- **结构**:
+  - 根文件: `FILE_ZH.md`
+  - 子目录: `folder/zh/file.md`
+
+### Memo (Fleeting Notes)
+
+Lightweight note-taking for ideas and quick thoughts. **Signal Queue Model** (FEAT-0165).
+
+#### Signal Queue Semantics
+
+- **Memo is a signal, not an asset** - Its value is in triggering action
+- **File existence = signal pending** - Inbox has unprocessed memos
+- **File cleared = signal consumed** - Memos are deleted after processing
+- **Git is the archive** - History is in git, not app state
+
+#### Commands
+
+- **Add**: `monoco memo add "Content" [-c context]` - Create a signal
+- **List**: `monoco memo list` - Show pending signals (consumed memos are in git history)
+- **Delete**: `monoco memo delete <id>` - Manual delete (normally auto-consumed)
+- **Open**: `monoco memo open` - Edit inbox directly
+
+#### Workflow
+
+1. Capture ideas as memos
+2. When threshold (5) is reached, Architect is auto-triggered
+3. Memos are consumed (deleted) and embedded in Architect's prompt
+4. Architect creates Issues from memos
+5. No need to "link" or "resolve" memos - they're gone after consumption
+
+#### Guideline
+
+- Use Memos for **fleeting ideas** - things that might become Issues
+- Use Issues for **actionable work** - structured, tracked, with lifecycle
+- Never manually link memos to Issues - if important, create an Issue
