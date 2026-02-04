@@ -1,7 +1,13 @@
+<!--
+⚠️ IMPORTANT: This file is partially managed by Monoco.
+- Content between MONOCO_GENERATED_START and MONOCO_GENERATED_END is auto-generated.
+- Do NOT manually edit the managed block.
+- Do NOT add content after MONOCO_GENERATED_END (use separate files instead).
+-->
+
 # Monoco Toolkit
 
 <!-- MONOCO_GENERATED_START -->
-
 ## Monoco Toolkit
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
@@ -110,34 +116,26 @@ $ monoco issue close FEAT-XXXX --solution implemented --no-prune
    - 使用 `git cherry-pick <commit>` 逐个应用有效提交
 
 3. **Fallback 策略**:
+
    ```bash
+###   # 1. 创建临时分支用于解决冲突
+   $ git checkout main
+   $ git checkout -b temp/FEAT-XXXX-resolve
 
+###   # 2. 逐个 Cherry-Pick 有效提交
+   $ git cherry-pick <commit-hash-1>
+   $ git cherry-pick <commit-hash-2>
+
+###   # 3. 如有冲突，仅保留本 Feature 的变更
+###   #    放弃任何会覆盖主线上其他 Issue 更新的修改
+
+###   # 4. 完成后合并临时分支
+   $ git checkout main
+   $ git merge temp/FEAT-XXXX-resolve
+
+###   # 5. 关闭 Issue
+   $ monoco issue close FEAT-XXXX --solution implemented
    ```
-
-### # 1. 创建临时分支用于解决冲突
-
-$ git checkout main
-$ git checkout -b temp/FEAT-XXXX-resolve
-
-### # 2. 逐个 Cherry-Pick 有效提交
-
-$ git cherry-pick <commit-hash-1>
-$ git cherry-pick <commit-hash-2>
-
-### # 3. 如有冲突，仅保留本 Feature 的变更
-
-### # 放弃任何会覆盖主线上其他 Issue 更新的修改
-
-### # 4. 完成后合并临时分支
-
-$ git checkout main
-$ git merge temp/FEAT-XXXX-resolve
-
-### # 5. 关闭 Issue
-
-$ monoco issue close FEAT-XXXX --solution implemented
-
-````
 
 ####### 4. 基于 files 字段的智能合并 (Smart Atomic Merge)
 
@@ -148,11 +146,12 @@ Issue 的 `files` 字段记录了 Feature 分支的真实影响范围 (Actual Im
 - **限制**: 无法防御显式的误操作修改（如无意中格式化其他 Issue 文件）
 
 **未来增强**: 基于 `files` 列表实现选择性合并逻辑：
+
 ```bash
 #### 选择性合并（规划中）
 $ git checkout main
 $ git checkout feature/FEAT-XXXX -- <files...>
-````
+```
 
 ####### 5. 清理策略
 
@@ -225,15 +224,15 @@ $ monoco issue close FEAT-XXXX --solution implemented --force
 
 ######## 核心架构隐喻: "Linux 发行版"
 
-| 术语             | 定义                                                              | 隐喻                              |
-| :--------------- | :---------------------------------------------------------------- | :-------------------------------- |
-| **Monoco**       | 智能体操作系统发行版。管理策略、工作流和包系统。                  | **发行版** (如 Ubuntu, Arch)      |
-| **Kimi CLI**     | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。           | **内核** (Linux Kernel)           |
-| **Session**      | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。          | **初始化系统/守护进程** (systemd) |
-| **Issue**        | 具有状态（Open/Done）和严格生命周期的原子工作单元。               | **单元文件** (systemd unit)       |
-| **Skill**        | 扩展智能体功能的工具、提示词和流程包。                            | **软件包** (apt/pacman package)   |
-| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。 | **配置** (`/etc/config`)          |
-| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。                      | **桌面环境** (GNOME/KDE)          |
+| 术语 | 定义 | 隐喻 |
+| :--- | :--- | :--- |
+| **Monoco** | 智能体操作系统发行版。管理策略、工作流和包系统。 | **发行版** (如 Ubuntu, Arch) |
+| **Kimi CLI** | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。 | **内核** (Linux Kernel) |
+| **Session** | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。 | **初始化系统/守护进程** (systemd) |
+| **Issue** | 具有状态（Open/Done）和严格生命周期的原子工作单元。 | **单元文件** (systemd unit) |
+| **Skill** | 扩展智能体功能的工具、提示词和流程包。 | **软件包** (apt/pacman package) |
+| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。 | **配置** (`/etc/config`) |
+| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。 | **桌面环境** (GNOME/KDE) |
 
 ######## 关键概念
 
