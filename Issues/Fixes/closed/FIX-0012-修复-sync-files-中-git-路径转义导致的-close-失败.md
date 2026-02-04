@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 修复 sync-files 中 Git 路径转义导致的 close 失败
 created_at: '2026-02-04T10:42:32'
-updated_at: '2026-02-04T11:04:51'
+updated_at: 2026-02-04 11:04:52
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -23,10 +23,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-04T10:42:32'
 closed_at: '2026-02-04T11:04:51'
-isolation:
-  type: branch
-  ref: feat/fix-0012-修复-sync-files-中-git-路径转义导致的-close-失败
-  created_at: '2026-02-04T11:00:05'
 ---
 
 ## FIX-0012: 修复 sync-files 中 Git 路径转义导致的 close 失败
