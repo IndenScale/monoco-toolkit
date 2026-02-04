@@ -440,11 +440,11 @@ def move_close(
     prune: bool = typer.Option(
         True, "/--no-prune", help="Delete branch/worktree after close (default: True)"
     ),
-    force: bool = typer.Option(False, "--force", help="Force delete branch/worktree"),
+    force: bool = typer.Option(True, "--force", help="Force delete branch/worktree (default: True)"),
     force_prune: bool = typer.Option(
         False,
         "--force-prune",
-        help="Force delete branch/worktree with checking bypassed (includes warning)",
+        help="Force delete branch/worktree with checking bypassed",
     ),
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
@@ -485,17 +485,7 @@ def move_close(
 
     # Handle force-prune logic
     if force_prune:
-        # FEAT-0125: force-prune requires interactive confirmation to avoid accidental data loss 
-        # unless in agent mode (which is handled by typer.confirm's default)
-        if not OutputManager.is_agent_mode():
-            confirm = typer.confirm(
-                "⚠ FORCE PRUNE will permanently delete the feature branch without checking its merge status. Continue?",
-                default=False
-            )
-            if not confirm:
-                console.print("[yellow]Aborted.[/yellow]")
-                raise typer.Exit(code=1)
-        
+        # FEAT-0125: force-prune now automated without confirmation for agent agility
         prune = True
         force = True
 
