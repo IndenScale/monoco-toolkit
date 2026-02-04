@@ -3,10 +3,10 @@ id: FIX-0012
 uid: b99df3
 type: fix
 status: open
-stage: draft
+stage: doing
 title: 修复 sync-files 中 Git 路径转义导致的 close 失败
 created_at: '2026-02-04T10:42:32'
-updated_at: '2026-02-04T10:45:00'
+updated_at: '2026-02-04T11:00:04'
 parent: EPIC-0000
 dependencies: []
 related: []
