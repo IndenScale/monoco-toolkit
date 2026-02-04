@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 调查并设计 Monoco Unified Hooks System 架构与 ACL
 created_at: '2026-02-04T20:40:16'
-updated_at: '2026-02-04T20:43:06'
+updated_at: 2026-02-04 20:43:07
 parent: EPIC-0034
 dependencies: []
 related: []
@@ -19,8 +19,13 @@ tags:
 files:
 - docs/zh/40_hooks/README.md
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T20:40:16'
+isolation:
+  type: branch
+  ref: CHORE-0039-调查并设计-monoco-unified-hooks-system-架构与-acl
+  path: null
+  created_at: '2026-02-04T20:43:07'
 ---
 
 ## CHORE-0039: 调查并设计 Monoco Unified Hooks System 架构与 ACL
