@@ -46,8 +46,16 @@ def generate_changelog():
     # Sort by ID descending
     changes.sort(key=lambda x: str(x["id"]), reverse=True)
 
+    # Detect version
+    target_version = "v0.3.2"
+    pyproject = root / "pyproject.toml"
+    if pyproject.exists():
+        v_match = re.search(r'version\s*=\s*"([^"]+)"', pyproject.read_text())
+        if v_match:
+            target_version = f"v{v_match.group(1)}"
+
     output = f"# Changelog\n\nGenerated on {datetime.now().strftime('%Y-%m-%d')}\n\n"
-    output += "## [v0.3.2] - Recent Releases\n\n"
+    output += f"## [{target_version}] - Recent Releases\n\n"
 
     for c in changes:
         output += f"### {c['id']}: {c['title']}\n"
@@ -56,7 +64,7 @@ def generate_changelog():
         output += "\n"
 
     (root / "CHANGELOG.md").write_text(output)
-    print(f"CHANGELOG.md updated with {len(changes)} entries.")
+    print(f"CHANGELOG.md updated with {len(changes)} entries for version {target_version}.")
 
 
 if __name__ == "__main__":

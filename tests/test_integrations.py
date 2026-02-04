@@ -14,7 +14,7 @@ from monoco.core.integrations import (
 
 def test_default_integrations_structure():
     """Test that all default integrations have required fields."""
-    assert len(DEFAULT_INTEGRATIONS) >= 5  # cursor, claude, gemini, qwen, agent
+    assert len(DEFAULT_INTEGRATIONS) >= 3  # claude, gemini, agent
 
     for key, integration in DEFAULT_INTEGRATIONS.items():
         assert integration.key == key
@@ -26,11 +26,11 @@ def test_default_integrations_structure():
 
 def test_get_integration_default():
     """Test getting integration from defaults."""
-    cursor = get_integration("cursor")
-    assert cursor is not None
-    assert cursor.key == "cursor"
-    assert cursor.system_prompt_file == ".cursorrules"
-    assert cursor.skill_root_dir == ".cursor/skills/"
+    claude = get_integration("claude")
+    assert claude is not None
+    assert claude.key == "claude"
+    assert claude.system_prompt_file == "CLAUDE.md"
+    assert claude.skill_root_dir == ".claude/skills/"
 
 
 def test_get_integration_with_override():
@@ -58,8 +58,8 @@ def test_get_integration_not_found():
 def test_get_all_integrations_default():
     """Test getting all integrations without overrides."""
     all_integrations = get_all_integrations()
-    assert len(all_integrations) >= 5
-    assert "cursor" in all_integrations
+    assert len(all_integrations) >= 3
+    assert "claude" in all_integrations
     assert "gemini" in all_integrations
 
 
@@ -76,7 +76,7 @@ def test_get_all_integrations_with_overrides():
     all_integrations = get_all_integrations(overrides)
 
     assert "custom" in all_integrations
-    assert "cursor" in all_integrations  # Defaults still present
+    assert "gemini" in all_integrations  # Defaults still present
 
 
 def test_get_all_integrations_enabled_filter():
@@ -103,16 +103,15 @@ def test_get_all_integrations_enabled_filter():
 def test_detect_frameworks(tmp_path):
     """Test framework detection based on file existence."""
     # Create characteristic files
-    (tmp_path / ".cursorrules").touch()
+    (tmp_path / "CLAUDE.md").touch()
     (tmp_path / "GEMINI.md").touch()
-    (tmp_path / ".qwen" / "skills").mkdir(parents=True)
+    (tmp_path / ".agent" / "skills").mkdir(parents=True)
 
     detected = detect_frameworks(tmp_path)
 
-    assert "cursor" in detected
+    assert "claude" in detected
     assert "gemini" in detected
-    assert "qwen" in detected
-    assert "claude" not in detected  # No Claude files
+    assert "agent" in detected
 
 
 def test_detect_frameworks_empty(tmp_path):
@@ -124,35 +123,34 @@ def test_detect_frameworks_empty(tmp_path):
 def test_get_active_integrations(tmp_path):
     """Test getting active integrations with auto-detection."""
     # Create some framework files
-    (tmp_path / ".cursorrules").touch()
+    (tmp_path / "CLAUDE.md").touch()
     (tmp_path / "GEMINI.md").touch()
 
     # Get active integrations (auto-detect enabled)
     active = get_active_integrations(tmp_path, auto_detect=True)
 
-    assert "cursor" in active
+    assert "claude" in active
     assert "gemini" in active
-    assert "claude" not in active  # Not detected
 
     # Get all enabled integrations (auto-detect disabled)
     all_enabled = get_active_integrations(tmp_path, auto_detect=False)
-    assert len(all_enabled) >= 5  # All defaults
+    assert len(all_enabled) >= 3  # All defaults
 
 
 def test_get_active_integrations_with_overrides(tmp_path):
     """Test active integrations with custom config."""
-    (tmp_path / ".cursorrules").touch()
+    (tmp_path / "CLAUDE.md").touch()
 
-    # Override cursor integration
-    custom_cursor = AgentIntegration(
-        key="cursor",
-        name="Custom Cursor",
-        system_prompt_file=".cursorrules",
-        skill_root_dir=".cursor/skills/",
+    # Override claude integration
+    custom_claude = AgentIntegration(
+        key="claude",
+        name="Custom Claude",
+        system_prompt_file="CLAUDE.md",
+        skill_root_dir=".claude/skills/",
     )
 
-    overrides = {"cursor": custom_cursor}
+    overrides = {"claude": custom_claude}
     active = get_active_integrations(tmp_path, overrides, auto_detect=True)
 
-    assert "cursor" in active
-    assert active["cursor"].name == "Custom Cursor"
+    assert "claude" in active
+    assert active["claude"].name == "Custom Claude"
