@@ -94,7 +94,7 @@ def validate(
 @app.command("run")
 def run(
     hook_type: str = typer.Argument(..., help="Hook type (git, ide, agent)"),
-    event: str = typer.Argument(..., help="Hook event (e.g., pre-commit)"),
+    event: str = typer.Argument(..., help="Hook event (e.g., pre-commit, before-tool)"),
     project_root: Path = typer.Option(
         ".",
         "--project",
@@ -112,13 +112,13 @@ def run(
         raise typer.Exit(1)
 
     manager = UniversalHookManager()
-    
+
     # Discover hooks from all active features
     from monoco.core.registry import FeatureRegistry
     active_features = FeatureRegistry.get_features()
-    
+
     all_hooks_list = []
-    
+
     # 1. Builtin hooks
     try:
         from monoco.features import hooks as hooks_module
@@ -151,7 +151,7 @@ def run(
 
     # Find matching hooks
     matching_hooks = [
-        h for h in all_hooks_list 
+        h for h in all_hooks_list
         if h.metadata.type == hook_type_enum and h.metadata.event == event
     ]
 
@@ -159,28 +159,44 @@ def run(
         raise typer.Exit(0)
 
     # Execute matching hooks
-    dispatcher = manager.get_dispatcher(hook_type_enum)
-    if not dispatcher:
-        # Register appropriate dispatcher
-        if hook_type_enum == HookType.GIT:
-            dispatcher = GitHookDispatcher()
-            manager.register_dispatcher(hook_type_enum, dispatcher)
-        else:
-            console.print(f"[red]No dispatcher available for type: {hook_type}[/red]")
-            raise typer.Exit(1)
+    if hook_type_enum == HookType.AGENT:
+        # Use Universal Interceptor for agent hooks
+        from .universal_interceptor import UniversalInterceptor
 
-    exit_code = 0
-    for hook in matching_hooks:
-        context = {
-            "event": event,
-            "git_root": str(project_root),
-            "args": extra_args or [],
-        }
-        if not dispatcher.execute(hook, context):
-            exit_code = 1
-            console.print(f"[red]Hook failed: {hook.script_path.name}[/red]")
+        interceptor = UniversalInterceptor()
+        exit_code = 0
 
-    raise typer.Exit(exit_code)
+        for hook in matching_hooks:
+            result = interceptor.run(str(hook.script_path))
+            if result != 0:
+                exit_code = result
+                console.print(f"[red]Hook failed: {hook.script_path.name}[/red]")
+
+        raise typer.Exit(exit_code)
+    else:
+        # Use dispatcher for Git/IDE hooks
+        dispatcher = manager.get_dispatcher(hook_type_enum)
+        if not dispatcher:
+            # Register appropriate dispatcher
+            if hook_type_enum == HookType.GIT:
+                dispatcher = GitHookDispatcher()
+                manager.register_dispatcher(hook_type_enum, dispatcher)
+            else:
+                console.print(f"[red]No dispatcher available for type: {hook_type}[/red]")
+                raise typer.Exit(1)
+
+        exit_code = 0
+        for hook in matching_hooks:
+            context = {
+                "event": event,
+                "git_root": str(project_root),
+                "args": extra_args or [],
+            }
+            if not dispatcher.execute(hook, context):
+                exit_code = 1
+                console.print(f"[red]Hook failed: {hook.script_path.name}[/red]")
+
+        raise typer.Exit(exit_code)
 
 
 @app.command("install")
