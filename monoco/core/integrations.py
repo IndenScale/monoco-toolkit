@@ -94,14 +94,6 @@ class AgentProviderHealth(BaseModel):
 
 # Default Integration Registry
 DEFAULT_INTEGRATIONS: Dict[str, AgentIntegration] = {
-    "cursor": AgentIntegration(
-        key="cursor",
-        name="Cursor",
-        system_prompt_file=".cursorrules",
-        skill_root_dir=".cursor/skills/",
-        bin_name="cursor",
-        version_cmd="--version",
-    ),
     "claude": AgentIntegration(
         key="claude",
         name="Claude Code",
@@ -116,22 +108,6 @@ DEFAULT_INTEGRATIONS: Dict[str, AgentIntegration] = {
         system_prompt_file="GEMINI.md",
         skill_root_dir=".gemini/skills/",
         bin_name="gemini",
-        version_cmd="--version",
-    ),
-    "qwen": AgentIntegration(
-        key="qwen",
-        name="Qwen Code",
-        system_prompt_file="QWEN.md",
-        skill_root_dir=".qwen/skills/",
-        bin_name="qwen",
-        version_cmd="--version",
-    ),
-    "kimi": AgentIntegration(
-        key="kimi",
-        name="Kimi CLI",
-        system_prompt_file="AGENTS.md",
-        skill_root_dir=".agent/skills/",
-        bin_name="kimi",
         version_cmd="--version",
     ),
     "agent": AgentIntegration(
