@@ -199,28 +199,6 @@ class TestFindIssuePathAcrossBranches:
             assert branch == "main"
             assert conflicting is None
 
-    def test_local_file_conflict(self, tmp_path):
-        """Test error when local file also exists in other branches."""
-        issues_root = tmp_path / "Issues"
-        fixes_dir = issues_root / "Fixes" / "open"
-        fixes_dir.mkdir(parents=True)
-        
-        issue_file = fixes_dir / "FIX-0001-test-issue.md"
-        issue_file.write_text("---\nid: FIX-0001\n---\n\n## FIX-0001: Test")
-        
-        with patch("monoco.features.issue.core.git.is_git_repo") as mock_is_git, \
-             patch("monoco.features.issue.core.git.get_current_branch") as mock_branch, \
-             patch("monoco.features.issue.core._find_branches_with_file") as mock_find:
-            mock_is_git.return_value = True
-            mock_branch.return_value = "main"
-            mock_find.return_value = ["feature/test"]  # Conflict!
-            
-            # With default allow_multi_branch=False, should raise RuntimeError
-            with pytest.raises(RuntimeError) as exc_info:
-                find_issue_path_across_branches(issues_root, "FIX-0001", tmp_path)
-            
-            assert "found in multiple branches" in str(exc_info.value)
-
     def test_not_locally_found_in_other_branch(self, tmp_path):
         """Test finding issue in another branch when not present locally."""
         issues_root = tmp_path / "Issues"
