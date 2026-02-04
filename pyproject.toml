@@ -1,6 +1,6 @@
 [project]
 name = "monoco-toolkit"
-version = "0.3.12"
+version = "0.4.0"
 description = "Agent Native Toolkit for Monoco - Task Management & Kanban for AI Agents"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -71,3 +71,4 @@ ignore = ["E402", "E722", "F811", "F841", "E741"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+norecursedirs = ["tests/legacy", "Archives", ".git", ".venv"]

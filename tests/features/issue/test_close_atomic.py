@@ -103,8 +103,7 @@ Review passed.
             # Attempt to close - should fail and rollback
             result = runner.invoke(app, [
                 "close", "FEAT-0001",
-                "--solution", "implemented",
-                "--no-prune"  # Skip prune to isolate the test
+                "--solution", "implemented"
             ])
 
             # Should exit with error
@@ -130,8 +129,7 @@ Review passed.
         # Close should succeed
         result = runner.invoke(app, [
             "close", "FEAT-0001",
-            "--solution", "implemented",
-            "--no-prune"
+            "--solution", "implemented"
         ])
 
         # Should succeed
@@ -160,8 +158,7 @@ Review passed.
             # Attempt to close - should fail and rollback
             result = runner.invoke(app, [
                 "close", "FEAT-0001",
-                "--solution", "implemented",
-                "--force"  # Use force to skip interactive confirmation
+                "--solution", "implemented"
             ])
 
             # Should exit with error - check for rollback message since that's what we care about
@@ -185,8 +182,7 @@ Review passed.
             # Attempt to close
             result = runner.invoke(app, [
                 "close", "FEAT-0001",
-                "--solution", "implemented",
-                "--no-prune"
+                "--solution", "implemented"
             ])
 
             # Should show rollback message
