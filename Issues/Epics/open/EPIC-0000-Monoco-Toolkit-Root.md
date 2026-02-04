@@ -14,7 +14,13 @@ tags:
 - '#EPIC-0000'
 - root
 - toolkit
-domains: []
+domains:
+- Foundation
+- IssueSystem
+- DevEx
+- CollaborationBus
+- AgentEmpowerment
+- AgentGuardrail
 progress: 22/32
 files_count: 11
 ---
