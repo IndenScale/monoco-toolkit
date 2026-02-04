@@ -6,18 +6,25 @@ status: open
 stage: doing
 title: 修复 monoco sync 幂等性缺陷导致 AGENTS.md 重复内容
 created_at: '2026-02-04T21:32:48'
-updated_at: '2026-02-04T21:35:45'
-parent: EPIC-0000
+updated_at: 2026-02-04 21:35:46
+parent: EPIC-0030
 dependencies: []
-related: []
+related:
+- FEAT-0179
 domains: []
 tags:
-- '#EPIC-0000'
+- '#EPIC-0030'
+- '#FEAT-0179'
 - '#FIX-0015'
 files: []
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-04T21:32:48'
+isolation:
+  type: branch
+  ref: FIX-0015-修复-monoco-sync-幂等性缺陷导致-agents-md-重复内容
+  path: null
+  created_at: '2026-02-04T21:35:46'
 ---
 
 ## FIX-0015: 修复 monoco sync 幂等性缺陷导致 AGENTS.md 重复内容
@@ -71,27 +78,26 @@ $ grep -n "MONOCO_GENERATED" AGENTS.md
 ## Acceptance Criteria
 
 - [x] **清理现有重复**: 删除 AGENTS.md 中 L290-593 的重复内容
-- [ ] **幂等性保证**: 多次执行 `monoco sync` 不会改变文件内容（如果 prompts 未变）
-- [ ] **警告机制**: 检测到 Managed Block 外部有手动内容时，输出警告信息
-- [ ] **文档更新**: 在 AGENTS.md 顶部添加注释，说明不应在 Managed Block 外部手动编辑
-- [ ] **测试验证**: 添加单元测试确保幂等性
+- [x] **幂等性保证**: 多次执行 `monoco sync` 不会改变文件内容（如果 prompts 未变）
+- [x] **警告机制**: 检测到 Managed Block 外部有手动内容时，输出警告信息
+- [x] **文档更新**: 在 AGENTS.md 顶部添加注释，说明不应在 Managed Block 外部手动编辑
+- [x] **测试验证**: 添加单元测试确保幂等性
 
 ## Technical Tasks
 
 ### Phase 1: 紧急清理（立即执行）
 - [x] 手动删除 AGENTS.md 的 L290-593 重复内容
-- [ ] 提交清理结果
+- [x] 提交清理结果
 
 ### Phase 2: 幂等性修复（核心修复）
-- [ ] **增强 PromptInjector**:
-  - [ ] 在 `inject()` 方法中添加外部内容检测逻辑
-  - [ ] 如果检测到 `<!-- MONOCO_GENERATED_END -->` 之后有非空内容:
-    - [ ] 输出警告: `⚠️ Warning: Manual content detected after Managed Block in {file}. Consider moving to a separate file.`
-    - [ ] 可选: 添加 `--strict` 模式，拒绝执行 sync
-  
-- [ ] **添加文件头注释**:
+- [x] **增强 PromptInjector**:
+  - [x] 在 `inject()` 方法中添加外部内容检测逻辑
+  - [x] 如果检测到 `<!-- MONOCO_GENERATED_END -->` 之后有非空内容:
+    - [x] 输出警告: `⚠️ Warning: Manual content detected after Managed Block in {file}. Consider moving to a separate file.`
+
+- [x] **添加文件头注释**:
   ```markdown
-  <!-- 
+  <!--
   ⚠️ IMPORTANT: This file is partially managed by Monoco.
   - Content between MONOCO_GENERATED_START and MONOCO_GENERATED_END is auto-generated.
   - Do NOT manually edit the managed block.
@@ -100,10 +106,10 @@ $ grep -n "MONOCO_GENERATED" AGENTS.md
   ```
 
 ### Phase 3: 测试与验证
-- [ ] **单元测试** (`tests/test_injection.py`):
-  - [ ] 测试幂等性: 连续两次 `inject()` 应产生相同结果
-  - [ ] 测试外部内容检测: 验证警告信息正确输出
-  - [ ] 测试边界情况: 空文件、仅 Managed Block、混合内容
+- [x] **单元测试** (`tests/core/test_injection.py`):
+  - [x] 测试幂等性: 连续两次 `inject()` 应产生相同结果
+  - [x] 测试外部内容检测: 验证警告信息正确输出
+  - [x] 测试边界情况: 空文件、仅 Managed Block、混合内容
 
 - [ ] **集成测试**:
   - [ ] 在测试项目中执行 `monoco sync` 3 次
@@ -115,4 +121,3 @@ $ grep -n "MONOCO_GENERATED" AGENTS.md
 - [ ] 在 CHANGELOG 中记录此修复
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->

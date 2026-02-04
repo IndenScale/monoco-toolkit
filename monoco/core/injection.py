@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 
 class PromptInjector:
@@ -13,8 +13,52 @@ class PromptInjector:
     MANAGED_START = "<!-- MONOCO_GENERATED_START -->"
     MANAGED_END = "<!-- MONOCO_GENERATED_END -->"
 
-    def __init__(self, target_file: Path):
+    FILE_HEADER_COMMENT = """<!--
+⚠️ IMPORTANT: This file is partially managed by Monoco.
+- Content between MONOCO_GENERATED_START and MONOCO_GENERATED_END is auto-generated.
+- Do NOT manually edit the managed block.
+- Do NOT add content after MONOCO_GENERATED_END (use separate files instead).
+-->
+
+"""
+
+    def __init__(self, target_file: Path, verbose: bool = True):
         self.target_file = target_file
+        self.verbose = verbose
+
+    def _detect_external_content(self, content: str) -> Optional[str]:
+        """
+        Detects content outside the managed block.
+
+        Returns:
+            The external content string if found, None otherwise.
+        """
+        if not content or self.MANAGED_END not in content:
+            return None
+
+        # Split by MANAGED_END and check if there's non-empty content after
+        parts = content.split(self.MANAGED_END)
+        if len(parts) < 2:
+            return None
+
+        post_content = parts[-1].strip()
+        # Check if there's meaningful content (not just whitespace or newlines)
+        if post_content and len(post_content) > 10:  # Threshold to avoid false positives
+            return post_content
+        return None
+
+    def _warn_external_content(self, external_content: str):
+        """Outputs warning about external content."""
+        if not self.verbose:
+            return
+
+        # Truncate long content for warning message
+        preview = external_content[:200].replace("\n", " ")
+        if len(external_content) > 200:
+            preview += "..."
+
+        print(f"⚠️  Warning: Manual content detected after Managed Block in {self.target_file}")
+        print(f"   Consider moving to a separate file. Found content starting with: {preview}")
 
     def inject(self, prompts: Dict[str, str]) -> bool:
         """
@@ -29,6 +73,11 @@ class PromptInjector:
         current_content = ""
         if self.target_file.exists():
             current_content = self.target_file.read_text(encoding="utf-8")
+
+        # Check for external content and warn
+        external_content = self._detect_external_content(current_content)
+        if external_content:
+            self._warn_external_content(external_content)
 
         new_content = self._merge_content(current_content, prompts)
 
@@ -76,12 +125,18 @@ class PromptInjector:
         managed_block_str = "\n".join(managed_block).strip() + "\n"
         managed_block_str = f"{self.MANAGED_START}\n{managed_block_str}\n{self.MANAGED_END}\n"
 
+        # 2. Add file header comment if not present
+        has_header = original.strip().startswith("<!--") and "IMPORTANT: This file is partially managed by Monoco" in original
+
         # 2. Find and replace/append in the original content
         # Check for delimiters first
         if self.MANAGED_START in original and self.MANAGED_END in original:
             try:
                 pre = original.split(self.MANAGED_START)[0]
                 post = original.split(self.MANAGED_END)[1]
+                # Add header comment if not present
+                if not has_header and not pre.strip().startswith("<!--"):
+                    pre = self.FILE_HEADER_COMMENT + pre
                 # Reconstruct
                 return pre + managed_block_str.strip() + post
             except IndexError:
@@ -105,12 +160,16 @@ class PromptInjector:
 
         if start_idx == -1:
             # Block not found, append to end
+            result = ""
+            if not has_header:
+                result = self.FILE_HEADER_COMMENT
             if original and not original.endswith("\n"):
-                return original + "\n\n" + managed_block_str.strip()
+                result += original + "\n\n" + managed_block_str.strip()
             elif original:
-                return original + "\n" + managed_block_str.strip()
+                result += original + "\n" + managed_block_str.strip()
             else:
-                return managed_block_str.strip() + "\n"
+                result += managed_block_str.strip() + "\n"
+            return result
 
         # Find end: Look for next header of level 1 or 2 (siblings or parents)
         header_level_match = re.match(r"^(#+)\s", self.MANAGED_HEADER)
@@ -134,9 +193,13 @@ class PromptInjector:
         pre_block = "\n".join(lines[:start_idx])
         post_block = "\n".join(lines[end_idx:])
 
-        result = pre_block
-        if result:
-            result += "\n\n"
+        result = ""
+        # Add header comment if not present
+        if not has_header and not pre_block.strip().startswith("<!--"):
+            result = self.FILE_HEADER_COMMENT
+
+        if pre_block:
+            result += pre_block + "\n\n"
 
         result += managed_block_str
 
@@ -217,6 +280,21 @@ class PromptInjector:
 
         pre_block = lines[:start_idx]
         post_block = lines[end_idx:]
+
+        # Check if pre_block contains only the file header comment
+        pre_text = "\n".join(pre_block)
+        if pre_text.strip() and "This file is partially managed by Monoco" in pre_text:
+            # Check if pre_block is just the header comment
+            is_only_header = all(
+                line.strip().startswith("<!--") or
+                line.strip().startswith("⚠️ IMPORTANT") or
+                line.strip().startswith("-") or
+                line.strip().startswith("-->") or
+                not line.strip()
+                for line in pre_block
+            )
+            if is_only_header and not post_block:
+                pre_block = []
 
         # If we removed everything, the file might become empty or just newlines
 
