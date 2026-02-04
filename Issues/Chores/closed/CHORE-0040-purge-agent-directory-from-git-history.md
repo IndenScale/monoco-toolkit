@@ -16,7 +16,7 @@ tags:
 - '#EPIC-0000'
 files: []
 criticality: low
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-04T22:33:33'
 ---
 
