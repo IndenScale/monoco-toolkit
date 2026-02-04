@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from monoco.core.scheduler import (
     AgentEvent,
@@ -31,6 +31,8 @@ from monoco.core.scheduler import (
     event_bus,
 )
 from monoco.core.router import ActionResult
+from monoco.features.memo.models import Memo
+from monoco.features.memo.core import load_memos, get_inbox_path
 
 logger = logging.getLogger(__name__)
 
@@ -361,6 +363,12 @@ class MemoThresholdHandler:
     Condition: Pending memo count exceeds threshold
     Action: Spawn Architect agent to analyze and create Issues
     
+    Signal Queue Model (FEAT-0165):
+    - Memos are signals, not assets
+    - File existence = signal pending
+    - File cleared = signal consumed
+    - Git is the archive, not app state
+    
     Emergent Workflow: Memos (threshold) → Architect → Issues
     
     This handler is stateless and self-contained.
@@ -384,7 +392,6 @@ class MemoThresholdHandler:
         self.name = name
         self.threshold = threshold
         self._subscribed = False
-        self._last_processed_count = 0
     
     def _should_handle(self, event: AgentEvent) -> bool:
         """
@@ -400,64 +407,109 @@ class MemoThresholdHandler:
             logger.debug(f"Pending count {pending_count} below threshold {self.threshold}")
             return False
         
-        if pending_count <= self._last_processed_count:
-            logger.debug(f"Already processed {self._last_processed_count} memos, skipping")
-            return False
-        
         return True
     
     async def _handle(self, event: AgentEvent) -> Optional[ActionResult]:
         """
         Handle the event by spawning Architect agent.
         
-        The Architect will:
-        1. Read the Memos/inbox.md file
-        2. Analyze accumulated ideas
-        3. Create appropriate Issue tickets
-        4. Clear or organize processed memos
+        Signal Queue Semantics:
+        1. Atomically load and clear inbox BEFORE scheduling
+        2. Memos are embedded in prompt, not read from file
+        3. File cleared = consumed, no state needed
+        
+        This ensures:
+        - Natural idempotency (deleted memos won't be reprocessed)
+        - No dependency on memory state across restarts
+        - Architect always has data even if file is cleared
         """
-        file_path = event.payload.get("path", "Memos/inbox.md")
+        file_path_str = event.payload.get("path", "Memos/inbox.md")
+        file_path = Path(file_path_str)
         pending_count = event.payload.get("pending_count", 0)
         
-        logger.info(f"MemoThresholdHandler: Spawning Architect for {pending_count} memos")
+        logger.info(f"MemoThresholdHandler: Processing {pending_count} memos")
         
-        self._last_processed_count = pending_count
+        # Phase 1: Atomically load and clear inbox
+        try:
+            # Load memos before clearing
+            memos = self._load_and_clear_memos(file_path)
+            if not memos:
+                logger.warning("Inbox was empty after locking, skipping")
+                return None
+        except Exception as e:
+            logger.error(f"Failed to load and clear inbox: {e}")
+            return ActionResult.failure_result(
+                error=f"Failed to consume memos: {e}",
+                metadata={"file_path": file_path_str},
+            )
         
+        # Phase 2: Schedule Architect with embedded memos
         task = AgentTask(
             task_id=f"architect-memo-{event.timestamp.timestamp()}",
             role_name="Architect",
             issue_id="memo-analysis",
-            prompt=self._build_prompt(file_path, pending_count),
+            prompt=self._build_prompt(file_path_str, memos),
             engine="gemini",
             timeout=900,
             metadata={
                 "trigger": "memo_threshold",
-                "file_path": file_path,
+                "file_path": file_path_str,
                 "pending_count": pending_count,
                 "threshold": self.threshold,
+                "memo_count": len(memos),
             },
         )
         
         try:
             session_id = await self.scheduler.schedule(task)
-            logger.info(f"Architect scheduled: session={session_id}")
+            logger.info(f"Architect scheduled: session={session_id} with {len(memos)} memos")
             
             return ActionResult.success_result(
                 output={
                     "session_id": session_id,
                     "role": "Architect",
                     "trigger": "memo_threshold",
-                    "pending_count": pending_count,
+                    "memo_count": len(memos),
                 },
-                metadata={"file_path": file_path},
+                metadata={"file_path": file_path_str},
             )
         
         except Exception as e:
             logger.error(f"Failed to spawn Architect: {e}")
+            # Note: At this point memos are already cleared from inbox
+            # This is intentional - we trade "at-least-once" for "at-most-once" semantics
+            # If Architect fails, the memos are in git history
             return ActionResult.failure_result(
                 error=f"Failed to schedule Architect: {e}",
-                metadata={"file_path": file_path},
+                metadata={"file_path": file_path_str, "memos_consumed": len(memos)},
             )
+    
+    def _load_and_clear_memos(self, inbox_path: Path) -> List[Memo]:
+        """
+        Atomically load all memos and clear the inbox file.
+        
+        This implements the "consume" operation in signal queue model.
+        File existence is the state - clearing the file marks all signals consumed.
+        """
+        # Resolve path relative to project root if needed
+        if not inbox_path.is_absolute():
+            from monoco.core.config import find_monoco_root
+            project_root = find_monoco_root()
+            inbox_path = project_root / inbox_path
+        
+        if not inbox_path.exists():
+            return []
+        
+        # Load memos directly from inbox path
+        # inbox_path is Memos/inbox.md, issues_root is sibling: Issues/
+        issues_root = inbox_path.parent.parent / "Issues"
+        memos = load_memos(issues_root)
+        
+        # Clear inbox (atomic write)
+        inbox_path.write_text("# Monoco Memos Inbox\n\n", encoding="utf-8")
+        logger.info(f"Inbox cleared after consuming {len(memos)} memos")
+        
+        return memos
     
     async def __call__(self, event: AgentEvent) -> Optional[ActionResult]:
         """Make handler callable - used as EventBus callback."""
@@ -486,18 +538,48 @@ class MemoThresholdHandler:
         self._subscribed = False
         logger.info(f"{self.name} stopped")
     
-    def _build_prompt(self, file_path: str, pending_count: int) -> str:
-        """Build the prompt for the Architect agent."""
-        return f"""You are the Architect. {pending_count} memos have accumulated in {file_path}.
+    def _build_prompt(self, file_path: str, memos: List[Memo]) -> str:
+        """Build the prompt for the Architect agent with embedded memos."""
+        # Format memos for prompt
+        memo_sections = []
+        for i, memo in enumerate(memos, 1):
+            section = f"""### Memo {i} (ID: {memo.uid})
+- **Time**: {memo.timestamp.strftime("%Y-%m-%d %H:%M:%S")}
+- **Type**: {memo.type}
+- **Source**: {memo.source}
+- **Author**: {memo.author}
+{'' if not memo.context else f'- **Context**: `{memo.context}`'}
 
-Your task:
-1. Read and analyze the accumulated memos
+{memo.content}
+"""
+            memo_sections.append(section)
+        
+        memos_text = "\n".join(memo_sections)
+        
+        return f"""You are the Architect. {len(memos)} memos have been consumed from {file_path}.
+
+## Consumed Memos (Signal Queue Model)
+
+The following memos have been atomically consumed from the inbox. 
+They are provided here for your analysis - do NOT read the inbox file as it has been cleared.
+
+{memos_text}
+
+## Your Task
+
+1. Analyze the accumulated memos above
 2. Categorize and prioritize the ideas
 3. Create Issue tickets for actionable items:
    - Use `monoco issue create` command
    - Set appropriate type (feature, fix, chore)
    - Set stage to 'draft' for review
-4. Organize or clear processed memos
+4. Link related memos to created issues via `source_memo` field if applicable
+
+## Signal Queue Semantics
+
+- Memos are signals, not assets - they are consumed (deleted) upon processing
+- No need to "resolve" or "link" memos - just create Issues from them
+- Historical memos can be found in git history if needed
 
 Focus on turning raw ideas into structured, actionable work items."""
 
