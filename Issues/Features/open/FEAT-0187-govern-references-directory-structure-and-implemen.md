@@ -14,13 +14,26 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0187'
-files: []
+files:
+- .references/repos/
+- .references/articles/
+- .references/articles/ivan-zhao/*.md
+- .references/articles/feng-ruohang/*.md
+- .references/articles/liao-haibo/*.md
+- .references/articles/antigravity/*.md
+- .references/articles/cursor/*.md
+- .references/articles/openai/*.md
+- .references/articles/openai/zh/*.md
+- monoco/features/spike/lint.py
+- monoco/features/spike/commands.py
+- monoco/features/spike/core.py
+- CLAUDE.md
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-06T05:08:50'
 ---
 
-## FEAT-0187: 治理 .references 目录结构并实现 spike lint
+## FEAT-0187: Govern .references directory structure and implement spike lint
 
 ## Objective
 
@@ -33,14 +46,14 @@ opened_at: '2026-02-06T05:08:50'
 
 ## Acceptance Criteria
 
-- [ ] 现有 Git 仓库迁移到 `.references/repos/` 目录下
-- [ ] `.references/` 根目录只保留 `repos/` 和 `articles/` 两个子目录
-- [ ] 实现 `monoco spike lint` 命令
-- [ ] lint 检查：目录结构合规性
-- [ ] lint 检查：文章 front matter 完整性
-- [ ] lint 检查：必填字段非 UNKNOWN
-- [ ] lint 检查：id 全局唯一性
-- [ ] 更新 CLAUDE.md 添加 lint 命令文档
+- [x] 现有 Git 仓库迁移到 `.references/repos/` 目录下
+- [x] `.references/` 根目录只保留 `repos/` 和 `articles/` 两个子目录
+- [x] 实现 `monoco spike lint` 命令
+- [x] lint 检查：目录结构合规性
+- [x] lint 检查：文章 front matter 完整性
+- [x] lint 检查：必填字段非 UNKNOWN
+- [x] lint 检查：id 全局唯一性
+- [x] 更新 CLAUDE.md 添加 lint 命令文档
 
 ## Technical Tasks
 

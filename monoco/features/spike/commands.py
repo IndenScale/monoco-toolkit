@@ -3,7 +3,7 @@ from pathlib import Path
 
 from monoco.core.config import get_config
 from monoco.core.output import AgentOutput, OutputManager
-from . import core
+from . import core, lint
 
 app = typer.Typer(help="Spike & Repo Management.")
 
@@ -144,3 +144,73 @@ def list_repos(
 
     data = [{"name": name, "url": url} for name, url in repos.items()]
     OutputManager.print(data, title="Repositories")
+
+
+@app.command("lint")
+def lint_references(
+    json: AgentOutput = False,
+):
+    """Lint .references directory structure and article front matter."""
+    config = get_config()
+    root_dir = Path(config.paths.root)
+    references_dir = root_dir / ".references"
+
+    if not references_dir.exists():
+        OutputManager.error("No .references directory found. Run 'monoco spike init' first.")
+        return
+
+    linter = lint.SpikeLinter(references_dir)
+    result = linter.lint()
+
+    # Format output
+    if result.issues:
+        errors = [i for i in result.issues if i.severity == "error"]
+        warnings = [i for i in result.issues if i.severity == "warning"]
+
+        if not json:
+            from rich.console import Console
+            from rich.table import Table
+
+            console = Console()
+
+            if errors:
+                table = Table(title=f"Errors ({len(errors)})", title_style="bold red")
+                table.add_column("Rule", style="cyan", no_wrap=True)
+                table.add_column("Message", style="white")
+                table.add_column("Path", style="dim")
+
+                for issue in errors:
+                    table.add_row(issue.rule, issue.message, issue.path or "")
+                console.print(table)
+
+            if warnings:
+                table = Table(title=f"Warnings ({len(warnings)})", title_style="bold yellow")
+                table.add_column("Rule", style="cyan", no_wrap=True)
+                table.add_column("Message", style="white")
+                table.add_column("Path", style="dim")
+
+                for issue in warnings:
+                    table.add_row(issue.rule, issue.message, issue.path or "")
+                console.print(table)
+
+        # Output structured data
+        OutputManager.print(
+            {
+                "status": "failed" if errors else "passed",
+                "errors_count": len(errors),
+                "warnings_count": len(warnings),
+                "issues": [
+                    {"rule": i.rule, "message": i.message, "path": i.path, "severity": i.severity}
+                    for i in result.issues
+                ],
+                "stats": result.stats,
+            }
+        )
+    else:
+        OutputManager.print(
+            {
+                "status": "passed",
+                "message": "All checks passed!",
+                "stats": result.stats,
+            }
+        )
