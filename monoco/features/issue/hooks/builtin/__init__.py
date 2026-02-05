@@ -7,10 +7,13 @@ NOTE: These are internal logic implementations and are NOT managed within
 adapters (like Git/Agent shell scripts) injected during 'monoco sync'.
 """
 
+import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..models import IssueHookContext, IssueHookResult
+
+logger = logging.getLogger(__name__)
 
 # Export all built-in hook functions
 __all__ = [
