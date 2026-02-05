@@ -1,8 +1,10 @@
 """
 Built-in Issue Lifecycle Hooks
 
-This module contains the default hooks that ship with Monoco.
-These hooks provide core functionality like lint checking and branch validation.
+This module contains the core, hard-coded hooks that ship with the Monoco kernel.
+NOTE: These are internal logic implementations and are NOT managed within 
+'features/issue/resources/hooks/'. The latter is reserved for external resource 
+adapters (like Git/Agent shell scripts) injected during 'monoco sync'.
 """
 
 from typing import TYPE_CHECKING

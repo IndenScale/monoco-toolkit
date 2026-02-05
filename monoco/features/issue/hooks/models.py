@@ -22,6 +22,9 @@ class IssueEvent(str, Enum):
     
     All events follow the Monoco ACL unified protocol with strict `pre-` and `post-`
     prefixes. This ensures internal consistency regardless of external Agent naming.
+    
+    Architecture Note: Core handling of these events is implemented via Built-in 
+    Hooks in 'monoco.features.issue.hooks.builtin'.
     """
     # Issue Lifecycle
     PRE_CREATE = "pre-issue-create"
