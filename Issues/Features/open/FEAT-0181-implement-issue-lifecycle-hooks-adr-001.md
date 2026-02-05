@@ -44,6 +44,7 @@ isolation:
 
 ## Technical Tasks
 
+- [x] **Phase 0: 方案设计与 Issue 细化**
 - [ ] **Phase 1: 基础设施建设**
   - [ ] 定义核心模型：`IssueEvent`, `IssueHookResult`, `HookDecision`
   - [ ] 实现钩子加载与分发逻辑 `IssueHookDispatcher`
