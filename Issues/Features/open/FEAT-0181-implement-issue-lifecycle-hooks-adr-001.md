@@ -62,6 +62,7 @@ isolation:
     - [ ] 编写 `IssueHookDispatcher` 的单元测试。
 - [ ] **Phase 3: CLI 与 Agent 适配器**
     - [ ] 修改 `click` 命令装饰器或核心调用链路，注入 Hooks。
+    - [ ] 实现 `NamingACL` 映射逻辑，统一 `pre/post` 规范并适配 Claude/Gemini native events。
     - [ ] 针对 `AgentToolAdapter` 设计 Mock 测试，验证 Suggestions 注入。
 - [ ] **Phase 4: 内置 Hooks 迁移**
     - [ ] 将现有 `submit` 中的 Lint 逻辑迁移至 `pre-submit` 钩子。

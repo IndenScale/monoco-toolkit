@@ -49,6 +49,7 @@
 
 ```python
 class IssueEvent(str, Enum):
+    # Issue Lifecycle
     PRE_CREATE = "pre-create"
     POST_CREATE = "post-create"
     PRE_START = "pre-start"
@@ -57,6 +58,12 @@ class IssueEvent(str, Enum):
     POST_SUBMIT = "post-submit"
     PRE_CLOSE = "pre-close"
     POST_CLOSE = "post-close"
+
+    # Generic Agent Events (ACL Canonical)
+    PRE_TOOL_USE = "pre-tool-use"
+    POST_TOOL_USE = "post-tool-use"
+    PRE_PROMPT = "pre-prompt"
+    POST_RESPONSE = "post-response"
 
 class IssueHookResult:
     """Issue Hook 执行结果"""
@@ -104,6 +111,27 @@ class AgentToolAdapter:
             trigger_source="agent",
             raw_context=agent_event
         )
+
+### 3. 命名统一与 ACL 映射
+
+为了保持 Monoco 内部逻辑的纯粹性，所有内置钩子事件均采用 `pre-` 和 `post-` 前缀。当与外部 Agent (Claude Code/Gemini CLI) 对接时，由 `TriggerAdapter` 负责词法映射。
+
+**映射表 (Canonical Mapping)：**
+
+| Monoco 规范事件 (Internal) | Claude Code 对应 | Gemini CLI 对应 |
+| :--- | :--- | :--- |
+| `pre-session-start` | `SessionStart` | `SessionStart` |
+| `pre-tool-use` | `PreToolUse` | `BeforeTool` |
+| `post-tool-use` | `PostToolUse` | `AfterTool` |
+| `pre-prompt` | `UserPromptSubmit` | `BeforeAgent` |
+| `post-response` | `Stop` | `AfterAgent` |
+| `pre-compact` | `PreCompact` | `PreCompress` |
+| `post-subagent` | `SubagentStop` | - |
+
+**优势：**
+1. **开发者无感**：编写 Monoco 钩子时只需记住 `pre/post`。
+2. **跨平台兼容**：同一个 `pre-tool-use` 钩子可以自动适配不同 Agent。
+3. **架构解耦**：Agent 的版本更迭不会影响 Monoco 领域的事件定义。
 ```
 
 ### 3. 检查层次边界
