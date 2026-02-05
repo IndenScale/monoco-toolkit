@@ -32,7 +32,7 @@ isolation:
 
 ## Objective
 根据 ADR-001 实现 Monoco Issue 的生命周期钩子系统。该系统的核心价值在于：
-1. **统一治理**：无论是 CLI 直接调用还是 Agent 触发，都遵循相同的准入（before）和准出（after）规则。
+1. **统一治理**：无论是 CLI 直接调用还是 Agent 触发，都遵循相同的准入（pre）和准出（post）规则。
 2. **逻辑解耦**：将分支上下文检查、Working Tree 状态验证、Lint 调用等非核心业务逻辑从 Issue 命令实现中抽离。
 3. **闭环反馈**：向 Agent 提供结构化的 Hook 失败建议（Suggestions），引导其自动修复问题。
 
@@ -48,8 +48,8 @@ isolation:
     - 实现 `monoco issue --no-hooks` 跳过钩子。
     - 实现 `monoco issue --debug-hooks` 展示钩子执行详情（名称、耗时、结果）。
 - [ ] **内置 Hooks 落地**：
-    - `before-submit`: 自动执行 `sync-files` 检查及 `lint` 校验。
-    - `after-start`: 初始化 Feature 分支并设置本地隔离环境（Isolation）。
+    - `pre-submit`: 自动执行 `sync-files` 检查及 `lint` 校验。
+    - `post-start`: 初始化 Feature 分支并设置本地隔离环境（Isolation）。
 
 ## Technical Tasks
 
@@ -64,8 +64,8 @@ isolation:
     - [ ] 修改 `click` 命令装饰器或核心调用链路，注入 Hooks。
     - [ ] 针对 `AgentToolAdapter` 设计 Mock 测试，验证 Suggestions 注入。
 - [ ] **Phase 4: 内置 Hooks 迁移**
-    - [ ] 将现有 `submit` 中的 Lint 逻辑迁移至 `before-submit` 钩子。
-    - [ ] 将现有的 `start` 分支创建逻辑迁移至 `before-start` 或 `after-start` 钩子。
+    - [ ] 将现有 `submit` 中的 Lint 逻辑迁移至 `pre-submit` 钩子。
+    - [ ] 将现有的 `start` 分支创建逻辑迁移至 `pre-start` 或 `post-start` 钩子。
 - [ ] **Phase 5: 交付与文档**
     - [ ] 更新 `GEMINI.md` 中的工作流指南。
     - [ ] 编写 `docs/zh/40_hooks/issue_hooks.md` 开发者指南。

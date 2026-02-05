@@ -13,6 +13,7 @@
 3. **后置处理**：报告生成、资源清理、提醒输出
 
 这导致：
+
 - 命令代码臃肿（如 `submit` 约 100 行）
 - 检查逻辑难以复用和定制
 - Agent 反馈格式不统一
@@ -48,14 +49,14 @@
 
 ```python
 class IssueEvent(str, Enum):
-    BEFORE_CREATE = "before-create"
-    AFTER_CREATE = "after-create"
-    BEFORE_START = "before-start"
-    AFTER_START = "after-start"
-    BEFORE_SUBMIT = "before-submit"
-    AFTER_SUBMIT = "after-submit"
-    BEFORE_CLOSE = "before-close"
-    AFTER_CLOSE = "after-close"
+    PRE_CREATE = "pre-create"
+    POST_CREATE = "post-create"
+    PRE_START = "pre-start"
+    POST_START = "post-start"
+    PRE_SUBMIT = "pre-submit"
+    POST_SUBMIT = "post-submit"
+    PRE_CLOSE = "pre-close"
+    POST_CLOSE = "post-close"
 
 class IssueHookResult:
     """Issue Hook 执行结果"""
@@ -66,6 +67,7 @@ class IssueHookResult:
 ```
 
 特点：
+
 - **与触发方式解耦**：不关心是被 CLI 调用、Agent 触发还是 Webhook 触发
 - **领域语义丰富**：参数包含 `issue_id`, `from_status`, `to_status` 等 Issue 领域概念
 - **可独立测试**：无需 Agent 环境即可测试 Issue Hooks
@@ -74,28 +76,28 @@ class IssueHookResult:
 
 不同触发方式通过适配器转换为 Issue 事件：
 
-| 触发器 | 适配器 | 说明 |
-|--------|--------|------|
-| 本地 CLI | `DirectTrigger` | 命令直接调用 IssueHookDispatcher |
+| 触发器     | 适配器             | 说明                                 |
+| ---------- | ------------------ | ------------------------------------ |
+| 本地 CLI   | `DirectTrigger`    | 命令直接调用 IssueHookDispatcher     |
 | Agent Tool | `AgentToolAdapter` | 拦截 `monoco issue *` 命令，解析参数 |
-| Git Hook | `GitEventAdapter` | 如：提交时自动触发 `before-submit` |
-| Webhook | `WebhookAdapter` | 未来：GitHub PR 状态变更触发 |
+| Git Hook   | `GitEventAdapter`  | 如：提交时自动触发 `pre-submit`      |
+| Webhook    | `WebhookAdapter`   | 未来：GitHub PR 状态变更触发         |
 
 **Agent Tool 适配示例**：
 
 ```python
 class AgentToolAdapter:
     """将 Agent 的 PreToolUse 事件转换为 Issue 事件"""
-    
+
     def translate(self, agent_event: dict) -> Optional[IssueEventContext]:
         tool_input = agent_event.get("tool_input", {})
         command = tool_input.get("command", "")
-        
+
         # 解析命令: "monoco issue submit FEAT-0123"
         match = parse_monoco_issue_command(command)
         if not match:
             return None  # 不是 issue 命令，忽略
-            
+
         return IssueEventContext(
             event=self.map_command_to_event(match.subcommand),
             issue_id=match.issue_id,
@@ -108,12 +110,12 @@ class AgentToolAdapter:
 
 明确划分不同层次的职责：
 
-| 层次 | 职责 | 示例 | 执行者 |
-|------|------|------|--------|
-| **Issue Lint** | Issue 数据自身完整性 | status/stage 合法性、必填字段、acceptance criteria 完成度 | `monoco issue lint` |
-| **Pre-Issue-Hooks** | 命令执行前置条件 | 分支检查、working tree 状态、files 同步状态 | Issue Hooks (`before-*`) |
-| **Core Action** | 纯粹的状态切换 | update status/stage | 命令核心逻辑 |
-| **Post-Issue-Hooks** | 命令成功后的处理 | 报告生成、todo 提醒、资源清理 | Issue Hooks (`after-*`) |
+| 层次                 | 职责                 | 示例                                                      | 执行者                 |
+| -------------------- | -------------------- | --------------------------------------------------------- | ---------------------- |
+| **Issue Lint**       | Issue 数据自身完整性 | status/stage 合法性、必填字段、acceptance criteria 完成度 | `monoco issue lint`    |
+| **Pre-Issue-Hooks**  | 命令执行前置条件     | 分支检查、working tree 状态、files 同步状态               | Issue Hooks (`pre-*`)  |
+| **Core Action**      | 纯粹的状态切换       | update status/stage                                       | 命令核心逻辑           |
+| **Post-Issue-Hooks** | 命令成功后的处理     | 报告生成、todo 提醒、资源清理                             | Issue Hooks (`post-*`) |
 
 **关键原则**：Issue Lint **不涉及**工作区状态，只检查 ticket 本身。工作区状态检查属于 Pre-Issue-Hooks。
 
@@ -160,7 +162,7 @@ class HookDecision(str, Enum):
                  │ IssueEventContext
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  BEFORE_SUBMIT Hooks                                        │
+│  PRE_SUBMIT Hooks                                           │
 │  - 检查分支上下文 (feature branch?)                          │
 │  - 检查 working tree 状态                                   │
 │  - 调用 lint（可选）                                         │
@@ -181,7 +183,7 @@ class HookDecision(str, Enum):
                 │
                 ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  AFTER_SUBMIT Hooks                                         │
+│  POST_SUBMIT Hooks                                          │
 │  - 生成 delivery report                                     │
 │  - 输出下一步操作建议                                         │
 │  - 触发后续工作流（如自动创建 PR）                            │
@@ -220,6 +222,7 @@ class HookDecision(str, Enum):
 直接用 `PreToolUse` 拦截 `monoco issue *` 命令，在脚本内解析参数。
 
 **拒绝原因**：
+
 - 无法支持本地 CLI 独立执行 Hooks
 - 每个 Hook 都要重复解析命令参数
 - 语义不清晰，难以管理和排序
@@ -229,6 +232,7 @@ class HookDecision(str, Enum):
 使用 YAML 配置定义检查规则，而非 Hook 脚本。
 
 **拒绝原因**：
+
 - 灵活性不足（难以表达复杂逻辑如分支关系分析）
 - 需要实现 DSL 解析器
 - 与现有 Hooks 生态系统割裂
@@ -236,23 +240,27 @@ class HookDecision(str, Enum):
 ## 实现计划
 
 ### Phase 1: 基础设施
+
 1. 定义 `IssueEvent` 枚举和 `IssueHookResult` 模型
 2. 实现 `IssueHookDispatcher`（核心执行器）
 3. 实现 `DirectTrigger`（本地 CLI 触发）
 4. 实现 `AgentToolAdapter`（Agent 环境桥接）
 
 ### Phase 2: 命令集成
-1. 重构 `submit` 命令，集成 before/after hooks
-2. 重构 `start` 命令，集成 before/after hooks
-3. 重构 `close` 命令，集成 before/after hooks
+
+1. 重构 `submit` 命令，集成 pre/post hooks
+2. 重构 `start` 命令，集成 pre/post hooks
+3. 重构 `close` 命令，集成 pre/post hooks
 4. 保持向后兼容（无 hooks 时行为不变）
 
 ### Phase 3: 内置 Hooks
-1. `before-submit`：分支检查 + lint 调用（默认启用）
-2. `after-submit`：报告生成 + 建议输出
-3. `after-start`：todo 提醒 + 分支信息
+
+1. `pre-submit`：分支检查 + lint 调用（默认启用）
+2. `post-submit`：报告生成 + 建议输出
+3. `post-start`：todo 提醒 + 分支信息
 
 ### Phase 4: 自定义 Hooks
+
 1. 支持 `.monoco/hooks/issue/` 自定义脚本
 2. 配置项启用/禁用内置 hooks
 3. 支持 hooks 优先级和条件执行
@@ -277,7 +285,7 @@ if issue_context:
 **决策**：Lint 是独立的可复用模块，Hooks 可以选择调用它。
 
 ```python
-# before-submit hook 示例
+# pre-submit hook 示例
 #!/bin/bash
 # 调用 lint 检查
 lint_result=$(monoco issue lint "$ISSUE_ID" --format json)
@@ -290,6 +298,7 @@ fi
 ### Q3: 如何确保向后兼容？
 
 **决策**：
+
 1. 无 Hooks 目录时，命令行为完全不变
 2. 内置 Hooks 默认启用但可通过配置禁用
 3. 提供 `--no-hooks` 参数临时跳过 Hooks
