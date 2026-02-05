@@ -35,6 +35,11 @@ ENV/
 .coverage
 htmlcov/
 
+# Code Statistics & Coverage Reports
+cloc_*.json
+coverage.json
+output.json
+
 # Node.js
 node_modules/
 npm-debug.log*
