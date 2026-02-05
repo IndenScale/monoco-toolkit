@@ -51,9 +51,11 @@ opened_at: '2026-02-06T05:08:50'
 - [x] 实现 `monoco spike lint` 命令
 - [x] lint 检查：目录结构合规性
 - [x] lint 检查：文章 front matter 完整性
-- [x] lint 检查：必填字段非 UNKNOWN
+- [x] lint 检查：必填字段非 UNKNOWN (WARNING)
 - [x] lint 检查：id 全局唯一性
 - [x] 更新 CLAUDE.md 添加 lint 命令文档
+- [x] 迁移剩余目录到 `articles/`
+- [x] 为所有文章添加 front matter
 
 ## Technical Tasks
 
