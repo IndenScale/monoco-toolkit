@@ -3,10 +3,10 @@ id: CHORE-0042
 uid: 0535c3
 type: chore
 status: open
-stage: doing
+stage: draft
 title: Unify branch system terminology to Trunk-Branch
 created_at: '2026-02-05T09:13:43'
-updated_at: 2026-02-05 09:13:46
+updated_at: '2026-02-05T09:35:29'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,12 +16,11 @@ tags:
 - '#EPIC-0000'
 files: []
 criticality: low
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-05T09:13:43'
 isolation:
   type: branch
   ref: CHORE-0042-unify-branch-system-terminology-to-trunk-branch
-  path: null
   created_at: '2026-02-05T09:13:46'
 ---
 
