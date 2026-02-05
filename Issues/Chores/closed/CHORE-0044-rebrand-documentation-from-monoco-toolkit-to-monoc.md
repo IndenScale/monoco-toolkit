@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Rebrand documentation from 'Monoco Toolkit' to 'Monoco'
 created_at: '2026-02-05T19:30:29'
-updated_at: '2026-02-05T19:35:25'
+updated_at: 2026-02-05 19:35:26
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -37,10 +37,6 @@ criticality: low
 solution: implemented
 opened_at: '2026-02-05T19:30:29'
 closed_at: '2026-02-05T19:35:25'
-isolation:
-  type: branch
-  ref: CHORE-0044-rebrand-documentation-from-monoco-toolkit-to-monoc
-  created_at: '2026-02-05T19:30:49'
 ---
 
 ## CHORE-0044: Rebrand documentation from 'Monoco Toolkit' to 'Monoco'
