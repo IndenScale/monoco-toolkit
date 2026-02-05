@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Document Principles of Agentic System
 created_at: '2026-02-05T16:09:58'
-updated_at: '2026-02-05T16:10:04'
+updated_at: 2026-02-05 16:10:05
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,8 +16,13 @@ tags:
 - '#FEAT-0184'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-05T16:09:58'
+isolation:
+  type: branch
+  ref: FEAT-0184-document-principles-of-agentic-system
+  path: null
+  created_at: '2026-02-05T16:10:05'
 ---
 
 ## FEAT-0184: Document Principles of Agentic System
