@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Implement Issue Lifecycle Hooks (ADR-001)
 created_at: '2026-02-05T08:58:16'
-updated_at: '2026-02-05T09:22:40'
+updated_at: '2026-02-05T09:25:22'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,7 +14,8 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0181'
-files: []
+files:
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
 criticality: medium
 solution: implemented
 opened_at: '2026-02-05T08:58:16'
