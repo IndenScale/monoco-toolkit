@@ -13,6 +13,8 @@
 | **Skill**        | A package of capabilities (tools, prompts, flows) that extends the Agent.                           | **Package** (apt/pacman package)    |
 | **Context File** | Configuration files (e.g., `GEMINI.md`, `AGENTS.md`) defining environment rules and preferences.    | **Config** (`/etc/config`)          |
 | **Agent Client** | The user interface connecting to Monoco (CLI, VSCode, Zed).                                         | **Desktop Environment** (GNOME/KDE) |
+| **Trunk**        | The stable main line of code (usually `main` or `master`). The final destination for all features.  | **Trunk**                           |
+| **Branch**       | A temporary isolated development environment created for a specific Issue.                          | **Branch**                          |
 
 ##### Key Concepts
 
