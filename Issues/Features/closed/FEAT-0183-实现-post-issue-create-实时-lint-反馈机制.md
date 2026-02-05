@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 实现 post-issue-create 实时 Lint 反馈机制
 created_at: '2026-02-05T10:08:58'
-updated_at: '2026-02-05T10:14:08'
+updated_at: 2026-02-05 10:14:09
 parent: EPIC-0027
 dependencies: []
 related: []
@@ -23,10 +23,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-05T10:08:58'
 closed_at: '2026-02-05T10:14:08'
-isolation:
-  type: branch
-  ref: FEAT-0183-实现-post-issue-create-实时-lint-反馈机制
-  created_at: '2026-02-05T10:08:59'
 ---
 
 ## FEAT-0183: 实现 post-issue-create 实时 Lint 反馈机制
