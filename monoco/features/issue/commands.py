@@ -435,13 +435,6 @@ def submit(
             no_hooks=no_hooks,
             debug_hooks=debug_hooks,
         ):
-            # FEAT-0163: Automatically sync files before submission to ensure manifest completeness
-            try:
-                 core.sync_issue_files(issues_root, issue_id, project_root)
-            except Exception as se:
-                 # Just log warning, don't fail submit if sync fails (defensive)
-                 logger.warning(f"Auto-sync failed during submit for {issue_id}: {se}")
-
             # Implicitly ensure status is Open
             issue = core.update_issue(
                 issues_root,
@@ -452,19 +445,10 @@ def submit(
                 project_root=project_root,
             )
 
-            # Delivery Report Generation
-            report_status = "skipped"
-            try:
-                core.generate_delivery_report(issues_root, issue_id, project_root)
-                report_status = "generated"
-            except Exception as e:
-                report_status = f"failed: {e}"
-
             OutputManager.print(
                 {
                     "issue": issue,
                     "status": "submitted",
-                    "report": report_status,
                 }
             )
 
