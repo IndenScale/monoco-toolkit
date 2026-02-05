@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Unify branch system terminology to Trunk-Branch
 created_at: '2026-02-05T09:13:43'
-updated_at: '2026-02-05T09:38:24'
+updated_at: 2026-02-05 09:38:25
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -29,10 +29,6 @@ criticality: low
 solution: implemented
 opened_at: '2026-02-05T09:13:43'
 closed_at: '2026-02-05T09:38:24'
-isolation:
-  type: branch
-  ref: CHORE-0042-unify-branch-system-terminology-to-trunk-branch
-  created_at: '2026-02-05T09:35:54'
 ---
 
 ## CHORE-0042: Unify branch system terminology to Trunk-Branch
