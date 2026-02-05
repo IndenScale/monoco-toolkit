@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Implement Issue Lifecycle Hooks (ADR-001)
 created_at: '2026-02-05T08:58:16'
-updated_at: 2026-02-05 08:58:21
+updated_at: '2026-02-05T08:59:09'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,14 +14,17 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0181'
-files: []
+files:
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- Issues/Features/open/FEAT-0180-issue-lifecycle-hooks-pre-post-command-validation.md
+- docs/zh/98_ADRs/ADR-001-issue-lifecycle-hooks.md
+- docs/zh/98_ADRs/ADR-002-lint-error-collection-strategy.md
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-05T08:58:16'
 isolation:
   type: branch
   ref: FEAT-0181-implement-issue-lifecycle-hooks-adr-001
-  path: null
   created_at: '2026-02-05T08:58:21'
 ---
 
