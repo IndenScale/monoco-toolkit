@@ -64,6 +64,12 @@ def create(
         "-c",
         help="Criticality level (low, medium, high, critical). Auto-derived from type if not specified.",
     ),
+    no_hooks: bool = typer.Option(
+        False, "--no-hooks", help="Skip lifecycle hooks"
+    ),
+    debug_hooks: bool = typer.Option(
+        False, "--debug-hooks", help="Show hook execution details"
+    ),
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
@@ -73,6 +79,12 @@ def create(
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     project_root = _resolve_project_root(config)
+
+    # Import hooks integration
+    from .hooks import HookContextManager, init_hooks
+    
+    # Initialize hooks system
+    init_hooks(project_root)
 
     # Context Check
     _validate_branch_context(
@@ -107,84 +119,59 @@ def create(
             raise typer.Exit(code=1)
 
     try:
-        issue, path = core.create_issue_file(
-            issues_root,
-            type,
-            title,
-            parent,
-            status=status,
-            stage=stage,
-            dependencies=dependencies,
-            related=related,
-            domains=domains,
-            subdir=subdir,
-            sprint=sprint,
-            tags=tags,
-            criticality=criticality_level,
-        )
-
-        # Link memos to the newly created issue
-        linked_memos = []
-        missing_memos = []
-        if from_memo:
-            from monoco.features.memo.core import load_memos, update_memo
-            
-            existing_memos = {m.uid: m for m in load_memos(issues_root)}
-            
-            for memo_id in from_memo:
-                if memo_id in existing_memos:
-                    # Only update if not already linked to this issue (idempotency)
-                    memo = existing_memos[memo_id]
-                    if memo.ref != issue.id:
-                        update_memo(issues_root, memo_id, {"status": "tracked", "ref": issue.id})
-                        linked_memos.append(memo_id)
-                else:
-                    missing_memos.append(memo_id)
-
-        try:
-            rel_path = path.relative_to(Path.cwd())
-        except ValueError:
-            rel_path = path
-
-        if OutputManager.is_agent_mode():
-            result = {"issue": issue, "path": str(rel_path), "status": "created"}
-            if linked_memos:
-                result["linked_memos"] = linked_memos
-            if missing_memos:
-                result["missing_memos"] = missing_memos
-            OutputManager.print(result)
-        else:
-            console.print(
-                f"[green]✔ Created {issue.id} in status {issue.status}.[/green]"
+        # Use HookContextManager to execute pre/post hooks
+        with HookContextManager(
+            command="create",
+            issue_id=None,
+            project_root=project_root,
+            force=force,
+            no_hooks=no_hooks,
+            debug_hooks=debug_hooks,
+        ) as h_ctx:
+            issue, path = core.create_issue_file(
+                issues_root,
+                type,
+                title,
+                parent,
+                status=status,
+                stage=stage,
+                dependencies=dependencies,
+                related=related,
+                domains=domains,
+                subdir=subdir,
+                sprint=sprint,
+                tags=tags,
+                criticality=criticality_level,
             )
-            console.print(f"Path: {rel_path}")
             
-            if linked_memos:
-                console.print(f"[green]✔ Linked {len(linked_memos)} memo(s): {', '.join(linked_memos)}[/green]")
-            if missing_memos:
-                console.print(f"[yellow]⚠ Memo(s) not found: {', '.join(missing_memos)}[/yellow]")
+            # Update ID for post-hooks
+            h_ctx.issue_id = issue.id
 
-            # Prompt for Language
-            source_lang = config.i18n.source_lang or "en"
+            # Link memos to the newly created issue
+            linked_memos = []
+            if from_memo:
+                from monoco.features.memo.core import load_memos, update_memo
+                existing_memos = {m.uid: m for m in load_memos(issues_root)}
+                for memo_id in from_memo:
+                    if memo_id in existing_memos:
+                        memo = existing_memos[memo_id]
+                        if memo.ref != issue.id:
+                            update_memo(issues_root, memo_id, {"status": "tracked", "ref": issue.id})
+                            linked_memos.append(memo_id)
 
-            hint_msgs = {
-                "zh": "请使用中文填写 Issue 内容。",
-                "en": "Please fill the ticket content in English.",
-            }
-
-            hint_msg = hint_msgs.get(
-                source_lang, f"Please fill the ticket content in {source_lang.upper()}."
+            OutputManager.print(
+                {
+                    "issue": issue,
+                    "status": "created",
+                    "path": str(path.relative_to(project_root) if project_root in path.parents else path),
+                    "memos": linked_memos,
+                }
             )
 
-            console.print(f"\n[bold yellow]Agent Hint:[/bold yellow] {hint_msg}")
-
-    except ValueError as e:
+    except Exception as e:
         OutputManager.error(str(e))
         raise typer.Exit(code=1)
 
-    except ValueError as e:
-        OutputManager.error(str(e))
-        raise typer.Exit(code=1)
 
 
 @app.command("update")
