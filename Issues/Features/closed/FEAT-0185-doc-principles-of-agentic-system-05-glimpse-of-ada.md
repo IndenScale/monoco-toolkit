@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 'Doc: Principles of Agentic System - 05 Glimpse of Adaptive System'
 created_at: '2026-02-05T16:41:46'
-updated_at: '2026-02-05T16:42:19'
+updated_at: 2026-02-05 16:42:20
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -22,10 +22,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-05T16:41:46'
 closed_at: '2026-02-05T16:42:19'
-isolation:
-  type: branch
-  ref: FEAT-0185-doc-principles-of-agentic-system-05-glimpse-of-ada
-  created_at: '2026-02-05T16:41:51'
 ---
 
 ## FEAT-0185: Doc: Principles of Agentic System - 05 Glimpse of Adaptive System
