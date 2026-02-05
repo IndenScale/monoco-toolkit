@@ -100,18 +100,8 @@ class SpikeLinter:
         if articles_dir.exists():
             self._check_naming_recursive(articles_dir, result, kebab_pattern)
 
-        repos_dir = self.references_dir / "repos"
-        if repos_dir.exists():
-            for item in repos_dir.iterdir():
-                if item.is_dir():
-                    # Repo names should be kebab-case
-                    if not kebab_pattern.match(item.name):
-                        result.add(
-                            "naming",
-                            f"Repo name '{item.name}' should be kebab-case (lowercase with hyphens)",
-                            f"repos/{item.name}",
-                            "warning"
-                        )
+        # Note: Skip naming check for repos/ directory
+        # Git repo names are preserved as-is from their source URLs
 
     def _check_naming_recursive(self, dir_path: Path, result: LintResult, pattern: re.Pattern):
         """Recursively check naming in a directory."""
