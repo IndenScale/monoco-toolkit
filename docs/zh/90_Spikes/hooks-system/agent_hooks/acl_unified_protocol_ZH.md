@@ -18,15 +18,20 @@ Monoco 定义一套中立的输入/输出模型，作为防腐层的“核心协
 
 ### 2.1 统一事件映射 (Event Mapping)
 
-| Monoco 事件 (Agnostic) | Claude Code        | Gemini CLI     | Git (Native)  | VS Code (IDE)  |
-| :--------------------- | :----------------- | :------------- | :------------ | :------------- |
-| `ON_SESSION_START`     | `SessionStart`     | `SessionStart` | -             | `onFolderOpen` |
-| `ON_BEFORE_TOOL`       | `PreToolUse`       | `BeforeTool`   | -             | -              |
-| `ON_BEFORE_COMMIT`     | -                  | -              | `pre-commit`  | `onWillSave`   |
-| `ON_AFTER_COMMIT`      | -                  | -              | `post-commit` | -              |
-| `ON_BEFORE_AGENT`      | `UserPromptSubmit` | `BeforeAgent`  | -             | -              |
-| `ON_AFTER_AGENT`       | `Stop`             | `AfterAgent`   | -             | -              |
-| `ON_FILE_CHANGE`       | -                  | -              | -             | `onSave`       |
+| Monoco 规范事件 (Internal) | Claude Code        | Gemini CLI     | Git (Native)  | VS Code (IDE)  |
+| :------------------------- | :----------------- | :------------- | :------------ | :------------- |
+| `pre-session`              | `SessionStart`     | `SessionStart` | -             | `onFolderOpen` |
+| `post-session`             | `SessionEnd`       | `SessionEnd`   | -             | -              |
+| `pre-agent`                | `UserPromptSubmit` | `BeforeAgent`  | -             | -              |
+| `post-agent`               | `Stop`             | `AfterAgent`   | -             | -              |
+| `pre-subagent`             | `SubagentStart`    | -              | -             | -              |
+| `post-subagent`            | `SubagentStop`     | -              | -             | -              |
+| `pre-tool-use`             | `PreToolUse`       | `BeforeTool`   | -             | -              |
+| `post-tool-use`            | `PostToolUse`      | `AfterTool`    | -             | -              |
+| `pre-commit`               | -                  | -              | `pre-commit`  | `onWillSave`   |
+| `post-commit`              | -                  | -              | `post-commit` | -              |
+| `pre-compact`              | `PreCompact`       | `PreCompress`  | -             | -              |
+| `post-file-change`         | -                  | -              | -             | `onSave`       |
 
 ### 2.2 统一决策模型 (Decision Model)
 

@@ -59,11 +59,16 @@ class IssueEvent(str, Enum):
     PRE_CLOSE = "pre-close"
     POST_CLOSE = "post-close"
 
-    # Generic Agent Events (ACL Canonical)
+    # Agnostic Agent Lifecycle (Canonical ACL)
+    PRE_SESSION = "pre-session"
+    POST_SESSION = "post-session"
+    PRE_AGENT = "pre-agent"
+    POST_AGENT = "post-agent"
+    PRE_SUBAGENT = "pre-subagent"
+    POST_SUBAGENT = "post-subagent"
     PRE_TOOL_USE = "pre-tool-use"
     POST_TOOL_USE = "post-tool-use"
-    PRE_PROMPT = "pre-prompt"
-    POST_RESPONSE = "post-response"
+    PRE_COMPACT = "pre-compact"
 
 class IssueHookResult:
     """Issue Hook 执行结果"""
@@ -120,18 +125,20 @@ class AgentToolAdapter:
 
 | Monoco 规范事件 (Internal) | Claude Code 对应 | Gemini CLI 对应 |
 | :--- | :--- | :--- |
-| `pre-session-start` | `SessionStart` | `SessionStart` |
+| `pre-session` | `SessionStart` | `SessionStart` |
+| `post-session` | `SessionEnd` | `SessionEnd` |
+| `pre-agent` | `UserPromptSubmit` | `BeforeAgent` |
+| `post-agent` | `Stop` | `AfterAgent` |
+| `pre-subagent` | `SubagentStart` | - |
+| `post-subagent` | `SubagentStop` | - |
 | `pre-tool-use` | `PreToolUse` | `BeforeTool` |
 | `post-tool-use` | `PostToolUse` | `AfterTool` |
-| `pre-prompt` | `UserPromptSubmit` | `BeforeAgent` |
-| `post-response` | `Stop` | `AfterAgent` |
 | `pre-compact` | `PreCompact` | `PreCompress` |
-| `post-subagent` | `SubagentStop` | - |
 
 **优势：**
-1. **开发者无感**：编写 Monoco 钩子时只需记住 `pre/post`。
+1. **开发者无感**：编写 Monoco 钩子时只需记住 `pre/post` 对称主语。
 2. **跨平台兼容**：同一个 `pre-tool-use` 钩子可以自动适配不同 Agent。
-3. **架构解耦**：Agent 的版本更迭不会影响 Monoco 领域的事件定义。
+3. **架构解耦**：Agent 的版本更迭和命名变迁不会影响 Monoco 领域的事件定义。
 ```
 
 ### 3. 检查层次边界
