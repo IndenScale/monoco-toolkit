@@ -3,10 +3,10 @@ id: FEAT-0181
 uid: 806e54
 type: feature
 status: open
-stage: draft
+stage: doing
 title: Implement Issue Lifecycle Hooks (ADR-001)
 created_at: '2026-02-05T08:58:16'
-updated_at: '2026-02-05T09:04:10'
+updated_at: '2026-02-05T09:10:20'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -22,7 +22,6 @@ files:
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-05T08:58:16'
-isolation: null
 ---
 
 ## FEAT-0181: Implement Issue Lifecycle Hooks (ADR-001)
