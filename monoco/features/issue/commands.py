@@ -231,23 +231,41 @@ def move_open(
     no_commit: bool = typer.Option(
         False, "--no-commit", help="Skip auto-commit of issue file"
     ),
+    no_hooks: bool = typer.Option(
+        False, "--no-hooks", help="Skip lifecycle hooks"
+    ),
+    debug_hooks: bool = typer.Option(
+        False, "--debug-hooks", help="Show hook execution details"
+    ),
     json: AgentOutput = False,
 ):
     """Move issue to open status and set stage to Draft."""
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     project_root = _resolve_project_root(config)
+    
+    # Import hooks integration
+    from .hooks import HookContextManager, init_hooks
+    init_hooks(project_root)
+
     try:
-        # Pull operation: Force stage to TODO
-        issue = core.update_issue(
-            issues_root,
-            issue_id,
-            status="open",
-            stage="draft",
-            no_commit=no_commit,
+        with HookContextManager(
+            command="open",
+            issue_id=issue_id,
             project_root=project_root,
-        )
-        OutputManager.print({"issue": issue, "status": "opened"})
+            no_hooks=no_hooks,
+            debug_hooks=debug_hooks,
+        ):
+            # Pull operation: Force stage to TODO
+            issue = core.update_issue(
+                issues_root,
+                issue_id,
+                status="open",
+                stage="draft",
+                no_commit=no_commit,
+                project_root=project_root,
+            )
+            OutputManager.print({"issue": issue, "status": "opened"})
     except Exception as e:
         OutputManager.error(str(e))
         raise typer.Exit(code=1)
@@ -510,175 +528,151 @@ def move_close(
                     console.print(f"[red]   Manual recovery may be required. Run: git reset --hard {initial_head[:7]}[/red]")
 
     try:
-        # Execute pre-close hooks
-        if not no_hooks:
-            pre_context = build_hook_context(
-                event=IssueEvent.PRE_CLOSE,
-                issue_id=issue_id,
-                project_root=project_root,
-                force=force,
-                no_hooks=no_hooks,
-                debug_hooks=debug_hooks,
+        with HookContextManager(
+            command="close",
+            issue_id=issue_id,
+            project_root=project_root,
+            force=force,
+            no_hooks=no_hooks,
+            debug_hooks=debug_hooks,
+        ):
+            # Capture initial HEAD before any modifications
+            initial_head = git.get_current_head(project_root)
+            
+            # 0. Find issue across branches (FIX-0006, CHORE-0036)
+            # allow_multi_branch=True: Issue metadata files can exist in both main and feature branch
+            found_path, source_branch, conflicting_branches = core.find_issue_path_across_branches(
+                issues_root, issue_id, project_root, allow_multi_branch=True
             )
-            from .hooks import handle_hook_result
-            pre_result = execute_hooks(IssueEvent.PRE_CLOSE, pre_context, project_root)
-            handle_hook_result(pre_result, "close")
-        
-        # Capture initial HEAD before any modifications
-        initial_head = git.get_current_head(project_root)
-        
-        # 0. Find issue across branches (FIX-0006, CHORE-0036)
-        # allow_multi_branch=True: Issue metadata files can exist in both main and feature branch
-        found_path, source_branch, conflicting_branches = core.find_issue_path_across_branches(
-            issues_root, issue_id, project_root, allow_multi_branch=True
-        )
-        if not found_path:
-            OutputManager.error(f"Issue {issue_id} not found in any branch.")
-            raise typer.Exit(code=1)
-
-        # CHORE-0036: Always dump Issue file from feature branch to main first
-        # First, parse issue to get isolation ref if available
-        issue = core.parse_issue(found_path)
-
-        # Determine feature branch: use isolation.ref if available, otherwise heuristic search
-        feature_branch = None
-        if issue and issue.isolation and issue.isolation.ref:
-            feature_branch = issue.isolation.ref
-        else:
-            # Heuristic: Find feature branch by convention {issue_id}-*
-            import re
-            code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
-            if code == 0:
-                for branch in stdout.splitlines():
-                    branch = branch.strip()
-                    # Match format: FEAT-XXXX-*
-                    if re.match(rf"{re.escape(issue_id)}-", branch, re.IGNORECASE):
-                        feature_branch = branch
-                        break
-
-        if feature_branch and git.branch_exists(project_root, feature_branch):
-            # Checkout Issue file from feature branch to override main's version
-            try:
-                rel_path = found_path.relative_to(project_root)
-                git.git_checkout_files(project_root, feature_branch, [str(rel_path)])
-                # Re-read issue after dumping to get latest state
-                issue = core.parse_issue(found_path)
-                if not OutputManager.is_agent_mode():
-                    console.print(
-                        f"[green]✔ Dumped:[/green] Issue file synced from '{feature_branch}'"
-                    )
-            except Exception as e:
-                OutputManager.error(f"Failed to sync Issue file from feature branch: {e}")
-                rollback_transaction()
+            if not found_path:
+                OutputManager.error(f"Issue {issue_id} not found in any branch.")
                 raise typer.Exit(code=1)
-        else:
-            # No feature branch found, use current issue state
+
+            # CHORE-0036: Always dump Issue file from feature branch to main first
+            # First, parse issue to get isolation ref if available
             issue = core.parse_issue(found_path)
 
-        # 1. Perform Smart Atomic Merge (FEAT-0154)
-        # Validate: if no branch and no files, issue didn't do any work
-        if not feature_branch and not issue.files:
-            OutputManager.error(
-                f"Cannot close {issue_id}: No feature branch found and no files tracked. "
-                "Issue appears to have no work done."
-            )
-            raise typer.Exit(code=1)
+            # Determine feature branch: use isolation.ref if available, otherwise heuristic search
+            feature_branch = None
+            if issue and issue.isolation and issue.isolation.ref:
+                feature_branch = issue.isolation.ref
+            else:
+                # Heuristic: Find feature branch by convention {issue_id}-*
+                import re
+                code, stdout, _ = git._run_git(["branch", "--format=%(refname:short)"], project_root)
+                if code == 0:
+                    for branch in stdout.splitlines():
+                        branch = branch.strip()
+                        # Match format: FEAT-XXXX-*
+                        if re.match(rf"{re.escape(issue_id)}-", branch, re.IGNORECASE):
+                            feature_branch = branch
+                            break
 
-        merged_files = []
-        try:
-            merged_files = core.merge_issue_changes(issues_root, issue_id, project_root)
-            if merged_files:
-                if not OutputManager.is_agent_mode():
-                    console.print(
-                        f"[green]✔ Smart Merge:[/green] Synced {len(merged_files)} files from feature branch."
-                    )
+            if feature_branch and git.branch_exists(project_root, feature_branch):
+                # Checkout Issue file from feature branch to override main's version
+                try:
+                    rel_path = found_path.relative_to(project_root)
+                    git.git_checkout_files(project_root, feature_branch, [str(rel_path)])
+                    # Re-read issue after dumping to get latest state
+                    issue = core.parse_issue(found_path)
+                    if not OutputManager.is_agent_mode():
+                        console.print(
+                            f"[green]✔ Dumped:[/green] Issue file synced from '{feature_branch}'"
+                        )
+                except Exception as e:
+                    OutputManager.error(f"Failed to sync Issue file from feature branch: {e}")
+                    rollback_transaction()
+                    raise typer.Exit(code=1)
+            else:
+                # No feature branch found, use current issue state
+                issue = core.parse_issue(found_path)
 
-                # Auto-commit merged files if not no_commit
-                if not no_commit:
-                    commit_msg = f"feat: atomic merge changes from {issue_id}"
-                    try:
-                        commit_hash = git.git_commit(project_root, commit_msg)
-                        transaction_commits.append(commit_hash)
-                        if not OutputManager.is_agent_mode():
-                            console.print(f"[green]✔ Committed merged changes.[/green]")
-                    except Exception as e:
-                        # If commit fails (e.g. nothing to commit?), just warn
-                        if not OutputManager.is_agent_mode():
-                            console.print(f"[yellow]⚠ Commit skipped: {e}[/yellow]")
-
-        except Exception as e:
-            OutputManager.error(f"Merge Error: {e}")
-            rollback_transaction()
-            raise typer.Exit(code=1)
-
-        # 2. Update issue status to closed
-        try:
-            issue = core.update_issue(
-                issues_root,
-                issue_id,
-                status="closed",
-                solution=solution,
-                no_commit=no_commit,
-                project_root=project_root,
-            )
-            # Track the auto-commit from update_issue if it occurred
-            if hasattr(issue, 'commit_result') and issue.commit_result:
-                transaction_commits.append(issue.commit_result)
-        except Exception as e:
-            OutputManager.error(f"Update Error: {e}")
-            rollback_transaction()
-            raise typer.Exit(code=1)
-
-        # 3. Prune issue resources (branch/worktree)
-        pruned_resources = []
-        if prune:
-            # Get isolation info for confirmation prompt
-            isolation_info = None
-            if issue.isolation:
-                isolation_type = issue.isolation.type if issue.isolation.type else None
-                isolation_ref = issue.isolation.ref
-                isolation_info = (isolation_type, isolation_ref)
-
-            # Auto-prune without confirmation (FEAT-0082 Update)
-            if not OutputManager.is_agent_mode() and isolation_info:
-                iso_type, iso_ref = isolation_info
-                if iso_ref:
-                    console.print(f"[dim]Cleaning up {iso_type}: {iso_ref}...[/dim]")
-
-            try:
-                pruned_resources = core.prune_issue_resources(
-                    issues_root, issue_id, force, project_root
+            # 1. Perform Smart Atomic Merge (FEAT-0154)
+            # Validate: if no branch and no files, issue didn't do any work
+            if not feature_branch and not issue.files:
+                OutputManager.error(
+                    f"Cannot close {issue_id}: No feature branch found and no files tracked. "
+                    "Issue appears to have no work done."
                 )
-                if pruned_resources and not OutputManager.is_agent_mode():
-                    console.print(f"[green]✔ Cleaned up:[/green] {', '.join(pruned_resources)}")
+                raise typer.Exit(code=1)
+
+            merged_files = []
+            try:
+                merged_files = core.merge_issue_changes(issues_root, issue_id, project_root)
+                if merged_files:
+                    if not OutputManager.is_agent_mode():
+                        console.print(
+                            f"[green]✔ Smart Merge:[/green] Synced {len(merged_files)} files from feature branch."
+                        )
+
+                    # Auto-commit merged files if not no_commit
+                    if not no_commit:
+                        commit_msg = f"feat: atomic merge changes from {issue_id}"
+                        try:
+                            commit_hash = git.git_commit(project_root, commit_msg)
+                            transaction_commits.append(commit_hash)
+                            if not OutputManager.is_agent_mode():
+                                console.print(f"[green]✔ Committed merged changes.[/green]")
+                        except Exception as e:
+                            # If commit fails (e.g. nothing to commit?), just warn
+                            if not OutputManager.is_agent_mode():
+                                console.print(f"[yellow]⚠ Commit skipped: {e}[/yellow]")
+
             except Exception as e:
-                # Prune failure triggers rollback
-                OutputManager.error(f"Prune Error: {e}")
+                OutputManager.error(f"Merge Error: {e}")
                 rollback_transaction()
                 raise typer.Exit(code=1)
 
-        # Execute post-close hooks
-        if not no_hooks:
+            # 2. Update issue status to closed
             try:
-                post_context = build_hook_context(
-                    event=IssueEvent.POST_CLOSE,
-                    issue_id=issue_id,
+                issue = core.update_issue(
+                    issues_root,
+                    issue_id,
+                    status="closed",
+                    solution=solution,
+                    no_commit=no_commit,
                     project_root=project_root,
-                    force=force,
-                    no_hooks=no_hooks,
-                    debug_hooks=debug_hooks,
-                    extra={"pruned_resources": pruned_resources},
                 )
-                post_result = execute_hooks(IssueEvent.POST_CLOSE, post_context, project_root)
-                if debug_hooks and post_result.message:
-                    logger.info(f"Post-close hook: {post_result.message}")
-            except Exception as hook_error:
-                logger.warning(f"Post-close hook execution failed: {hook_error}")
-        
-        # Success: Clear transaction state as all operations completed
-        OutputManager.print(
-            {"issue": issue, "status": "closed", "pruned": pruned_resources}
-        )
+                # Track the auto-commit from update_issue if it occurred
+                if hasattr(issue, 'commit_result') and issue.commit_result:
+                    transaction_commits.append(issue.commit_result)
+            except Exception as e:
+                OutputManager.error(f"Update Error: {e}")
+                rollback_transaction()
+                raise typer.Exit(code=1)
+
+            # 3. Prune issue resources (branch/worktree)
+            pruned_resources = []
+            if prune:
+                # Get isolation info for confirmation prompt
+                isolation_info = None
+                if issue.isolation:
+                    isolation_type = issue.isolation.type if issue.isolation.type else None
+                    isolation_ref = issue.isolation.ref
+                    isolation_info = (isolation_type, isolation_ref)
+
+                # Auto-prune without confirmation (FEAT-0082 Update)
+                if not OutputManager.is_agent_mode() and isolation_info:
+                    iso_type, iso_ref = isolation_info
+                    if iso_ref:
+                        console.print(f"[dim]Cleaning up {iso_type}: {iso_ref}...[/dim]")
+
+                try:
+                    pruned_resources = core.prune_issue_resources(
+                        issues_root, issue_id, force, project_root
+                    )
+                    if pruned_resources and not OutputManager.is_agent_mode():
+                        console.print(f"[green]✔ Cleaned up:[/green] {', '.join(pruned_resources)}")
+                except Exception as e:
+                    # Prune failure triggers rollback
+                    OutputManager.error(f"Prune Error: {e}")
+                    rollback_transaction()
+                    raise typer.Exit(code=1)
+
+            # Success: Clear transaction state as all operations completed
+            OutputManager.print(
+                {"issue": issue, "status": "closed", "pruned": pruned_resources}
+            )
 
     except typer.Abort:
         # User cancelled, rollback already handled

@@ -3,14 +3,14 @@ id: EPIC-0027
 uid: 1ed7f6
 type: epic
 status: open
-stage: draft
+stage: doing
 title: 'Issue Governance Strategy 2026 Q1: Establish Governance and Archival Baseline'
 created_at: '2026-02-01T10:27:42'
 updated_at: '2026-02-01T10:27:42'
 parent: EPIC-0000
 dependencies: []
 related: []
-domains: 
+domains:
 - IssueSystem
 tags:
 - '#EPIC-0027'
@@ -18,11 +18,12 @@ tags:
 - governance
 - archival
 - q1-2026
-
 - narrative
 files: []
 criticality: high
 opened_at: '2026-02-01T10:27:42'
+progress: 5/6
+files_count: 0
 ---
 
 ## EPIC-0027: Issue Governance Strategy 2026 Q1: Establish Governance and Archival Baseline
