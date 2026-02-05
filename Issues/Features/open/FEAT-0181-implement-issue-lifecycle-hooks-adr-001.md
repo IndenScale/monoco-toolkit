@@ -31,33 +31,44 @@ isolation:
 ## FEAT-0181: Implement Issue Lifecycle Hooks (ADR-001)
 
 ## Objective
-根据 ADR-001 实现 Issue 生命周期钩子系统。该系统将 Issue 的状态变更逻辑（如 submit, start, close）与前置条件检查、后置处理逻辑解耦。通过引入分层架构（Trigger -> Dispatcher -> Hook），使 Monoco 能够支持多环境（CLI, Agent, IDE）下的统一生命周期治理。
+根据 ADR-001 实现 Monoco Issue 的生命周期钩子系统。该系统的核心价值在于：
+1. **统一治理**：无论是 CLI 直接调用还是 Agent 触发，都遵循相同的准入（before）和准出（after）规则。
+2. **逻辑解耦**：将分支上下文检查、Working Tree 状态验证、Lint 调用等非核心业务逻辑从 Issue 命令实现中抽离。
+3. **闭环反馈**：向 Agent 提供结构化的 Hook 失败建议（Suggestions），引导其自动修复问题。
 
 ## Acceptance Criteria
-- [ ] 实现 `IssueEvent` 枚举，涵盖 create, start, submit, close 的 before/after 事件。
-- [ ] 实现 `IssueHookDispatcher` 核心逻辑，能够发现并执行本地钩子脚本。
-- [ ] 提供 `DirectTrigger` 适配器，支持本地 CLI 命令触发钩子。
-- [ ] 提供 `AgentToolAdapter` 适配器，实现 Agent 环境下的钩子桥接。
-- [ ] 重构 `monoco issue submit/start/close` 命令，接入 Hook 流程并保持向后兼容。
-- [ ] 实现内置的 `before-submit` 钩子（包含 lint 和分支检查）。
-- [ ] 钩子返回的建议（suggestions）能够被 Agent 解析并展示。
+- [ ] **领域模型**：在 `monoco.core.issue` 中实现 `IssueEvent`, `HookDecision` 和 `IssueHookResult` 数据结构。
+- [ ] **核心分发器**：实现 `IssueHookDispatcher` 类，支持：
+    - 加载内置 Hooks (位于 `monoco/hooks/issue/`)
+    - 发现用户自定义 Hooks (位于 `.monoco/hooks/issue/`)
+    - 支持同步执行，并能根据 `deny` 决策阻断流程。
+- [ ] **CLI 集成**：重构 `commands.py` 中的 `start`, `submit`, `close` 方法，注入生命周期事件。
+- [ ] **Agent 桥接**：实现 `AgentToolAdapter`，能够拦截 `issue` 子命令，并在执行前注入钩子逻辑。
+- [ ] **开发者体验**：
+    - 实现 `monoco issue --no-hooks` 跳过钩子。
+    - 实现 `monoco issue --debug-hooks` 展示钩子执行详情（名称、耗时、结果）。
+- [ ] **内置 Hooks 落地**：
+    - `before-submit`: 自动执行 `sync-files` 检查及 `lint` 校验。
+    - `after-start`: 初始化 Feature 分支并设置本地隔离环境（Isolation）。
 
 ## Technical Tasks
 
-- [x] **Phase 0: 方案设计与 Issue 细化**
-- [ ] **Phase 1: 基础设施建设**
-  - [ ] 定义核心模型：`IssueEvent`, `IssueHookResult`, `HookDecision`
-  - [ ] 实现钩子加载与分发逻辑 `IssueHookDispatcher`
-  - [ ] 实现基础适配器 `DirectTrigger`
-- [ ] **Phase 2: 命令集成与重构**
-  - [ ] 重构 `submit` 命令集成生命周期钩子
-  - [ ] 重构 `start` 命令集成生命周期钩子
-  - [ ] 重构 `close` 命令集成生命周期钩子
-  - [ ] 实现 `--no-hooks` 和 `--debug-hooks` 参数
-- [ ] **Phase 3: 内置与自定义钩子支持**
-  - [ ] 实现默认内置钩子（Branch check, Lint trigger）
-  - [ ] 建立钩子存放目录规范（`.monoco/hooks/issue/`）
-  - [ ] 文档更新：在 `docs/` 下添加钩子开发指南
+- [ ] **Phase 1: 协议与模型定义**
+    - [ ] 设计 `IssueHookContext` 模型，包含执行环境、用户信息及目标 Issue 状态。
+    - [ ] 在 `monoco/models/issue.py` 中定义枚举与 Pydantic 模型。
+- [ ] **Phase 2: 基础设施逻辑**
+    - [ ] 实现钩子查找路径管理（Built-in vs Local）。
+    - [ ] 实现脚本执行器（支持 Python 原生、Shell 脚本及 Python 动态加载）。
+    - [ ] 编写 `IssueHookDispatcher` 的单元测试。
+- [ ] **Phase 3: CLI 与 Agent 适配器**
+    - [ ] 修改 `click` 命令装饰器或核心调用链路，注入 Hooks。
+    - [ ] 针对 `AgentToolAdapter` 设计 Mock 测试，验证 Suggestions 注入。
+- [ ] **Phase 4: 内置 Hooks 迁移**
+    - [ ] 将现有 `submit` 中的 Lint 逻辑迁移至 `before-submit` 钩子。
+    - [ ] 将现有的 `start` 分支创建逻辑迁移至 `before-start` 或 `after-start` 钩子。
+- [ ] **Phase 5: 交付与文档**
+    - [ ] 更新 `GEMINI.md` 中的工作流指南。
+    - [ ] 编写 `docs/zh/40_hooks/issue_hooks.md` 开发者指南。
 
 ## Review Comments
 
