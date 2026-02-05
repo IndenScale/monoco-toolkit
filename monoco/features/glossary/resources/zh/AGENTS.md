@@ -4,15 +4,17 @@
 
 ##### 核心架构隐喻: "Linux 发行版"
 
-| 术语 | 定义 | 隐喻 |
-| :--- | :--- | :--- |
-| **Monoco** | 智能体操作系统发行版。管理策略、工作流和包系统。 | **发行版** (如 Ubuntu, Arch) |
-| **Kimi CLI** | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。 | **内核** (Linux Kernel) |
-| **Session** | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。 | **初始化系统/守护进程** (systemd) |
-| **Issue** | 具有状态（Open/Done）和严格生命周期的原子工作单元。 | **单元文件** (systemd unit) |
-| **Skill** | 扩展智能体功能的工具、提示词和流程包。 | **软件包** (apt/pacman package) |
-| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。 | **配置** (`/etc/config`) |
-| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。 | **桌面环境** (GNOME/KDE) |
+| 术语             | 定义                                                                     | 隐喻                              |
+| :--------------- | :----------------------------------------------------------------------- | :-------------------------------- |
+| **Monoco**       | 智能体操作系统发行版。管理策略、工作流和包系统。                         | **发行版** (如 Ubuntu, Arch)      |
+| **Kimi CLI**     | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。                  | **内核** (Linux Kernel)           |
+| **Session**      | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。                 | **初始化系统/守护进程** (systemd) |
+| **Issue**        | 具有状态（Open/Done）和严格生命周期的原子工作单元。                      | **单元文件** (systemd unit)       |
+| **Skill**        | 扩展智能体功能的工具、提示词和流程包。                                   | **软件包** (apt/pacman package)   |
+| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。        | **配置** (`/etc/config`)          |
+| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。                             | **桌面环境** (GNOME/KDE)          |
+| **Trunk**        | 稳定的主干代码流（通常是 `main` 或 `master` 分支）。所有功能的最终归宿。 | **主干/干线**                     |
+| **Branch**       | 为解决特定 Issue 而开启的临时隔离开发环境。                              | **分支**                          |
 
 ##### 关键概念
 

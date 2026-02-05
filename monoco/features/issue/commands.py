@@ -293,6 +293,12 @@ def start(
     no_commit: bool = typer.Option(
         False, "--no-commit", help="Skip auto-commit of issue file"
     ),
+    no_hooks: bool = typer.Option(
+        False, "--no-hooks", help="Skip lifecycle hooks"
+    ),
+    debug_hooks: bool = typer.Option(
+        False, "--debug-hooks", help="Show hook execution details"
+    ),
     json: AgentOutput = False,
 ):
     """
@@ -304,6 +310,12 @@ def start(
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     project_root = _resolve_project_root(config)
+
+    # Import hooks integration
+    from .hooks import HookContextManager, init_hooks
+    
+    # Initialize hooks system
+    init_hooks(project_root)
 
     # Handle direct flag override
     if direct:
@@ -322,49 +334,58 @@ def start(
         raise typer.Exit(code=1)
 
     try:
-        # Implicitly ensure status is Open
-        issue = core.update_issue(
-            issues_root,
-            issue_id,
-            status="open",
-            stage="doing",
-            no_commit=no_commit,
+        # Use HookContextManager to execute pre/post hooks
+        with HookContextManager(
+            command="start",
+            issue_id=issue_id,
             project_root=project_root,
-        )
+            force=force,
+            no_hooks=no_hooks,
+            debug_hooks=debug_hooks,
+        ):
+            # Implicitly ensure status is Open
+            issue = core.update_issue(
+                issues_root,
+                issue_id,
+                status="open",
+                stage="doing",
+                no_commit=no_commit,
+                project_root=project_root,
+            )
 
-        isolation_info = None
+            isolation_info = None
 
-        if branch:
-            try:
-                issue = core.start_issue_isolation(
-                    issues_root, issue_id, "branch", project_root
-                )
-                isolation_info = {"type": "branch", "ref": issue.isolation.ref}
-            except Exception as e:
-                OutputManager.error(f"Failed to create branch: {e}")
-                raise typer.Exit(code=1)
+            if branch:
+                try:
+                    issue = core.start_issue_isolation(
+                        issues_root, issue_id, "branch", project_root
+                    )
+                    isolation_info = {"type": "branch", "ref": issue.isolation.ref}
+                except Exception as e:
+                    OutputManager.error(f"Failed to create branch: {e}")
+                    raise typer.Exit(code=1)
 
-        if worktree:
-            try:
-                issue = core.start_issue_isolation(
-                    issues_root, issue_id, "worktree", project_root
-                )
-                isolation_info = {
-                    "type": "worktree",
-                    "path": issue.isolation.path,
-                    "ref": issue.isolation.ref,
-                }
-            except Exception as e:
-                OutputManager.error(f"Failed to create worktree: {e}")
-                raise typer.Exit(code=1)
+            if worktree:
+                try:
+                    issue = core.start_issue_isolation(
+                        issues_root, issue_id, "worktree", project_root
+                    )
+                    isolation_info = {
+                        "type": "worktree",
+                        "path": issue.isolation.path,
+                        "ref": issue.isolation.ref,
+                    }
+                except Exception as e:
+                    OutputManager.error(f"Failed to create worktree: {e}")
+                    raise typer.Exit(code=1)
 
-        if not branch and not worktree:
-            # Direct mode message
-            isolation_info = {"type": "direct", "ref": "current"}
+            if not branch and not worktree:
+                # Direct mode message
+                isolation_info = {"type": "direct", "ref": "current"}
 
-        OutputManager.print(
-            {"issue": issue, "status": "started", "isolation": isolation_info}
-        )
+            OutputManager.print(
+                {"issue": issue, "status": "started", "isolation": isolation_info}
+            )
     except Exception as e:
         OutputManager.error(str(e))
         raise typer.Exit(code=1)
@@ -380,6 +401,12 @@ def submit(
     no_commit: bool = typer.Option(
         False, "--no-commit", help="Skip auto-commit of issue file"
     ),
+    no_hooks: bool = typer.Option(
+        False, "--no-hooks", help="Skip lifecycle hooks"
+    ),
+    debug_hooks: bool = typer.Option(
+        False, "--debug-hooks", help="Show hook execution details"
+    ),
     json: AgentOutput = False,
 ):
     """Submit issue for review (Stage -> Review) and generate delivery report."""
@@ -387,44 +414,59 @@ def submit(
     issues_root = _resolve_issues_root(config, root)
     project_root = _resolve_project_root(config)
 
+    # Import hooks integration
+    from .hooks import HookContextManager, init_hooks
+    
+    # Initialize hooks system
+    init_hooks(project_root)
+
     # Context Check: Submit should happen on feature branch, not trunk
     _validate_branch_context(
         project_root, forbidden=["TRUNK"], force=force, command_name="submit"
     )
 
     try:
-        # FEAT-0163: Automatically sync files before submission to ensure manifest completeness
-        try:
-             core.sync_issue_files(issues_root, issue_id, project_root)
-        except Exception as se:
-             # Just log warning, don't fail submit if sync fails (defensive)
-             logger.warning(f"Auto-sync failed during submit for {issue_id}: {se}")
-
-        # Implicitly ensure status is Open
-        issue = core.update_issue(
-            issues_root,
-            issue_id,
-            status="open",
-            stage="review",
-            no_commit=no_commit,
+        # Use HookContextManager to execute pre/post hooks
+        with HookContextManager(
+            command="submit",
+            issue_id=issue_id,
             project_root=project_root,
-        )
+            force=force,
+            no_hooks=no_hooks,
+            debug_hooks=debug_hooks,
+        ):
+            # FEAT-0163: Automatically sync files before submission to ensure manifest completeness
+            try:
+                 core.sync_issue_files(issues_root, issue_id, project_root)
+            except Exception as se:
+                 # Just log warning, don't fail submit if sync fails (defensive)
+                 logger.warning(f"Auto-sync failed during submit for {issue_id}: {se}")
 
-        # Delivery Report Generation
-        report_status = "skipped"
-        try:
-            core.generate_delivery_report(issues_root, issue_id, project_root)
-            report_status = "generated"
-        except Exception as e:
-            report_status = f"failed: {e}"
+            # Implicitly ensure status is Open
+            issue = core.update_issue(
+                issues_root,
+                issue_id,
+                status="open",
+                stage="review",
+                no_commit=no_commit,
+                project_root=project_root,
+            )
 
-        OutputManager.print(
-            {
-                "issue": issue,
-                "status": "submitted",
-                "report": report_status,
-            }
-        )
+            # Delivery Report Generation
+            report_status = "skipped"
+            try:
+                core.generate_delivery_report(issues_root, issue_id, project_root)
+                report_status = "generated"
+            except Exception as e:
+                report_status = f"failed: {e}"
+
+            OutputManager.print(
+                {
+                    "issue": issue,
+                    "status": "submitted",
+                    "report": report_status,
+                }
+            )
 
     except Exception as e:
         OutputManager.error(str(e))
@@ -443,6 +485,12 @@ def move_close(
     no_commit: bool = typer.Option(
         False, "--no-commit", help="Skip auto-commit of issue file"
     ),
+    no_hooks: bool = typer.Option(
+        False, "--no-hooks", help="Skip lifecycle hooks"
+    ),
+    debug_hooks: bool = typer.Option(
+        False, "--debug-hooks", help="Show hook execution details"
+    ),
     json: AgentOutput = False,
 ):
     """Close issue with atomic transaction guarantee.
@@ -453,6 +501,12 @@ def move_close(
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
     project_root = _resolve_project_root(config)
+
+    # Import hooks integration
+    from .hooks import HookContextManager, init_hooks, execute_hooks, build_hook_context, IssueEvent
+    
+    # Initialize hooks system
+    init_hooks(project_root)
 
     # Pre-flight check for interactive guidance
     if solution is None:
@@ -485,6 +539,20 @@ def move_close(
                     console.print(f"[red]   Manual recovery may be required. Run: git reset --hard {initial_head[:7]}[/red]")
 
     try:
+        # Execute pre-close hooks
+        if not no_hooks:
+            pre_context = build_hook_context(
+                event=IssueEvent.PRE_CLOSE,
+                issue_id=issue_id,
+                project_root=project_root,
+                force=force,
+                no_hooks=no_hooks,
+                debug_hooks=debug_hooks,
+            )
+            from .hooks import handle_hook_result
+            pre_result = execute_hooks(IssueEvent.PRE_CLOSE, pre_context, project_root)
+            handle_hook_result(pre_result, "close")
+        
         # Capture initial HEAD before any modifications
         initial_head = git.get_current_head(project_root)
         
@@ -618,6 +686,24 @@ def move_close(
                 rollback_transaction()
                 raise typer.Exit(code=1)
 
+        # Execute post-close hooks
+        if not no_hooks:
+            try:
+                post_context = build_hook_context(
+                    event=IssueEvent.POST_CLOSE,
+                    issue_id=issue_id,
+                    project_root=project_root,
+                    force=force,
+                    no_hooks=no_hooks,
+                    debug_hooks=debug_hooks,
+                    extra={"pruned_resources": pruned_resources},
+                )
+                post_result = execute_hooks(IssueEvent.POST_CLOSE, post_context, project_root)
+                if debug_hooks and post_result.message:
+                    logger.info(f"Post-close hook: {post_result.message}")
+            except Exception as hook_error:
+                logger.warning(f"Post-close hook execution failed: {hook_error}")
+        
         # Success: Clear transaction state as all operations completed
         OutputManager.print(
             {"issue": issue, "status": "closed", "pruned": pruned_resources}
