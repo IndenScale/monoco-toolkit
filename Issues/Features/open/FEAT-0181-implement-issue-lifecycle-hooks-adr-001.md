@@ -32,8 +32,10 @@ isolation: null
 1. **统一治理**：无论是 CLI 直接调用还是 Agent 触发，都遵循相同的准入（pre）和准出（post）规则。
 2. **逻辑解耦**：将分支上下文检查、Working Tree 状态验证、Lint 调用等非核心业务逻辑从 Issue 命令实现中抽离。
 3. **闭环反馈**：向 Agent 提供结构化的 Hook 失败建议（Suggestions），引导其自动修复问题。
+4. **命名对齐**：**强制要求**内部所有钩子事件命名严格遵循 Monoco ACL 统一协议中的 `pre/post` 规范（参考 `acl_unified_protocol_ZH.md`）。
 
 ## Acceptance Criteria
+- [ ] **命名一致性**：核心实现必须通过 `NamingACL` 映射逻辑，确保内部消费的事件主语（Session, Agent, Subagent, Tool, Issue）与 `pre/post` 动作严格对称，严禁在内部逻辑中直接透传 Agent 原生命名（如 `SessionStart`）。
 - [ ] **领域模型**：在 `monoco.core.issue` 中实现 `IssueEvent`, `HookDecision` 和 `IssueHookResult` 数据结构。
 - [ ] **核心分发器**：实现 `IssueHookDispatcher` 类，支持：
     - 加载内置 Hooks (位于 `monoco/hooks/issue/`)
