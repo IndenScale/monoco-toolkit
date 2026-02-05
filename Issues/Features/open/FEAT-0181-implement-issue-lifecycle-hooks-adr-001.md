@@ -22,10 +22,7 @@ files:
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-05T08:58:16'
-isolation:
-  type: branch
-  ref: FEAT-0181-implement-issue-lifecycle-hooks-adr-001
-  created_at: '2026-02-05T08:58:21'
+isolation: null
 ---
 
 ## FEAT-0181: Implement Issue Lifecycle Hooks (ADR-001)
