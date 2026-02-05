@@ -67,4 +67,21 @@ opened_at: '2026-02-05T08:58:16'
 
 ## Review Comments
 
+### Self Review (2026-02-05)
 
+**实现总结：**
+- ✅ 命名一致性：所有事件严格遵循 `pre/post` 规范，通过 `NamingACL` 映射 Agent 事件
+- ✅ 领域模型：`IssueEvent`, `HookDecision`, `IssueHookResult` 在 `monoco/features/issue/hooks/models.py` 中完整实现
+- ✅ 核心分发器：`IssueHookDispatcher` 支持内置 Hooks、用户自定义 Hooks，同步执行，支持 `deny` 阻断
+- ✅ CLI 集成：`start`, `submit`, `close` 命令已注入生命周期事件，支持 `--no-hooks` 和 `--debug-hooks`
+- ✅ Agent 桥接：`AgentToolAdapter` 实现命令拦截和钩子逻辑注入
+- ✅ 内置 Hooks：`pre-submit`, `post-start`, `pre-start`, `post-submit` 已实现
+- ✅ 单元测试：31 个测试用例全部通过
+
+**文件变更：**
+- 新增 `monoco/features/issue/hooks/` 模块（6 个文件）
+- 修改 `monoco/features/issue/commands.py` 集成 Hooks
+- 新增 `tests/test_issue_hooks.py` 测试文件
+
+**技术债务：**
+- Phase 5 文档更新待后续完成（GEMINI.md 和 issue_hooks.md）
