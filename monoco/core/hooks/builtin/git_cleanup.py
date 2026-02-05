@@ -2,7 +2,7 @@
 GitCleanupHook - Performs git cleanup operations when a session ends.
 
 This hook ensures that:
-1. Current branch is switched back to main (if safe)
+1. Current branch is switched back to Trunk (if safe)
 2. Feature branches are deleted if the associated issue is completed/merged
 """
 
@@ -20,9 +20,9 @@ class GitCleanupHook(SessionLifecycleHook):
     Hook for cleaning up git state when a session ends.
     
     Configuration options:
-        - auto_switch_to_main: Whether to automatically switch to main branch (default: True)
+        - auto_switch_to_trunk: Whether to automatically switch to Trunk branch (default: True)
         - auto_delete_merged_branches: Whether to delete merged feature branches (default: True)
-        - main_branch: Name of the main branch (default: "main", fallback: "master")
+        - trunk_branch: Name of the Trunk branch (default: "main", fallback: "master")
         - require_clean_worktree: Whether to require clean worktree before operations (default: True)
     """
 
@@ -30,9 +30,9 @@ class GitCleanupHook(SessionLifecycleHook):
         super().__init__(name=name or "git_cleanup", config=config)
         
         # Configuration with defaults
-        self.auto_switch_to_main = self.config.get("auto_switch_to_main", True)
+        self.auto_switch_to_trunk = self.config.get("auto_switch_to_trunk", self.config.get("auto_switch_to_main", True))
         self.auto_delete_merged_branches = self.config.get("auto_delete_merged_branches", False)
-        self.main_branch = self.config.get("main_branch", "main")
+        self.trunk_branch = self.config.get("trunk_branch", self.config.get("main_branch", "main"))
         self.require_clean_worktree = self.config.get("require_clean_worktree", True)
 
     def on_session_start(self, context: HookContext) -> HookResult:
@@ -49,7 +49,7 @@ class GitCleanupHook(SessionLifecycleHook):
         
         Performs cleanup operations:
         1. Check current git state
-        2. Switch to main branch if needed and safe
+        2. Switch to Trunk branch if needed and safe
         3. Delete feature branch if issue is completed
         """
         if not context.git:
@@ -73,9 +73,9 @@ class GitCleanupHook(SessionLifecycleHook):
             
             results = []
             
-            # Step 1: Switch to main branch if needed
-            if self.auto_switch_to_main and current_branch != default_branch:
-                switch_result = self._switch_to_main(
+            # Step 1: Switch to Trunk branch if needed
+            if self.auto_switch_to_trunk and current_branch != default_branch:
+                switch_result = self._switch_to_trunk(
                     project_root, current_branch, default_branch, has_changes
                 )
                 results.append(switch_result)
@@ -116,16 +116,16 @@ class GitCleanupHook(SessionLifecycleHook):
             return HookResult.failure(f"Git cleanup failed: {e}")
 
     def _get_default_branch(self, project_root) -> str:
-        """Determine the default branch (main or master)."""
+        """Determine the default branch (Trunk: main or master)."""
         from monoco.core import git
         
-        if git.branch_exists(project_root, self.main_branch):
-            return self.main_branch
+        if git.branch_exists(project_root, self.trunk_branch):
+            return self.trunk_branch
         elif git.branch_exists(project_root, "master"):
             return "master"
-        return self.main_branch
+        return self.trunk_branch
 
-    def _switch_to_main(
+    def _switch_to_trunk(
         self, 
         project_root, 
         current_branch: str, 
@@ -133,7 +133,7 @@ class GitCleanupHook(SessionLifecycleHook):
         has_changes: bool
     ) -> HookResult:
         """
-        Switch to the main branch if safe to do so.
+        Switch to the Trunk branch if safe to do so.
         
         Args:
             project_root: The project root path
