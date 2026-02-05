@@ -53,7 +53,10 @@ build/
 # Project Specific
 MemoryDaemon/
 .reference/
-.references/
+.references/*
+!.references/articles/
+.references/articles/*
+!.references/articles/template.md
 test.pdf
 .env
 .monoco/local_config.yaml

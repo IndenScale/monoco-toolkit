@@ -143,11 +143,72 @@ CLI 是所有工作流的通用接口的概念。Monoco 作为 shell 的智能�
 
 #### Spike (研究)
 
-管理外部参考仓库。
+管理外部参考仓库和知识文章。
 
-- **添加仓库**: `monoco spike add <url>` (在 `.reference/<name>` 中可读)
+**目录结构**:
+```
+.references/
+├── repos/                 # Git 仓库类型（完整 clone）
+│   ├── kimi-cli/
+│   ├── claude-code/
+│   └── ...
+└── articles/              # 知识文章类型
+    ├── template.md        # 文章模板（monoco init 注入）
+    ├── openai/            # 按来源组织
+    │   ├── introducing-frontier.md
+    │   └── zh/            # i18n 翻译目录
+    │       └── introducing-frontier.md
+    └── anthropic/
+        └── ...
+```
+
+**命名规范**:
+- 全部小写，kebab-case
+- 目录：`openai/`, `kimi-cli/`
+- 文件：`introducing-frontier.md`
+
+**命令**:
+- **添加仓库**: `monoco spike add <url>` (在 `.references/repos/<name>` 中可读)
 - **同步**: `monoco spike sync` (运行以下载内容)
-- **约束**: 永远不要编辑 `.reference/` 中的文件。将它们视为只读的外部知识。
+- **约束**: 永远不要编辑 `.references/` 中的文件。将它们视为只读的外部知识。
+
+**Article Front Matter**:
+```yaml
+---
+id: article-id          # 全局唯一标识符（kebab-case）
+title: Article Title    # 文章标题
+source: https://...     # 原始 URL
+date: 2024-01-01        # 发布日期（ISO 8601）
+type: article           # article/paper/report/doc/blog
+author: Author Name     # 作者（可选）
+language: en            # 语言代码：en/zh/ja（可选）
+company: Company        # 所属公司/组织（可选）
+domain: ["ai", "llm"]   # 领域分类（可选）
+tags: ["tag1"]          # 自由标签（可选）
+related_repos: []       # 关联的 repos 名称（可选）
+related_articles: []    # 关联的 articles id（可选）
+summary: |              # 内容摘要（可选，用于 RAG）
+  Article summary...
+---
+```
+
+**字段规范**:
+| 类别 | 字段 | 说明 | 必需 |
+| ---- | ---- | ---- | ---- |
+| 身份 | `id` | 全局唯一标识符（kebab-case） | ✓ |
+| 身份 | `title` | 文章标题 | ✓ |
+| 来源 | `source` | 原始 URL | ✓ |
+| 来源 | `date` | 发布日期（ISO 8601） | ✓ |
+| 来源 | `author` | 作者 | - |
+| 类型 | `type` | article/paper/report/doc/blog | ✓ |
+| i18n | `language` | 语言代码：en/zh/ja | - |
+| i18n | `translations` | 翻译版本映射 | - |
+| 治理 | `company` | 所属公司/组织 | - |
+| 治理 | `domain` | 领域分类（数组） | - |
+| 治理 | `tags` | 自由标签（数组） | - |
+| 关联 | `related_repos` | 关联的 repos 名称 | - |
+| 关联 | `related_articles` | 关联的 articles id | - |
+| 摘要 | `summary` | 内容摘要（用于 RAG） | - |
 
 ### Artifacts & Mailroom
 

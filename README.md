@@ -1,94 +1,96 @@
-# Monoco Distro
+# Monoco
 
 [![Version](https://img.shields.io/pypi/v/monoco-toolkit)](https://pypi.org/project/monoco-toolkit/)
 [![License](https://img.shields.io/github/license/IndenScale/Monoco)](LICENSE)
 
-> **The Headless Operating System for Agentic Engineering.**
+> **The First L3 Agentic Orchestration Platform.**
 >
-> Monoco is a **Linux-like Distribution** for AI Agents.
-> It provides the **Package Manager**, **Init System**, and **Policy Kit** that turns a raw LLM Kernel into a production-ready engineering workforce.
+> Monoco is a **Headless Operating System** designed to shift AI development from **L2 (Agents/Chatbots)** to **L3 (Autonomous Engineering Systems)**. It provides the governance, state management, and environment isolation required to turn raw LLM capabilities into a reliable, verifiable, and autonomous workforce.
 
 ---
 
-## 🐧 The "Distro" Metaphor
+## 🚀 Beyond the "Chat" Paradigm: The L3 Leap
 
-Monoco is built on a clear separation of concerns, inspired by the Linux ecosystem:
+While traditional AI tools (L2) focus on turn-based chat and "helpful assistants," Monoco orchestrates **Autonomous Sessions**.
 
-| Component   | In Linux      | In Monoco             | Responsibility                                                                                                             |
-| :---------- | :------------ | :-------------------- | :------------------------------------------------------------------------------------------------------------------------- |
-| **Kernel**  | Linux Kernel  | **Kimi CLI / Kosong** | The raw execution engine. Handles LLM prompts, tool execution, and process isolation.                                      |
-| **Distro**  | Ubuntu / Arch | **Monoco**            | The system manager. Orchestrates workflows, enforces policies, manages state (Issues), and installs capabilities (Skills). |
-| **Desktop** | GNOME / KDE   | **VSCode / Zed**      | The user interface. Connects to Monoco via standard protocols (LSP, ACP) to provide a visual experience.                   |
+| Feature         | L2: AI Agents (e.g. Cursor, Claude Code)   | L3: Autonomous Systems (Monoco)              | Value                |
+| :-------------- | :----------------------------------------- | :------------------------------------------- | :------------------- |
+| **Interaction** | **HITL**: Human-In-The-Loop (Step-by-step) | **HOTL**: Human-On-The-Loop (Batch/Async)    | **10x Productivity** |
+| **Quality**     | Subjective satisfaction (Chat-based)       | **Objective DoD** (Tests, Lints, Invariants) | **Reliability**      |
+| **State**       | Ephemeral context (Chat History)           | **Persistent Identity** (Issue Tickets)      | **Traceability**     |
+| **Environment** | Shared / Volatile                          | **Isolated / Sandboxed** (Worktrees)         | **Non-Interference** |
 
-## 🌟 Core Philosophy
+---
 
-### 1. Headless & Protocol-First
+## 🌩️ The "Distro" Metaphor
 
-Monoco is designed to run silently in the background. It doesn't fight for your attention with a chat window. Instead, it exposes its state via **LSP (Language Server Protocol)** and **ACP (Agent Client Protocol)**, allowing your favorite IDEs to become "Agent-Native".
+Monoco acts as a **Distribution**, bridging the gap between raw intelligence and industrial-grade engineering.
 
-### 2. Issue is the Unit of Work
+- **LLM Kernel**: The raw reasoning engine (Kimi, Gemini, Claude).
+- **Monoco Distro**: The orchestration layer providing the **Init System** (Issue Lifecycle), **Package Manager** (Skills), and **Security Policy** (Guardrails).
+- **Client/DE**: Your IDE (VSCode, Zed) interacting via standard protocols (**LSP**, **ACP**).
 
-Just as `systemd` manages Units, Monoco manages **Issues**.
-An Issue is not just a text file; it is a stateful object that defines the lifecycle of a task. The Agent cannot "freelance"—it must be assigned to an active Issue.
+---
 
-### 3. Governance as Code
+## 🛡️ Core Pillars
 
-Monoco acts as the "Policy Kit" for your AI workforce.
+### 1. Objective Definition of Done (DoD)
 
-- **Guardrails**: Prevent destructive actions.
-- **Verification**: Enforce linting and tests before submission.
-- **Audit**: Log every decision and tool call.
+In Monoco, a task is not "finished" when the AI says so. It is finished when the **System Invariants** are met: all tests pass, the linter is silent, and the implementation matches the Issue's acceptance criteria.
 
-## 🚀 Quick Start
+### 2. Issue-Driven Development (TDD for Agents)
 
-### 1. Installation
+Monoco treats **Issues as Units of Work**. Just as `systemd` manages system units, Monoco manages the lifecycle of an engineering task—from `open` to `close`, ensuring no "freelancing" and absolute traceability.
 
-Install the Monoco Distro via pip:
+### 3. Isolated Sovereignty
+
+Monoco creates dedicated, isolated environments (Branches/Worktrees) for every task. This ensures the AI never pollutes your local state or clashes with human developers.
+
+### 4. Governance as Code
+
+Policies are not just prompts; they are **governed by code**. Monoco enforces Git hooks, CI/CD gates, and automated audits to ensure the workforce adheres to your project's technical standards.
+
+---
+
+## 🏁 Quick Start
+
+### 1. Install the Distro
 
 ```bash
 pip install monoco-toolkit
 ```
 
-### 2. Initialize System
+### 2. Initialize Workspace
 
-Turn your project into a Monoco-managed workspace:
+Transform any repository into a Monoco-managed autonomous engineering environment.
 
 ```bash
 monoco init
 ```
 
-### 3. Sync Kernel
+### 3. Sync Policies
 
-Inject Monoco's policies into your Agent Kernel (e.g., Kimi CLI configuration):
+Inject your project's governance and standards into the Agent's constitution.
 
 ```bash
 monoco sync
 ```
 
-### 4. Start a Session
+### 4. Orchestrate
 
-Launch the Monoco Daemon to begin orchestrating work:
+Start the daemon to monitor the collaboration bus and schedule agent tasks.
 
 ```bash
 monoco session start
 ```
 
-## 🛠️ Tech Stack & Architecture
+---
 
-- **Kernel Interface**: Python (Interfacing with Kimi/Kosong)
-- **Distro Logic**: Python (State Management, Issue Tracking)
-- **Protocols**: LSP / ACP (for IDE integration)
-- **Storage**: Local Filesystem (Markdown/YAML)
+## 🛠️ Architecture
 
-## 📁 Project Structure
-
-Monoco follows a "Distro" architecture that separates **State** (`Issues/`), **Config** (`.monoco/`), and **Logic** (`monoco/`).
-
-For a detailed breakdown of the directory structure, see **[TREE.md](./TREE.md)**.
-
-## 🤝 Contributing
-
-Monoco is open-source. We are building the standard distribution for the Agentic era.
+- **State Engine**: Markdown/YAML-based persistence (No heavy DB required).
+- **Communication**: Event-driven architecture via local file system events.
+- **Protocols**: Native support for **LSP** (Language Server) and **ACP** (Agent Client Protocol).
 
 ## 📄 License
 
