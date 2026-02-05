@@ -16,6 +16,7 @@ class PromptInjector:
     FILE_HEADER_COMMENT = """<!--
 ⚠️ IMPORTANT: This file is partially managed by Monoco.
 - Content between MONOCO_GENERATED_START and MONOCO_GENERATED_END is auto-generated.
+- Use `monoco sync` to refresh this content.
 - Do NOT manually edit the managed block.
 - Do NOT add content after MONOCO_GENERATED_END (use separate files instead).
 -->
@@ -110,14 +111,35 @@ class PromptInjector:
                 clean_content = clean_content[match.end() :].strip()
             
             # Demote headers in content to be below ### (so start at ####)
-            # We assume the content headers start at # or ##. 
-            # We map # -> ####, ## -> #####, etc. (+3 offset)
-            demoted_content = []
-            for line in clean_content.splitlines():
-                if line.lstrip().startswith("#"):
-                    demoted_content.append("###" + line)
-                else:
-                    demoted_content.append(line)
+            # Find the minimum header level in the source content to calculate shift
+            header_lines = [line for line in clean_content.splitlines() if line.lstrip().startswith("#")]
+            min_level = 99
+            for line in header_lines:
+                match = re.match(r"^(#+)\s", line.lstrip())
+                if match:
+                    min_level = min(min_level, len(match.group(1)))
+            
+            if min_level == 99:
+                # No headers found, just use splitlines
+                demoted_content = clean_content.splitlines()
+            else:
+                # Shift so that min_level maps to level 4
+                shift = 4 - min_level
+                demoted_content = []
+                for line in clean_content.splitlines():
+                    stripped_line = line.lstrip()
+                    if stripped_line.startswith("#"):
+                        # Use regex to separate hashes from the rest of the line
+                        match = re.match(r"^(#+)(.*)", stripped_line)
+                        if match:
+                            hashes, rest = match.groups()
+                            # Apply shift, ensuring minimum level is 1
+                            new_level = max(1, len(hashes) + shift)
+                            demoted_content.append("#" * new_level + rest)
+                        else:
+                            demoted_content.append(line)
+                    else:
+                        demoted_content.append(line)
             
             managed_block.append("\n".join(demoted_content))
             managed_block.append("")  # Blank line after section
