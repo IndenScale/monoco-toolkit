@@ -36,8 +36,8 @@ def version_callback(value: bool):
 
         try:
             # Look for pyproject.toml relative to this file
-            # monoco/main.py -> ../pyproject.toml
-            pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
+            # src/monoco/main.py -> ../../pyproject.toml
+            pyproject_path = Path(__file__).parent.parent.parent / "pyproject.toml"
             if pyproject_path.exists():
                 with open(pyproject_path, "r", encoding="utf-8") as f:
                     for line in f:
