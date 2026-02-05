@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Document Principles of Agentic System
 created_at: '2026-02-05T16:09:58'
-updated_at: '2026-02-05T16:10:22'
+updated_at: '2026-02-05T16:11:30'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -24,6 +24,7 @@ files:
 - docs/zh/99_Reference/Principles of Agentic System/04_Loop.md
 - docs/zh/99_Reference/Principles of Agentic System/README.md
 - docs/zh/99_Reference/Provider_Integration.md
+- monoco/features/issue/hooks/builtin/__init__.py
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-05T16:09:58'
