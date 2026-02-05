@@ -62,7 +62,7 @@ Running `monoco issue lint` checks:
 1.  **Completeness**: Are required fields (like `title`) missing? Are `Technical Tasks` missing?
 2.  **Consistency**: Do the filename, ID, and Heading match?
 3.  **Compliance**: For `Closed` issues, are all checkboxes completed? Are there unresolved `Review Comments`?
-4.  **Environment Policy**: Is code being modified on the main branch by mistake?
+4.  **Environment Policy**: Is code being modified on the Trunk by mistake?
 
 Only an Issue that passes Lint is considered **"executable."**
 

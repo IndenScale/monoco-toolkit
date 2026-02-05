@@ -70,7 +70,7 @@ _This file is the root configuration for the Monoco Agent. Read `.agent/GLOSSARY
 
 ###### Monoco 核心
 
-项目管理的核心工具包命令。
+项目管理的核心工具包命令。遵循 **Trunk Based Development (TBD)** 模式。
 
 - **初始化**: `monoco init` (初始化新的 Monoco 项目)
 - **配置**: `monoco config get|set <key> [value]` (管理配置)
@@ -79,34 +79,36 @@ _This file is the root configuration for the Monoco Agent. Read `.agent/GLOSSARY
 
 ---
 
-##### ⚠️ Agent 必读: Git 工作流
+##### ⚠️ Agent 必读: Git 工作流协议 (Trunk-Branch)
 
 在修改任何代码前,**必须**遵循以下步骤:
 
 ###### 标准流程
 
 1. **创建 Issue**: `monoco issue create feature -t "功能标题"`
-2. **🔒 启动隔离环境**: `monoco issue start FEAT-XXX --branch`
-   - ⚠️ **强制要求** `--branch` 参数
-   - ❌ 禁止在 `main`/`master` 分支直接修改代码
+2. **🔒 启动 Branch**: `monoco issue start FEAT-XXX --branch`
+   - ⚠️ **强制要求隔离**: 使用 `--branch` 或 `--worktree` 参数
+   - ❌ **严禁操作 Trunk**: 禁止在 Trunk (`main`/`master`) 分支直接修改代码
 3. **实现功能**: 正常编码和测试
 4. **同步文件**: `monoco issue sync-files` (提交前必须运行)
 5. **提交审查**: `monoco issue submit FEAT-XXX`
-6. **关闭 Issue**: `monoco issue close FEAT-XXX --solution implemented`
+6. **合拢至 Trunk**: `monoco issue close FEAT-XXX --solution implemented`
 
 ###### 质量门禁
 
 - Git Hooks 会自动运行 `monoco issue lint` 和测试
 - 不要使用 `git commit --no-verify` 绕过检查
-- Linter 会阻止在受保护分支上的直接修改
+- Linter 会阻止在受保护的 Trunk 分支上的直接修改
 
 > 📖 详见 `monoco-issue` skill 获取完整工作流文档。
 
 ### Issue Management
 
-#### Issue 管理
+#### Issue 管理 & Trunk Based Development
 
-使用 `monoco issue` 管理任务。
+Monoco 遵循 **Trunk Based Development (TBD)** 模式。所有的开发工作都在短平快的分支（Branch）中进行，并最终合并回干线（Trunk）。
+
+使用 `monoco issue` 管理任务生命周期。
 
 - **创建**: `monoco issue create <type> -t "标题"`
 - **状态**: `monoco issue open|close|backlog <id>`
@@ -115,21 +117,21 @@ _This file is the root configuration for the Monoco Agent. Read `.agent/GLOSSARY
 - **上下文同步**: `monoco issue sync-files [id]`
 - **结构**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (如 `Issues/Features/open/`)
 
-##### 标准工作流
+##### 标准工作流 (Trunk-Branch)
 
-1. **创建**: `monoco issue create feature -t "标题"`
-2. **启动**: `monoco issue start FEAT-XXX --branch`
-3. **实现**: 正常编码与测试。
-4. **同步**: `monoco issue sync-files` (更新 `files` 字段)。
-5. **提交**: `monoco issue submit FEAT-XXX`。
-6. **合规合并**: `monoco issue close FEAT-XXX --solution implemented` (合并到主线的唯一途径)。
+1. **创建 Issue**: `monoco issue create feature -t "标题"`
+2. **开启 Branch**: `monoco issue start FEAT-XXX --branch` (隔离环境)
+3. **实现功能**: 正常编码与测试。
+4. **同步变更**: `monoco issue sync-files` (更新 `files` 字段)。
+5. **提交审查**: `monoco issue submit FEAT-XXX`。
+6. **合并至 Trunk**: `monoco issue close FEAT-XXX --solution implemented` (进入 Trunk 的唯一途径)。
 
 ##### Git 合并策略
 
-- **禁止手动合并**: 严禁在 `main`/`master` 分支执行 `git merge` 或直接 `git pull`。
-- **原子合并**: `monoco issue close` 仅根据 Issue 的 `files` 列表合并变更。
+- **禁止手动操作 Trunk**: 严禁在 Trunk (`main`/`master`) 分支直接执行 `git merge` 或 `git pull`。
+- **原子合并**: `monoco issue close` 仅根据 Issue 的 `files` 列表将变更从 Branch 合并至 Trunk。
 - **冲突处理**: 若产生冲突，请遵循 `close` 命令产生的指引进行手动 Cherry-Pick。
-- **清理策略**: `monoco issue close` 默认执行清理（删除分支/Worktree）。需保留请指定 `--no-prune`。
+- **清理策略**: `monoco issue close` 默认执行清理（删除 Branch/Worktree）。
 
 ### Memo (Fleeting Notes)
 
@@ -171,15 +173,17 @@ _This file is the root configuration for the Monoco Agent. Read `.agent/GLOSSARY
 
 ######## 核心架构隐喻: "Linux 发行版"
 
-| 术语 | 定义 | 隐喻 |
-| :--- | :--- | :--- |
-| **Monoco** | 智能体操作系统发行版。管理策略、工作流和包系统。 | **发行版** (如 Ubuntu, Arch) |
-| **Kimi CLI** | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。 | **内核** (Linux Kernel) |
-| **Session** | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。 | **初始化系统/守护进程** (systemd) |
-| **Issue** | 具有状态（Open/Done）和严格生命周期的原子工作单元。 | **单元文件** (systemd unit) |
-| **Skill** | 扩展智能体功能的工具、提示词和流程包。 | **软件包** (apt/pacman package) |
-| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。 | **配置** (`/etc/config`) |
-| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。 | **桌面环境** (GNOME/KDE) |
+| 术语             | 定义                                                                     | 隐喻                              |
+| :--------------- | :----------------------------------------------------------------------- | :-------------------------------- |
+| **Monoco**       | 智能体操作系统发行版。管理策略、工作流和包系统。                         | **发行版** (如 Ubuntu, Arch)      |
+| **Kimi CLI**     | 核心运行时执行引擎。处理 LLM 交互、工具执行和进程管理。                  | **内核** (Linux Kernel)           |
+| **Session**      | 由 Monoco 管理的智能体内核初始化实例。具有状态和上下文。                 | **初始化系统/守护进程** (systemd) |
+| **Issue**        | 具有状态（Open/Done）和严格生命周期的原子工作单元。                      | **单元文件** (systemd unit)       |
+| **Skill**        | 扩展智能体功能的工具、提示词和流程包。                                   | **软件包** (apt/pacman package)   |
+| **Context File** | 定义环境规则和行为偏好的配置文件（如 `GEMINI.md`, `AGENTS.md`）。        | **配置** (`/etc/config`)          |
+| **Agent Client** | 连接 Monoco 的用户界面（CLI, VSCode, Zed）。                             | **桌面环境** (GNOME/KDE)          |
+| **Trunk**        | 稳定的主干代码流（通常是 `main` 或 `master` 分支）。所有功能的最终归宿。 | **主干/干线**                     |
+| **Branch**       | 为解决特定 Issue 而开启的临时隔离开发环境。                              | **分支**                          |
 
 ######## 关键概念
 

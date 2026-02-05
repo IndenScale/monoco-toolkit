@@ -19,7 +19,7 @@ Monoco defines a strict, closed-loop lifecycle to ensure every task has a beginn
 - **Key Changes**:
   - Stage changes to `Doing`.
   - **Physical Isolation**: Automatically creates `feat/FEAT-XXX` branch.
-  - **Environment Policy**: From this point on, all code modifications must happen on this branch. The main branch becomes read-only.
+  - **Environment Policy**: From this point on, all code modifications must happen on this branch. The Trunk becomes read-only.
 
 ### 3. Execution & Tracking
 
@@ -28,7 +28,7 @@ Monoco defines a strict, closed-loop lifecycle to ensure every task has a beginn
 - **Micro-Loop**:
   1.  Agent modifies code.
   2.  **Sync**: Run `monoco issue sync-files`.
-      - Compares `Current Branch` vs `Main Branch`.
+      - Compares `Branch` vs `Trunk`.
       - Automatically updates the `files: [...]` list in the Issue Frontmatter.
   3.  Agent checks off `Technical Tasks` in the Body (`[ ]` -> `[x]`).
 
@@ -60,8 +60,8 @@ Monoco defines a strict, closed-loop lifecycle to ensure every task has a beginn
 
 To maintain the integrity of the loop, the Linter enforces the following policies:
 
-- **Dirty Main Protection**: Modifying code directly on `main`, `master`, or `production` branches is strictly prohibited.
-  - If the Linter finds uncommitted changes on the main branch, it will **throw an error and block operations**.
+- **Dirty Trunk Protection**: Modifying code directly on Trunk (`main`, `master`, or `production`) is strictly prohibited.
+  - If the Linter finds uncommitted changes on the Trunk, it will **throw an error and block operations**.
   - **Solution**: `git stash` -> `monoco issue start --branch` -> `git stash pop`.
 
 ---
