@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['monoco/main.py'],
+    ['src/monoco/main.py'],
     pathex=[],
     binaries=[],
     datas=[],

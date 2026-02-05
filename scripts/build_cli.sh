@@ -10,7 +10,7 @@ export PYINSTALLER_CONFIG_DIR="$(pwd)/build/pyinstaller_config"
 # Create directories
 mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$PYINSTALLER_CONFIG_DIR"
 
-SRC_DIR="monoco"
+SRC_DIR="src/monoco"
 DIST_FILE="dist/monoco"
 HASH_FILE="build/monoco.hash"
 
@@ -51,7 +51,7 @@ uv run --with pyinstaller pyinstaller \
     --distpath ./dist \
     --workpath ./build \
     --specpath ./build \
-    monoco/main.py
+    src/monoco/main.py
 
 echo "Build complete. Binary is at Toolkit/dist/monoco"
 echo "$COMBINED_HASH" > "$HASH_FILE"
