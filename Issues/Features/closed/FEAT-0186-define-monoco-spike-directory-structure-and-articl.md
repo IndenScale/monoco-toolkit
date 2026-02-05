@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Define monoco spike directory structure and article template
 created_at: '2026-02-06T04:55:44'
-updated_at: '2026-02-06T05:06:22'
+updated_at: 2026-02-06 05:06:22
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -28,10 +28,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-06T04:55:44'
 closed_at: '2026-02-06T05:06:22'
-isolation:
-  type: branch
-  ref: FEAT-0186-define-monoco-spike-directory-structure-and-articl
-  created_at: '2026-02-06T05:02:54'
 ---
 
 ## FEAT-0186: Define monoco spike directory structure and article template
