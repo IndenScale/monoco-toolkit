@@ -9,7 +9,7 @@ class PromptInjector:
     Maintains a 'Managed Block' defined by a specific header.
     """
 
-    MANAGED_HEADER = "## Monoco Toolkit"
+    MANAGED_HEADER = "## Monoco"
     MANAGED_START = "<!-- MONOCO_GENERATED_START -->"
     MANAGED_END = "<!-- MONOCO_GENERATED_END -->"
 

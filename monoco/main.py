@@ -21,7 +21,7 @@ def get_feature_loader() -> FeatureLoader:
 
 app = typer.Typer(
     name="monoco",
-    help="Monoco Agent Native Toolkit",
+    help="The Headless Operating System for Agentic Engineering",
     add_completion=False,
     no_args_is_help=True,
 )
@@ -53,7 +53,7 @@ def version_callback(value: bool):
             # Fallback
             pass
 
-        print(f"Monoco Toolkit v{version}")
+        print(f"Monoco v{version}")
         raise typer.Exit()
 
 
@@ -73,7 +73,7 @@ def main(
     ),
 ):
     """
-    Monoco Toolkit - The sensory and motor system for Monoco Agents.
+    Monoco - The sensory and motor system for Monoco Agents.
     """
     # Capture command execution
     from monoco.core.telemetry import capture_event
@@ -179,7 +179,7 @@ def info():
         project=f"{settings.project.name} ({settings.project.key})",
     )
 
-    print_output(status, title="Monoco Toolkit Status")
+    print_output(status, title="Monoco Status")
 
     if mode == "Human (Rich)":
         print_output(settings, title="Current Configuration")

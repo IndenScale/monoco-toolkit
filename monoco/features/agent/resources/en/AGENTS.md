@@ -1,6 +1,6 @@
 ### Monoco Core
 
-Core toolkit commands for project management. Follows the **Trunk Based Development (TBD)** pattern.
+Core commands for project management. Follows the **Trunk Based Development (TBD)** pattern.
 
 - **Init**: `monoco init` (Initialize a new Monoco project)
 - **Config**: `monoco config get|set <key> [value]` (Manage configuration)

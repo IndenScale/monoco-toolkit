@@ -40,7 +40,7 @@ Monoco follows an **Issue-Driven Development** process.
 
 ### For Maintainers
 
-Monoco Toolkit uses **automated publishing** to PyPI via GitHub Actions.
+Monoco uses **automated publishing** to PyPI via GitHub Actions.
 
 #### 1. Update Version
 
