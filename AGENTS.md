@@ -7,7 +7,8 @@
 -->
 
 <!-- MONOCO_GENERATED_START -->
-## Monoco Toolkit
+
+## Monoco
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
 
@@ -15,7 +16,7 @@
 
 #### Monoco 核心
 
-项目管理的核心工具包命令。遵循 **Trunk Based Development (TBD)** 模式。
+项目管理的核心命令。遵循 **Trunk Based Development (TBD)** 模式。
 
 - **初始化**: `monoco init` (初始化新的 Monoco 项目)
 - **配置**: `monoco config get|set <key> [value]` (管理配置)
