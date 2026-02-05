@@ -35,14 +35,14 @@ class TestIssueEvent:
     
     def test_issue_lifecycle_events(self):
         """Test that all lifecycle events follow pre/post naming."""
-        assert IssueEvent.PRE_CREATE.value == "pre-create"
-        assert IssueEvent.POST_CREATE.value == "post-create"
-        assert IssueEvent.PRE_START.value == "pre-start"
-        assert IssueEvent.POST_START.value == "post-start"
-        assert IssueEvent.PRE_SUBMIT.value == "pre-submit"
-        assert IssueEvent.POST_SUBMIT.value == "post-submit"
-        assert IssueEvent.PRE_CLOSE.value == "pre-close"
-        assert IssueEvent.POST_CLOSE.value == "post-close"
+        assert IssueEvent.PRE_CREATE.value == "pre-issue-create"
+        assert IssueEvent.POST_CREATE.value == "post-issue-create"
+        assert IssueEvent.PRE_START.value == "pre-issue-start"
+        assert IssueEvent.POST_START.value == "post-issue-start"
+        assert IssueEvent.PRE_SUBMIT.value == "pre-issue-submit"
+        assert IssueEvent.POST_SUBMIT.value == "post-issue-submit"
+        assert IssueEvent.PRE_CLOSE.value == "pre-issue-close"
+        assert IssueEvent.POST_CLOSE.value == "post-issue-close"
     
     def test_all_events_are_canonical(self):
         """Test that all events follow canonical pre/post naming."""
@@ -114,8 +114,8 @@ class TestNamingACL:
     
     def test_is_canonical(self):
         """Test canonical naming detection."""
-        assert NamingACL.is_canonical("pre-start") == True
-        assert NamingACL.is_canonical("post-submit") == True
+        assert NamingACL.is_canonical("pre-issue-start") == True
+        assert NamingACL.is_canonical("post-issue-submit") == True
         assert NamingACL.is_canonical("PreToolUse") == False
         assert NamingACL.is_canonical("random-event") == False
 
@@ -434,7 +434,7 @@ class TestIntegration:
         pre_result = dispatcher.execute(IssueEvent.PRE_START, pre_context)
         
         assert pre_result.decision == HookDecision.ALLOW
-        assert execution_log[0]["event"] == "pre-start"
+        assert execution_log[0]["event"] == "pre-issue-start"
         
         # Execute post-start
         post_context = IssueHookContext(
@@ -444,3 +444,5 @@ class TestIntegration:
         post_result = dispatcher.execute(IssueEvent.POST_START, post_context)
         
         assert post_result.decision == HookDecision.ALLOW
+        assert execution_log[1]["event"] == "post-issue-start"
+        assert execution_log[1]["event"] == "post-issue-start"

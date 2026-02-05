@@ -24,22 +24,22 @@ class IssueEvent(str, Enum):
     prefixes. This ensures internal consistency regardless of external Agent naming.
     """
     # Issue Lifecycle
-    PRE_CREATE = "pre-create"
-    POST_CREATE = "post-create"
-    PRE_START = "pre-start"
-    POST_START = "post-start"
-    PRE_SUBMIT = "pre-submit"
-    POST_SUBMIT = "post-submit"
-    PRE_CLOSE = "pre-close"
-    POST_CLOSE = "post-close"
+    PRE_CREATE = "pre-issue-create"
+    POST_CREATE = "post-issue-create"
+    PRE_START = "pre-issue-start"
+    POST_START = "post-issue-start"
+    PRE_SUBMIT = "pre-issue-submit"
+    POST_SUBMIT = "post-issue-submit"
+    PRE_CLOSE = "pre-issue-close"
+    POST_CLOSE = "post-issue-close"
     
     # Additional lifecycle events
-    PRE_OPEN = "pre-open"
-    POST_OPEN = "post-open"
-    PRE_CANCEL = "pre-cancel"
-    POST_CANCEL = "post-cancel"
-    PRE_DELETE = "pre-delete"
-    POST_DELETE = "post-delete"
+    PRE_OPEN = "pre-issue-open"
+    POST_OPEN = "post-issue-open"
+    PRE_CANCEL = "pre-issue-cancel"
+    POST_CANCEL = "post-issue-cancel"
+    PRE_DELETE = "pre-issue-delete"
+    POST_DELETE = "post-issue-delete"
 
 
 class AgnosticAgentEvent(str, Enum):

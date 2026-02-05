@@ -67,24 +67,42 @@ def pre_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
             suggestions=["Check the issue file format"]
         )
     
-    suggestions = []
+    # NEW logic: Auto-sync files before validation
+    try:
+        from monoco.features.issue.core import sync_issue_files
+        sync_issue_files(issues_root, issue_id, project_root)
+    except Exception as e:
+        # Warning only, don't block
+        logger.warning(f"Auto-sync failed in pre-submit hook: {e}")
+
+    # NEW logic: Execute Lint Check
+    diagnostics = check_integrity(issues_root, recursive=False)
+    # Filter diagnostics for this specific issue
+    issue_diags = [d for d in diagnostics if d.source == issue_id]
     
-    # Check if acceptance criteria are complete
-    # This would require parsing the issue body
-    # For now, we do a basic check
-    
-    # Check files synchronization
-    # Auto-sync is handled by the submit command, but we verify
-    if not issue.files:
-        suggestions.append("No files tracked for this issue. Consider running 'monoco issue sync-files'")
-    
-    if suggestions:
-        return IssueHookResult.warn(
-            "Pre-submit checks produced warnings",
-            suggestions=suggestions
+    if issue_diags:
+        from ..models import Diagnostic as HookDiagnostic
+        hook_diags = [
+            HookDiagnostic(
+                line=d.range.start.line + 1 if d.range else None,
+                message=d.message,
+                severity="error" if d.severity.value <= 2 else "warning"
+            ) for d in issue_diags
+        ]
+        return IssueHookResult.deny(
+            f"Issue {issue_id} failed lint validation",
+            diagnostics=hook_diags,
+            suggestions=[
+                "Run 'monoco issue lint --fix' to solve common issues",
+                "Ensure all mandatory fields are filled"
+            ]
         )
+
+    suggestions = []
+    if not issue.files:
+        suggestions.append("No files tracked for this issue. This might be a mistake if code changes were made.")
     
-    return IssueHookResult.allow("Pre-submit checks passed")
+    return IssueHookResult.allow("Pre-submit checks (sync & lint) passed")
 
 
 def post_start_hook(context: "IssueHookContext") -> "IssueHookResult":
@@ -147,7 +165,18 @@ def post_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
     - Provide next steps
     """
     from ..models import IssueHookResult
+    from monoco.features.issue.core import generate_delivery_report
     
+    project_root = context.project_root
+    issues_root = project_root / "Issues"
+    
+    report_status = "generated"
+    try:
+        generate_delivery_report(issues_root, context.issue_id, project_root)
+    except Exception as e:
+        report_status = f"failed: {e}"
+        logger.warning(f"Failed to generate delivery report in post-submit: {e}")
+
     suggestions = [
         "Wait for review feedback",
         "Address any review comments",
@@ -155,11 +184,12 @@ def post_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
     ]
     
     return IssueHookResult.allow(
-        "Issue submitted for review",
+        f"Issue submitted for review (Report: {report_status})",
         suggestions=suggestions,
         context={
             "issue_id": context.issue_id,
             "stage": "review",
+            "report": report_status
         }
     )
 
@@ -175,7 +205,7 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
     
     # Register pre-submit hook
     dispatcher.register_callable(
-        name="builtin.pre-submit",
+        name="builtin.pre-issue-submit",
         events=[IssueEvent.PRE_SUBMIT],
         fn=pre_submit_hook,
         priority=10,
@@ -183,7 +213,7 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
     
     # Register pre-start hook
     dispatcher.register_callable(
-        name="builtin.pre-start",
+        name="builtin.pre-issue-start",
         events=[IssueEvent.PRE_START],
         fn=pre_start_hook,
         priority=10,
@@ -191,7 +221,7 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
     
     # Register post-start hook
     dispatcher.register_callable(
-        name="builtin.post-start",
+        name="builtin.post-issue-start",
         events=[IssueEvent.POST_START],
         fn=post_start_hook,
         priority=100,
@@ -199,7 +229,7 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
     
     # Register post-submit hook
     dispatcher.register_callable(
-        name="builtin.post-submit",
+        name="builtin.post-issue-submit",
         events=[IssueEvent.POST_SUBMIT],
         fn=post_submit_hook,
         priority=100,
