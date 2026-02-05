@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Implement Issue Lifecycle Hooks (ADR-001)
 created_at: '2026-02-05T08:58:16'
-updated_at: '2026-02-05T09:25:22'
+updated_at: '2026-02-05T09:25:29'
 parent: EPIC-0000
 dependencies: []
 related: []
