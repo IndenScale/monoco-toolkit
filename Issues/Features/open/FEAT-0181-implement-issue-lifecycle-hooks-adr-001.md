@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Implement Issue Lifecycle Hooks (ADR-001)
 created_at: '2026-02-05T08:58:16'
-updated_at: '2026-02-05T09:10:20'
+updated_at: 2026-02-05 09:10:21
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -20,8 +20,13 @@ files:
 - docs/zh/98_ADRs/ADR-001-issue-lifecycle-hooks.md
 - docs/zh/98_ADRs/ADR-002-lint-error-collection-strategy.md
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-05T08:58:16'
+isolation:
+  type: branch
+  ref: FEAT-0181-implement-issue-lifecycle-hooks-adr-001
+  path: null
+  created_at: '2026-02-05T09:10:21'
 ---
 
 ## FEAT-0181: Implement Issue Lifecycle Hooks (ADR-001)
