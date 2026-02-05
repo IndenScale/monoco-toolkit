@@ -1,4 +1,4 @@
-### Monoco 核心
+## Monoco 核心
 
 项目管理的核心工具包命令。遵循 **Trunk Based Development (TBD)** 模式。
 

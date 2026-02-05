@@ -1,4 +1,4 @@
-# Issue 管理 & Trunk Based Development
+## Issue 管理 & Trunk Based Development
 
 Monoco 遵循 **Trunk Based Development (TBD)** 模式。所有的开发工作都在短平快的分支（Branch）中进行，并最终合并回干线（Trunk）。
 
