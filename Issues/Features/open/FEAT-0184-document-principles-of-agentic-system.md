@@ -36,24 +36,17 @@ isolation:
 ## FEAT-0184: Document Principles of Agentic System
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+Document the core principles of the Agentic System, including Definition, DoD, Milestone, Invariance, and the Agentic Loop.
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+- [x] Create and organize documented files in `docs/zh/99_Reference/Principles of Agentic System/`.
+- [x] Remove legacy documentation files (`Architecture_Deep_Dive.md`, `Provider_Integration.md`).
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
-
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
-- [ ] Task 1
+- [x] Draft documentation for each core principle.
+- [x] Organize files into the new directory structure.
+- [x] Clean up legacy files.
+- [x] Sync changes with Monoco Issue FEAT-0184.
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- All documents reviewed and organized.
