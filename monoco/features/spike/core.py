@@ -69,7 +69,7 @@ def ensure_gitignore(root: Path, target_dir_name: str):
 
 def sync_repo(root: Path, spikes_dir: Path, name: str, url: str):
     """Clone or Pull a repo."""
-    target_path = spikes_dir / name
+    target_path = spikes_dir / "repos" / name
 
     if target_path.exists() and (target_path / ".git").exists():
         console.print(f"Updating [bold]{name}[/bold]...")
@@ -90,7 +90,7 @@ def sync_repo(root: Path, spikes_dir: Path, name: str, url: str):
 
 def remove_repo_dir(spikes_dir: Path, name: str):
     """Physically remove the repo directory."""
-    target_path = spikes_dir / name
+    target_path = spikes_dir / "repos" / name
 
     if target_path.exists():
         shutil.rmtree(target_path)

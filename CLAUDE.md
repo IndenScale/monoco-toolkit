@@ -170,7 +170,22 @@ CLI 是所有工作流的通用接口的概念。Monoco 作为 shell 的智能�
 **命令**:
 - **添加仓库**: `monoco spike add <url>` (在 `.references/repos/<name>` 中可读)
 - **同步**: `monoco spike sync` (运行以下载内容)
+- **移除仓库**: `monoco spike remove <name>` (从配置中移除仓库)
+- **列表**: `monoco spike list` (显示已配置的仓库)
+- **检查**: `monoco spike lint` (检查目录结构和文章格式)
 - **约束**: 永远不要编辑 `.references/` 中的文件。将它们视为只读的外部知识。
+
+**Lint 检查规则**:
+
+| 规则 | 说明 | 严重程度 |
+| ---- | ---- | -------- |
+| `structure` | 检查 `repos/`、`articles/` 目录和 `template.md` 是否存在 | Error |
+| `naming` | 检查目录和文件名是否为 kebab-case | Warning |
+| `front-matter` | 检查文章是否包含有效的 YAML front matter | Error |
+| `required-field` | 检查必填字段：`id`、`title`、`source`、`date`、`type` | Error |
+| `unknown-value` | 列出所有值为 `UNKNOWN` 的字段 | Warning |
+| `id-unique` | 检查 `id` 字段是否全局唯一 | Error |
+| `link-valid` | 检查 `related_repos` 和 `related_articles` 指向存在的内容 | Warning |
 
 **Article Front Matter**:
 ```yaml
