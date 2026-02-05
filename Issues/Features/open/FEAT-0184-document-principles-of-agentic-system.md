@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Document Principles of Agentic System
 created_at: '2026-02-05T16:09:58'
-updated_at: 2026-02-05 16:10:05
+updated_at: '2026-02-05T16:10:22'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,14 +14,22 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0184'
-files: []
+files:
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- docs/zh/99_Reference/Architecture_Deep_Dive.md
+- docs/zh/99_Reference/Principles of Agentic System/00_Definition.md
+- docs/zh/99_Reference/Principles of Agentic System/01_DoD.md
+- docs/zh/99_Reference/Principles of Agentic System/02_Milestone.md
+- docs/zh/99_Reference/Principles of Agentic System/03_Invariance.md
+- docs/zh/99_Reference/Principles of Agentic System/04_Loop.md
+- docs/zh/99_Reference/Principles of Agentic System/README.md
+- docs/zh/99_Reference/Provider_Integration.md
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-05T16:09:58'
 isolation:
   type: branch
   ref: FEAT-0184-document-principles-of-agentic-system
-  path: null
   created_at: '2026-02-05T16:10:05'
 ---
 
