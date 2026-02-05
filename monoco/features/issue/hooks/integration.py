@@ -141,15 +141,19 @@ def handle_hook_result(
                 )
     
     if result.decision == HookDecision.ALLOW:
+        if result.message or result.suggestions:
+            OutputManager.info(result.message or "Execution complete", suggestions=result.suggestions)
         return True
     
     if result.decision == HookDecision.WARN:
-        # Show warning but continue
-        if result.message:
-            OutputManager.print({
-                "warning": result.message,
-                "suggestions": result.suggestions,
-            })
+        # Show warning but continue -> Stderr
+        if result and (result.message or result.suggestions):
+            # Output post-hook findings to stderr
+            OutputManager.info(
+                result.message or "Post-hook execution complete",
+                suggestions=result.suggestions
+            )
+        
         return True
     
     if result.decision == HookDecision.DENY:
@@ -350,6 +354,8 @@ class HookContextManager:
                     debug_hooks=self.debug_hooks,
                 )
                 self.post_result = execute_hooks(self.post_event, context, self.project_root)
+                # Handle results: show suggestions/info but don't exit for post-hooks
+                handle_hook_result(self.post_result, self.command, exit_on_deny=False)
             except Exception as e:
                 logger.warning(f"Post-hook execution failed: {e}")
         return False  # Don't suppress exceptions

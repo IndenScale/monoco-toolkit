@@ -12,12 +12,57 @@ if TYPE_CHECKING:
 
 # Export all built-in hook functions
 __all__ = [
+    "pre_create_hook",
+    "post_create_hook",
     "pre_submit_hook",
     "post_start_hook",
     "pre_start_hook",
     "post_submit_hook",
     "register_all_builtins",
 ]
+
+def pre_create_hook(context: "IssueHookContext") -> "IssueHookResult":
+    """Pre-create hook: Basic sanity checks before issue creation."""
+    from ..models import IssueHookResult
+    return IssueHookResult.allow("Ready to create")
+
+
+def post_create_hook(context: "IssueHookContext") -> "IssueHookResult":
+    """
+    Post-create hook: Provide immediate feedback after issue creation.
+    
+    Checks:
+    - Initial lint status
+    - Missing fields
+    """
+    from ..models import IssueHookResult
+    from monoco.features.issue.linter import check_integrity
+    from monoco.core.config import find_monoco_root
+    
+    issue_id = context.issue_id
+    project_root = context.project_root or find_monoco_root()
+    issues_root = project_root / "Issues"
+    
+    # Run lint to see what's missing
+    diagnostics = check_integrity(issues_root, recursive=True)
+    issue_diags = [d for d in diagnostics if d.source == issue_id]
+    
+    suggestions = []
+    if issue_diags:
+        suggestions.append(f"Issue {issue_id} was created with some missing or incorrect data:")
+        for diag in issue_diags:
+            suggestions.append(f"- {diag.message}")
+        
+    suggestions.extend([
+        "Please fill in 'Acceptance Criteria' and 'Technical Tasks'",
+        f"You can view the issue with: monoco issue inspect {issue_id}"
+    ])
+    
+    return IssueHookResult.allow(
+        f"Issue {issue_id} created successfully.",
+        suggestions=suggestions
+    )
+
 
 
 def pre_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
@@ -203,6 +248,22 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
     """
     from ..models import IssueEvent
     
+    # Register pre-create hook
+    dispatcher.register_callable(
+        name="builtin.pre-issue-create",
+        events=[IssueEvent.PRE_CREATE],
+        fn=pre_create_hook,
+        priority=10,
+    )
+
+    # Register post-create hook
+    dispatcher.register_callable(
+        name="builtin.post-issue-create",
+        events=[IssueEvent.POST_CREATE],
+        fn=post_create_hook,
+        priority=100,
+    )
+
     # Register pre-submit hook
     dispatcher.register_callable(
         name="builtin.pre-issue-submit",

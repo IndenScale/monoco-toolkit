@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 import typer
 from typing import Any, List, Union, Annotated, Optional
 from pydantic import BaseModel
@@ -26,14 +27,14 @@ class OutputManager:
     """
     Manages output rendering based on the environment (Human vs Agent).
     """
+    
+    _console = Console(stderr=False)
+    _stderr_console = Console(stderr=True)
 
     @staticmethod
     def is_agent_mode() -> bool:
         """
         Check if running in Agent Mode.
-        Triggers:
-            1. Environment variable AGENT_FLAG=true (or 1)
-            2. Environment variable MONOCO_AGENT=true (or 1)
         """
         return os.getenv("AGENT_FLAG", "").lower() in ("true", "1") or os.getenv(
             "MONOCO_AGENT", ""
@@ -44,61 +45,68 @@ class OutputManager:
         data: Union[BaseModel, List[BaseModel], dict, list, str], title: str = "", style: Optional[str] = None
     ):
         """
-        Dual frontend dispatcher.
+        Data frontend (Command Result) -> Stdout.
         """
         if OutputManager.is_agent_mode():
-            OutputManager._render_agent(data)
+            OutputManager._render_agent(data, stream=sys.stdout)
         else:
-            OutputManager._render_human(data, title, style=style)
+            OutputManager._render_human(data, title, style=style, stream=sys.stdout)
+
+    @staticmethod
+    def info(message: str, suggestions: Optional[List[str]] = None):
+        """
+        Auxiliary info / Suggestions -> Stderr.
+        """
+        if OutputManager.is_agent_mode():
+            OutputManager._render_agent({"info": message, "suggestions": suggestions}, stream=sys.stderr)
+        else:
+            OutputManager._stderr_console.print(f"[bold blue]ℹ[/bold blue] {message}")
+            if suggestions:
+                for s in suggestions:
+                    OutputManager._stderr_console.print(f"  [yellow]•[/yellow] {s}")
 
     @staticmethod
     def error(message: str):
         """
-        Print error message.
+        Error message -> Stderr.
         """
         if OutputManager.is_agent_mode():
-            print(json.dumps({"error": message}))
+            OutputManager._render_agent({"error": message}, stream=sys.stderr)
         else:
-            rprint(f"[bold red]Error:[/bold red] {message}")
+            OutputManager._stderr_console.print(f"[bold red]Error:[/bold red] {message}")
 
     @staticmethod
-    def _render_agent(data: Any):
+    def _render_agent(data: Any, stream=sys.stdout):
         """
-        Agent channel: Zero decoration, Pure Data, Max Token Density.
-        Uses compact JSON.
+        Agent channel: Zero decoration, Pure Data -> Specific Stream.
         """
+        def _encoder(obj):
+            if isinstance(obj, BaseModel):
+                return obj.model_dump(mode="json", exclude_none=True)
+            if hasattr(obj, "value"):  # Enum support
+                return obj.value
+            return str(obj)
+
+        output = ""
         if isinstance(data, BaseModel):
-            print(data.model_dump_json(exclude_none=True))
-        elif isinstance(data, list) and all(
-            isinstance(item, BaseModel) for item in data
-        ):
-            # Pydantic v2 adapter for list of models
-            print(
-                json.dumps(
-                    [item.model_dump(mode="json", exclude_none=True) for item in data],
-                    separators=(",", ":"),
-                )
+            output = data.model_dump_json(exclude_none=True)
+        elif isinstance(data, list) and data and all(isinstance(item, BaseModel) for item in data):
+            output = json.dumps(
+                [item.model_dump(mode="json", exclude_none=True) for item in data],
+                separators=(",", ":"),
             )
         else:
-            # Fallback for dicts/lists/primitives
-            def _encoder(obj):
-                if isinstance(obj, BaseModel):
-                    return obj.model_dump(mode="json", exclude_none=True)
-                if hasattr(obj, "value"):  # Enum support
-                    return obj.value
-                return str(obj)
-
-            try:
-                print(json.dumps(data, separators=(",", ":"), default=_encoder))
-            except TypeError:
-                print(str(data))
+            output = json.dumps(data, separators=(",", ":"), default=_encoder)
+        
+        stream.write(output + "\n")
+        stream.flush()
 
     @staticmethod
-    def _render_human(data: Any, title: str, style: Optional[str] = None):
+    def _render_human(data: Any, title: str, style: Optional[str] = None, stream=sys.stdout):
         """
         Human channel: Visual priority.
         """
-        console = Console()
+        console = Console(file=stream)
 
         if title:
             console.rule(f"[bold blue]{title}[/bold blue]")
@@ -125,10 +133,14 @@ class OutputManager:
             console.print(table)
             return
 
-        # Fallback to rich pretty print
-        rprint(data)
+        # Fallback to pretty print
+        if isinstance(data, (dict, list)):
+            console.print(data)
+        else:
+            console.print(str(data))
 
 
-# Global helper
+# Global helpers
 print_output = OutputManager.print
+print_info = OutputManager.info
 print_error = OutputManager.error
