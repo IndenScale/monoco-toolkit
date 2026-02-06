@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 角色重命名：收缩为三角色模型 (Principal/Engineer/Reviewer)
 created_at: '2026-02-06T09:43:50'
-updated_at: '2026-02-06T09:58:33'
+updated_at: '2026-02-06T10:12:12'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -21,6 +21,7 @@ files:
 - .monoco/roles/role-manager.yaml
 - .monoco/roles/role-planner.yaml
 - AGENTS.md
+- CLAUDE.md
 - GEMINI.md
 - Issues/Chores/closed/CHORE-0042-unify-branch-system-terminology-to-trunk-branch.md
 - Issues/Chores/closed/CHORE-0045-refactor-project-structure-to-src-layout.md
@@ -35,11 +36,18 @@ files:
 - src/monoco/core/scheduler/base.py
 - src/monoco/core/scheduler/engines.py
 - src/monoco/core/skill_framework.py
+- src/monoco/core/sync.py
 - src/monoco/features/agent/models.py
+- src/monoco/features/agent/resources/en/roles/engineer.yaml
+- src/monoco/features/agent/resources/en/roles/principal.yaml
+- src/monoco/features/agent/resources/en/roles/reviewer.yaml
 - src/monoco/features/agent/resources/en/skills/engineer/SKILL.md
 - src/monoco/features/agent/resources/en/skills/monoco_role_manager/SKILL.md
 - src/monoco/features/agent/resources/en/skills/monoco_role_planner/SKILL.md
 - src/monoco/features/agent/resources/en/skills/reviewer/SKILL.md
+- src/monoco/features/agent/resources/zh/roles/engineer.yaml
+- src/monoco/features/agent/resources/zh/roles/principal.yaml
+- src/monoco/features/agent/resources/zh/roles/reviewer.yaml
 - src/monoco/features/agent/resources/zh/skills/engineer/SKILL.md
 - src/monoco/features/agent/resources/zh/skills/monoco_role_manager/SKILL.md
 - src/monoco/features/agent/resources/zh/skills/monoco_role_planner/SKILL.md
