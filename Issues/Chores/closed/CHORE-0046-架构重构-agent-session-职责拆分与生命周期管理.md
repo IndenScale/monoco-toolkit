@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 架构重构：Agent Session 职责拆分与生命周期管理
 created_at: '2026-02-06T09:43:48'
-updated_at: '2026-02-06T10:40:45'
+updated_at: '2026-02-06T10:43:13'
 parent: EPIC-0000
 dependencies: []
 related: []
