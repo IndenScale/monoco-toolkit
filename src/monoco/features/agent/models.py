@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 class RoleTemplate(BaseModel):
     name: str = Field(
-        ..., description="Unique identifier for the role (e.g., 'Planner')"
+        ..., description="Unique identifier for the role (e.g., 'principal')"
     )
     description: str = Field(..., description="Human-readable description of the role")
     trigger: str = Field(
@@ -15,7 +15,7 @@ class RoleTemplate(BaseModel):
         ..., description="The system prompt template for this agent"
     )
     engine: str = Field(
-        default="gemini", description="CLI agent engine (gemini/claude)"
+        default="claude", description="CLI agent engine (claude/gemini)"
     )
 
 

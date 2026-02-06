@@ -1,8 +1,8 @@
-# Monoco Toolkit
+# Monoco
 
 > **The Agent-Native Development Experience.**
 
-Monoco Toolkit is a specialized toolchain designed to bridge the gap between Human intention and Agent execution. It solves the "Bootstrap Paradox" in AI-assisted development by providing a standardized, deterministic interface for Agents to interact with your codebase, manageable tasks, and external knowledge.
+Monoco is a specialized toolchain designed to bridge the gap between Human intention and Agent execution. It solves the "Bootstrap Paradox" in AI-assisted development by providing a standardized, deterministic interface for Agents to interact with your codebase, manageable tasks, and external knowledge.
 
 ## Why Monoco?
 

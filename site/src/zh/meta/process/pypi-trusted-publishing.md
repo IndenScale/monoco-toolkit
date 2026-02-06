@@ -1,6 +1,6 @@
 # PyPI Trusted Publishing 配置指南
 
-本文档说明如何为 Monoco Toolkit 配置 PyPI Trusted Publishing，以实现安全的自动化发布。
+本文档说明如何为 Monoco 配置 PyPI Trusted Publishing，以实现安全的自动化发布。
 
 ## 什么是 Trusted Publishing？
 
@@ -81,7 +81,7 @@ git push origin v0.1.0
 
 ## 复用 Typedown 的凭证
 
-由于 Monoco Toolkit 和 Typedown 都属于 IndenScale 组织，可以复用相同的 PyPI 账号:
+由于 Monoco 和 Typedown 都属于 IndenScale 组织，可以复用相同的 PyPI 账号:
 
 - **PyPI 账号**: 使用 IndenScale 团队账号
 - **Trusted Publishing**: 每个项目单独配置（不同的 `workflow name`）

@@ -1,6 +1,6 @@
-# Monoco Toolkit Architecture
+# Monoco Architecture
 
-Monoco Toolkit is a modular toolchain based on Python, designed to provide a consistent development experience for both Agents and Humans. This architecture follows DDD (Domain-Driven Design) principles.
+Monoco is a modular toolchain based on Python, designed to provide a consistent development experience for both Agents and Humans. This architecture follows DDD (Domain-Driven Design) principles.
 
 ## 1. Core Architectural Patterns
 

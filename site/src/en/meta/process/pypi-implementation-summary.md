@@ -1,8 +1,8 @@
-# Monoco Toolkit PyPI Distribution Implementation Summary
+# Monoco PyPI Distribution Implementation Summary
 
 ## Implementation Overview
 
-An automated PyPI publishing pipeline has been successfully established for Monoco Toolkit, reusing Typedown's Trusted Publishing mechanism.
+An automated PyPI publishing pipeline has been successfully established for Monoco, reusing Typedown's Trusted Publishing mechanism.
 
 ## Completed Work
 

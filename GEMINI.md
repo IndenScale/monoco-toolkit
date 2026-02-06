@@ -62,7 +62,6 @@ Monoco is not just a toolkit; it is a **Headless Project Management Operating Sy
 _This file is the root configuration for the Monoco Agent. Read `.agent/GLOSSARY.md` next._
 
 <!-- MONOCO_GENERATED_START -->
-
 ## Monoco
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.

@@ -2,11 +2,11 @@
 id: FEAT-0184
 uid: 16bdb5
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: Document Principles of Agentic System
 created_at: '2026-02-05T16:09:58'
-updated_at: '2026-02-05T16:11:30'
+updated_at: '2026-02-06T00:00:00'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -26,8 +26,9 @@ files:
 - docs/zh/99_Reference/Provider_Integration.md
 - monoco/features/issue/hooks/builtin/__init__.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-05T16:09:58'
+closed_at: '2026-02-06T00:00:00'
 isolation:
   type: branch
   ref: FEAT-0184-document-principles-of-agentic-system
@@ -36,18 +37,18 @@ isolation:
 
 ## FEAT-0184: Document Principles of Agentic System
 
-## Objective
-Document the core principles of the Agentic System, including Definition, DoD, Milestone, Invariance, and the Agentic Loop.
+## 目标
+文档化智能体系统的核心原则，包括定义、完成的定义（DoD）、里程碑、不变性和智能体循环。
 
-## Acceptance Criteria
-- [x] Create and organize documented files in `docs/zh/99_Reference/Principles of Agentic System/`.
-- [x] Remove legacy documentation files (`Architecture_Deep_Dive.md`, `Provider_Integration.md`).
+## 验收标准
+- [x] 在 `docs/zh/99_Reference/Principles of Agentic System/` 中创建并整理文档文件。
+- [x] 移除遗留文档文件（`Architecture_Deep_Dive.md`、`Provider_Integration.md`）。
 
-## Technical Tasks
-- [x] Draft documentation for each core principle.
-- [x] Organize files into the new directory structure.
-- [x] Clean up legacy files.
-- [x] Sync changes with Monoco Issue FEAT-0184.
+## 技术任务
+- [x] 起草每个核心原则的文档。
+- [x] 将文件组织到新的目录结构中。
+- [x] 清理遗留文件。
+- [x] 与 Monoco Issue FEAT-0184 同步变更。
 
 ## Review Comments
-- All documents reviewed and organized.
+- 所有文档已审查并整理完成。

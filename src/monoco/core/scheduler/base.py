@@ -50,7 +50,7 @@ class AgentTask:
     role_name: str
     issue_id: str
     prompt: str
-    engine: str = "gemini"
+    engine: str = "claude"
     timeout: int = 900
     metadata: Dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.now)

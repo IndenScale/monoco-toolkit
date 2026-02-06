@@ -32,7 +32,7 @@ Monoco 采用混合式的文件组织策略，以适应不同层级文档的需�
 
 ## 命令行工具
 
-Monoco Toolkit 提供了开箱即用的 i18n 维护命令。
+Monoco 提供了开箱即用的 i18n 维护命令。
 
 ### coverage 扫描 (`scan`)
 

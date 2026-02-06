@@ -596,7 +596,7 @@ class IMRouter:
             return "reviewer"
         
         if any(keyword in text.lower() for keyword in ["plan", "规划", "计划", "设计"]):
-            return "planner"
+            return "principal"
         
         if any(keyword in text.lower() for keyword in ["fix", "bug", "错误", "修复"]):
             return "engineer"

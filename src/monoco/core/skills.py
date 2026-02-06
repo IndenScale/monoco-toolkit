@@ -1,5 +1,5 @@
 """
-Skill Manager for Monoco Toolkit.
+Skill Manager for Monoco.
 
 This module provides centralized management and distribution of Agent Skills
 following the standardized architecture:
