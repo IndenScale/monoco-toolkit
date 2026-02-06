@@ -1,0 +1,36 @@
+---
+# Example: Agent Draft Reply (in Agent workspace)
+# Location: Issues/Features/work/drafts/reply_to_alice.yaml
+
+to: "alice@example.com"
+reply_to: "msg_email_xyz789"
+correlation_id: "corr_email_20260206_002"
+
+provider: "email"
+msg_type: "markdown"
+
+artifacts:
+  - "sha256:abc123..."  # Reference to analysis report
+
+priority: "normal"
+ref_issue: "FEAT-0150"
+ref_agent: "PrimeEngineer"
+draft_version: "1.0"
+---
+
+Hi Alice,
+
+Thanks for sharing the updated specification. I've reviewed the changes:
+
+**Approved Items:**
+- API integration move to Sprint 3 ✓
+- Resource reallocation looks good
+
+**Questions:**
+- For the performance optimization goal, what's the target metric?
+- Should we create separate tracking issues for the stretch goals?
+
+I'll update the internal timeline accordingly.
+
+Best,
+Prime Engineer

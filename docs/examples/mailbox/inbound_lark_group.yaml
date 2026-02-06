@@ -1,0 +1,42 @@
+---
+# Example: Lark Group Chat Message (Inbound)
+# Location: .monoco/mailbox/inbound/lark/20260206T143000_lark_msgabc123.md
+
+id: "msg_lark_abc123"
+provider: "lark"
+
+session:
+  id: "oc_123456789"
+  type: "group"
+  name: "Engineering Team"
+  thread_key: "thread_discussion_001"
+
+participants:
+  sender:
+    id: "ou_user123"
+    name: "张三"
+    platform_id: "ou_user123"
+    role: "member"
+  mentions:
+    - "@Prime"
+  reply_to: null
+
+timestamp: "2026-02-06T14:30:00+08:00"
+type: "text"
+
+artifacts: []
+
+correlation:
+  correlation_id: "corr_20260206_001"
+  request_id: "req_lark_789"
+  ref_issue: null
+  ref_agent: null
+  chain: []
+
+raw_metadata:
+  chat_type: "group"
+  msg_type: "text"
+  create_time: "1707203400000"
+---
+
+@Prime 帮我看看这个报错是什么意思？我在部署的时候遇到了这个问题，附件里有完整的错误日志。
