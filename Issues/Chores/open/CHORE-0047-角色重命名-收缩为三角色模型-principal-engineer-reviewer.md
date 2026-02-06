@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 角色重命名：收缩为三角色模型 (Principal/Engineer/Reviewer)
 created_at: '2026-02-06T09:43:50'
-updated_at: 2026-02-06 09:55:45
+updated_at: '2026-02-06T09:58:33'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,14 +14,45 @@ domains: []
 tags:
 - '#CHORE-0047'
 - '#EPIC-0000'
-files: []
+files:
+- .monoco/roles/engineer.yaml
+- .monoco/roles/principal.yaml
+- .monoco/roles/reviewer.yaml
+- .monoco/roles/role-manager.yaml
+- .monoco/roles/role-planner.yaml
+- AGENTS.md
+- GEMINI.md
+- Issues/Chores/closed/CHORE-0042-unify-branch-system-terminology-to-trunk-branch.md
+- Issues/Chores/closed/CHORE-0045-refactor-project-structure-to-src-layout.md
+- Issues/Chores/closed/CHORE-0048-配置更新-默认-agent-provider-修改为-claude-p.md
+- Issues/Chores/open/CHORE-0043-重构-open-和-close-命令以支持完整的生命周期钩子.md
+- Issues/Chores/open/CHORE-0046-架构重构-agent-session-职责拆分与生命周期管理.md
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- Issues/Features/closed/FEAT-0184-document-principles-of-agentic-system.md
+- Issues/Features/open/FEAT-0187-govern-references-directory-structure-and-implemen.md
+- Memos/2026-02-06_Monoco_Daemon_Architecture_Evaluation.md
+- src/monoco/core/automation/handlers.py
+- src/monoco/core/scheduler/base.py
+- src/monoco/core/scheduler/engines.py
+- src/monoco/core/skill_framework.py
+- src/monoco/features/agent/models.py
+- src/monoco/features/agent/resources/en/skills/engineer/SKILL.md
+- src/monoco/features/agent/resources/en/skills/monoco_role_manager/SKILL.md
+- src/monoco/features/agent/resources/en/skills/monoco_role_planner/SKILL.md
+- src/monoco/features/agent/resources/en/skills/reviewer/SKILL.md
+- src/monoco/features/agent/resources/zh/skills/engineer/SKILL.md
+- src/monoco/features/agent/resources/zh/skills/monoco_role_manager/SKILL.md
+- src/monoco/features/agent/resources/zh/skills/monoco_role_planner/SKILL.md
+- src/monoco/features/agent/resources/zh/skills/principal/SKILL.md
+- src/monoco/features/agent/resources/zh/skills/reviewer/SKILL.md
+- src/monoco/features/agent/worker.py
+- src/monoco/features/im/core.py
 criticality: low
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-06T09:43:50'
 isolation:
   type: branch
   ref: CHORE-0047-角色重命名-收缩为三角色模型-principal-engineer-reviewer
-  path: null
   created_at: '2026-02-06T09:55:45'
 ---
 
