@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 修复 issue close 命令在文件重命名或删除时失败的问题
 created_at: '2026-02-06T10:29:02'
-updated_at: '2026-02-06T10:30:19'
+updated_at: 2026-02-06 10:30:19
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -21,10 +21,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-06T10:29:02'
 closed_at: '2026-02-06T10:30:19'
-isolation:
-  type: branch
-  ref: FIX-0018-修复-issue-close-命令在文件重命名或删除时失败的问题
-  created_at: '2026-02-06T10:29:08'
 ---
 
 ## FIX-0018: 修复 issue close 命令在文件重命名或删除时失败的问题
