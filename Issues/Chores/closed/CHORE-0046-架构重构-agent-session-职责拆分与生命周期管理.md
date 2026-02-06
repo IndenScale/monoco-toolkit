@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 架构重构：Agent Session 职责拆分与生命周期管理
 created_at: '2026-02-06T09:43:48'
-updated_at: 2026-02-06 10:37:51
+updated_at: '2026-02-06T10:40:45'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,7 +14,11 @@ domains: []
 tags:
 - '#CHORE-0046'
 - '#EPIC-0000'
-files: []
+files:
+- Issues/Chores/open/CHORE-0046-架构重构-agent-session-职责拆分与生命周期管理.md
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- Issues/Fixes/closed/FIX-0018-修复-issue-close-命令在文件重命名或删除时失败的问题.md
+- Issues/Fixes/open/FIX-0018-修复-issue-close-命令在文件重命名或删除时失败的问题.md
 criticality: low
 solution: implemented
 opened_at: '2026-02-06T09:43:48'
@@ -22,7 +26,6 @@ closed_at: '2026-02-06T10:45:00'
 isolation:
   type: branch
   ref: CHORE-0046-架构重构-agent-session-职责拆分与生命周期管理
-  path: null
   created_at: '2026-02-06T10:37:51'
 ---
 
