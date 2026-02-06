@@ -11,17 +11,17 @@ owner: indenscale
 created_at: 2026-01-25
 priority: critical
 tags:
-  - '#EPIC-0000'
-  - root
-  - toolkit
+- '#EPIC-0000'
+- root
+- toolkit
 domains:
-  - Foundation
-  - IssueSystem
-  - DevEx
-  - CollaborationBus
-  - AgentEmpowerment
-  - AgentGuardrail
-progress: 37/50
+- Foundation
+- IssueSystem
+- DevEx
+- CollaborationBus
+- AgentEmpowerment
+- AgentGuardrail
+progress: 38/50
 files_count: 11
 ---
 
