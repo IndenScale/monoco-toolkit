@@ -3,10 +3,10 @@ id: CHORE-0047
 uid: '697782'
 type: chore
 status: open
-stage: doing
+stage: review
 title: 角色重命名：收缩为三角色模型 (Principal/Engineer/Reviewer)
 created_at: '2026-02-06T09:43:50'
-updated_at: '2026-02-06T10:19:08'
+updated_at: '2026-02-06T10:19:09'
 parent: EPIC-0000
 dependencies: []
 related: []
