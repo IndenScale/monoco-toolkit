@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: 'Monoco Toolkit'
+  name: 'Monoco'
   text: 'Agent 原生任务追踪'
   tagline: 'Git 原生的 Issue 追踪系统，配备 CLI 与 VS Code UI'
   actions:

@@ -7,7 +7,6 @@
 -->
 
 <!-- MONOCO_GENERATED_START -->
-
 ## Monoco
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.

@@ -69,14 +69,15 @@ class ClaudeAdapter(EngineAdapter):
     """
     Adapter for Anthropic Claude CLI.
 
-    Command format: claude -p <prompt>
+    Command format: claude -p <prompt> --permission-mode acceptEdits
     The -p/--print flag enables non-interactive mode.
+    --permission-mode acceptEdits allows auto-accepting edits while confirming other actions.
     """
 
     def build_command(self, prompt: str) -> List[str]:
-        # Based on Claude CLI help: -p <prompt> is NOT standard, usually -p means print/non-interactive.
-        # But for one-shot execution, we do passing prompt as argument with -p flag.
-        return ["claude", "-p", prompt]
+        # -p: non-interactive mode (print mode)
+        # --permission-mode acceptEdits: auto-accept edits, ask for other permissions
+        return ["claude", "-p", prompt, "--permission-mode", "acceptEdits"]
 
     @property
     def name(self) -> str:

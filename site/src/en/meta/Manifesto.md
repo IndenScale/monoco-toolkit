@@ -12,7 +12,7 @@ We believe tooling should be **Agent-Native**. This means:
 2. **Context as Code**: The project state (issues, decisions, research) should live in the repository, making it as accessible to agents as the source code itself.
 3. **Seamless Cooperation**: Humans provide strategy; Agents handle operations.
 
-## Monoco Toolkit
+## Monoco
 
 Monoco is our implementation of these principles. It provides:
 

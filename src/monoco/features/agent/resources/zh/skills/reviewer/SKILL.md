@@ -1,5 +1,5 @@
 ---
-name: monoco_role_reviewer
+name: reviewer
 description: Reviewer Role - Responsible for code audit, architecture compliance checking, and feedback
 ---
 

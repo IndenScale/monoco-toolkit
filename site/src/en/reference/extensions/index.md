@@ -1,6 +1,6 @@
 # Monoco VS Code Extension Features
 
-The `monoco-vscode` extension integrates core functionalities of Monoco Toolkit. Below is the detailed feature documentation:
+The `monoco-vscode` extension integrates core functionalities of Monoco. Below is the detailed feature documentation:
 
 - [Core Architecture](features/architecture.md): Understand the Client-Server architecture and LSP implementation of the extension.
 - [Issue Management](features/issue_management.md): Kanban view, Issue editing, syntax checking, and auto-completion.

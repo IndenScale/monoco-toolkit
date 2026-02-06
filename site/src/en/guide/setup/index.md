@@ -1,6 +1,6 @@
 # Monoco Initialization
 
-`monoco init` is the bootstrap command for Monoco Toolkit, used to initialize the Monoco runtime environment. It is responsible for establishing global configuration, project-level configuration, and generating necessary directory structures and agent memory injection.
+`monoco init` is the bootstrap command for Monoco, used to initialize the Monoco runtime environment. It is responsible for establishing global configuration, project-level configuration, and generating necessary directory structures and agent memory injection.
 
 ## Core Functions
 
@@ -67,17 +67,17 @@ paths:
 - **Skills**:
   - Generate `SKILL.md` for each module under `Toolkit/skills/` (such as `issues-management/SKILL.md`).
   - **Key Step**: Modify `GEMINI.md`, `CLAUDE.md`, `AGENTS.md` in the project root directory.
-  - **Injected Content**: Insert or update the `## Monoco Toolkit` section in these files, containing prompts for all available commands.
+  - **Injected Content**: Insert or update the `## Monoco` section in these files, containing prompts for all available commands.
 
 ## FAQ
 
 ### Q: If I modify the Prompt in `GEMINI.md`, will it be overwritten?
 
-A: `monoco init` uses regex matching for the `## Monoco Toolkit` section.
+A: `monoco init` uses regex matching for the `## Monoco` section.
 
 - If the section exists, it will be **fully replaced**. Do not manually modify content within this section; instead, modify the corresponding Feature code (Generated Source).
 - Content outside this section will not be affected.
 
 ### Q: How do I update the Toolkit's Prompt?
 
-A: After Monoco Toolkit is upgraded, simply run `monoco init` again in the project root directory to inject the latest Prompt into `GEMINI.md`.
+A: After Monoco is upgraded, simply run `monoco init` again in the project root directory to inject the latest Prompt into `GEMINI.md`.

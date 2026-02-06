@@ -97,31 +97,51 @@ def sync_command(
 
     # 3. Distribute Roles
     console.print("[bold blue]Distributing agent roles...[/bold blue]")
-    
-    # Source: Builtin Resource Dir
-    # monoco/core/sync.py -> monoco/core -> monoco -> features/agent/resources/roles
-    resource_dir = Path(__file__).parent.parent / "features" / "agent" / "resources" / "roles"
-    
+
+    # Determine language from config
+    role_lang = config.i18n.source_lang if config.i18n.source_lang else "en"
+    console.print(f"[dim]  Using language: {role_lang}[/dim]")
+
+    # Source: Builtin Resource Dir with language support
+    # src/monoco/features/agent/resources/{lang}/roles/
+    base_resource_dir = Path(__file__).parent.parent / "features" / "agent" / "resources"
+    resource_dir = base_resource_dir / role_lang / "roles"
+
+    # Fallback to 'en' if specific language not found
+    if not resource_dir.exists():
+        console.print(f"[yellow]  Roles for '{role_lang}' not found, falling back to 'en'[/yellow]")
+        resource_dir = base_resource_dir / "en" / "roles"
+
     # Target: .monoco/roles
     target_roles_dir = root / ".monoco" / "roles"
-    # Only create if we have sources
+
     if resource_dir.exists():
         target_roles_dir.mkdir(parents=True, exist_ok=True)
         import shutil
-        
+
         count = 0
         for yaml_file in resource_dir.glob("*.yaml"):
             target_file = target_roles_dir / yaml_file.name
             try:
-                # Copy only if different or new? For now, nice and simple overwrite.
+                # Always overwrite - source of truth is builtin roles
                 shutil.copy2(yaml_file, target_file)
                 console.print(f"[dim]  ✓ Synced role {yaml_file.name}[/dim]")
                 count += 1
             except Exception as e:
                 console.print(f"[red]  Failed to sync role {yaml_file.name}: {e}[/red]")
-        
+
         if count > 0:
              console.print(f"[green]  ✓ Updated {count} roles in .monoco/roles/[/green]")
+        # Remove old role files that no longer exist in source
+        if target_roles_dir.exists():
+            source_names = {f.name for f in resource_dir.glob("*.yaml")}
+            for existing_file in target_roles_dir.glob("*.yaml"):
+                if existing_file.name not in source_names:
+                    try:
+                        existing_file.unlink()
+                        console.print(f"[dim]  ✓ Removed obsolete role {existing_file.name}[/dim]")
+                    except Exception as e:
+                        console.print(f"[red]  Failed to remove obsolete role {existing_file.name}: {e}[/red]")
     else:
         console.print("[yellow]  No builtin roles found to sync.[/yellow]")
 

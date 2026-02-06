@@ -1,6 +1,6 @@
 # Monoco VS Code Extension
 
-Monoco VS Code 扩展 (`monoco-vscode`) 是 Monoco Toolkit 的官方编辑器集成，旨在提供无缝的“代理原生”开发体验。
+Monoco VS Code 扩展 (`monoco-vscode`) 是 Monoco 的官方编辑器集成，旨在提供无缝的“代理原生”开发体验。
 
 它采用 **Language Server Protocol (LSP)** 架构，将智能感知与 IDE 解耦，同时保留了可视化的 Cockpit 界面用于高层管理。
 

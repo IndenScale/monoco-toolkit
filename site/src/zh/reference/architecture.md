@@ -1,6 +1,6 @@
-# Monoco Toolkit 架构 (Architecture)
+# Monoco 架构 (Architecture)
 
-Monoco Toolkit 是一个基于 Python 的模块化工具链，旨在为 Agent 和人类提供一致的开发体验。本构建遵循 DDD (领域驱动设计) 原则。
+Monoco 是一个基于 Python 的模块化工具链，旨在为 Agent 和人类提供一致的开发体验。本构建遵循 DDD (领域驱动设计) 原则。
 
 ## 1. 核心架构模式 (Core Architectural Patterns)
 
@@ -59,7 +59,7 @@ Toolkit/monoco/features/
 
 ## 4. 治理成熟度 (Governance Maturity)
 
-随着项目规模的增长，Monoco Toolkit 会自动提升治理要求。
+随着项目规模的增长，Monoco 会自动提升治理要求。
 
 ### 4.1 复杂度阈值 (Complexity Thresholds)
 

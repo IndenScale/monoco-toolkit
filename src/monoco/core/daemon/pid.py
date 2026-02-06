@@ -49,7 +49,7 @@ class PIDManager:
         Args:
             host: The host address the daemon is listening on
             port: The port the daemon is listening on
-            version: Monoco toolkit version
+            version: Monoco version
 
         Returns:
             Path to the created PID file

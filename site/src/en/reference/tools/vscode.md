@@ -1,6 +1,6 @@
 # Monoco VS Code Extension
 
-Monoco VS Code Extension (`monoco-vscode`) is the official editor integration for Monoco Toolkit, aiming to provide a seamless "Agent Native" development experience.
+Monoco VS Code Extension (`monoco-vscode`) is the official editor integration for Monoco, aiming to provide a seamless "Agent Native" development experience.
 
 It adopts **Language Server Protocol (LSP)** architecture, decoupling intelligence from IDE while retaining visual Cockpit interface for high-level management.
 
