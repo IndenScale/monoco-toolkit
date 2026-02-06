@@ -1482,16 +1482,48 @@ def merge_issue_changes(
             + "\n\nPlease resolve manually using Cherry-Pick as per AGENTS.md policy."
         )
 
-    # 2. Perform Atomic Merge (Selective Checkout)
+    # 2. Perform Atomic Merge (Selective Checkout & Cleanup)
     # FEAT-0172: Only merge code files, issue file is handled separately
-    files_to_merge = code_files
-    if files_to_merge:
+    # FIX-0018: Handle renames and deletions by checking existence in source branch
+    to_checkout = []
+    to_remove = []
+
+    for f in code_files:
+        if git.file_exists_in_ref(project_root, source_ref, f):
+            to_checkout.append(f)
+        else:
+            # File was deleted or renamed in the feature branch
+            # If it still exists in main, we should remove it to sync state
+            if (project_root / f).exists():
+                to_remove.append(f)
+
+    # Apply changes
+    if to_checkout:
         try:
-            git.git_checkout_files(project_root, source_ref, files_to_merge)
+            git.git_checkout_files(project_root, source_ref, to_checkout)
         except Exception as e:
             raise RuntimeError(f"Selective checkout failed: {e}")
 
-    return files_to_merge
+    if to_remove:
+        try:
+            # Remove files that no longer exist in the feature branch
+            # Using force=True to handle cases where file might be modified locally
+            git.git_rm(project_root, to_remove, force=True)
+        except Exception as e:
+            # Fallback to physical removal if git rm fails
+            for f in to_remove:
+                p = project_root / f
+                if p.exists():
+                    try:
+                        if p.is_dir():
+                            import shutil
+                            shutil.rmtree(p)
+                        else:
+                            p.unlink()
+                    except:
+                        pass
+
+    return to_checkout + to_remove
 
 
 # Resources
