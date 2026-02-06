@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Intelligent Browser Integration via Proxy Hooks
 created_at: '2026-02-06T17:16:01'
-updated_at: '2026-02-06T17:32:58'
+updated_at: 2026-02-06 17:32:59
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -68,10 +68,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-06T17:16:01'
 closed_at: '2026-02-06T17:32:58'
-isolation:
-  type: branch
-  ref: FEAT-0188-intelligent-browser-integration-via-proxy-hooks
-  created_at: '2026-02-06T17:16:23'
 ---
 
 ## FEAT-0188: Intelligent Browser Integration via Proxy Hooks
