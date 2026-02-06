@@ -1,0 +1,56 @@
+---
+id: CHORE-0047
+uid: '697782'
+type: chore
+status: closed
+stage: review
+title: 角色重命名：收缩为三角色模型 (Principal/Engineer/Reviewer)
+created_at: '2026-02-06T09:43:50'
+updated_at: '2026-02-06T10:25:01'
+parent: EPIC-0000
+dependencies: []
+related: []
+domains: []
+tags:
+- '#CHORE-0047'
+- '#EPIC-0000'
+files: []
+---
+
+## CHORE-0047: 角色重命名：收缩为三角色模型 (Principal/Engineer/Reviewer)
+
+## Objective
+
+将 Monoco 角色模型正式收缩为三角色制（Principal, Engineer, Reviewer），消除旧架构中 `Planner` 和 `Manager` 的残留引用，确保角色注入链路的语意一致性。
+
+## Acceptance Criteria
+
+- [x] 全局源代码搜索不再出现 `Planner` 和 `Manager` 作为角色逻辑关键字。
+- [x] `worker.py` 中针对 `Planner` 的硬编码特殊分支被移除或重构至 `Principal`。
+- [x] `defaults.py` 中的内置角色定义已更新为三角色模型。
+- [x] `.monoco/roles/` 目录下的文件名及其内部 `name` 字段已去重 `role-` 前缀。
+- [x] `skills/` 目录下的文件夹已去重 `monoco_role_` 前缀，命名为 `principal`, `engineer`, `reviewer`。
+- [x] 角色技能 (Skills) 与代码中的角色名称完全匹配。
+
+## Technical Tasks
+
+- [x] **代码清理**:
+  - [x] 替换 `src/monoco/features/agent/worker.py` 中的 `Planner` 引用。
+  - [x] 替换 `src/monoco/features/agent/models.py` 中的示例与字段描述。
+  - [x] 更新 `src/monoco/features/agent/defaults.py` 为新角色模型。
+- [x] **配置目录清理**:
+  - [x] 重命名 `.monoco/roles/` 目录下的文件，移除 `role-` 前缀。
+  - [x] 移除旧的 `manager.yaml` 和 `planner.yaml`，合并为 `principal.yaml`。
+  - [x] 更新 YAML 内部的 `name` 字段，去除 `role-` 前缀。
+- [x] **技能目录清理**:
+  - [x] 将 `src/monoco/features/agent/resources/*/skills/` 下的文件夹由 `monoco_role_xxx` 重命名为 `xxx`。
+- [x] **自动化逻辑同步**:
+  - [x] 检查 `src/monoco/core/automation/handlers.py` 确保角色字符串正确。
+- [x] **文档与示例更新**:
+  - [x] 更新 `AGENTS.md` 等文档中的角色描述。
+
+## Review Comments
+
+- 2026-02-06: 角色重命名为三角色模型完成（Principal/Engineer/Reviewer）
+- Source 侧多语言支持已实现（en/zh）
+- monoco sync 自动检测语言并覆盖 target 目录
