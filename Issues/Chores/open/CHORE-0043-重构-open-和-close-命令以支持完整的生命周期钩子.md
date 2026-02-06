@@ -22,25 +22,14 @@ opened_at: '2026-02-05T10:19:56'
 
 ## CHORE-0043: 重构 open 和 close 命令以支持完整的生命周期钩子
 
-## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+## 目标
+重构 open 和 close 命令以支持完整的生命周期钩子。
 
-## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+## 验收标准
+- [ ] 待定义
 
-## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
-
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
-- [ ] Task 1
+## 技术任务
+- [ ] 待分解
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+待审查。

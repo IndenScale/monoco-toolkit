@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 角色重命名：收缩为三角色模型 (Principal/Engineer/Reviewer)
 created_at: '2026-02-06T09:43:50'
-updated_at: '2026-02-06T09:55:44'
+updated_at: 2026-02-06 09:55:45
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,8 +16,13 @@ tags:
 - '#EPIC-0000'
 files: []
 criticality: low
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-06T09:43:50'
+isolation:
+  type: branch
+  ref: CHORE-0047-角色重命名-收缩为三角色模型-principal-engineer-reviewer
+  path: null
+  created_at: '2026-02-06T09:55:45'
 ---
 
 ## CHORE-0047: 角色重命名：收缩为三角色模型 (Principal/Engineer/Reviewer)

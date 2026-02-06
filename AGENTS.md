@@ -100,9 +100,9 @@ Monoco 遵循 **Trunk Based Development (TBD)** 模式。所有的开发工作�
 #### 工作流
 
 1. 将想法捕获为 memo
-2. 当阈值（5个）达到时，自动触发 Architect
-3. Memo 被消费（删除）并嵌入 Architect 的 prompt
-4. Architect 从 memo 创建 Issue
+2. 当阈值（5个）达到时，自动触发 Principal Engineer
+3. Memo 被消费（删除）并嵌入 Principal Engineer 的 prompt
+4. Principal Engineer 从 memo 创建 Issue
 5. 不需要"链接"或"解决" memo - 消费后即消失
 
 #### 指南
