@@ -3,17 +3,17 @@ id: CHORE-0046
 uid: d2b75a
 type: chore
 status: open
-stage: draft
+stage: doing
 title: 架构重构：Agent Session 职责拆分与生命周期管理
 created_at: '2026-02-06T09:43:48'
-updated_at: '2026-02-06T09:43:48'
+updated_at: '2026-02-06T10:37:50'
 parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
 tags:
-  - '#CHORE-0046'
-  - '#EPIC-0000'
+- '#CHORE-0046'
+- '#EPIC-0000'
 files: []
 criticality: low
 solution: null # implemented, cancelled, wontfix, duplicate
