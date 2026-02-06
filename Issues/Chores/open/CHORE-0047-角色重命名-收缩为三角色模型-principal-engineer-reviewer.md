@@ -64,29 +64,29 @@ isolation:
 
 ## Acceptance Criteria
 
-- [ ] 全局源代码搜索不再出现 `Planner` 和 `Manager` 作为角色逻辑关键字。
-- [ ] `worker.py` 中针对 `Planner` 的硬编码特殊分支被移除或重构至 `Principal`。
-- [ ] `defaults.py` 中的内置角色定义已更新为三角色模型。
-- [ ] `.monoco/roles/` 目录下的文件名及其内部 `name` 字段已去重 `role-` 前缀。
-- [ ] `skills/` 目录下的文件夹已去重 `monoco_role_` 前缀，命名为 `principal`, `engineer`, `reviewer`。
-- [ ] 角色技能 (Skills) 与代码中的角色名称完全匹配。
+- [x] 全局源代码搜索不再出现 `Planner` 和 `Manager` 作为角色逻辑关键字。
+- [x] `worker.py` 中针对 `Planner` 的硬编码特殊分支被移除或重构至 `Principal`。
+- [x] `defaults.py` 中的内置角色定义已更新为三角色模型。
+- [x] `.monoco/roles/` 目录下的文件名及其内部 `name` 字段已去重 `role-` 前缀。
+- [x] `skills/` 目录下的文件夹已去重 `monoco_role_` 前缀，命名为 `principal`, `engineer`, `reviewer`。
+- [x] 角色技能 (Skills) 与代码中的角色名称完全匹配。
 
 ## Technical Tasks
 
-- [ ] **代码清理**:
-  - [ ] 替换 `src/monoco/features/agent/worker.py` 中的 `Planner` 引用。
-  - [ ] 替换 `src/monoco/features/agent/models.py` 中的示例与字段描述。
-  - [ ] 更新 `src/monoco/features/agent/defaults.py` 为新角色模型。
-- [ ] **配置目录清理**:
-  - [ ] 重命名 `.monoco/roles/` 目录下的文件，移除 `role-` 前缀。
-  - [ ] 移除旧的 `manager.yaml` 和 `planner.yaml`，合并为 `principal.yaml`。
-  - [ ] 更新 YAML 内部的 `name` 字段，去除 `role-` 前缀。
-- [ ] **技能目录清理**:
-  - [ ] 将 `src/monoco/features/agent/resources/*/skills/` 下的文件夹由 `monoco_role_xxx` 重命名为 `xxx`。
-- [ ] **自动化逻辑同步**:
-  - [ ] 检查 `src/monoco/core/automation/handlers.py` 确保角色字符串正确。
-- [ ] **文档与示例更新**:
-  - [ ] 更新 `AGENTS.md` 等文档中的角色描述。
+- [x] **代码清理**:
+  - [x] 替换 `src/monoco/features/agent/worker.py` 中的 `Planner` 引用。
+  - [x] 替换 `src/monoco/features/agent/models.py` 中的示例与字段描述。
+  - [x] 更新 `src/monoco/features/agent/defaults.py` 为新角色模型。
+- [x] **配置目录清理**:
+  - [x] 重命名 `.monoco/roles/` 目录下的文件，移除 `role-` 前缀。
+  - [x] 移除旧的 `manager.yaml` 和 `planner.yaml`，合并为 `principal.yaml`。
+  - [x] 更新 YAML 内部的 `name` 字段，去除 `role-` 前缀。
+- [x] **技能目录清理**:
+  - [x] 将 `src/monoco/features/agent/resources/*/skills/` 下的文件夹由 `monoco_role_xxx` 重命名为 `xxx`。
+- [x] **自动化逻辑同步**:
+  - [x] 检查 `src/monoco/core/automation/handlers.py` 确保角色字符串正确。
+- [x] **文档与示例更新**:
+  - [x] 更新 `AGENTS.md` 等文档中的角色描述。
 
 ## Review Comments
 
