@@ -164,6 +164,25 @@ def git_checkout_files(path: Path, ref: str, files: List[str]):
         raise RuntimeError(f"Failed to checkout files from {ref}: {stderr}")
 
 
+def file_exists_in_ref(path: Path, ref: str, file_path: str) -> bool:
+    """Check if a file exists in a specific git ref."""
+    code, stdout, _ = _run_git(["ls-tree", "-r", "--name-only", ref, file_path], path)
+    return code == 0 and file_path in stdout.splitlines()
+
+
+def git_rm(path: Path, files: List[str], force: bool = False):
+    """Remove files from git."""
+    if not files:
+        return
+    cmd = ["rm"]
+    if force:
+        cmd.append("-f")
+    cmd.extend(files)
+    code, _, stderr = _run_git(cmd, path)
+    if code != 0:
+        raise RuntimeError(f"Git rm failed: {stderr}")
+
+
 def has_diff(path: Path, ref1: str, ref2: str, files: List[str]) -> bool:
     """Check if there are differences between two refs for specific files."""
     if not files:
