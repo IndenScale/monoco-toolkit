@@ -33,15 +33,15 @@ closed_at: '2026-02-05T09:38:24'
 
 ## CHORE-0042: Unify branch system terminology to Trunk-Branch
 
-## Objective
-Standardize the terminology for the project's branching strategy, moving from "Main/Working Branch" to the industry-standard "Trunk-Branch" (Trunk-Based Development).
+## 目标
+将项目分支策略术语从 "Main/Working Branch" 统一为行业标准 "Trunk-Branch"（基于主干的开发模式）。
 
-## Acceptance Criteria
-- [x] All documentation and system prompts use Trunk-Branch terminology.
+## 验收标准
+- [x] 所有文档和系统提示使用 Trunk-Branch 术语。
 
-## Technical Tasks
-- [x] Unify terminology to Trunk-Branch across documentation, resources, and hooks.
-- [x] Synchronize root AGENTS.md and GEMINI.md files using `monoco sync`.
+## 技术任务
+- [x] 在文档、资源和钩子中统一使用 Trunk-Branch 术语。
+- [x] 使用 `monoco sync` 同步根目录 AGENTS.md 和 GEMINI.md 文件。
 
 ## Review Comments
-Implemented and verified.
+已实现并验证。

@@ -11,9 +11,9 @@ Architecture: No Workflow class or orchestration. Workflow emerges from
 the natural interaction of independent handlers.
 
 Handlers:
-- TaskFileHandler: Monitors tasks.md changes -> triggers Architect
+- TaskFileHandler: Monitors tasks.md changes -> triggers Principal
 - IssueStageHandler: Monitors Issue stage=doing -> triggers Engineer
-- MemoThresholdHandler: Monitors Memo accumulation -> triggers Architect
+- MemoThresholdHandler: Monitors Memo accumulation -> triggers Principal
 - PRCreatedHandler: Monitors PR creation -> triggers Reviewer
 """
 
@@ -47,9 +47,9 @@ class TaskFileHandler:
     
     Trigger: ISSUE_UPDATED event (from TaskWatcher)
     Condition: New tasks added to tasks.md
-    Action: Spawn Architect agent to analyze and create Issue (stage=draft)
+    Action: Spawn Principal agent to analyze and create Issue (stage=draft)
     
-    Emergent Workflow: tasks.md → Architect → Issue (draft)
+    Emergent Workflow: tasks.md → Principal → Issue (draft)
     
     This handler is stateless and self-contained. It directly subscribes
 to the EventBus and manages its own lifecycle.
@@ -94,9 +94,9 @@ to the EventBus and manages its own lifecycle.
     
     async def _handle(self, event: AgentEvent) -> Optional[ActionResult]:
         """
-        Handle the event by spawning Architect agent.
+        Handle the event by spawning Principal agent.
         
-        The Architect will:
+        The Principal will:
         1. Read the tasks.md file
         2. Analyze task requirements
         3. Create Issue tickets (stage=draft)
@@ -105,11 +105,11 @@ to the EventBus and manages its own lifecycle.
         task_changes = event.payload.get("task_changes", [])
         new_tasks = [c for c in task_changes if c.get("type") == "created"]
         
-        logger.info(f"TaskFileHandler: Spawning Architect for {len(new_tasks)} new tasks")
+        logger.info(f"TaskFileHandler: Spawning Principal for {len(new_tasks)} new tasks")
         
         task = AgentTask(
-            task_id=f"architect-task-{event.timestamp.timestamp()}",
-            role_name="Architect",
+            task_id=f"principal-task-{event.timestamp.timestamp()}",
+            role_name="Principal",
             issue_id="task-analysis",
             prompt=self._build_prompt(file_path, new_tasks),
             engine="gemini",
@@ -123,12 +123,12 @@ to the EventBus and manages its own lifecycle.
         
         try:
             session_id = await self.scheduler.schedule(task)
-            logger.info(f"Architect scheduled: session={session_id}")
+            logger.info(f"Principal scheduled: session={session_id}")
             
             return ActionResult.success_result(
                 output={
                     "session_id": session_id,
-                    "role": "Architect",
+                    "role": "Principal",
                     "trigger": "task_file_changed",
                     "tasks_analyzed": len(new_tasks),
                 },
@@ -136,9 +136,9 @@ to the EventBus and manages its own lifecycle.
             )
         
         except Exception as e:
-            logger.error(f"Failed to spawn Architect: {e}")
+            logger.error(f"Failed to spawn Principal: {e}")
             return ActionResult.failure_result(
-                error=f"Failed to schedule Architect: {e}",
+                error=f"Failed to schedule Principal: {e}",
                 metadata={"file_path": file_path},
             )
     
@@ -170,13 +170,13 @@ to the EventBus and manages its own lifecycle.
         logger.info(f"{self.name} stopped")
     
     def _build_prompt(self, file_path: str, new_tasks: list) -> str:
-        """Build the prompt for the Architect agent."""
+        """Build the prompt for the Principal agent."""
         tasks_text = "\n".join([
             f"- {t.get('content', 'Unknown task')}"
             for t in new_tasks
         ])
         
-        return f"""You are the Architect. New tasks have been added to {file_path}:
+        return f"""You are the Principal Engineer. New tasks have been added to {file_path}:
 
 {tasks_text}
 
@@ -361,7 +361,7 @@ class MemoThresholdHandler:
     
     Trigger: MEMO_THRESHOLD event
     Condition: Pending memo count exceeds threshold
-    Action: Spawn Architect agent to analyze and create Issues
+    Action: Spawn Principal agent to analyze and create Issues
     
     Signal Queue Model (FEAT-0165):
     - Memos are signals, not assets
@@ -369,7 +369,7 @@ class MemoThresholdHandler:
     - File cleared = signal consumed
     - Git is the archive, not app state
     
-    Emergent Workflow: Memos (threshold) → Architect → Issues
+    Emergent Workflow: Memos (threshold) → Principal → Issues
     
     This handler is stateless and self-contained.
     
@@ -411,7 +411,7 @@ class MemoThresholdHandler:
     
     async def _handle(self, event: AgentEvent) -> Optional[ActionResult]:
         """
-        Handle the event by spawning Architect agent.
+        Handle the event by spawning Principal agent.
         
         Signal Queue Semantics:
         1. Atomically load and clear inbox BEFORE scheduling
@@ -421,7 +421,7 @@ class MemoThresholdHandler:
         This ensures:
         - Natural idempotency (deleted memos won't be reprocessed)
         - No dependency on memory state across restarts
-        - Architect always has data even if file is cleared
+        - Principal always has data even if file is cleared
         """
         file_path_str = event.payload.get("path", "Memos/inbox.md")
         file_path = Path(file_path_str)
@@ -443,10 +443,10 @@ class MemoThresholdHandler:
                 metadata={"file_path": file_path_str},
             )
         
-        # Phase 2: Schedule Architect with embedded memos
+        # Phase 2: Schedule Principal with embedded memos
         task = AgentTask(
-            task_id=f"architect-memo-{event.timestamp.timestamp()}",
-            role_name="Architect",
+            task_id=f"principal-memo-{event.timestamp.timestamp()}",
+            role_name="Principal",
             issue_id="memo-analysis",
             prompt=self._build_prompt(file_path_str, memos),
             engine="gemini",
@@ -462,12 +462,12 @@ class MemoThresholdHandler:
         
         try:
             session_id = await self.scheduler.schedule(task)
-            logger.info(f"Architect scheduled: session={session_id} with {len(memos)} memos")
+            logger.info(f"Principal scheduled: session={session_id} with {len(memos)} memos")
             
             return ActionResult.success_result(
                 output={
                     "session_id": session_id,
-                    "role": "Architect",
+                    "role": "Principal",
                     "trigger": "memo_threshold",
                     "memo_count": len(memos),
                 },
@@ -475,12 +475,12 @@ class MemoThresholdHandler:
             )
         
         except Exception as e:
-            logger.error(f"Failed to spawn Architect: {e}")
+            logger.error(f"Failed to spawn Principal: {e}")
             # Note: At this point memos are already cleared from inbox
             # This is intentional - we trade "at-least-once" for "at-most-once" semantics
-            # If Architect fails, the memos are in git history
+            # If Principal fails, the memos are in git history
             return ActionResult.failure_result(
-                error=f"Failed to schedule Architect: {e}",
+                error=f"Failed to schedule Principal: {e}",
                 metadata={"file_path": file_path_str, "memos_consumed": len(memos)},
             )
     
@@ -539,7 +539,7 @@ class MemoThresholdHandler:
         logger.info(f"{self.name} stopped")
     
     def _build_prompt(self, file_path: str, memos: List[Memo]) -> str:
-        """Build the prompt for the Architect agent with embedded memos."""
+        """Build the prompt for the Principal agent with embedded memos."""
         # Format memos for prompt
         memo_sections = []
         for i, memo in enumerate(memos, 1):
@@ -556,7 +556,7 @@ class MemoThresholdHandler:
         
         memos_text = "\n".join(memo_sections)
         
-        return f"""You are the Architect. {len(memos)} memos have been consumed from {file_path}.
+        return f"""You are the Principal Engineer. {len(memos)} memos have been consumed from {file_path}.
 
 ## Consumed Memos (Signal Queue Model)
 
