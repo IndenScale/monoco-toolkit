@@ -226,15 +226,38 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
 
                                 project_issues.append((f, meta, project_name))
                         except Exception as e:
+                            # Try to extract ID from filename for better source attribution
+                            issue_id_match = re.match(r"^([A-Z]+-\d{4})-", f.name)
+                            source = issue_id_match.group(1) if issue_id_match else f.name
+                            
+                            # Try to find the line number for the error field if possible
+                            line_num = 0
+                            error_msg = str(e)
+                            
+                            # Simple heuristic: if the error mentions a field name, try to find it in the content
+                            try:
+                                # Pydantic errors often look like "1 validation error for IssueMetadata\nstage\n  Input should be..."
+                                # Or "validation error for IssueMetadata\nfield_name\n..."
+                                field_match = re.search(r"validation error for IssueMetadata\n([a-z_]+)\n", error_msg)
+                                if field_match:
+                                    field_name = field_match.group(1)
+                                    content = f.read_text()
+                                    for i, line in enumerate(content.splitlines()):
+                                        if line.strip().startswith(f"{field_name}:"):
+                                            line_num = i
+                                            break
+                            except Exception:
+                                pass
+
                             # Report parsing failure as diagnostic
                             d = Diagnostic(
                                 range=Range(
-                                    start=Position(line=0, character=0),
-                                    end=Position(line=0, character=0),
+                                    start=Position(line=line_num, character=0),
+                                    end=Position(line=line_num, character=0),
                                 ),
-                                message=f"Schema Error: {str(e)}",
+                                message=f"Schema Error: {error_msg}",
                                 severity=DiagnosticSeverity.Error,
-                                source="System",
+                                source=source,
                             )
                             d.data = {"path": f}
                             project_diagnostics.append(d)

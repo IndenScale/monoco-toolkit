@@ -15,6 +15,7 @@ tags:
 - '#CHORE-0047'
 - '#EPIC-0000'
 files: []
+solution: implemented
 ---
 
 ## CHORE-0047: 角色重命名：收缩为三角色模型 (Principal/Engineer/Reviewer)

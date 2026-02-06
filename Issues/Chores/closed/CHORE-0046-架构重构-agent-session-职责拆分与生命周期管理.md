@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 架构重构：Agent Session 职责拆分与生命周期管理
 created_at: '2026-02-06T09:43:48'
-updated_at: '2026-02-06T11:01:20'
+updated_at: 2026-02-06 11:01:20
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,10 +19,6 @@ criticality: low
 solution: implemented
 opened_at: '2026-02-06T09:43:48'
 closed_at: '2026-02-06T10:45:00'
-isolation:
-  type: branch
-  ref: CHORE-0046-架构重构-agent-session-职责拆分与生命周期管理
-  created_at: '2026-02-06T10:37:51'
 ---
 
 ## CHORE-0046: 架构重构：Agent Session 职责拆分与生命周期管理
