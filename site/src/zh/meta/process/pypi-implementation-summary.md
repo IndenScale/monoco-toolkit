@@ -1,8 +1,8 @@
-# Monoco Toolkit PyPI 分发渠道实施总结
+# Monoco PyPI 分发渠道实施总结
 
 ## 实施概览
 
-已成功为 Monoco Toolkit 建立 PyPI 自动发布流水线，复用 Typedown 的 Trusted Publishing 机制。
+已成功为 Monoco 建立 PyPI 自动发布流水线，复用 Typedown 的 Trusted Publishing 机制。
 
 ## 已完成的工作
 
@@ -122,10 +122,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for release workflow.
 
 ## 与 Typedown 的对比
 
-| 项目               | PyPI 包名        | Workflow 文件      | Trusted Publisher |
-| ------------------ | ---------------- | ------------------ | ----------------- |
-| **Typedown**       | `typedown`       | `publish-pypi.yml` | ✅ 已配置         |
-| **Monoco Toolkit** | `monoco-toolkit` | `publish-pypi.yml` | ⏳ 待配置         |
+| 项目         | PyPI 包名        | Workflow 文件      | Trusted Publisher |
+| ------------ | ---------------- | ------------------ | ----------------- |
+| **Typedown** | `typedown`       | `publish-pypi.yml` | ✅ 已配置         |
+| **Monoco**   | `monoco-toolkit` | `publish-pypi.yml` | ⏳ 待配置         |
 
 **复用的凭证**:
 

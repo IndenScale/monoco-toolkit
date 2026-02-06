@@ -1,5 +1,5 @@
 """
-Skill Framework for Monoco Toolkit - Three-Level Architecture
+Skill Framework for Monoco - Three-Level Architecture
 
 This module implements the Role-Workflow-Atom three-level skill architecture:
 

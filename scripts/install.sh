@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Monoco Toolkit Installer ==="
+echo "=== Monoco Installer ==="
 
 # Check Python 3
 if ! command -v python3 &> /dev/null; then
@@ -31,7 +31,7 @@ echo "Upgrading pip..."
 pip install --upgrade pip -q
 
 # Install Package
-echo "Installing Monoco Toolkit..."
+echo "Installing Monoco..."
 pip install -e .
 
 # Verify Installation

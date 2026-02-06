@@ -48,7 +48,7 @@ export async function checkAndBootstrap(context: vscode.ExtensionContext) {
   if (hasUv) {
     // Scenario A: uv exists, just install toolkit
     const selection = await vscode.window.showInformationMessage(
-      'Monoco Toolkit CLI is missing. Install it via uv?',
+      'Monoco CLI is missing. Install it via uv?',
       'Install',
       'Cancel'
     )
@@ -58,7 +58,7 @@ export async function checkAndBootstrap(context: vscode.ExtensionContext) {
   } else {
     // Scenario B: uv missing. Install uv first.
     const selection = await vscode.window.showWarningMessage(
-      "Monoco Toolkit requires 'uv' (Fast Python Pkg Mgr). Install 'uv' + Toolkit?",
+      "Monoco requires 'uv' (Fast Python Pkg Mgr). Install 'uv' + Toolkit?",
       'Install All',
       'Cancel'
     )
@@ -95,7 +95,7 @@ async function installUvAndToolkit() {
     )
     // We assume uv is added to path or we try to use it. Windows environment update in same terminal is hard.
     // It's safer to tell users.
-    terminal.sendText('Write-Host "Installing Monoco Toolkit..."')
+    terminal.sendText('Write-Host "Installing Monoco..."')
     // Try to assume default install path or just run it hoping alias works (often requires restart)
     terminal.sendText('uv tool install monoco-toolkit')
   } else {
@@ -109,7 +109,7 @@ async function installUvAndToolkit() {
     // We try to run explicitly from ~/.local/bin/uv
     const installCmd = `~/.local/bin/uv tool install monoco-toolkit`
 
-    terminal.sendText(`echo "Attempting to install Monoco Toolkit..."`)
+    terminal.sendText(`echo "Attempting to install Monoco..."`)
     // We try the direct path, if that fails, we fallback to requesting user restart.
     terminal.sendText(
       `${installCmd} || echo "Please restart your terminal to load 'uv', then run: uv tool install monoco-toolkit"`

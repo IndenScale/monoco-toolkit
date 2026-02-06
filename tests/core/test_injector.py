@@ -16,7 +16,7 @@ def test_inject_new_file(temp_file):
     assert injector.inject(prompts) is True
 
     content = temp_file.read_text(encoding="utf-8")
-    assert "## Monoco Toolkit" in content
+    assert "## Monoco" in content
     assert "### Test Feature" in content
     assert "This is test content." in content
 
@@ -51,11 +51,11 @@ def test_remove(temp_file):
     prompts = {"Test Feature": "To be removed"}
 
     injector.inject(prompts)
-    assert "## Monoco Toolkit" in temp_file.read_text(encoding="utf-8")
+    assert "## Monoco" in temp_file.read_text(encoding="utf-8")
 
     assert injector.remove() is True
     content = temp_file.read_text(encoding="utf-8")
-    assert "## Monoco Toolkit" not in content
+    assert "## Monoco" not in content
     assert "To be removed" not in content
     assert content.strip() == ""
 
@@ -65,7 +65,7 @@ def test_remove_preserves_surrounding(temp_file):
 
 Some intro text.
 
-## Monoco Toolkit
+## Monoco
 > Managed
 
 ### Feature
@@ -83,7 +83,7 @@ Some other text.
     assert "# My Document" in new_content
     assert "Some intro text." in new_content
     assert "## Other Section" in new_content
-    assert "## Monoco Toolkit" not in new_content
+    assert "## Monoco" not in new_content
     assert "Content" not in new_content
 
 
@@ -118,7 +118,7 @@ def test_external_content_detection(temp_file, capsys):
 
 <!-- MONOCO_GENERATED_START -->
 
-## Monoco Toolkit
+## Monoco
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
 
