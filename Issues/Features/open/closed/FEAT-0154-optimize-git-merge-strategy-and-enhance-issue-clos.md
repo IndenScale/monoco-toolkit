@@ -1,0 +1,85 @@
+---
+id: FEAT-0154
+uid: e3f844
+type: feature
+status: closed
+stage: done
+title: 优化 Git 合并策略与增强 Issue 关闭流程
+created_at: '2026-02-02T13:41:00'
+updated_at: '2026-02-02T15:08:00'
+parent: EPIC-0030
+dependencies: []
+related:
+- FEAT-0145
+domains:
+- IssueSystem
+tags:
+- '#EPIC-0030'
+- '#FEAT-0154'
+- '#FEAT-0145'
+files:
+- monoco/features/issue/commands.py
+- monoco/features/issue/resources/zh/AGENTS.md
+- monoco/features/issue/resources/en/AGENTS.md
+criticality: high
+solution: implemented
+opened_at: '2026-02-02T13:41:00'
+closed_at: '2026-02-02T15:53:00'
+---
+
+## FEAT-0154: 优化 Git 合并策略与增强 Issue 关闭流程
+
+## 背景与目标
+
+当前 `monoco` 工作流中，Agent 在关闭 Issue 时的 Git 操作策略过于粗糙，容易导致“旧状态污染主线”的问题。具体表现为 Feature 分支可能包含对其他 Issue 文件（非本 Feature 范围）的意外回滚或修改，直接合并会覆盖主线上的最新进展。
+
+**目标**:
+1.  **安全合并**: 通过工具链约束，确保 `close` 操作时的合并是原子的、基于 Issue 范围的 (Issue-Bounded)。
+2.  **默认清理**: `closed` 状态应意味着物理资源的释放，减少陈旧分支堆积。
+3.  **明确规范**: 更新 Agent 行为准则，确立 `monoco issue close` 为唯一权威的合并途径。
+
+## 验收标准
+
+- [x] `monoco issue close` 默认执行 `` 操作（删除分支/Worktree），除非显式指定 `--no-prune`。
+- [x] `monoco issue close` 实现基于 `files` 字段的原子化合并 (Smart Atomic Merge)。
+- [x] 完成对 `touched files` (Issue `files` 字段) 追踪机制的深度调查报告。
+- [x] 更新 `monoco/features/issue/resources/zh/AGENTS.md` 和相关 Skill 文档。
+
+## 技术任务
+
+### Phase 1: 机制增强 (Implementation)
+- [x] 修改 `monoco issue close` 命令参数，将 `prune` 默认设为 `True`。
+- [x] 增强 `monoco issue close` 的交互提示。
+- [x] 实现 `Smart Atomic Merge` 逻辑：
+    - [x] 在 `core.py` 中增加受控合并函数，仅合并 `files` 字段中的文件。
+    - [x] 实现合并前的冲突检测，如有冲突立即中止流程。
+- [x] 在 `close` 命令中集成合并步骤，确保在删除分支前完成主线同步。
+
+### Phase 2: 验证与文档
+- [x] 更新 `AGENTS.md` 规范。
+- [x] 验证端到端流程：从开发分支运行 `monoco issue sync-files` 到主线运行 `monoco issue close` 完成原子合并。
+
+### 调研发现 (Investigation Findings)
+
+针对 **"Smart Atomic Merge"** 的可行性，我们对 `monoco` 现有的 `files` (touched files) 追踪机制进行了 Spike 测试，结论如下：
+
+1.  **捕捉准确性 (Accuracy)**:
+    - `sync-files` 使用 `git diff --name-only base...target` 逻辑。
+    - **优点**: 能够精准捕捉 Feature Branch 自创建以来引入的所有增量文件（新增/修改/删除）。
+    - **验证**: 经测试，能够正确识别新创建的代码文件、Issue 元数据文件以及对现有文件的修改。
+
+2.  **边界与风险 (Boundaries & Risks)**:
+    - **双刃剑**: 它会捕捉到 Feature 分支内发生的所有变更。如果分支被“污染”（如无意中格式化了其他 Issue 文件），这些文件也会进入 `files` 列表。
+    - **结论**: `files` 列表是 Feature 的 **"真实影响范围" (Actual Impact Scope)**。作为合并白名单是可行的，能有效过滤单纯因“旧版本基线”导致的隐性覆盖，但无法防御显式的误操作修改。
+
+3.  **智能合并可行性 (Feasibility)**:
+    - 可以基于 `files` 列表实现 `git checkout main && git checkout feature -- <files>` 的选择性合并逻辑。
+    - **冲突处理原则**: 如果 `touched files` 与主线产生冲突，自动化工具**必须立即停止合并**，并抛出明确错误。
+    - **Fallback 指引**: 错误信息需明确指示 Agent 转入手动 Cherry-Pick 模式，并强调核心原则：**“仅挑选属于本 Feature 的有效变更，严禁覆盖主线上无关 Issue 的更新”**。
+    - 这将成为未来 "Smart Merge Strategy" 的核心基础。
+
+## Review Comments
+
+- **实现 (Implementation)**: `monoco issue close` 命令已更新，默认执行 `=True`。同时实现了基于 `files` 字段的 Smart Atomic Merge 逻辑。
+- **文档 (Documentation)**: 更新了 `AGENTS.md` 和 Skill 文档，明确了严格的合并策略及冲突处理规范。
+- **验证 (Verification)**: 经过对 `touched files` 追踪机制的调研及代码集成，初步确保了主线同步的安全性。
