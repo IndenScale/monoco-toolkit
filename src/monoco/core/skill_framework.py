@@ -15,10 +15,9 @@ This module implements the Role-Workflow-Atom three-level skill architecture:
    - workflow-review: Review workflow (checkout → verify → challenge → decide)
 
 3. Role Skills (role): Configuration layer defining default workflow and preferences
-   - role-engineer: Engineer role (uses workflow-dev, autopilot mode)
-   - role-manager: Manager role (uses workflow-planning, copilot mode)
-   - role-planner: Planner role (uses workflow-design, copilot mode)
-   - role-reviewer: Reviewer role (uses workflow-review, autopilot mode)
+   - principal: Principal Engineer role (uses workflow-design, copilot mode)
+   - engineer: Engineer role (uses workflow-dev, autopilot mode)
+   - reviewer: Reviewer role (uses workflow-review, autopilot mode)
 
 Key Design Principles:
 - Single Responsibility: Each atom skill does one thing
