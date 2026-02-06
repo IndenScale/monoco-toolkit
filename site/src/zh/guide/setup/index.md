@@ -1,6 +1,6 @@
 # Monoco Initialization
 
-`monoco init` 是 Monoco Toolkit 的引导命令，用于初始化 Monoco 的运行环境。它负责建立全局配置、项目级配置，并生成必要的目录结构和智能体记忆注入。
+`monoco init` 是 Monoco 的引导命令，用于初始化 Monoco 的运行环境。它负责建立全局配置、项目级配置，并生成必要的目录结构和智能体记忆注入。
 
 ## 核心功能
 
@@ -67,17 +67,17 @@ paths:
 - **Skills**:
   - 在 `Toolkit/skills/` 下生成各个模块的 `SKILL.md` (如 `issues-management/SKILL.md`)。
   - **关键步骤**: 修改项目根目录下的 `GEMINI.md`, `CLAUDE.md`, `AGENTS.md`。
-  - **注入内容**: 在这些文件中插入或更新 `## Monoco Toolkit` 章节，包含所有可用命令的 Prompt 提示。
+  - **注入内容**: 在这些文件中插入或更新 `## Monoco` 章节，包含所有可用命令的 Prompt 提示。
 
 ## 常见问题
 
 ### Q: 如果我修改了 `GEMINI.md` 里的 Prompt，会被覆盖吗？
 
-A: `monoco init` 使用正则匹配 `## Monoco Toolkit` 章节。
+A: `monoco init` 使用正则匹配 `## Monoco` 章节。
 
 - 如果该章节存在，会进行**全量替换**。请不要在该章节内手动修改内容，而是修改对应的 Feature 代码 (Generated Source)。
 - 该章节之外的内容不会被影响。
 
 ### Q: 如何更新 Toolkit 的 Prompt？
 
-A: 当 Monoco Toolkit 升级后，只需在项目根目录再次运行 `monoco init`，即可将最新的 Prompt 注入到 `GEMINI.md` 中。
+A: 当 Monoco 升级后，只需在项目根目录再次运行 `monoco init`，即可将最新的 Prompt 注入到 `GEMINI.md` 中。

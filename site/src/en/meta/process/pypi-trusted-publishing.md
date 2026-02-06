@@ -1,6 +1,6 @@
 # PyPI Trusted Publishing Configuration Guide
 
-This document explains how to configure PyPI Trusted Publishing for Monoco Toolkit to achieve secure automated publishing.
+This document explains how to configure PyPI Trusted Publishing for Monoco to achieve secure automated publishing.
 
 ## What is Trusted Publishing?
 

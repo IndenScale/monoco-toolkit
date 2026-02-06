@@ -1,6 +1,6 @@
 # Monoco for VS Code
 
-**Monoco** is the official navigation and control extension for the **Monoco Toolkit**, the operating system for Agentic Engineering.
+**Monoco** is the official navigation and control extension for the **Monoco**, the operating system for Agentic Engineering.
 
 It brings "Issue as Code" and native Kanban management directly into your IDE, allowing you to orchestrate human and AI workflows without context switching.
 

@@ -1,6 +1,6 @@
 # Monoco 工作流最佳实践 (Best Practices)
 
-本文档定义了 Monoco Toolkit 推荐的标准化开发工作流。通过遵循这些实践，您可以最大化地利用 Agent 的能力，同时确保代码库的稳定性和可追踪性。
+本文档定义了 Monoco 推荐的标准化开发工作流。通过遵循这些实践，您可以最大化地利用 Agent 的能力，同时确保代码库的稳定性和可追踪性。
 
 > 核心原则：**Issue 驱动开发** (Issue-Driven Development)。
 

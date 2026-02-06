@@ -98,4 +98,6 @@ isolation:
 
 ## Review Comments
 
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- 2026-02-06: 角色重命名为三角色模型完成（Principal/Engineer/Reviewer）
+- Source 侧多语言支持已实现（en/zh）
+- monoco sync 自动检测语言并覆盖 target 目录

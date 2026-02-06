@@ -32,7 +32,7 @@ Applicable to structured documentation in documentation directories. Translation
 
 ## Command-Line Tools
 
-Monoco Toolkit provides out-of-the-box i18n maintenance commands.
+Monoco provides out-of-the-box i18n maintenance commands.
 
 ### Coverage Scan (`scan`)
 

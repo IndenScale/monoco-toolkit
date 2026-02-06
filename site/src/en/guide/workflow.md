@@ -1,6 +1,6 @@
 # Monoco Workflow Best Practices
 
-This document defines the standardized development workflow recommended by the Monoco Toolkit. By following these practices, you can maximize the capabilities of Agents while ensuring codebase stability and traceability.
+This document defines the standardized development workflow recommended by the Monoco. By following these practices, you can maximize the capabilities of Agents while ensuring codebase stability and traceability.
 
 > Core Principle: **Issue-Driven Development**.
 

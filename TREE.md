@@ -1,6 +1,6 @@
-# Monoco Toolkit Directory Structure
+# Monoco Directory Structure
 
-This document outlines the root structure of the Monoco Toolkit repository and the purpose of each key directory.
+This document outlines the root structure of the Monoco repository and the purpose of each key directory.
 
 > **The "Distro" Architecture**: Monoco separates **State** (Issues), **Config** (.monoco), and **Logic** (monoco), reflecting the Linux distribution model where the Kernel (Kimi CLI) executes, the Distro (Monoco) manages, and the Desktop (IDE) presents.
 
@@ -8,69 +8,74 @@ This document outlines the root structure of the Monoco Toolkit repository and t
 
 ## Core Directories
 
-| Directory | Purpose |
-| :--- | :--- |
-| **`.monoco/`** | **System Configuration**. Stores project identity (`project.yaml`), workspace environment (`workspace.yaml`), execution state (`execution/`), sessions (`sessions/`), and roles (`roles/`). Managed by Monoco. |
-| **`Issues/`** | **Work Units**. The database of all tasks (Epics, Features, Chores, Fixes, Domains), stored as Markdown files. The "Source of Truth" for project management. Organized by type and status. |
-| **`monoco/`** | **Source Code**. The Python source code for the Monoco Toolkit, including the CLI (`cli/`), Core Logic (`core/`), Feature Modules (`features/`), and Daemon (`daemon/`). |
-| **`tests/`** | **Verification**. Pytest suite for unit and integration tests. |
-| **`.references/`** | **External Knowledge (Spikes)**. Read-only copies of external repositories or documentation, managed by `monoco spike`. |
+| Directory          | Purpose                                                                                                                                                                                                        |
+| :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`.monoco/`**     | **System Configuration**. Stores project identity (`project.yaml`), workspace environment (`workspace.yaml`), execution state (`execution/`), sessions (`sessions/`), and roles (`roles/`). Managed by Monoco. |
+| **`Issues/`**      | **Work Units**. The database of all tasks (Epics, Features, Chores, Fixes, Domains), stored as Markdown files. The "Source of Truth" for project management. Organized by type and status.                     |
+| **`monoco/`**      | **Source Code**. The Python source code for the Monoco, including the CLI (`cli/`), Core Logic (`core/`), Feature Modules (`features/`), and Daemon (`daemon/`).                                               |
+| **`tests/`**       | **Verification**. Pytest suite for unit and integration tests.                                                                                                                                                 |
+| **`.references/`** | **External Knowledge (Spikes)**. Read-only copies of external repositories or documentation, managed by `monoco spike`.                                                                                        |
 
 ---
 
 ## Agent Configuration Directories
 
-| Directory | Purpose |
-| :--- | :--- |
-| **`.agent/`** | **Agent Skills & Workflows** (Kimi). Definitions of skills (`skills/`) and workflows (`workflows/`) available to the Kimi AI Agent. |
-| **`.claude/`** | **Agent Skills** (Claude). Skill definitions for the Claude AI Agent. |
-| **`.gemini/`** | **Agent Skills** (Gemini). Skill definitions for the Gemini AI Agent. |
-| **`.qwen/`** | **Agent Skills** (Qwen). Skill definitions for the Qwen AI Agent. |
+| Directory      | Purpose                                                                                                                             |
+| :------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| **`.agent/`**  | **Agent Skills & Workflows** (Kimi). Definitions of skills (`skills/`) and workflows (`workflows/`) available to the Kimi AI Agent. |
+| **`.claude/`** | **Agent Skills** (Claude). Skill definitions for the Claude AI Agent.                                                               |
+| **`.gemini/`** | **Agent Skills** (Gemini). Skill definitions for the Gemini AI Agent.                                                               |
+| **`.qwen/`**   | **Agent Skills** (Qwen). Skill definitions for the Qwen AI Agent.                                                                   |
 
 ---
 
 ## Auxiliary Directories
 
-| Directory | Purpose |
-| :--- | :--- |
-| **`docs/`** | **Documentation**. Source files for project documentation (MkDocs). |
-| **`site/`** | **Documentation Site**. The frontend code (VitePress) for the documentation website. |
-| **`scripts/`** | **Automation**. Helper scripts for build, release, and maintenance tasks. |
-| **`extensions/`** | **IDE Extensions**. Source code for VSCode/Zed extensions. |
-| **`Memos/`** | **Fleeting Notes**. Temporary storage for ideas and quick notes (`monoco memo`). |
-| **`Kanban/`** | **Visualization**. Web-based Kanban board application. |
-| **`.archives/`** | **Issue Archives**. Closed/completed issues moved here for historical reference. |
-| **`assets/`** | **Static Assets**. Images, logos, and other static files. |
-| **`build/`** | **Build Artifacts**. Temporary build output (PyInstaller, etc.). |
-| **`dist/`** | **Distribution**. Packaged releases and distribution files. |
+| Directory         | Purpose                                                                              |
+| :---------------- | :----------------------------------------------------------------------------------- |
+| **`docs/`**       | **Documentation**. Source files for project documentation (MkDocs).                  |
+| **`site/`**       | **Documentation Site**. The frontend code (VitePress) for the documentation website. |
+| **`scripts/`**    | **Automation**. Helper scripts for build, release, and maintenance tasks.            |
+| **`extensions/`** | **IDE Extensions**. Source code for VSCode/Zed extensions.                           |
+| **`Memos/`**      | **Fleeting Notes**. Temporary storage for ideas and quick notes (`monoco memo`).     |
+| **`Kanban/`**     | **Visualization**. Web-based Kanban board application.                               |
+| **`.archives/`**  | **Issue Archives**. Closed/completed issues moved here for historical reference.     |
+| **`assets/`**     | **Static Assets**. Images, logos, and other static files.                            |
+| **`build/`**      | **Build Artifacts**. Temporary build output (PyInstaller, etc.).                     |
+| **`dist/`**       | **Distribution**. Packaged releases and distribution files.                          |
 
 ---
 
 ## Configuration Files
 
 ### Project Configuration
+
 - **`pyproject.toml`**: Python build and dependency configuration.
 - **`package.json`**: Node.js dependencies (for documentation site and tools).
 - **`package-lock.json`**: Locked Node.js dependency versions.
 - **`uv.lock`**: Locked Python dependency versions (UV package manager).
 
 ### Agent Constitution (Context Files)
+
 - **`AGENTS.md`**: Universal agent guidelines and project overview.
 - **`GEMINI.md`**: Agent Constitution for Gemini.
 - **`CLAUDE.md`**: Agent Constitution for Claude.
 - **`QWEN.md`**: Agent Constitution for Qwen.
 
 ### Build & Packaging
+
 - **`monoco.spec`**: PyInstaller specification for building binary distributions.
 - **`mkdocs.yml`**: MkDocs configuration for documentation generation.
 
 ### Development Tools
+
 - **`.pre-commit-config.yaml`**: Pre-commit hooks configuration.
 - **`.prettierrc`**: Prettier code formatter configuration.
 - **`.prettierignore`**: Files excluded from Prettier formatting.
 - **`.gitignore`**: Git ignore patterns.
 
 ### Project Metadata
+
 - **`LICENSE`**: MIT License.
 - **`CHANGELOG.md`**: Version history and changes.
 - **`CONTRIBUTING.md`**: Contribution guidelines.
@@ -151,4 +156,4 @@ This aligns with the "Distro" architecture where Monoco manages the environment 
 
 ---
 
-*Last Updated: 2026-02-01*
+_Last Updated: 2026-02-01_

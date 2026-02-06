@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'Monoco Toolkit',
+  title: 'Monoco',
   description: 'Agent-Native Issue Tracking System',
   srcDir: 'src',
   base: '/monoco-toolkit/',

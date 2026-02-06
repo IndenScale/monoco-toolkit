@@ -5,7 +5,7 @@
 
 ## 1. 概述
 
-本 Spike 旨在调研主流 Agent 框架（如 Claude Code, Gemini CLI）、Git 以及 IDE（如 VSCode）的钩子（Hooks）机制，为 Monoco Toolkit 构建一套统一、可扩展且支持多平台的 Hooks 管理系统方案。
+本 Spike 旨在调研主流 Agent 框架（如 Claude Code, Gemini CLI）、Git 以及 IDE（如 VSCode）的钩子（Hooks）机制，为 Monoco 构建一套统一、可扩展且支持多平台的 Hooks 管理系统方案。
 
 ### 核心挑战
 
