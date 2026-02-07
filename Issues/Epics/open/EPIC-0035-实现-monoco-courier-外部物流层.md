@@ -47,7 +47,7 @@ files_count: 0
 ## 技术任务 (Technical Tasks)
 
 - [ ] **基础架构设计**
-  - [/] 定义 Mailbox 协议存储格式与 Schema 规范 (Ref: FEAT-0189)。
+  - [x] 定义 Mailbox 协议存储格式与 Schema 规范。
   - [ ] 定义受保护的 Mailbox 目录结构与权限模型。
   - [ ] 实现 `monoco courier send` 投递命令。
   - [ ] 定义 Courier 与 Daemon (Serve) 之间的交互契约 (REST + SSE)。
