@@ -27,11 +27,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("courier.daemon")
 
-from monoco.features.connector.protocol.constants import (
-    DEFAULT_MAILBOX_ROOT,
-    COURIER_DEFAULT_PORT,
-    COURIER_DEFAULT_HOST,
-)
+from monoco.features.connector.protocol.constants import DEFAULT_MAILBOX_ROOT
+from .constants import COURIER_DEFAULT_PORT, COURIER_DEFAULT_HOST
 
 from .state import LockManager, MessageStateManager
 from .api import CourierAPIServer
