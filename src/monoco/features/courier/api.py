@@ -56,6 +56,17 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
     state_manager: Optional[MessageStateManager] = None
     version: str = "1.0.0"
 
+    # DingTalk adapter instance (initialized on first use)
+    _dingtalk_adapter: Optional["DingtalkAdapter"] = None
+
+    @classmethod
+    def get_dingtalk_adapter(cls) -> "DingtalkAdapter":
+        """Get or create the DingTalk adapter singleton."""
+        if cls._dingtalk_adapter is None:
+            from .adapters.dingtalk import DingtalkAdapter
+            cls._dingtalk_adapter = DingtalkAdapter()
+        return cls._dingtalk_adapter
+
     def log_message(self, format: str, *args):
         """Override to use our logger."""
         logger.debug(f"{self.client_address[0]} - {format % args}")
@@ -166,8 +177,8 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
 
     def _handle_dingtalk_webhook(self, slug: str):
         """Handle DingTalk webhook for a specific project slug."""
+        import asyncio
         from urllib.parse import parse_qs
-        from .adapters.dingtalk import DingtalkSigner
 
         inventory = get_inventory()
         project = inventory.get(slug)
@@ -177,33 +188,36 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
         # Extract signature and timestamp from query string
         parsed_url = urlparse(self.path)
         query_params = parse_qs(parsed_url.query)
-        
+
         timestamp = query_params.get("timestamp", [None])[0]
         sign = query_params.get("sign", [None])[0]
-        
-        # Verify signature if secret is configured
-        secret = project.config.get("dingtalk_secret")
-        if secret:
-            if not timestamp or not sign:
-                raise APIError("Missing timestamp or sign for signature verification", 401)
-            
-            if not DingtalkSigner.verify(timestamp, sign, secret):
-                logger.warning(f"Signature verification failed for project '{slug}'")
-                raise APIError("Signature verification failed", 401)
-            
-            if not DingtalkSigner.is_timestamp_valid(timestamp):
-                logger.warning(f"Timestamp expired for project '{slug}'")
-                raise APIError("Timestamp expired", 401)
 
+        # Read payload
         data = self._read_json()
         if not data:
             raise APIError("Invalid DingTalk payload", 400)
 
-        logger.info(f"Verified DingTalk webhook for project '{slug}' ({project.root_path})")
-        
-        # TODO: Debounce & Standardize
-        # For now, we return success to DingTalk
-        self._send_json({"success": True, "project": slug})
+        # Get adapter and handle webhook
+        adapter = self.get_dingtalk_adapter()
+
+        try:
+            # Run async handler in sync context
+            result = asyncio.run(adapter.handle_webhook(
+                project=project,
+                payload=data,
+                sign=sign,
+                timestamp=timestamp,
+            ))
+
+            logger.info(f"DingTalk webhook processed for '{slug}': {result}")
+            self._send_json(result)
+
+        except ValueError as e:
+            logger.warning(f"DingTalk webhook validation failed for '{slug}': {e}")
+            raise APIError(str(e), 401, "verification_failed")
+        except Exception as e:
+            logger.exception(f"DingTalk webhook processing failed for '{slug}': {e}")
+            raise APIError("Internal processing error", 500, "internal_error")
 
     def _handle_registry_register(self):
         """Register a new project in the registry."""

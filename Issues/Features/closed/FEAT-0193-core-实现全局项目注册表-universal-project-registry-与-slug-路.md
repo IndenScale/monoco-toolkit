@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 'Core: 实现全局项目注册表 (Universal Project Registry) 与 Slug 路由解耦'
 created_at: '2026-02-07T17:14:03'
-updated_at: '2026-02-07T17:34:43'
+updated_at: 2026-02-07 17:34:45
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -33,10 +33,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-07T17:14:03'
 closed_at: '2026-02-07T17:34:43'
-isolation:
-  type: branch
-  ref: FEAT-0193-core-实现全局项目注册表-universal-project-registry-与-slug-路
-  created_at: '2026-02-07T17:14:26'
 ---
 
 ## FEAT-0193: Core: 实现全局项目注册表 (Universal Project Registry) 与 Slug 路由解耦
