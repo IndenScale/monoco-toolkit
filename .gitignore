@@ -59,9 +59,7 @@ MemoryDaemon/
 !.references/articles/template.md
 test.pdf
 .env
-.monoco/local_config.yaml
-.monoco/sessions/
-.monoco/log/
+.monoco/
 
 # Agent Directories
 .qwen/
