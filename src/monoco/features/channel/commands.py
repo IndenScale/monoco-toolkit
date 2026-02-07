@@ -437,12 +437,15 @@ def test_channel(
 @app.command("send")
 def send_message(
     channel_id: str = typer.Argument(..., help="Channel ID to send through"),
-    message: str = typer.Argument(..., help="Message to send"),
+    message: list[str] = typer.Argument(..., help="Message to send"),
     title: Optional[str] = typer.Option(None, "--title", "-t", help="Message title (for markdown)"),
     markdown: bool = typer.Option(False, "--markdown", "-m", help="Send as markdown"),
 ):
     """Send a message through a channel."""
     store = get_channel_store()
+    
+    # Join message parts into a single string
+    message_text = " ".join(message)
 
     channel = store.get(channel_id)
     if not channel:
@@ -456,7 +459,7 @@ def send_message(
     sender = ChannelSender()
 
     with console.status(f"[bold green]Sending message through {channel_id}..."):
-        result = sender.send(channel, message, title=title, markdown=markdown)
+        result = sender.send(channel, message_text, title=title, markdown=markdown)
 
     if result.success:
         console.print(f"[green]✓[/green] Message sent successfully")
