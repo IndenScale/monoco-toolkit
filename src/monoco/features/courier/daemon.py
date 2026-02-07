@@ -85,7 +85,13 @@ class CourierDaemon:
             # Ensure mailbox directory structure exists
             self._ensure_directories()
 
-            # Initialize state management
+            # Initialize registry and state management
+            from .registry import ProjectRegistry
+            self.registry = ProjectRegistry()
+            
+            # Auto-register the current project as 'default'
+            self.registry.register("default", self.project_root)
+
             self.lock_manager = LockManager(self.state_dir)
             self.state_manager = MessageStateManager(
                 self.lock_manager,
@@ -104,6 +110,7 @@ class CourierDaemon:
             self.api_server = CourierAPIServer(
                 self.lock_manager,
                 self.state_manager,
+                project_registry=self.registry,
                 host=self.host,
                 port=self.port,
             )

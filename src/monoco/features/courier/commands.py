@@ -33,6 +33,8 @@ from .service import (
 from .constants import COURIER_DEFAULT_PORT
 
 app = typer.Typer(help="Manage Courier service")
+project_app = typer.Typer(help="Manage project mappings (Multi-tenancy)")
+app.add_typer(project_app, name="project")
 console = Console()
 
 
@@ -348,4 +350,90 @@ def service_logs(
 
     except Exception as e:
         OutputManager.error(f"Failed to get logs: {e}")
+        raise typer.Exit(code=1)
+
+
+@project_app.command("register")
+def project_register(
+    slug: str = typer.Option(..., "--slug", "-s", help="Unique slug for the project"),
+    path: Optional[Path] = typer.Option(None, "--path", "-p", help="Project root path (defaults to current)"),
+    json: AgentOutput = False,
+):
+    """Register a project workspace with the running Courier service."""
+    import httpx
+    
+    if path is None:
+        path = Path.cwd()
+    else:
+        path = path.resolve()
+        
+    service = _get_service()
+    status = service.get_status()
+    
+    if not status.is_running():
+        OutputManager.error("Courier is not running. Start it first.")
+        raise typer.Exit(code=1)
+        
+    url = f"{status.api_url}/api/v1/courier/registry/register"
+    
+    try:
+        response = httpx.post(url, json={
+            "slug": slug,
+            "path": str(path)
+        }, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        if json:
+            OutputManager.print(data)
+        else:
+            console.print(f"[green]✓[/green] Project '{slug}' registered at {path}")
+            console.print(f"  Webhook: {status.api_url}/api/v1/courier/webhook/dingtalk/{slug}")
+            
+    except Exception as e:
+        OutputManager.error(f"Failed to register project: {e}")
+        raise typer.Exit(code=1)
+
+
+@project_app.command("list")
+def project_list(
+    json: AgentOutput = False,
+):
+    """List all project workspaces registered with Courier."""
+    import httpx
+    
+    service = _get_service()
+    status = service.get_status()
+    
+    if not status.is_running():
+        OutputManager.error("Courier is not running.")
+        raise typer.Exit(code=1)
+        
+    url = f"{status.api_url}/api/v1/courier/registry/list"
+    
+    try:
+        response = httpx.post(url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        if json:
+            OutputManager.print(data)
+        else:
+            projects = data.get("projects", [])
+            if not projects:
+                console.print("No projects registered.")
+                return
+                
+            table = Table(title="Courier Project Mappings")
+            table.add_column("Slug", style="cyan")
+            table.add_column("Root Path")
+            table.add_column("Mailbox")
+            
+            for p in projects:
+                table.add_row(p["slug"], p["path"], p["mailbox"])
+                
+            console.print(table)
+            
+    except Exception as e:
+        OutputManager.error(f"Failed to list projects: {e}")
         raise typer.Exit(code=1)

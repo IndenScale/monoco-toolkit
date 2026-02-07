@@ -53,6 +53,7 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
     # Class-level storage (set by server)
     lock_manager: Optional[LockManager] = None
     state_manager: Optional[MessageStateManager] = None
+    project_registry: Optional['ProjectRegistry'] = None
     version: str = "1.0.0"
 
     def log_message(self, format: str, *args):
@@ -86,10 +87,8 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
         except (ValueError, json.JSONDecodeError):
             return None
 
-    def _extract_message_id(self, pattern: str, path: str) -> Optional[str]:
-        """Extract message ID from URL path."""
-        # pattern: /api/v1/messages/{id}/claim
-        # path: /api/v1/messages/lark_abc123/claim
+    def _extract_param(self, pattern: str, path: str, param_name: str) -> Optional[str]:
+        """Extract a parameter from URL path based on placeholder {name}."""
         parts = path.strip("/").split("/")
         pattern_parts = pattern.strip("/").split("/")
 
@@ -97,8 +96,10 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
             return None
 
         for i, (p_part, part) in enumerate(zip(pattern_parts, parts)):
-            if p_part == "{id}":
+            if p_part == f"{{{param_name}}}":
                 return part
+            elif p_part.startswith("{") and p_part.endswith("}"):
+                continue # Skip other params
             elif p_part != part:
                 return None
         return None
@@ -128,7 +129,24 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
         path = parsed.path
 
         try:
-            # Check for claim endpoint
+            # Check for DingTalk multi-project webhook
+            # Pattern: /api/v1/courier/webhook/dingtalk/{slug}
+            webhook_pattern = f"{API_PREFIX}/webhook/dingtalk/{{slug}}"
+            slug = self._extract_param(webhook_pattern, path, "slug")
+            
+            if slug:
+                self._handle_dingtalk_webhook(slug)
+                return
+
+            # Registry management (Internal/CLI use)
+            if path == f"{API_PREFIX}/registry/register":
+                self._handle_registry_register()
+                return
+            elif path == f"{API_PREFIX}/registry/list":
+                self._handle_registry_list()
+                return
+
+            # Legacy/Standard endpoints
             if "/messages/" in path and path.endswith("/claim"):
                 message_id = path.split("/")[-2]
                 self._handle_claim(message_id)
@@ -145,6 +163,88 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
         except Exception as e:
             logger.exception("Unexpected error")
             self._send_error(str(e), 500, "internal_error")
+
+    def _handle_dingtalk_webhook(self, slug: str):
+        """Handle DingTalk webhook for a specific project slug."""
+        from urllib.parse import parse_qs
+        from .adapters.dingtalk import DingtalkSigner
+
+        if not self.project_registry:
+            raise APIError("Project registry not initialized", 500)
+
+        project = self.project_registry.get_project(slug)
+        if not project:
+            raise APIError(f"Project slug '{slug}' not found", 404)
+
+        # Extract signature and timestamp from query string
+        parsed_url = urlparse(self.path)
+        query_params = parse_qs(parsed_url.query)
+        
+        timestamp = query_params.get("timestamp", [None])[0]
+        sign = query_params.get("sign", [None])[0]
+        
+        # Verify signature if secret is configured
+        secret = project.config.get("dingtalk_secret")
+        if secret:
+            if not timestamp or not sign:
+                raise APIError("Missing timestamp or sign for signature verification", 401)
+            
+            if not DingtalkSigner.verify(timestamp, sign, secret):
+                logger.warning(f"Signature verification failed for project '{slug}'")
+                raise APIError("Signature verification failed", 401)
+            
+            if not DingtalkSigner.is_timestamp_valid(timestamp):
+                logger.warning(f"Timestamp expired for project '{slug}'")
+                raise APIError("Timestamp expired", 401)
+
+        data = self._read_json()
+        if not data:
+            raise APIError("Invalid DingTalk payload", 400)
+
+        logger.info(f"Verified DingTalk webhook for project '{slug}' ({project.root_path})")
+        
+        # TODO: Debounce & Standardize
+        # For now, we return success to DingTalk
+        self._send_json({"success": True, "project": slug})
+
+    def _handle_registry_register(self):
+        """Register a new project in the registry."""
+        if not self.project_registry:
+            raise APIError("Project registry not initialized", 500)
+
+        data = self._read_json()
+        if not data or "slug" not in data or "path" not in data:
+            raise APIError("Missing slug or path", 400)
+
+        slug = data["slug"]
+        root_path = Path(data["path"])
+        
+        project = self.project_registry.register(slug, root_path, data.get("config"))
+        
+        self._send_json({
+            "success": True, 
+            "slug": slug,
+            "path": str(project.root_path)
+        })
+
+    def _handle_registry_list(self):
+        """List all registered projects."""
+        if not self.project_registry:
+            raise APIError("Project registry not initialized", 500)
+
+        mappings = []
+        for slug in self.project_registry.list_slugs():
+            p = self.project_registry.get_project(slug)
+            mappings.append({
+                "slug": slug,
+                "path": str(p.root_path),
+                "mailbox": str(p.mailbox_path)
+            })
+
+        self._send_json({
+            "success": True,
+            "projects": mappings
+        })
 
     def _handle_health(self):
         """Handle health check request."""
@@ -310,11 +410,13 @@ class CourierAPIServer:
         self,
         lock_manager: LockManager,
         state_manager: MessageStateManager,
+        project_registry: Optional['ProjectRegistry'] = None,
         host: str = "localhost",
         port: int = 8080,
     ):
         self.lock_manager = lock_manager
         self.state_manager = state_manager
+        self.project_registry = project_registry
         self.host = host
         self.port = port
         self._server: Optional[HTTPServer] = None
@@ -326,6 +428,7 @@ class CourierAPIServer:
         # Set class-level references for handler
         CourierAPIHandler.lock_manager = self.lock_manager
         CourierAPIHandler.state_manager = self.state_manager
+        CourierAPIHandler.project_registry = self.project_registry
 
         self._server = HTTPServer((self.host, self.port), CourierAPIHandler)
 
