@@ -7,6 +7,7 @@ import yaml
 
 from monoco.core.workspace import find_projects
 from monoco.core.output import AgentOutput, OutputManager
+from monoco.core.registry import get_inventory
 
 app = typer.Typer(help="Manage Monoco Projects")
 console = Console()
@@ -79,9 +80,29 @@ summary: |
 @app.command("list")
 def list_projects(
     json: AgentOutput = False,
-    root: Optional[str] = typer.Option(None, "--root", help="Workspace root"),
+    root: Optional[str] = typer.Option(None, "--root", help="Workspace root (for local scan)"),
+    all_projects: bool = typer.Option(False, "--all", "-a", help="Show global inventory instead of local scan"),
 ):
-    """List all discovered projects in the workspace."""
+    """List projects (locally discovered or from global inventory)."""
+    if all_projects:
+        inventory = get_inventory()
+        entries = inventory.list()
+        
+        if OutputManager.is_agent_mode():
+            OutputManager.print([e.to_dict() for e in entries])
+        else:
+            table = Table(title="Global Project Inventory")
+            table.add_column("Slug", style="cyan")
+            table.add_column("Path")
+            table.add_column("Mailbox", style="dim")
+            
+            for e in entries:
+                table.add_row(e.slug, str(e.path), str(e.mailbox))
+            
+            console.print(table)
+            console.print(f"[dim]Total: {len(entries)} projects in global inventory[/dim]")
+        return
+
     cwd = Path(root).resolve() if root else Path.cwd()
     projects = find_projects(cwd)
 
@@ -115,6 +136,7 @@ def list_projects(
             table.add_row(p.id, p.name, key, path_str)
 
         console.print(table)
+        console.print(f"[dim]Total: {len(projects)} projects found locally[/dim]")
 
 
 @app.command("init")
@@ -166,3 +188,56 @@ def init_project(
             "template_file": str(template_path),
         }
     )
+@app.command("register")
+def register_project(
+    slug: str = typer.Option(..., "--slug", "-s", help="Unique slug for the project"),
+    path: Optional[Path] = typer.Option(None, "--path", "-p", help="Project root path (defaults to current)"),
+    json: AgentOutput = False,
+):
+    """Register a project with a unique slug in the global inventory."""
+    if path is None:
+        path = Path.cwd()
+    else:
+        path = path.resolve()
+        
+    inventory = get_inventory()
+    
+    # Try to load secret from .env if available (legacy support for courier)
+    config = {}
+    env_path = path / ".env"
+    if env_path.exists():
+        try:
+            with open(env_path, "r") as f:
+                for line in f:
+                    if line.startswith("DINGTALK_SECRET="):
+                        secret = line.split("=", 1)[1].strip().strip('"').strip("'")
+                        config["dingtalk_secret"] = secret
+                        break
+        except Exception:
+            pass
+
+    entry = inventory.register(slug, path, config=config)
+    
+    if json:
+        OutputManager.print(entry.to_dict())
+    else:
+        console.print(f"[green]✓[/green] Project registered: [cyan]{slug}[/cyan] -> [dim]{path}[/dim]")
+
+
+@app.command("remove")
+def remove_project(
+    slug: str = typer.Argument(..., help="Slug of the project to remove"),
+    json: AgentOutput = False,
+):
+    """Remove a project from the global inventory."""
+    inventory = get_inventory()
+    if not inventory.get(slug):
+        OutputManager.error(f"Project '{slug}' not found in inventory.")
+        raise typer.Exit(code=1)
+        
+    inventory.remove(slug)
+    
+    if json:
+        OutputManager.print({"success": True, "slug": slug})
+    else:
+        console.print(f"[green]✓[/green] Project [cyan]{slug}[/cyan] removed from inventory.")

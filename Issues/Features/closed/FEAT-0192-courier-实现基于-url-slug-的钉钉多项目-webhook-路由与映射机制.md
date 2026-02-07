@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 'Courier: 实现基于 URL Slug 的钉钉多项目 Webhook 路由与映射机制'
 created_at: '2026-02-07T16:56:57'
-updated_at: '2026-02-07T17:07:18'
+updated_at: 2026-02-07 17:07:19
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -26,10 +26,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-07T16:56:57'
 closed_at: '2026-02-07T17:07:18'
-isolation:
-  type: branch
-  ref: FEAT-0192-courier-实现基于-url-slug-的钉钉多项目-webhook-路由与映射机制
-  created_at: '2026-02-07T16:57:07'
 ---
 
 ## FEAT-0192: Courier: 实现基于 URL Slug 的钉钉多项目 Webhook 路由与映射机制

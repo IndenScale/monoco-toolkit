@@ -39,7 +39,7 @@ dependencies = [
     "uvicorn[standard]>=0.20.0",
     "sse-starlette>=1.6.0",
     "watchdog>=6.0.0",
-    "httpx>=0.28.1",
+    "httpx[socks]>=0.28.1",
 ]
 
 [project.urls]
