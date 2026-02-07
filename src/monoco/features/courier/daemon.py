@@ -35,7 +35,11 @@ from .constants import COURIER_DEFAULT_PORT, COURIER_DEFAULT_HOST
 from .state import LockManager, MessageStateManager
 from .api import CourierAPIServer
 from .debounce import DebounceHandler, DebounceConfig
+from .outbound_watcher import OutboundWatcher
+from .outbound_dispatcher import OutboundDispatcher
+from .outbound_processor import OutboundProcessor
 from monoco.core.registry import get_inventory
+from monoco.features.connector.protocol.schema import OutboundMessage, Content, Provider
 
 
 class CourierDaemon:
@@ -78,6 +82,13 @@ class CourierDaemon:
         # IM Agent integration (FEAT-0170)
         self.im_adapter: Optional[Any] = None
         self._im_task: Optional[asyncio.Task] = None
+
+        # Outbound processing (FEAT-0172)
+        self.outbound_watcher: Optional[OutboundWatcher] = None
+        self.outbound_dispatcher: Optional[OutboundDispatcher] = None
+        self.outbound_processor: Optional[OutboundProcessor] = None
+        self._outbound_poll_interval: float = 5.0  # seconds
+        self._last_outbound_scan: float = 0.0
 
         # Control
         self._shutdown = False
@@ -123,6 +134,9 @@ class CourierDaemon:
                 host=self.host,
                 port=self.port,
             )
+            
+            # Initialize outbound processing (FEAT-0172)
+            self._init_outbound_processing()
             
             # Initialize DingTalk Stream adapter if configured
             self._init_stream_adapter()
@@ -187,6 +201,132 @@ class CourierDaemon:
         except Exception as e:
             logger.warning(f"Failed to initialize DingTalk Stream adapter: {e}")
     
+    def _init_outbound_processing(self) -> None:
+        """Initialize outbound message processing components (FEAT-0172)."""
+        try:
+            # Initialize watcher
+            self.outbound_watcher = OutboundWatcher(
+                outbound_path=self.mailbox_root / "outbound",
+                poll_interval=self._outbound_poll_interval,
+            )
+            self.outbound_watcher.initialize()
+            
+            # Initialize dispatcher
+            self.outbound_dispatcher = OutboundDispatcher()
+            
+            # Register adapters for each provider
+            from .adapters import create_adapter
+            for provider in OutboundWatcher.SUPPORTED_PROVIDERS:
+                adapter = create_adapter(provider)
+                if adapter:
+                    # Register the pre-configured instance directly
+                    # This ensures custom initialization (e.g., Flow mode credentials) is preserved
+                    self.outbound_dispatcher.register_adapter_instance(
+                        provider,
+                        adapter
+                    )
+            
+            # Initialize processor
+            self.outbound_processor = OutboundProcessor(
+                outbound_path=self.mailbox_root / "outbound",
+                archive_path=self.mailbox_root / "archive",
+                deadletter_path=self.mailbox_root / ".deadletter",
+            )
+            self.outbound_processor.initialize()
+            
+            logger.info("Outbound processing initialized")
+            
+        except Exception as e:
+            logger.warning(f"Failed to initialize outbound processing: {e}")
+    
+    def _process_outbound_queue(self) -> None:
+        """Process pending outbound messages (FEAT-0172)."""
+        if not self.outbound_watcher or not self.outbound_dispatcher or not self.outbound_processor:
+            return
+        
+        # Rate limit scans
+        now = time.time()
+        if now - self._last_outbound_scan < self._outbound_poll_interval:
+            return
+        self._last_outbound_scan = now
+        
+        try:
+            # Scan for pending messages
+            pending = self.outbound_watcher.scan()
+            
+            if not pending:
+                return
+            
+            logger.info(f"Processing {len(pending)} outbound messages")
+            
+            for entry in pending:
+                try:
+                    # Mark as processing to prevent duplicate pickup
+                    self.outbound_watcher.mark_processing(entry.id)
+                    
+                    # Build OutboundMessage from entry
+                    message = self._build_outbound_message(entry)
+                    if not message:
+                        logger.warning(f"Failed to build message for {entry.id}")
+                        self.outbound_watcher.mark_done(entry.id)
+                        continue
+                    
+                    # Dispatch to adapter
+                    import asyncio
+                    result = asyncio.run(self.outbound_dispatcher.dispatch(message))
+                    
+                    # Process result
+                    self.outbound_processor.process_send_result(entry, result)
+                    
+                except Exception as e:
+                    logger.exception(f"Error processing outbound message {entry.id}: {e}")
+                finally:
+                    self.outbound_watcher.mark_done(entry.id)
+                    
+        except Exception as e:
+            logger.error(f"Error in outbound queue processing: {e}")
+    
+    def _build_outbound_message(self, entry) -> Optional[OutboundMessage]:
+        """Build OutboundMessage from OutboundMessageEntry."""
+        try:
+            # Read full content
+            content = entry.file_path.read_text(encoding="utf-8")
+            
+            # Parse frontmatter and body
+            body_text = ""
+            if content.startswith("---"):
+                parts = content.split("---", 2)
+                if len(parts) >= 3:
+                    body_text = parts[2].strip()
+            
+            # Determine content type
+            content_type = entry.content_type
+            if content_type == "markdown":
+                content = Content(markdown=body_text)
+            elif content_type == "card":
+                # Parse card JSON
+                import json
+                try:
+                    card_data = json.loads(body_text)
+                    content = Content(card=card_data)
+                except json.JSONDecodeError:
+                    content = Content(text=body_text)
+            else:
+                content = Content(text=body_text)
+            
+            return OutboundMessage(
+                to=entry.to,
+                provider=entry.provider,
+                reply_to=entry.frontmatter.get("reply_to"),
+                thread_key=entry.frontmatter.get("thread_key"),
+                type=content_type,
+                content=content,
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to build outbound message: {e}")
+            return None
+
     def _init_im_adapter(self) -> None:
         """Initialize IM Agent adapter if enabled (FEAT-0170)."""
         try:
@@ -240,11 +380,7 @@ class CourierDaemon:
             # Create mailbox store for this project
             mailbox_path = project_path / ".monoco" / "mailbox"
             config = MailboxConfig(
-                project_path=project_path,
-                inbound_path=mailbox_path / "inbound",
-                outbound_path=mailbox_path / "outbound",
-                archive_path=mailbox_path / "archive",
-                state_path=mailbox_path / ".state",
+                root_path=mailbox_path,
             )
             store = MailboxStore(config)
             
@@ -318,7 +454,9 @@ class CourierDaemon:
 
             # Main loop
             while not self._shutdown:
-                # TODO: Process outbound queue
+                # Process outbound queue (FEAT-0172)
+                self._process_outbound_queue()
+                
                 # TODO: Poll adapters for inbound messages
                 # TODO: Retry failed messages
 

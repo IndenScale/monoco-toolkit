@@ -116,20 +116,30 @@ class BaseChannel(BaseModel, ABC):
 
 
 class DingtalkChannel(BaseChannel):
-    """DingTalk webhook channel configuration."""
+    """DingTalk channel configuration (supports both Webhook and Flow modes)."""
 
     type: ChannelType = Field(default=ChannelType.DINGTALK, frozen=True)
-    webhook_url: str = Field(..., description="DingTalk webhook URL")
+    
+    # Webhook mode fields (legacy)
+    webhook_url: str = Field(default="", description="DingTalk webhook URL (for webhook mode)")
     keywords: str = Field(default="", description="DingTalk bot keywords")
     secret: str = Field(default="", description="DingTalk bot secret for signature")
+    
+    # Flow mode fields
+    client_id: str = Field(default="", description="DingTalk Client ID / App Key (for Flow mode)")
+    client_secret: str = Field(default="", description="DingTalk Client Secret / App Secret (for Flow mode)")
+    robot_code: str = Field(default="", description="DingTalk Robot Code for sending (for Flow mode)")
 
-    @field_validator("webhook_url")
-    @classmethod
-    def validate_webhook_url(cls, v: str) -> str:
-        """Validate webhook URL format."""
-        if not v.startswith("https://oapi.dingtalk.com/robot/send"):
-            raise ValueError("Invalid DingTalk webhook URL")
-        return v
+    @model_validator(mode="after")
+    def validate_config(self) -> "DingtalkChannel":
+        """Validate that at least one mode is configured."""
+        has_webhook = self.webhook_url and self.webhook_url.startswith("https://oapi.dingtalk.com/robot/send")
+        has_flow = self.client_id and self.client_secret
+        
+        if not has_webhook and not has_flow:
+            raise ValueError("Either webhook_url (webhook mode) or client_id + client_secret (Flow mode) must be configured")
+        
+        return self
 
     def get_provider_type(self) -> str:
         return "dingtalk"
@@ -179,12 +189,26 @@ class DingtalkChannel(BaseChannel):
 
     def to_sender_config(self) -> Dict[str, Any]:
         """Convert to sender configuration."""
-        return {
+        config = {
             "provider": "dingtalk",
             "webhook_url": self.webhook_url,
             "keywords": self.keywords,
             "secret": self.secret,
         }
+        
+        # Add Flow mode fields if configured
+        if self.client_id:
+            config["client_id"] = self.client_id
+        if self.client_secret:
+            config["client_secret"] = self.client_secret
+        if self.robot_code:
+            config["robot_code"] = self.robot_code
+            
+        return config
+    
+    def is_flow_mode(self) -> bool:
+        """Check if channel is configured for Flow mode."""
+        return bool(self.client_id and self.client_secret)
 
 
 class LarkChannel(BaseChannel):
