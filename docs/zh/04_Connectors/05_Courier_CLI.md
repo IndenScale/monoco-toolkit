@@ -8,12 +8,12 @@
 
 ## 1. 概述
 
-Courier CLI 是 Courier 服务生命周期管理的唯一接口。它仅负责服务的**启动、停止和监控**，不负责消息处理。所有消息操作通过 `mailbox` 命令完成。
+Courier CLI 是 Courier 服务生命周期管理的唯一接口。它仅负责服务的**启动、停止和监控**，不负责 Mail 处理。所有 Mail 操作通过 `mailbox` 命令完成。
 
 ### 1.1 设计原则
 
 1. **单一职责**: Courier CLI 只管理服务进程
-2. **与数据分离**: 消息状态管理是 Courier 服务的内部职责，CLI 不直接干预
+2. **与数据分离**: Mail 状态管理是 Courier 服务的内部职责，CLI 不直接干预
 3. **简单直接**: 命令语义清晰，行为可预测
 4. **快速失败**: 操作失败立即返回错误，不阻塞
 
@@ -81,14 +81,14 @@ monoco courier stop --wait                    # 阻塞直到服务停止
 **行为**:
 1. 发送 SIGTERM 信号给 Courier 进程
 2. Courier 开始优雅关闭：
-   - 停止接收新消息（Webhook 返回 503）
+   - 停止接收外部输入（Webhook 返回 503）
    - 完成进行中的发送任务
-   - 等待已认领消息超时或完成
+   - 等待已认领 Mail 超时或完成
    - 关闭适配器连接
    - 清理临时文件
 3. 如果在 timeout 内未完成，发送 SIGKILL
 
-**注意**: 优雅停止可能较慢，但不会丢失消息。
+**注意**: 优雅停止可能较慢，但不会丢失 Mail。
 
 ---
 
@@ -122,8 +122,8 @@ monoco courier kill --signal INT              # 发送特定信号（默认 SIGK
 - 立即终止进程，**不执行清理逻辑**
 - 可能导致：
   - 内存中的锁状态丢失
-  - 已认领消息状态不确定
-  - 发送中的消息状态不确定
+  - 已认领 Mail 状态不确定
+  - 发送中的 Mail 状态不确定
   - 临时文件残留
   - 外部平台连接异常
 
@@ -307,6 +307,6 @@ monoco courier start
 ## 相关文档
 
 - [01_Architecture](01_Architecture.md) - 整体架构设计
-- [02_Mailbox_Protocol](02_Mailbox_Protocol.md) - 消息协议 Schema 规范
+- [02_Mailbox_Protocol](02_Mailbox_Protocol.md) - Mail 协议 Schema 规范
 - [03_Mailbox_CLI](03_Mailbox_CLI.md) - Mailbox CLI 命令设计
 - [04_Courier_Service](04_Courier_Service.md) - Courier 服务架构设计

@@ -1,272 +1,299 @@
 # Connectors 架构设计
 
-**Version**: 1.1.0
+**Version**: 2.0.0
 **Status**: Draft
-**Related**: FEAT-0191, FEAT-0189, EPIC-0035
+**Related**: FEAT-0191, FEAT-0189, EPIC-0035, FEAT-XXXX
 
 ---
 
 ## 1. 架构概述
 
-Connectors 是 Monoco 与外部通信的基础设施，由两个独立的 Feature 组成：
+Connectors 是 Monoco 与外部通信的基础设施，采用**去中心化设计**：
 
-- **Mailbox**: 协议与数据管理层 - 负责消息存储、查询、归档
-- **Courier**: 传输与服务管理层 - 负责消息收发、服务生命周期管理
+- **Courier**: 用户级别全局服务 - 接收外部连续消息流，聚合成 Mail 写入全局 inbox
+- **Mailbox**: 每个 Workspace 独立 - 通过本地规则主动筛选、拉取 Mail
+
+### 核心概念：Mail
+
+**Mail** 是连续消息聚合的原子单位：
+- 外部连续到达的消息（如飞书群聊的连续发言）被聚合成一个 Mail
+- Mail 是消费的原子单位，不是单条消息
+- 一个 Mail 可以被**多个 Workspace 同时消费**（可能涉及多个模块都需要修改）
 
 ### 1.1 设计哲学
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        Monoco Agent                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   ┌──────────────┐           ┌──────────────┐               │
-│   │   Mailbox    │           │   Courier    │               │
-│   │   (Data)     │◄─────────►│  (Service)   │               │
-│   └──────┬───────┘           └──────┬───────┘               │
-│          │                          │                        │
-│          ▼                          ▼                        │
-│   ┌──────────────┐           ┌──────────────┐               │
-│   │  .monoco/    │           │   Process    │               │
-│   │  mailbox/    │           │  Management  │               │
-│   └──────────────┘           └──────────────┘               │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     External Providers                       │
-│         (Lark / Email / Slack / Discord / ...)              │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           User Device                                        │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                    Courier Service (Single Instance)                 │   │
+│   │                     职责: 接收外部消息流 → 聚合 → 写入全局 inbox      │   │
+│   │                                                                      │   │
+│   │   外部消息流 ──▶ 聚合 ──▶ ~/.monoco/mailbox/{source}/inbound/         │   │
+│   │                     (按 source 分目录)                               │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                      │                                       │
+│                                      │ 文件系统事件                           │
+│                                      ▼                                       │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                         Workspace 层 (去中心化)                       │   │
+│   │                                                                      │   │
+│   │   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐     │   │
+│   │   │  ~/Proj  │    │ ~/Work/  │    │/Vol/ext/ │    │ 其他分散  │     │   │
+│   │   │   A/     │    │   B/     │    │   C/     │    │ 目录     │     │   │
+│   │   │          │    │          │    │          │    │          │     │   │
+│   │   │.monoco/  │    │.monoco/  │    │.monoco/  │    │.monoco/  │     │   │
+│   │   │mailbox/  │    │mailbox/  │    │mailbox/  │    │mailbox/  │     │   │
+│   │   └──────────┘    └──────────┘    └──────────┘    └──────────┘     │   │
+│   │                                                                      │   │
+│   │   每个 Workspace:                                                    │   │
+│   │   - 本地规则定义关注什么 Mail                                         │   │
+│   │   - 主动 CRUD 全局 inbox 获取感兴趣内容                              │   │
+│   │   - 不感知其他 Workspace 存在                                        │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **核心原则**:
 
-1. **关注点分离**: Mailbox 管数据，Courier 管传输
-2. **独立演进**: 两者通过协议松耦合，可独立升级
-3. **物理隔离**: Mailbox 是只读的受保护空间，Courier 是唯一写入者
-4. **CLI 分离**: 两个独立的命令组 `monoco mailbox` 和 `monoco courier`
+1. **用户级单实例 Courier**: 一个用户设备上只运行一个 Courier 进程，避免端口冲突
+2. **Mail 原子性**: 连续消息聚合成 Mail，Mail 是消费的原子单位
+3. **多 Workspace 消费**: 同一个 Mail 可以被多个 Workspace 同时消费（多模块协作）
+4. **全局 inbox**: Courier 仅负责接收和聚合写入，不做路由决策
+5. **去中心化分发**: 各 Workspace 自主决定关注哪些 Mail
+6. **无注册机制**: 用户目录不维护 workspace 列表，各 workspace 独立运行
 
 ---
 
 ## 2. 目录结构
 
-### 2.1 代码结构
+### 2.1 全局层（用户目录）
 
 ```
-src/monoco/features/
-├── mailbox/                      # Mailbox Feature (数据层 + CLI)
-│   ├── __init__.py
-│   ├── commands.py              # CLI: list, read, send, claim, done, fail
-│   ├── models.py                # 数据模型定义
-│   ├── store.py                 # 文件系统操作
-│   ├── queries.py               # 查询引擎
-│   ├── client.py                # Courier HTTP API 客户端
-│   └── constants.py             # 路径、枚举等常量
-│
-└── courier/                      # Courier Feature (服务层)
-    ├── __init__.py
-    ├── commands.py              # CLI: start, stop, restart, kill, status, logs
-    ├── service.py               # 服务生命周期管理
-    ├── daemon.py                # 后台进程实现
-    ├── api.py                   # HTTP API 服务 (claim/done/fail)
-    ├── state.py                 # 消息状态管理 (锁、归档、重试)
-    ├── adapters/                # 各平台适配器
-    │   ├── __init__.py
-    │   ├── base.py
-    │   ├── lark.py
-    │   └── email.py
-    ├── protocol/                # 协议层 (共享 Schema)
-    │   ├── __init__.py
-    │   ├── schema.py            # 统一 Schema 定义
-    │   ├── constants.py
-    │   └── validators.py
-    └── debounce.py              # 防抖合并逻辑
+~/.monoco/
+├── mailbox/                        # 全局 Mail 池（Courier 写入）
+│   ├── lark/                       # 按 source 分目录
+│   │   ├── inbound/                # 新 Mail（外部输入）
+│   │   ├── outbound/               # 出站 Mail（待推送）
+│   │   └── archive/                # 已归档
+│   ├── email/
+│   │   ├── inbound/
+│   │   ├── outbound/
+│   │   └── archive/
+│   └── slack/
+│       ├── inbound/
+│       ├── outbound/
+│       └── archive/
+├── courier/
+│   ├── config.yaml                 # Courier 服务配置
+│   └── courier.pid                 # 进程标识
 ```
 
-### 2.2 物理存储结构
+### 2.2 Workspace 层（分散在各处）
 
 ```
-.monoco/mailbox/                      # 受保护空间 (Agent 只读)
-├── inbound/                          # 外部消息输入
-│   ├── lark/
-│   ├── email/
-│   └── slack/
-├── outbound/                         # 内部消息输出（草稿）
-│   ├── lark/
-│   ├── email/
-│   └── slack/
-├── archive/                          # 已处理消息存档（30天）
-│   ├── lark/
-│   ├── email/
-│   └── slack/
-├── .state/                           # 状态存储（由 Courier 管理）
-│   ├── locks.json                    # 消息锁状态
-│   └── index.jsonl                   # 消息索引
-├── .deadletter/                      # 死信队列（超过重试次数）
-│   ├── lark/
-│   └── email/
-└── .tmp/                             # 临时工作目录
+{任意目录}/.monoco/mailbox/         # 每个 workspace 独立
+├── inbox/                          # 从全局拉取的 Mail 副本
+├── cursor.json                     # 消费进度指针（各 workspace 独立）
+└── config.yaml                     # 本地筛选规则
 ```
 
 ---
 
-## 3. 交互流程
+## 3. Mail 流转框架
 
-### 3.1 消息接收流程 (Inbound)
+### 3.1 接收阶段（Courier 负责）
 
 ```
 External Provider
        │
        ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Courier    │────►│   Debounce   │────►│   Mailbox    │
-│   Adapter    │     │   Handler    │     │   Store      │
-└──────────────┘     └──────────────┘     └──────────────┘
-                                                  │
-                                                  ▼
-                                           .monoco/mailbox/
-                                           inbound/{provider}/
+┌──────────────┐     ┌──────────────┐     ┌────────────────────────────────────┐
+│   Courier    │────►│  Aggregate   │────►│  Global Inbox                       │
+│   Receiver   │     │   & Validate │     │  ~/.monoco/mailbox/                │
+└──────────────┘     └──────────────┘     │  └── {source}/{status}/{timestamp} │
+                                          └────────────────────────────────────┘
 ```
 
-### 3.2 消息发送流程 (Outbound)
+**Courier 职责**:
+- 接收外部消息流（webhook、邮件等）
+- 防抖聚合成 Mail（连续消息合并）
+- 验证格式、补充元数据
+- 写入 `mailbox/{source}/inbound/`
+- **不做路由，不感知 workspace**
+
+### 3.2 分发阶段（去中心化拉取）
 
 ```
-Agent Workflow
+各 Workspace 自主执行（通过 Mailbox CLI）:
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Workspace A (~/Projects/alpha/)                                │
+│                                                                 │
+│  1. 读取全局 mailbox/{source}/inbound/                              │
+│  2. 按本地规则筛选: @monoco::alpha 或 binding==alpha           │
+│  3. 硬链接/复制到本地 .monoco/mailbox/inbox/                    │
+│  4. 更新本地 cursor.json                                        │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Workspace B (~/work/beta/)                                     │
+│                                                                 │
+│  1. 读取全局 mailbox/{source}/inbound/                              │
+│  2. 按本地规则筛选: @monoco::beta 或 from=github.com            │
+│  3. 硬链接/复制到本地 .monoco/mailbox/inbox/                    │
+│  4. 更新本地 cursor.json                                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**关键特性**:
+- 无中心协调，各 workspace 独立运行
+- **同一个 Mail 可以被多个 Workspace 消费**（多模块协作场景）
+- 筛选规则本地化，Courier 不知情
+- cursor 独立维护，互不影响
+
+### 3.3 状态流转
+
+```
+全局 inbox          Workspace A          Workspace B
+    │                    │                    │
+    ▼                    ▼                    ▼
+┌────────┐        ┌──────────┐        ┌──────────┐
+│  new   │──CRUD──▶│  local   │        │  local   │
+│        │        │  inbox   │        │  inbox   │
+└───┬────┘        └────┬─────┘        └────┬─────┘
+    │                  │                   │
+    │                  ▼                   ▼
+    │            ┌──────────┐        ┌──────────┐
+    │            │  claim   │        │  claim   │  ← 多个 WS 可同时 claim
+    │            │  (view)  │        │  (view)  │
+    │            └────┬─────┘        └────┬─────┘
+    │                 │                   │
+    │                 ▼                   ▼
+    │            ┌──────────┐        ┌──────────┐
+    └───────────▶│  done    │        │  done    │  ← 各自独立标记完成
+                 │ (全局)   │        │ (全局)   │
+                 └──────────┘        └──────────┘
+```
+
+**关键设计**:
+- **多 Workspace 消费**: 同一个 Mail 可被多个 Workspace claim
+- **独立状态**: 各 Workspace 维护自己的处理状态
+- **全局归档**: 当所有相关 Workspace 都 done 后，Mail 才移入 archive
+
+---
+
+## 4. 交互流程
+
+### 4.1 Mail 接收与聚合流程
+
+```
+External Provider (连续消息流)
        │
        ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Agent      │────►│   Courier    │────►│   Mailbox    │
-│   CLI Send   │     │   Validate   │     │   Draft      │
-└──────────────┘     └──────────────┘     └──────────────┘
-                                                  │
-       ┌──────────────────────────────────────────┘
-       ▼
-.monoco/mailbox/outbound/{provider}/
+┌──────────────┐
+│   Courier    │──► 接收连续消息流
+│   Adapter    │
+└──────┬───────┘
        │
        ▼
-┌──────────────┐     ┌──────────────┐
-│   Courier    │────►│   External   │
-│   Process    │     │   Provider   │
-└──────────────┘     └──────────────┘
+┌──────────────┐
+│   Debounce   │──► 防抖聚合（如 5 秒内同一 session 的消息合并）
+│   Aggregate  │    输出：Mail（原子消费单位）
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│   Validate   │──► Schema 校验
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│  Write to    │──► 写入 ~/.monoco/mailbox/{source}/inbound/
+│ Global Inbox │    文件名: {timestamp}-{hash}.jsonl
+└──────────────┘
+       │
+       ▼
+  (多个 Workspace 可拉取同一个 Mail)
 ```
 
-### 3.3 消息消费流程 (Agent 处理)
+### 4.2 Mail 消费流程
 
-```
-Agent 通过 Mailbox CLI 处理消息
+```bash
+# 1. Workspace 同步（本地命令）
+$ monoco mailbox sync
 
-# 1. 查询
-$ monoco mailbox list --provider lark --status new
-$ monoco mailbox read <msg-id>
+# 2. 查看本地 Mail
+$ monoco mailbox list
 
-# 2. 认领（调用 Courier API）
-$ monoco mailbox claim <msg-id>
+# 3. 读取 Mail 内容
+$ monoco mailbox read <mail-id>
 
-# 3. 处理完成后（调用 Courier API，触发归档）
-$ monoco mailbox done <msg-id>
+# 4. 认领 Mail（多个 WS 可同时 claim）
+$ monoco mailbox claim <mail-id>
 
-# 或标记失败（调用 Courier API，触发重试）
-$ monoco mailbox fail <msg-id> --reason "API timeout"
-```
-
-### 3.4 状态流转与 API 交互
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Mailbox CLI                                  │
-│                                                                      │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐             │
-│  │   list   │  │   read   │  │   send   │  │   claim  │──┐          │
-│  │  (本地)   │  │  (本地)   │  │ (写文件) │  │ (API调用)│  │          │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │          │
-│                                             ┌──────────┤          │
-│                                             │   done   │──┤          │
-│                                             │ (API调用)│  │          │
-│                                             ├──────────┤  │          │
-│                                             │   fail   │──┘          │
-│                                             │ (API调用)│             │
-│                                             └──────────┘             │
-└─────────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼ HTTP API
-┌─────────────────────────────────────────────────────────────────────┐
-│                      Courier Service                                 │
-│                                                                      │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐               │
-│  │   Lock Mgr   │  │   Archive    │  │    Retry     │               │
-│  │  (claim/done)│  │  (done触发)   │  │  (fail触发)   │               │
-│  └──────────────┘  └──────────────┘  └──────────────┘               │
-└─────────────────────────────────────────────────────────────────────┘
+# 5. 处理完成后标记（各 WS 独立）
+$ monoco mailbox done <mail-id>
 ```
 
 ---
 
-## 4. 边界与约束
+## 5. 边界与约束
 
-### 4.1 Mailbox 边界
-
-**负责**:
-- 消息文件的 CRUD 操作
-- 查询与过滤
-- 归档与清理
-- 索引与缓存
-
-**不负责**:
-- 网络通信
-- 服务生命周期
-- 外部 API 调用
-
-### 4.2 Courier 边界
+### 5.1 Courier 边界
 
 **负责**:
-- 服务启动/停止/重启
-- 消息收发传输
-- 适配器管理
-- 防抖合并
+- 服务生命周期管理（启动/停止）
+- 接收外部消息流
+- 防抖聚合成 Mail（原子消费单位）
+- 验证和写入全局 inbox
+- 维护 Mail 状态（通过 API）
 
 **不负责**:
-- 消息内容解析 (由 Agent 完成)
-- 长期存储管理 (由 Mailbox 完成)
-- 消息查询 (由 Mailbox 完成)
+- Mail 路由到 workspace
+- 维护 workspace 列表
+- 感知 workspace 存在
 
-### 4.3 访问控制
+### 5.2 Mailbox 边界
 
-| 操作 | 命令 | Mailbox CLI | Courier Service | Agent |
-|------|------|-------------|-----------------|-------|
-| 查询消息 | `mailbox list` | ✓ | ✗ | ✓ |
-| 读取内容 | `mailbox read` | ✓ | ✗ | ✓ |
-| 创建草稿 | `mailbox send` | ✓ | ✗ | ✓ |
-| 认领消息 | `mailbox claim` | ✓ API | ✓ 维护锁 | ✓ |
-| 标记完成 | `mailbox done` | ✓ API | ✓ 归档 | ✓ |
-| 标记失败 | `mailbox fail` | ✓ API | ✓ 重试 | ✓ |
-| 写入 inbox | - | ✗ | ✓ (Webhook) | ✗ |
-| 服务管理 | `courier start/stop` | ✗ | ✓ | ✓ |
+**负责**:
+- 从全局 inbox 拉取 Mail
+- 本地 Mail 存储和查询
+- 本地筛选规则执行
+- 维护本地消费进度
+
+**不负责**:
+- 直接接收外部消息流
+- 维护全局 Mail 状态（通过 API 请求 Courier）
+
+### 5.3 访问控制
+
+| 操作 | 执行位置 | 说明 |
+|------|----------|------|
+| 查询全局 inbox | Mailbox CLI | 本地读取 `~/.monoco/mailbox/` |
+| 拉取到本地 | Mailbox CLI | 硬链接/复制到 workspace |
+| 认领 Mail | Mailbox CLI → Courier API | 多个 WS 可同时 claim |
+| 写入 inbox | Courier Service | 唯一写入者 |
 
 ---
 
-## 5. 版本策略
+## 6. 去中心化设计优势
 
-### 5.1 协议版本
-
-```yaml
-# 在消息 metadata 中声明
-metadata:
-  schema_version: "1.0.0"
-  protocol_version: "1.0.0"
-```
-
-### 5.2 向后兼容
-
-- **新增字段**: 可选字段，旧版本忽略
-- **废弃字段**: 保留字段但标记 deprecated
-- **破坏性变更**: 主版本号升级，提供迁移脚本
+| 场景 | 传统推送模型 | 去中心化拉取模型 |
+|------|-------------|-----------------|
+| Workspace 发现 | 需要注册表 | 无需注册，自主拉取 |
+| Workspace 离线 | Courier 需要队列 | Mail 在全局 inbox 等待 |
+| 外置存储 | 复杂的状态同步 | 重新插拔后自动同步 |
+| 扩展性 | Courier 成为瓶颈 | 各 workspace 独立 |
+| 法律效力 | Mail 位置不确定 | 明确跟随 workspace |
 
 ---
 
 ## 相关文档
 
-- [02_Mailbox_Protocol](02_Mailbox_Protocol.md) - 消息协议 Schema 规范
-- [03_Mailbox_CLI](03_Mailbox_CLI.md) - Mailbox CLI 命令设计
-- [04_Courier_Service](04_Courier_Service.md) - Courier 服务架构设计
+- [02_Mailbox_Protocol](02_Mailbox_Protocol.md) - Mail 协议 Schema 规范
+- [03_Mailbox_CLI](03_Mailbox_CLI.md) - Mailbox CLI 命令设计（拉取模式）
+- [04_Courier_Service](04_Courier_Service.md) - Courier 服务架构设计（用户级单例）
 - [05_Courier_CLI](05_Courier_CLI.md) - Courier CLI 命令设计
