@@ -28,30 +28,32 @@ from monoco.features.connector.protocol.constants import (
 
 class LockError(Exception):
     """Base exception for lock-related errors."""
-    pass
+
+    class MessageNotFoundError(Exception):
+        """Raised when a message is not found."""
+        pass
+
+    class MessageAlreadyClaimedError(Exception):
+        """Raised when trying to claim a message that's already claimed."""
+        def __init__(self, message: str, claimed_by: Optional[str] = None, claimed_at: Optional[datetime] = None):
+            super().__init__(message)
+            self.claimed_by = claimed_by
+            self.claimed_at = claimed_at
+
+    class MessageNotClaimedError(Exception):
+        """Raised when trying to complete/fail a message that isn't claimed."""
+        pass
+
+    class MessageClaimedByOtherError(Exception):
+        """Raised when trying to complete/fail a message claimed by another agent."""
+        pass
 
 
-class MessageNotFoundError(LockError):
-    """Raised when a message is not found."""
-    pass
-
-
-class MessageAlreadyClaimedError(LockError):
-    """Raised when trying to claim a message that's already claimed."""
-    def __init__(self, message: str, claimed_by: Optional[str] = None, claimed_at: Optional[datetime] = None):
-        super().__init__(message)
-        self.claimed_by = claimed_by
-        self.claimed_at = claimed_at
-
-
-class MessageNotClaimedError(LockError):
-    """Raised when trying to complete/fail a message that isn't claimed."""
-    pass
-
-
-class MessageClaimedByOtherError(LockError):
-    """Raised when trying to complete/fail a message claimed by another agent."""
-    pass
+# Backward compatibility exports
+MessageNotFoundError = LockError.MessageNotFoundError
+MessageAlreadyClaimedError = LockError.MessageAlreadyClaimedError
+MessageNotClaimedError = LockError.MessageNotClaimedError
+MessageClaimedByOtherError = LockError.MessageClaimedByOtherError
 
 
 @dataclass
