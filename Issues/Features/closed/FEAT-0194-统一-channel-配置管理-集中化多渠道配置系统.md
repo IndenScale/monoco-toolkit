@@ -2,7 +2,7 @@
 id: FEAT-0194
 uid: 25ec29
 type: feature
-status: open
+status: closed
 stage: review
 title: 统一 Channel 配置管理：集中化多渠道配置系统
 created_at: '2026-02-07T19:30:49'
