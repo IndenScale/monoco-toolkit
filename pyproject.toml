@@ -40,6 +40,8 @@ dependencies = [
     "sse-starlette>=1.6.0",
     "watchdog>=6.0.0",
     "httpx[socks]>=0.28.1",
+    "aiohttp>=3.9.0", # For DingTalk Stream adapter
+    "dingtalk-stream>=0.24.3",
 ]
 
 [project.urls]

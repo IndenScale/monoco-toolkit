@@ -6,6 +6,7 @@ Adapters handle communication with external platforms:
 - Email (IMAP/SMTP)
 - Slack
 - Discord
+- DingTalk (Webhook & Stream)
 - etc.
 """
 
@@ -29,6 +30,19 @@ def get_adapter(name: str) -> Optional[Type[BaseAdapter]]:
 def list_adapters() -> list[str]:
     """List all registered adapter names."""
     return list(_registry.keys())
+
+
+# Auto-register built-in adapters
+def _register_builtin_adapters():
+    """Register all built-in adapters."""
+    try:
+        from .dingtalk_stream import DingTalkStreamAdapter
+        register_adapter("dingtalk_stream", DingTalkStreamAdapter)
+    except ImportError:
+        pass  # Dependencies not available
+
+
+_register_builtin_adapters()
 
 
 __all__ = [

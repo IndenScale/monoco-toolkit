@@ -11,14 +11,16 @@ This module is executed as a subprocess by the service manager.
 """
 
 import argparse
+import asyncio
 import json
 import logging
 import os
 import signal
 import sys
+import threading
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 
 # Setup logging before other imports
 logging.basicConfig(
@@ -70,6 +72,8 @@ class CourierDaemon:
         self.state_manager: Optional[MessageStateManager] = None
         self.api_server: Optional[CourierAPIServer] = None
         self.debounce_handler: Optional[DebounceHandler] = None
+        self.stream_adapter: Optional[Any] = None
+        self._stream_thread: Optional[threading.Thread] = None
 
         # Control
         self._shutdown = False
@@ -114,6 +118,9 @@ class CourierDaemon:
                 host=self.host,
                 port=self.port,
             )
+            
+            # Initialize DingTalk Stream adapter if configured
+            self._init_stream_adapter()
 
             logger.info("Courier daemon initialized successfully")
             return True
@@ -141,6 +148,86 @@ class CourierDaemon:
         logger.info(f"Debounce flush with {len(messages)} messages")
         # Messages would be written to inbound directory here
         # This is handled by the adapters in a full implementation
+
+    def _init_stream_adapter(self) -> None:
+        """Initialize DingTalk Stream adapter if credentials are configured."""
+        # Read credentials from environment
+        client_id = os.environ.get("DINGTALK_CLIENT_ID") or os.environ.get("DINGTALK_APP_KEY")
+        client_secret = os.environ.get("DINGTALK_CLIENT_SECRET") or os.environ.get("DINGTALK_APP_SECRET")
+        
+        if not client_id or not client_secret:
+            logger.info("DingTalk Stream adapter not configured (set DINGTALK_CLIENT_ID and DINGTALK_CLIENT_SECRET)")
+            return
+        
+        try:
+            from .adapters.dingtalk_stream import create_dingtalk_stream_adapter
+            from monoco.features.mailbox.store import MailboxStore, MailboxConfig
+            
+            default_project = os.environ.get("DINGTALK_STREAM_DEFAULT_PROJECT", "default")
+            
+            self.stream_adapter = create_dingtalk_stream_adapter(
+                client_id=client_id,
+                client_secret=client_secret,
+                default_project=default_project,
+            )
+            
+            # Set up message handler to write to mailbox
+            self.stream_adapter.set_message_handler(self._handle_stream_message)
+            
+            logger.info(f"DingTalk Stream adapter initialized for project: {default_project}")
+            
+        except Exception as e:
+            logger.warning(f"Failed to initialize DingTalk Stream adapter: {e}")
+    
+    def _handle_stream_message(self, message, project_slug: str) -> None:
+        """Handle incoming Stream message and write to mailbox."""
+        try:
+            from monoco.features.mailbox.store import MailboxStore, MailboxConfig
+            from monoco.core.registry import get_inventory
+            
+            # Get project path from registry
+            inventory = get_inventory()
+            project = inventory.get(project_slug)
+            
+            if not project:
+                logger.warning(f"Project '{project_slug}' not found, using default path")
+                project_path = self.project_root
+            else:
+                project_path = project.path
+            
+            # Create mailbox store for this project
+            mailbox_path = project_path / ".monoco" / "mailbox"
+            config = MailboxConfig(
+                project_path=project_path,
+                inbound_path=mailbox_path / "inbound",
+                outbound_path=mailbox_path / "outbound",
+                archive_path=mailbox_path / "archive",
+                state_path=mailbox_path / ".state",
+            )
+            store = MailboxStore(config)
+            
+            # Write message to inbound
+            path = store.create_inbound_message(message)
+            logger.info(f"Stream message written to {path}")
+            
+        except Exception as e:
+            logger.exception(f"Failed to handle Stream message: {e}")
+    
+    def _start_stream_adapter(self) -> None:
+        """Start Stream adapter in background thread."""
+        if not self.stream_adapter:
+            return
+        
+        def run_stream():
+            """Run stream adapter synchronously."""
+            try:
+                self.stream_adapter.run_sync()
+            except Exception as e:
+                logger.exception(f"Stream adapter error: {e}")
+        
+        self._stream_thread = threading.Thread(target=run_stream, daemon=True, name="DingTalkStream")
+        self._stream_thread.start()
+        logger.info("DingTalk Stream adapter started in background thread")
 
     def _signal_handler(self, signum, frame) -> None:
         """Handle shutdown signals."""
@@ -171,6 +258,9 @@ class CourierDaemon:
         try:
             # Start API server
             self.api_server.start()
+            
+            # Start Stream adapter if configured
+            self._start_stream_adapter()
 
             logger.info(f"Courier daemon running on {self.host}:{self.port}")
 
@@ -215,6 +305,15 @@ class CourierDaemon:
                 # Note: In async context we'd await flush_all()
             except Exception as e:
                 logger.error(f"Error flushing debounce buffers: {e}")
+        
+        # Stop Stream adapter
+        if self.stream_adapter:
+            try:
+                import asyncio
+                asyncio.run(self.stream_adapter.disconnect())
+                logger.info("DingTalk Stream adapter stopped")
+            except Exception as e:
+                logger.error(f"Error stopping Stream adapter: {e}")
 
         # Clean up PID file
         if self.pid_file and self.pid_file.exists():

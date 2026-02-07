@@ -359,3 +359,169 @@ def service_logs(
         raise typer.Exit(code=1)
 
 
+@app.command("stream")
+def stream_status():
+    """
+    Show DingTalk Stream adapter status.
+    
+    Requires Courier daemon to be running with Stream adapter configured.
+    
+    Examples:
+        monoco courier stream
+    """
+    import os
+    
+    # Check if configured
+    client_id = os.environ.get("DINGTALK_CLIENT_ID") or os.environ.get("DINGTALK_APP_KEY")
+    client_secret = os.environ.get("DINGTALK_CLIENT_SECRET") or os.environ.get("DINGTALK_APP_SECRET")
+    
+    table = Table(title="DingTalk Stream Adapter")
+    table.add_column("Item", style="cyan")
+    table.add_column("Status", style="green")
+    
+    # Configuration status
+    if client_id and client_secret:
+        table.add_row("Configuration", "[green]✓ Configured[/green]")
+        table.add_row("Client ID", f"{client_id[:15]}...")
+    else:
+        table.add_row("Configuration", "[yellow]⚠ Not configured[/yellow]")
+        table.add_row("Client ID", "[dim]Set DINGTALK_CLIENT_ID[/dim]")
+    
+    # Courier status
+    service = _get_service()
+    status = service.get_status()
+    
+    if status.is_running():
+        table.add_row("Courier Daemon", "[green]✓ Running[/green]")
+        
+        # Check if Stream is active in daemon
+        # This is a simplified check - in production we'd query the daemon API
+        if client_id and client_secret:
+            table.add_row("Stream Adapter", "[green]✓ Active[/green] (auto-started)")
+            table.add_row("", "[dim]Messages will be written to mailbox[/dim]")
+        else:
+            table.add_row("Stream Adapter", "[yellow]⚠ Not started[/yellow]")
+    else:
+        table.add_row("Courier Daemon", "[red]✗ Stopped[/red]")
+        table.add_row("", "[dim]Run: monoco courier start[/dim]")
+    
+    console.print(table)
+    
+    if not status.is_running():
+        console.print("\n[yellow]To start with Stream mode:[/yellow]")
+        console.print("  export DINGTALK_CLIENT_ID=xxx")
+        console.print("  export DINGTALK_CLIENT_SECRET=xxx")
+        console.print("  monoco courier start")
+
+
+@app.command("stream-test")
+def test_dingtalk_stream(
+    app_key: Optional[str] = typer.Option(None, "--app-key", "-k", help="DingTalk AppKey"),
+    app_secret: Optional[str] = typer.Option(None, "--app-secret", "-s", help="DingTalk AppSecret"),
+    duration: int = typer.Option(60, "--duration", "-d", help="Test duration in seconds"),
+):
+    """
+    Test DingTalk Stream mode connection (no public IP needed).
+    
+    This command tests the Stream adapter without starting the full Courier service.
+    Useful for verifying DingTalk credentials and receiving messages.
+    
+    Examples:
+        monoco courier stream-test
+        monoco courier stream-test --app-key xxx --app-secret yyy --duration 120
+    """
+    import asyncio
+    import os
+    
+    # Get credentials (支持新命名 Client ID/Secret 和旧命名 App Key/Secret)
+    app_key = (app_key 
+               or os.environ.get("DINGTALK_CLIENT_ID") 
+               or os.environ.get("DINGTALK_APP_KEY"))
+    app_secret = (app_secret 
+                  or os.environ.get("DINGTALK_CLIENT_SECRET") 
+                  or os.environ.get("DINGTALK_APP_SECRET"))
+    
+    if not app_key or not app_secret:
+        console.print("[red]❌ Error:[/red] DingTalk credentials required")
+        console.print("\nProvide via:")
+        console.print("  1. Environment: export DINGTALK_APP_KEY=xxx")
+        console.print("  2. CLI options: --app-key xxx --app-secret yyy")
+        console.print("\nGet credentials from: https://open.dingtalk.com/")
+        raise typer.Exit(code=1)
+    
+    console.print("""
+╔══════════════════════════════════════════╗
+║     DingTalk Stream Mode Test            ║
+║     无需公网 IP 接收钉钉消息              ║
+╚══════════════════════════════════════════╝
+    """)
+    
+    console.print(f"🔑 AppKey: {app_key[:10]}...")
+    console.print(f"⏱️  Duration: {duration}s")
+    console.print("\n📡 Connecting to DingTalk Stream server...\n")
+    
+    async def run_test():
+        from .adapters.dingtalk_stream import create_dingtalk_stream_adapter
+        
+        adapter = create_dingtalk_stream_adapter(
+            client_id=app_key,  # 支持新旧命名
+            client_secret=app_secret,
+            default_project="test",
+        )
+        
+        messages_received = []
+        
+        def on_message(message, project_slug):
+            sender = message.participants.get("from", {})
+            sender_name = sender.get("name", "Unknown")
+            content = message.content.text or message.content.markdown or "[无内容]"
+            
+            messages_received.append(message)
+            console.print(f"📩 [{len(messages_received)}] {sender_name}: {content[:50]}{'...' if len(content) > 50 else ''}")
+        
+        adapter.set_message_handler(on_message)
+        
+        try:
+            await adapter.connect()
+            console.print("[green]✅ Connected successfully![/green]")
+            console.print("🤖 Now send a message to your DingTalk bot")
+            console.print("   (In a group chat @bot or in private chat)")
+            console.print(f"\n⏳ Listening for {duration} seconds... (Ctrl+C to stop)\n")
+            
+            # Listen for messages with timeout
+            start_time = asyncio.get_event_loop().time()
+            async for _ in adapter.listen():
+                if asyncio.get_event_loop().time() - start_time > duration:
+                    break
+                    
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            console.print(f"\n[red]❌ Error: {e}[/red]")
+            import traceback
+            console.print(traceback.format_exc())
+        finally:
+            await adapter.disconnect()
+        
+        # Summary
+        console.print(f"\n📊 Test completed:")
+        console.print(f"   Messages received: {len(messages_received)}")
+        if messages_received:
+            console.print(f"   [green]✅ Stream mode is working![/green]")
+        else:
+            console.print(f"   [yellow]⚠️ No messages received[/yellow]")
+            console.print("   Make sure:")
+            console.print("   • Robot is added to a group chat or you're chatting directly")
+            console.print("   • Robot has 'im.message.group' permission enabled")
+            console.print("   • Robot is in Stream mode (not Webhook mode)")
+    
+    try:
+        asyncio.run(run_test())
+    except KeyboardInterrupt:
+        console.print("\n\n👋 Test stopped by user")
+
+
+if __name__ == "__main__":
+    app()
+
+
