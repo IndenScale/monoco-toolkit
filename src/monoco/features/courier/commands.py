@@ -92,7 +92,7 @@ def start_service(
 @app.command("stop")
 def stop_service(
     timeout: int = typer.Option(30, "--timeout", "-t", help="Timeout in seconds before force kill"),
-    wait: bool = typer.Option(False, "--wait", "-w", help="Block until service stops"),
+    wait: bool = typer.Option(True, "--wait/--no-wait", "-w", help="Block until service stops (default: True)"),
     all_processes: bool = typer.Option(False, "--all", "-a", help="Stop all Courier processes (orphan cleanup)"),
     json: AgentOutput = False,
 ):
@@ -109,7 +109,9 @@ def stop_service(
             elif status.state == ServiceState.STOPPED:
                 console.print("[green]✓[/green] Courier stopped")
             else:
-                console.print(f"[yellow]⚠[/yellow] Courier status: {status.state}")
+                # Non-blocking mode: show that stop signal was sent
+                console.print(f"[yellow]⚠[/yellow] Stop signal sent, service is stopping (current: {status.state})")
+                console.print("[dim]  Use --wait to block until fully stopped[/dim]")
 
     except ServiceNotRunningError:
         msg = "Courier is not running"
@@ -273,6 +275,12 @@ def _print_status_table(status: "ServiceStatus") -> None:
             adapter_status = info.get("status", "unknown")
             adapter_color = "green" if adapter_status == "connected" else "dim"
             table.add_row(f"  {name}", f"[{adapter_color}]{adapter_status}[/{adapter_color}]")
+            
+            # Show projects if available
+            projects = info.get("projects", [])
+            if projects:
+                slugs = ", ".join(projects)
+                table.add_row(f"    [dim]projects[/dim]", f"[dim]{slugs}[/dim]")
 
     # Metrics
     if status.metrics:

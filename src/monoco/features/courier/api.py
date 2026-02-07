@@ -56,14 +56,33 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
     state_manager: Optional[MessageStateManager] = None
     version: str = "1.0.0"
 
-    # DingTalk adapter instance (initialized on first use)
-    _dingtalk_adapter: Optional["DingtalkAdapter"] = None
+    # Persistent event loop for async adapters
+    _loop: Optional[asyncio.AbstractEventLoop] = None
+    _loop_thread: Optional[threading.Thread] = None
+
+    @classmethod
+    def get_loop(cls) -> asyncio.AbstractEventLoop:
+        """Get or create the background event loop."""
+        import asyncio
+        import threading
+        if cls._loop is None:
+            cls._loop = asyncio.new_event_loop()
+            cls._loop_thread = threading.Thread(
+                target=cls._loop.run_forever,
+                daemon=True,
+                name="CourierAsyncLoop"
+            )
+            cls._loop_thread.start()
+            logger.info("Initialized persistent event loop for Courier adapters")
+        return cls._loop
 
     @classmethod
     def get_dingtalk_adapter(cls) -> "DingtalkAdapter":
         """Get or create the DingTalk adapter singleton."""
         if cls._dingtalk_adapter is None:
             from .adapters.dingtalk import DingtalkAdapter
+            # Ensure adapter uses the persistent loop
+            cls.get_loop() 
             cls._dingtalk_adapter = DingtalkAdapter()
         return cls._dingtalk_adapter
 
@@ -201,13 +220,19 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
         adapter = self.get_dingtalk_adapter()
 
         try:
-            # Run async handler in sync context
-            result = asyncio.run(adapter.handle_webhook(
-                project=project,
-                payload=data,
-                sign=sign,
-                timestamp=timestamp,
-            ))
+            # Run async handler in the persistent background loop
+            loop = self.get_loop()
+            future = asyncio.run_coroutine_threadsafe(
+                adapter.handle_webhook(
+                    project=project,
+                    payload=data,
+                    sign=sign,
+                    timestamp=timestamp,
+                ),
+                loop
+            )
+            # Wait for the initial response (buffered/flushed)
+            result = future.result(timeout=10)
 
             logger.info(f"DingTalk webhook processed for '{slug}': {result}")
             self._send_json(result)
@@ -255,8 +280,15 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
 
     def _handle_health(self):
         """Handle health check request."""
+        inventory = get_inventory()
+        projects = inventory.list()
+        
         # Build adapters status
         adapters = {
+            "dingtalk": {
+                "status": "connected", 
+                "projects": [p.slug for p in projects]
+            },
             "lark": {"status": "disabled"},
             "email": {"status": "disabled"},
             "slack": {"status": "disabled"},
@@ -270,6 +302,7 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
                 "messages_received": 0,
                 "messages_sent": 0,
                 "messages_claimed": 0,
+                "registered_projects": len(projects),
             },
         })
 

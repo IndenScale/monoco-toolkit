@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 实现 Monoco Courier 钉钉适配器：基于受保护 Mailbox 的防抖分拣逻辑
 created_at: '2026-02-06T22:24:06'
-updated_at: '2026-02-07T17:55:54'
+updated_at: 2026-02-07 17:55:55
 parent: EPIC-0000
 dependencies:
 - FEAT-0191
@@ -31,10 +31,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-06T22:24:06'
 closed_at: '2026-02-07T17:55:54'
-isolation:
-  type: branch
-  ref: FEAT-0190-实现-monoco-courier-钉钉适配器-基于受保护-mailbox-的防抖分拣逻辑
-  created_at: '2026-02-07T17:49:23'
 ---
 
 ## FEAT-0190: 实现 Monoco Courier 钉钉适配器：基于受保护 Mailbox 的防抖分拣逻辑
