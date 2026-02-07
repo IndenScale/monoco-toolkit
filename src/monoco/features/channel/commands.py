@@ -133,6 +133,19 @@ def add_channel(
     channel_type: str = typer.Argument(..., help="Channel type (dingtalk, lark, email)"),
     channel_id: Optional[str] = typer.Option(None, "--id", help="Unique channel ID"),
     name: Optional[str] = typer.Option(None, "--name", "-n", help="Display name"),
+    # DingTalk specific options
+    webhook: Optional[str] = typer.Option(None, "--webhook", "-w", help="DingTalk/Lark webhook URL"),
+    secret: Optional[str] = typer.Option(None, "--secret", "-s", help="Bot secret for signature"),
+    keywords: Optional[str] = typer.Option(None, "--keywords", "-k", help="DingTalk keywords"),
+    # Email specific options
+    smtp_host: Optional[str] = typer.Option(None, "--smtp-host", help="SMTP server host"),
+    smtp_port: int = typer.Option(587, "--smtp-port", help="SMTP server port"),
+    username: Optional[str] = typer.Option(None, "--username", "-u", help="SMTP username/email"),
+    password: Optional[str] = typer.Option(None, "--password", "-p", help="SMTP password"),
+    use_tls: bool = typer.Option(True, "--tls/--no-tls", help="Use TLS for SMTP"),
+    from_address: Optional[str] = typer.Option(None, "--from", help="From email address"),
+    to_addresses: Optional[str] = typer.Option(None, "--to", help="Default recipient addresses (comma-separated)"),
+    # Mode
     interactive: bool = typer.Option(True, "--interactive/--no-interactive", "-i/-I", help="Interactive mode"),
 ):
     """Add a new notification channel."""
@@ -164,19 +177,37 @@ def add_channel(
             default_name = f"My {ch_type.value.title()} Channel"
             name = Prompt.ask("Display name", default=default_name)
 
-        # Type-specific configuration
+        # Type-specific configuration with provided defaults
         try:
             if ch_type == ChannelType.DINGTALK:
-                channel = _add_dingtalk_interactive(channel_id, name)
+                channel = _add_dingtalk_interactive(
+                    channel_id, name,
+                    default_webhook=webhook,
+                    default_secret=secret,
+                    default_keywords=keywords
+                )
             elif ch_type == ChannelType.LARK:
-                channel = _add_lark_interactive(channel_id, name)
+                channel = _add_lark_interactive(
+                    channel_id, name,
+                    default_webhook=webhook,
+                    default_secret=secret
+                )
             elif ch_type == ChannelType.EMAIL:
-                channel = _add_email_interactive(channel_id, name)
+                channel = _add_email_interactive(
+                    channel_id, name,
+                    default_smtp_host=smtp_host,
+                    default_smtp_port=smtp_port,
+                    default_username=username,
+                    default_password=password,
+                    default_use_tls=use_tls,
+                    default_from=from_address,
+                    default_to=to_addresses.split(",") if to_addresses else []
+                )
         except typer.Abort:
             console.print("[yellow]Cancelled.[/yellow]")
             raise typer.Exit()
     else:
-        # Non-interactive mode requires all required parameters
+        # Non-interactive mode - require all mandatory parameters
         if not channel_id or not name:
             OutputManager.error("--id and --name are required in non-interactive mode")
             raise typer.Exit(code=1)
@@ -185,51 +216,77 @@ def add_channel(
             OutputManager.error(f"Channel ID '{channel_id}' already exists")
             raise typer.Exit(code=1)
 
-        # Create minimal channel (will need manual editing)
+        # Create channel with provided parameters
         if ch_type == ChannelType.DINGTALK:
+            if not webhook:
+                OutputManager.error("--webhook is required for dingtalk in non-interactive mode")
+                raise typer.Exit(code=1)
             channel = DingtalkChannel(
                 id=channel_id,
                 name=name,
-                webhook_url="https://oapi.dingtalk.com/robot/send?access_token=PLACEHOLDER",
+                webhook_url=webhook,
+                keywords=keywords or "",
+                secret=secret or "",
             )
         elif ch_type == ChannelType.LARK:
+            if not webhook:
+                OutputManager.error("--webhook is required for lark in non-interactive mode")
+                raise typer.Exit(code=1)
             channel = LarkChannel(
                 id=channel_id,
                 name=name,
-                webhook_url="https://open.feishu.cn/open-apis/bot/v2/hook/PLACEHOLDER",
+                webhook_url=webhook,
+                secret=secret or "",
             )
         else:  # EMAIL
+            if not smtp_host or not username or not password:
+                OutputManager.error("--smtp-host, --username, and --password are required for email")
+                raise typer.Exit(code=1)
             channel = EmailChannel(
                 id=channel_id,
                 name=name,
-                smtp_host="smtp.example.com",
-                username="user@example.com",
-                password="placeholder",
+                smtp_host=smtp_host,
+                smtp_port=smtp_port,
+                username=username,
+                password=password,
+                use_tls=use_tls,
+                from_address=from_address,
+                to_addresses=to_addresses.split(",") if to_addresses else [],
             )
-
-        console.print("[yellow]Channel created with placeholder values.[/yellow]")
-        console.print(f"[yellow]Edit {store.config_path} to configure properly.[/yellow]")
 
     # Save channel
     store.add(channel)
     console.print(f"[green]✓[/green] Channel '{channel_id}' added successfully.")
 
 
-def _add_dingtalk_interactive(channel_id: str, name: str) -> DingtalkChannel:
+def _add_dingtalk_interactive(
+    channel_id: str, name: str,
+    default_webhook: Optional[str] = None,
+    default_secret: Optional[str] = None,
+    default_keywords: Optional[str] = None
+) -> DingtalkChannel:
     """Interactive setup for DingTalk channel."""
     console.print("\n[bold]DingTalk Configuration:[/bold]")
 
     webhook_url = Prompt.ask(
         "Webhook URL",
-        default="https://oapi.dingtalk.com/robot/send?access_token=",
+        default=default_webhook or "https://oapi.dingtalk.com/robot/send?access_token=",
     )
 
-    keywords = Prompt.ask("Keywords (optional)", default="")
+    keywords = Prompt.ask("Keywords (optional)", default=default_keywords or "")
 
-    has_secret = Confirm.ask("Does your bot have a secret?", default=False)
-    secret = ""
-    if has_secret:
-        secret = Prompt.ask("Bot secret", password=True)
+    if default_secret:
+        has_secret = Confirm.ask("Use provided secret?", default=True)
+        secret = default_secret if has_secret else ""
+        if not has_secret:
+            has_secret = Confirm.ask("Does your bot have a secret?", default=False)
+            if has_secret:
+                secret = Prompt.ask("Bot secret", password=True)
+    else:
+        has_secret = Confirm.ask("Does your bot have a secret?", default=False)
+        secret = ""
+        if has_secret:
+            secret = Prompt.ask("Bot secret", password=True)
 
     return DingtalkChannel(
         id=channel_id,
@@ -240,19 +297,31 @@ def _add_dingtalk_interactive(channel_id: str, name: str) -> DingtalkChannel:
     )
 
 
-def _add_lark_interactive(channel_id: str, name: str) -> LarkChannel:
+def _add_lark_interactive(
+    channel_id: str, name: str,
+    default_webhook: Optional[str] = None,
+    default_secret: Optional[str] = None
+) -> LarkChannel:
     """Interactive setup for Lark channel."""
     console.print("\n[bold]Lark Configuration:[/bold]")
 
     webhook_url = Prompt.ask(
         "Webhook URL",
-        default="https://open.feishu.cn/open-apis/bot/v2/hook/",
+        default=default_webhook or "https://open.feishu.cn/open-apis/bot/v2/hook/",
     )
 
-    has_secret = Confirm.ask("Does your bot have a secret?", default=False)
-    secret = ""
-    if has_secret:
-        secret = Prompt.ask("Bot secret", password=True)
+    if default_secret:
+        has_secret = Confirm.ask("Use provided secret?", default=True)
+        secret = default_secret if has_secret else ""
+        if not has_secret:
+            has_secret = Confirm.ask("Does your bot have a secret?", default=False)
+            if has_secret:
+                secret = Prompt.ask("Bot secret", password=True)
+    else:
+        has_secret = Confirm.ask("Does your bot have a secret?", default=False)
+        secret = ""
+        if has_secret:
+            secret = Prompt.ask("Bot secret", password=True)
 
     return LarkChannel(
         id=channel_id,
@@ -262,22 +331,37 @@ def _add_lark_interactive(channel_id: str, name: str) -> LarkChannel:
     )
 
 
-def _add_email_interactive(channel_id: str, name: str) -> EmailChannel:
+def _add_email_interactive(
+    channel_id: str, name: str,
+    default_smtp_host: Optional[str] = None,
+    default_smtp_port: int = 587,
+    default_username: Optional[str] = None,
+    default_password: Optional[str] = None,
+    default_use_tls: bool = True,
+    default_from: Optional[str] = None,
+    default_to: Optional[list] = None
+) -> EmailChannel:
     """Interactive setup for Email channel."""
     console.print("\n[bold]Email (SMTP) Configuration:[/bold]")
 
-    smtp_host = Prompt.ask("SMTP Host", default="smtp.gmail.com")
-    smtp_port = int(Prompt.ask("SMTP Port", default="587"))
+    smtp_host = Prompt.ask("SMTP Host", default=default_smtp_host or "smtp.gmail.com")
+    smtp_port = int(Prompt.ask("SMTP Port", default=str(default_smtp_port)))
 
-    use_tls = Confirm.ask("Use TLS?", default=True)
+    use_tls = Confirm.ask("Use TLS?", default=default_use_tls)
     use_ssl = Confirm.ask("Use SSL?", default=False) if not use_tls else False
 
-    username = Prompt.ask("Username (email)")
-    password = Prompt.ask("Password", password=True)
+    username = Prompt.ask("Username (email)", default=default_username or "")
+    
+    if default_password:
+        use_default_pass = Confirm.ask("Use provided password?", default=True)
+        password = default_password if use_default_pass else Prompt.ask("Password", password=True)
+    else:
+        password = Prompt.ask("Password", password=True)
 
+    default_from_val = default_from or username
     from_address = Prompt.ask(
         "From address (optional, defaults to username)",
-        default=username,
+        default=default_from_val,
     )
 
     return EmailChannel(
