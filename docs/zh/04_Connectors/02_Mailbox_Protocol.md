@@ -1,4 +1,4 @@
-# Mailbox Protocol Schema Specification
+# Mailbox 协议规范
 
 **Version**: 1.0.0
 **Status**: Draft
@@ -6,20 +6,20 @@
 
 ---
 
-## 1. 概述 (Overview)
+## 1. 概述
 
 本文档定义 Monoco Mailbox 协议的完整 Schema 规范，作为 Courier 与 Monoco 内核之间的**受保护物理接口**。
 
 ### 1.1 设计原则
 
-1. **受保护空间 (Protected Space)**: `.monoco/mailbox/` 对 Agent 是只读的，所有写操作必须通过 `monoco courier send` 命令完成
+1. **受保护空间 (Protected Space)**: `.monoco/mailbox/` 对 Agent 是只读的，所有写操作必须通过 Courier 服务完成
 2. **物理分桶 + 逻辑建模**: 按 `provider` 分目录，复杂元数据封锁在 YAML Frontmatter 中
 3. **多源兼容**: 统一 Schema 支持 IM (飞书/Lark) 和 Email 两种主要形态
 4. **人类可读**: Markdown + YAML Frontmatter 格式，便于调试和审计
 
 ---
 
-## 2. 物理存储结构 (Physical Structure)
+## 2. 物理存储结构
 
 ### 2.1 目录布局
 
@@ -542,71 +542,17 @@ options:
 
 ---
 
-## 6. CLI 发送契约
+## 6. Correlation ID 消费逻辑
 
-### 6.1 命令规范
+### 6.1 用途
 
-```bash
-# 基本用法
-monoco courier send <draft-file> [options]
-
-# 选项
---dry-run           # 验证格式但不实际发送
---provider <name>   # 强制指定目标平台
---priority <level>  # 优先级: low | normal | high | urgent
---correlation-id    # 关联业务 ID
-```
-
-### 6.2 校验逻辑
-
-`monoco courier send` 执行以下校验：
-
-1. **格式校验**: YAML Frontmatter 语法正确
-2. **必填字段**: `to`, `provider`, `type` 必须存在
-3. **Provider 支持**: 检查 provider 是否已配置
-4. **权限校验**: 检查 Agent 是否有权限发送给指定目标
-5. **内容安全**: 检查是否包含敏感信息 (可选)
-
-### 6.3 投递流程
-
-```
-1. Agent 在工作目录创建 draft.md
-2. 执行 `monoco courier send draft.md`
-3. CLI 校验 Frontmatter
-4. 校验通过 → 原子移动至 .monoco/mailbox/outbound/{provider}/
-5. Courier 监听 outbound 目录
-6. Courier 调用 API 发送
-7. 发送成功 → 移动至 archive/
-8. 发送失败 → 移动至 outbound/{provider}/.retry/ 并记录错误
-```
-
-### 6.4 草稿文件建议位置
-
-Agent 应在工作目录下创建草稿：
-
-```
-Issues/
-  Features/
-    work/
-      FEAT-XXXX/
-        drafts/
-          reply_001.md      # 回复草稿
-          notification.md   # 通知草稿
-```
-
----
-
-## 7. Correlation ID 消费逻辑
-
-### 7.1 用途
-
-`correlation_id` 用于追踪跨消息的**业务闭环**：
+`correlation_id` 用于追踪跨消息的**业务闭环**:
 
 - Bug 报告 -> 分析 -> 修复 -> 通知
 - 任务分配 -> 执行 -> 验收 -> 归档
 - 问题咨询 -> 回答 -> 确认 -> 关闭
 
-### 7.2 生成规则
+### 6.2 生成规则
 
 ```
 {category}_{entity_id}_{timestamp}
@@ -621,7 +567,7 @@ Issues/
 - `epic_API-Redesign`
 - `incident_Production-Down-20260206`
 
-### 7.3 Agent 回溯逻辑
+### 6.3 Agent 回溯逻辑
 
 当 Agent 收到带有 `correlation_id` 的消息时：
 
@@ -647,28 +593,9 @@ def load_correlation_context(corr_id: str) -> Context:
 
 ---
 
-## 8. 版本与兼容性
+## 7. 附录
 
-### 8.1 Schema 版本
-
-```yaml
-# 在 metadata 中声明 Schema 版本
-metadata:
-  schema_version: "1.0.0"
-  protocol_version: "1.0.0"
-```
-
-### 8.2 向后兼容策略
-
-- **新增字段**: 可选字段，旧版本忽略
-- **废弃字段**: 保留字段但标记 deprecated
-- **破坏性变更**: 主版本号升级，提供迁移脚本
-
----
-
-## 9. 附录
-
-### 9.1 类型枚举定义
+### 7.1 类型枚举定义
 
 ```yaml
 Provider:
@@ -696,7 +623,7 @@ Role:
   values: [owner, admin, member, guest, external]
 ```
 
-### 9.2 完整 Inbound Schema (JSON Schema)
+### 7.2 完整 Inbound Schema (JSON Schema)
 
 ```json
 {
@@ -791,4 +718,9 @@ Role:
 
 ---
 
-**文档结束**
+## 相关文档
+
+- [01_Architecture](01_Architecture.md) - 整体架构设计
+- [03_Mailbox_CLI](03_Mailbox_CLI.md) - Mailbox CLI 命令设计
+- [04_Courier_Service](04_Courier_Service.md) - Courier 服务架构设计
+- [05_Courier_CLI](05_Courier_CLI.md) - Courier CLI 命令设计
