@@ -6,15 +6,24 @@ status: open
 stage: doing
 title: 实现 Monoco Courier 钉钉适配器：基于受保护 Mailbox 的防抖分拣逻辑
 created_at: '2026-02-06T22:24:06'
-updated_at: '2026-02-06T22:24:44'
+updated_at: '2026-02-07T17:49:22'
 parent: EPIC-0000
-dependencies: []
+dependencies:
+- FEAT-0191
+- FEAT-0192
+- FEAT-0193
 related: []
 domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0190'
-files: []
+- '#FEAT-0191'
+- '#FEAT-0192'
+- '#FEAT-0193'
+files:
+- src/monoco/features/courier/adapters/dingtalk.py
+- src/monoco/features/courier/api.py
+- src/monoco/features/courier/debounce.py
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-06T22:24:06'
@@ -24,35 +33,39 @@ opened_at: '2026-02-06T22:24:06'
 
 ## Objective
 
-在 Monoco Courier 中实现钉钉适配器，采用 Sidecar 模式处理外部信号。
+在 Monoco Courier 中完整实现钉钉适配器，采用 Sidecar 模式处理外部信号。基于 FEAT-0192 与 FEAT-0193 建立的多项目路由架构，确保适配器能够支持多租户分发。
+
 核心逻辑：
 
-1. **Webhook 接入**：启动 FastAPI 服务接收钉钉事件。
-2. **防抖分拣 (Debouncing)**：针对 IM 的流式输入，在内存或轻量缓存中进行窗口聚合（默认 30s）。
-3. **标准化落地**：聚合后的消息转化为 ADR-003 规范的 Markdown 格式并写入受保护的 `.monoco/mailbox/inbound/dingtalk/`。
+1. **多租户 Webhook 接入**：通过路由 `/api/v1/courier/webhook/dingtalk/{project_slug}` 接收事件。
+2. **凭证动态检索**：从 `ProjectInventory` 检索各项目的 `AppSecret` 进行签名验证。
+3. **防抖分拣 (Debouncing)**：针对 IM 的流式输入，利用 `DebounceHandler` 在内存中进行窗口聚合（默认 5s 窗口，30s 最大延迟）。
+4. **标准化落地**：聚合后的消息转化为 `InboundMessage` 规范并写入该项目所属的 `.monoco/mailbox/inbound/dingtalk/`。
 
 ## Acceptance Criteria
 
-- [ ] **服务启动**：Courier 能够独立或作为 Sidecar 启动钉钉 Webhook 监听服务。
-- [ ] **签名验证**：正确处理钉钉 Webhook 的加密与签名校验。
-- [ ] **防抖逻辑**：连续发送的 IM 消息在 30s 内被聚合为同一个“Mail”文件。
-- [ ] **Schema 遵循**：生成的 MD 文件符合 `InboundMessage` Pydantic 模型。
-- [ ] **原子写入**：使用重命名机制确保写入 `inbound` 目录的动作是原子的。
+- [x] **签名验证**：`DingtalkSigner` 已实现，支持基于时间戳 and Secret 的 SHA256 签名校验。
+- [x] **防抖引擎**：`DebounceHandler` 已实现，支持基于 `session_id` 的消息流合并。
+- [ ] **适配器封装**：完成 `DingtalkAdapter` 包装类，整合签名校验、防抖逻辑与存储逻辑。
+- [ ] **集成分发**：FastAPI 服务通过 `project_slug` 正确分发到对应项目的存储路径。
+- [ ] **Schema 遵循**：生成的 MD 文件符合 `monoco.features.connector.protocol.schema.InboundMessage` 模型。
+- [ ] **原子写入**：使用 `MailboxStore` 或重命名机制确保写入 `inbound` 目录的动作是原子的。
 
 ## Technical Tasks
 
-- [ ] **基础框架搭建**
-  - [ ] 实现 `DingtalkAdapter` 基础类。
-  - [ ] 集成 FastAPI 接收 `/api/v1/courier/webhook/dingtalk`。
-- [ ] **防抖缓冲引擎**
-  - [ ] 设计基于 `session.id` 的内存队列缓存。
-  - [ ] 实现定时器逻辑：当 `session.id` 超过 30s 无新消息时触发 Flash 动作。
-- [ ] **格式化与持久化**
-  - [ ] 调用 `monoco.mailbox.schema` 构造标准消息对象。
-  - [ ] 实现 `.monoco/mailbox/inbound/dingtalk/` 的目录自动创建与写入逻辑。
-- [ ] **集成测试**
-  - [ ] 模拟钉钉并发 Webhook 请求，验证防抖合并效果。
+- [ ] **适配器核心实现** (`src/monoco/features/courier/adapters/dingtalk.py`)
+  - [ ] 补全 `DingtalkAdapter` 类。
+  - [ ] 实现 `handle_webhook(slug, payload, sign, timestamp)` 方法。
+- [ ] **API 路由桥接** (`src/monoco/features/courier/api.py`)
+  - [ ] 在 `CourierAPIHandler` 中注入 `DingtalkAdapter`。
+  - [ ] 补全 `POST /api/v1/courier/webhook/dingtalk/{project_slug}` 的逻辑。
+- [ ] **分发与持久化**
+  - [ ] 调用 `ProjectInventory` 获取项目的根路径。
+  - [ ] 使用 `src/monoco/features/mailbox/store.py` 将消息写入对应项目的 `inbound` 目录。
+- [ ] **集成验证**
+  - [ ] 模拟钉钉并发 Webhook 请求，验证多项目隔离写入效果。
 
 ## Review Comments
 
 - **2026-02-06**: 由 IndenScale 确认，废弃旧的 FEAT-0168/0169，采用全新的 Mailbox 架构实现。
+- **2026-02-07**: IndenScale 提出更新：因 FEAT-0191/192/193 已重构底层架构，FEAT-0190 需适配全局项目注册表与多租户路由。
