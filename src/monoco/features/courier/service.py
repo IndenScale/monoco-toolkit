@@ -123,16 +123,6 @@ class CourierService:
         self.api_url = f"http://{host}:{port}"
         self._lock_fd: Optional[int] = None
 
-        # Make paths relative to project root if not absolute
-        if not self.pid_file.is_absolute():
-            self.pid_file = self.project_root / self.pid_file
-        if not self.state_file.is_absolute():
-            self.state_file = self.project_root / self.state_file
-        if not self.log_file.is_absolute():
-            self.log_file = self.project_root / self.log_file
-        if not self.lock_file.is_absolute():
-            self.lock_file = self.project_root / self.lock_file
-
     def _read_pid(self) -> Optional[int]:
         """Read PID from pid file."""
         if not self.pid_file.exists() or not self.state_file.exists():

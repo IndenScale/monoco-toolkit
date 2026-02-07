@@ -4,16 +4,18 @@ Courier Constants - Service configuration and default values.
 
 from pathlib import Path
 
-# Service paths
-COURIER_PID_DIR = ".monoco/run"
-COURIER_LOG_DIR = ".monoco/log"
-COURIER_CONFIG_DIR = ".monoco/config"
+# Service paths (Global context)
+GLOBAL_MONOCO_DIR = Path.home() / ".monoco"
+COURIER_PID_DIR = GLOBAL_MONOCO_DIR / "run"
+COURIER_LOG_DIR = GLOBAL_MONOCO_DIR / "log"
+COURIER_CONFIG_DIR = GLOBAL_MONOCO_DIR / "courier"
 
-# Service files
-COURIER_PID_FILE = Path(COURIER_PID_DIR) / "courier.pid"
-COURIER_STATE_FILE = Path(COURIER_PID_DIR) / "courier.json"
-COURIER_LOG_FILE = Path(COURIER_LOG_DIR) / "courier.log"
-COURIER_LOCK_FILE = Path(COURIER_PID_DIR) / "courier.lock"
+# Service files (Absolute global paths)
+COURIER_PID_FILE = COURIER_PID_DIR / "courier.pid"
+COURIER_STATE_FILE = COURIER_PID_DIR / "courier.json"
+COURIER_LOG_FILE = COURIER_LOG_DIR / "courier.log"
+COURIER_LOCK_FILE = COURIER_PID_DIR / "courier.lock"
+COURIER_REGISTRY_FILE = COURIER_CONFIG_DIR / "registry.json"
 
 # Service defaults
 COURIER_DEFAULT_HOST = "localhost"
