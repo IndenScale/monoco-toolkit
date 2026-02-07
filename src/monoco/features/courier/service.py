@@ -599,7 +599,7 @@ class CourierService:
             ServiceStatus after restart
         """
         try:
-            self.stop()
+            self.stop(wait=True)
         except ServiceNotRunningError:
             pass  # Already stopped
         except ServiceError:
