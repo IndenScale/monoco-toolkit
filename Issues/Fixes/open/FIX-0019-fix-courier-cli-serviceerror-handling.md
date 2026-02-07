@@ -3,10 +3,10 @@ id: FIX-0019
 uid: bff7c3
 type: fix
 status: open
-stage: doing
+stage: review
 title: Fix Courier CLI ServiceError Handling
 created_at: '2026-02-07T11:33:52'
-updated_at: '2026-02-07T11:34:02'
+updated_at: '2026-02-07T11:36:37'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,33 +14,35 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FIX-0019'
-files: []
+files:
+- .gitignore
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- src/monoco/features/courier/commands.py
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-07T11:33:52'
+isolation:
+  type: branch
+  ref: FIX-0019-fix-courier-cli-serviceerror-handling
+  created_at: '2026-02-07T11:34:03'
 ---
 
 ## FIX-0019: Fix Courier CLI ServiceError Handling
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+
+修复 Courier CLI 命令中异常处理的 AttributeError 问题。
+当前的 `stop_service` 等命令错误地尝试从 `ServiceError` 基类访问 `ServiceNotRunningError` 等子类，导致 `AttributeError`。需要改为直接导入并使用异常类。
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+
+- [x] `monoco courier stop` 在服务未运行时不再抛出 `AttributeError`。
+- [x] 异常捕获逻辑使用正确的异常类。
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
 
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
-- [ ] Task 1
+- [x] 修复 `src/monoco/features/courier/commands.py` 中的异常导入和捕获。
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+修复已验证。

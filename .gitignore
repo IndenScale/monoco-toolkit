@@ -61,6 +61,7 @@ test.pdf
 .env
 .monoco/local_config.yaml
 .monoco/sessions/
+.monoco/log/
 
 # Agent Directories
 .qwen/
