@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 统一 Channel 配置管理：集中化多渠道配置系统
 created_at: '2026-02-07T19:30:49'
-updated_at: 2026-02-07 19:36:55
+updated_at: '2026-02-07T19:51:01'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -15,22 +15,22 @@ tags:
 - '#EPIC-0000'
 - '#FEAT-0194'
 files:
+- .gitignore
 - src/monoco/features/channel/__init__.py
-- src/monoco/features/channel/models.py
-- src/monoco/features/channel/store.py
-- src/monoco/features/channel/sender.py
 - src/monoco/features/channel/commands.py
-- src/monoco/features/channel/migrate.py
 - src/monoco/features/channel/courier_integration.py
+- src/monoco/features/channel/migrate.py
+- src/monoco/features/channel/models.py
+- src/monoco/features/channel/sender.py
+- src/monoco/features/channel/store.py
 - src/monoco/features/courier/api.py
 - src/monoco/main.py
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-07T19:30:49'
 isolation:
   type: branch
   ref: FEAT-0194-统一-channel-配置管理-集中化多渠道配置系统
-  path: null
   created_at: '2026-02-07T19:36:55'
 ---
 
