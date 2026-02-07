@@ -22,7 +22,14 @@ from rich.table import Table
 from monoco.core.config import get_config
 from monoco.core.output import OutputManager, AgentOutput
 
-from .service import CourierService, ServiceState, ServiceError
+from .service import (
+    CourierService,
+    ServiceState,
+    ServiceError,
+    ServiceAlreadyRunningError,
+    ServiceNotRunningError,
+    ServiceStartError,
+)
 from .constants import COURIER_DEFAULT_PORT
 
 app = typer.Typer(help="Manage Courier service")
@@ -63,10 +70,10 @@ def start_service(
             else:
                 console.print(f"[yellow]⚠[/yellow] Courier status: {status.state}")
 
-    except ServiceError.ServiceAlreadyRunningError as e:
+    except ServiceAlreadyRunningError as e:
         OutputManager.error(str(e))
         raise typer.Exit(code=2)
-    except ServiceError.ServiceStartError as e:
+    except ServiceStartError as e:
         OutputManager.error(str(e))
         raise typer.Exit(code=1)
     except Exception as e:
@@ -93,7 +100,7 @@ def stop_service(
             else:
                 console.print(f"[yellow]⚠[/yellow] Courier status: {status.state}")
 
-    except ServiceError.ServiceNotRunningError:
+    except ServiceNotRunningError:
         msg = "Courier is not running"
         if json:
             OutputManager.print({"success": False, "error": msg})
@@ -161,7 +168,7 @@ def restart_service(
             else:
                 console.print(f"[yellow]⚠[/yellow] Courier status: {status.state}")
 
-    except ServiceError.ServiceStartError as e:
+    except ServiceStartError as e:
         OutputManager.error(str(e))
         raise typer.Exit(code=1)
     except Exception as e:
