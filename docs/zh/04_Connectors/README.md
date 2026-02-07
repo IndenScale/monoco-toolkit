@@ -8,7 +8,7 @@ Monoco Connectors 文档集，定义 Mailbox 和 Courier 两个独立 Feature �
 04_Connectors/
 ├── README.md                   # 本文档
 ├── 01_Architecture.md          # 整体架构设计
-├── 02_Mailbox_Protocol.md      # 消息协议 Schema 规范
+├── 02_Mailbox_Protocol.md      # Mail 协议 Schema 规范
 ├── 03_Mailbox_CLI.md           # Mailbox CLI 命令设计
 ├── 04_Courier_Service.md       # Courier 服务架构设计
 └── 05_Courier_CLI.md           # Courier CLI 命令设计
@@ -18,7 +18,7 @@ Monoco Connectors 文档集，定义 Mailbox 和 Courier 两个独立 Feature �
 
 ### 如果你是架构师
 1. 先读 [01_Architecture](01_Architecture.md) 了解整体设计
-2. 然后读 [02_Mailbox_Protocol](02_Mailbox_Protocol.md) 了解消息格式
+2. 然后读 [02_Mailbox_Protocol](02_Mailbox_Protocol.md) 了解 Mail 格式
 
 ### 如果你是开发者
 1. 根据职责选择：
@@ -26,7 +26,7 @@ Monoco Connectors 文档集，定义 Mailbox 和 Courier 两个独立 Feature �
    - 负责传输层 → [04_Courier_Service](04_Courier_Service.md) + [05_Courier_CLI](05_Courier_CLI.md)
 
 ### 如果你是用户
-1. 查询消息 → [03_Mailbox_CLI](03_Mailbox_CLI.md)
+1. 查询 Mail → [03_Mailbox_CLI](03_Mailbox_CLI.md)
 2. 管理服务 → [05_Courier_CLI](05_Courier_CLI.md)
 
 ## 核心概念
@@ -35,11 +35,11 @@ Monoco Connectors 文档集，定义 Mailbox 和 Courier 两个独立 Feature �
 
 | 特性 | Mailbox | Courier |
 |------|---------|---------|
-| **职责** | 数据管理（CRUD、查询、归档） | 服务管理（启动、停止、传输） |
-| **形态** | 静态文件库 | 后台守护进程 |
+| **职责** | 本地 Mail 管理（拉取、查询、消费） | 全局 Mail 聚合（接收、合并、存储） |
+| **形态** | 每个 Workspace 独立 | 用户级别单实例 |
 | **CLI** | `monoco mailbox` | `monoco courier` |
-| **写入权限** | 只读（Agent） | 读写（服务） |
-| **典型操作** | list, show, read, archive | start, stop, kill, send |
+| **写入权限** | 本地只写，全局通过 API | 全局 inbox 唯一写入者 |
+| **典型操作** | sync, list, read, claim, done | start, stop, status |
 
 ### 关键设计决策
 

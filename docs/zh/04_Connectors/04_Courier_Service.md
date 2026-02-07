@@ -1,31 +1,31 @@
 # Courier Service 设计
 
-**Version**: 1.0.0
+**Version**: 2.0.0
 **Status**: Draft
-**Related**: FEAT-0191
+**Related**: FEAT-0191, FEAT-XXXX
 
 ---
 
 ## 1. 概述
 
-Courier 是 Monoco 的消息传输层，负责与外部通信平台（飞书、邮件、Slack等）进行双向消息收发。它以**守护进程（Daemon）**形式运行，管理连接、处理消息、维护状态。
+Courier 是 Monoco 的**用户级别全局 Mail 聚合服务**。它以单一守护进程形式运行，负责接收外部连续消息流、防抖聚合成 Mail、写入全局 inbox。
 
 ### 1.1 核心职责
 
 | 职责 | 说明 |
 |------|------|
-| **Webhook 接收** | 接收外部平台推送消息，处理后写入 `inbound/` |
-| **消息发送** | 从 `outbound/` 读取草稿并实际发送 |
-| **状态管理** | 维护消息锁状态（claim/done/fail），处理归档和重试 |
-| **API 服务** | 为 Mailbox CLI 提供 HTTP API |
+| **Webhook 接收** | 接收外部平台推送，聚合成 Mail 写入全局 inbox |
+| **Mail 聚合** | 防抖合并连续消息流，生成原子消费单位 |
+| **验证与存储** | Schema 校验、去重、写入 `~/.monoco/mailbox/` |
+| **状态 API** | 为 Mailbox CLI 提供状态管理接口 |
 
 ### 1.2 设计原则
 
-1. **服务自治**: Courier 作为独立进程运行，不依赖 Agent 会话
-2. **可靠投递**: 确保消息至少一次送达，失败自动重试
-3. **防抖合并**: 快速连续消息合并处理，减少 Agent 触发频率
-4. **优雅降级**: 单个适配器故障不影响其他适配器
-5. **状态集中**: 消息状态由 Courier 统一管理，Agent 通过 API 交互
+1. **用户级单实例**: 一个用户设备只运行一个 Courier 进程
+2. **Mail 聚合**: 连续消息流防抖聚合成原子消费单位
+3. **只写不路由**: 写入全局 inbox，不决定 Mail 归属哪个 workspace
+4. **无状态感知**: 不维护 workspace 列表，不感知其存在
+5. **平铺存储**: 按 `status/source` 二级目录，时间戳在文件名
 
 ---
 
@@ -35,59 +35,65 @@ Courier 是 Monoco 的消息传输层，负责与外部通信平台（飞书、�
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     Courier Service                            │
-├─────────────────────────────────────────────────────────────────┤
+│                    Courier Service (Single Instance)             │
 │                                                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   Adapter    │  │   Adapter    │  │   Adapter    │          │
-│  │    (Lark)    │  │   (Email)    │  │   (Slack)    │          │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
-│         │                 │                 │                  │
-│         └─────────────────┼─────────────────┘                  │
-│                           ▼                                    │
-│                  ┌──────────────┐                              │
-│                  │   Ingestion  │                              │
-│                  │   Pipeline   │                              │
-│                  └──────┬───────┘                              │
-│                         │                                      │
-│         ┌───────────────┼───────────────┐                      │
-│         ▼               ▼               ▼                      │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐           │
-│  │   Debounce   │ │   Validate   │ │   Enrich     │           │
-│  │   Handler    │ │   Schema     │ │   Context    │           │
-│  └──────┬───────┘ └──────────────┘ └──────────────┘           │
-│         │                                                      │
-│         ▼                                                      │
-│  ┌──────────────┐                                             │
-│  │   Mailbox    │                                             │
-│  │    Store     │────► .monoco/mailbox/inbound/               │
-│  └──────────────┘                                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │   Adapter    │  │   Adapter    │  │   Adapter    │           │
+│  │    (Lark)    │  │   (Email)    │  │   (Slack)    │           │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘           │
+│         │                 │                 │                   │
+│         └─────────────────┼─────────────────┘                   │
+│                           ▼                                     │
+│                  ┌──────────────┐                               │
+│                  │   Ingestion  │                               │
+│                  │   Pipeline   │                               │
+│                  └──────┬───────┘                               │
+│                         │                                       │
+│         ┌───────────────┼───────────────┐                       │
+│         ▼               ▼               ▼                       │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐            │
+│  │   Validate   │ │   Enrich     │ │   Deduplicate│            │
+│  └──────┬───────┘ └──────────────┘ └──────────────┘            │
+│         │                                                       │
+│         ▼                                                       │
+│  ┌──────────────┐                                              │
+│  │  Global      │────► ~/.monoco/mailbox/                      │
+│  │  Inbox       │      └── {source}/inbound/{timestamp}.jsonl  │
+│  └──────────────┘                                              │
 │                                                                  │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │                    Outbound Pipeline                     │  │
-│  │  Draft ──► Validate ──► Queue ──► Send ──► Archive      │  │
-│  └─────────────────────────────────────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                    HTTP API Service                      │    │
+│  │  POST /api/v1/messages/{id}/claim                       │    │
+│  │  POST /api/v1/messages/{id}/complete                    │    │
+│  │  POST /api/v1/messages/{id}/fail                        │    │
+│  └─────────────────────────────────────────────────────────┘    │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-   ┌─────────┐          ┌─────────┐          ┌─────────┐
-   │  Lark   │          │  Email  │          │  Slack  │
-   │ Server  │          │ Server  │          │ Server  │
-   └─────────┘          └─────────┘          └─────────┘
 ```
 
-### 2.2 组件职责
+### 2.2 存储结构
 
-| 组件 | 职责 | 位置 |
-|------|------|------|
-| Adapter | 与外部平台通信，处理平台特定协议 | `courier/adapters/` |
-| Ingestion Pipeline | 接收、验证、丰富入站消息 | `courier/pipeline/` |
-| Debounce Handler | 防抖合并，减少重复触发 | `courier/debounce.py` |
-| Mailbox Store | 将消息写入受保护的 Mailbox | `courier/store.py` |
-| Outbound Pipeline | 处理出站消息发送 | `courier/outbound/` |
-| Service Manager | 进程生命周期管理 | `courier/service.py` |
+```
+~/.monoco/mailbox/
+├── lark/                       # 按 source 分目录
+│   ├── inbound/                # 新 Mail（外部输入）
+│   │   └── 20240115-103022-a7f3e8d2.jsonl
+│   ├── outbound/               # 出站 Mail（待推送）
+│   └── archive/                # 已归档
+├── email/
+│   ├── inbound/
+│   ├── outbound/
+│   └── archive/
+└── slack/
+    ├── inbound/
+    ├── outbound/
+    └── archive/
+```
+
+**设计约束**:
+- 按 `source/status` 二级目录
+- 文件名包含时间戳，不嵌套日期目录
+- 不创建 manifest、attestations 等文件
 
 ---
 
@@ -116,15 +122,24 @@ Courier 是 Monoco 的消息传输层，负责与外部通信平台（飞书、�
     └───────────────────────────────────┘
 ```
 
-### 3.2 状态说明
+### 3.2 单实例保证
 
-| 状态 | 说明 |
-|------|------|
-| `stopped` | 服务未运行 |
-| `starting` | 正在初始化适配器、建立连接 |
-| `running` | 正常运行，收发消息 |
-| `stopping` | 正在优雅关闭，完成进行中的任务 |
-| `error` | 发生错误，可能正在重试 |
+```python
+# Courier 启动时检查
+class SingleInstanceLock:
+    """用户级单实例锁"""
+
+    def acquire(self) -> bool:
+        pid_file = Path.home() / ".monoco" / "courier" / "courier.pid"
+
+        if pid_file.exists():
+            pid = int(pid_file.read_text())
+            if self._process_exists(pid):
+                return False  # 已有实例在运行
+
+        pid_file.write_text(str(os.getpid()))
+        return True
+```
 
 ---
 
@@ -134,15 +149,6 @@ Courier 是 Monoco 的消息传输层，负责与外部通信平台（飞书、�
 
 ```python
 from abc import ABC, abstractmethod
-from typing import AsyncIterator, Optional
-from dataclasses import dataclass
-
-@dataclass
-class AdapterConfig:
-    """适配器配置基类"""
-    provider: str
-    enabled: bool = True
-    retry_policy: dict = None
 
 class BaseAdapter(ABC):
     """适配器基类"""
@@ -154,23 +160,13 @@ class BaseAdapter(ABC):
         pass
 
     @abstractmethod
-    async def connect(self) -> None:
-        """建立与外部平台的连接"""
+    async def start(self, courier: "Courier") -> None:
+        """启动适配器，注册路由到 Courier"""
         pass
 
     @abstractmethod
-    async def disconnect(self) -> None:
-        """断开连接"""
-        pass
-
-    @abstractmethod
-    async def listen(self) -> AsyncIterator[RawMessage]:
-        """监听入站消息"""
-        pass
-
-    @abstractmethod
-    async def send(self, message: OutboundMessage) -> SendResult:
-        """发送出站消息"""
+    async def stop(self) -> None:
+        """停止适配器"""
         pass
 
     @abstractmethod
@@ -179,162 +175,64 @@ class BaseAdapter(ABC):
         pass
 ```
 
-### 4.2 适配器注册
+### 4.2 Mail 写入
 
 ```python
-# courier/adapters/__init__.py
-from typing import Dict, Type
-from .base import BaseAdapter
+class Courier:
+    """用户级全局 Courier 服务"""
 
-_registry: Dict[str, Type[BaseAdapter]] = {}
-
-def register_adapter(name: str, adapter_class: Type[BaseAdapter]):
-    """注册适配器"""
-    _registry[name] = adapter_class
-
-def get_adapter(name: str) -> Type[BaseAdapter]:
-    """获取适配器类"""
-    return _registry.get(name)
-
-def list_adapters() -> list[str]:
-    """列出所有可用适配器"""
-    return list(_registry.keys())
-
-# 自动导入并注册
-from .lark import LarkAdapter
-from .email import EmailAdapter
-from .slack import SlackAdapter
-
-register_adapter("lark", LarkAdapter)
-register_adapter("email", EmailAdapter)
-register_adapter("slack", SlackAdapter)
-```
-
----
-
-## 5. 防抖合并（Debounce）
-
-### 5.1 防抖策略
-
-```python
-@dataclass
-class DebounceConfig:
-    """防抖配置"""
-    window_ms: int = 5000        # 防抖窗口（毫秒）
-    max_wait_ms: int = 30000     # 最大等待时间
-    key_extractor: Callable      # 消息分组键提取函数
-
-class DebounceHandler:
-    """
-    防抖处理器
-
-    将同一 session 的连续消息合并，减少 Agent 触发次数。
-    """
-
-    def __init__(self, config: DebounceConfig):
-        self.config = config
-        self._buffers: Dict[str, List[Message]] = {}
-        self._timers: Dict[str, asyncio.Timer] = {}
-
-    async def add(self, message: Message) -> Optional[List[Message]]:
+    async def receive_message(
+        self,
+        provider: str,
+        raw_message: dict
+    ) -> None:
         """
-        添加消息到防抖缓冲区
-
-        返回：如果触发刷新，返回消息列表；否则返回 None
+        接收外部消息流，聚合成 Mail，验证后写入全局 inbox
         """
-        key = self.config.key_extractor(message)
+        # 1. 验证格式
+        validated = self.validate(raw_message)
 
-        if key not in self._buffers:
-            self._buffers[key] = []
-            # 启动定时器
-            self._timers[key] = asyncio.create_task(
-                self._flush_after(key, self.config.window_ms)
-            )
+        # 2. 补充元数据
+        enriched = self.enrich(validated, provider)
 
-        self._buffers[key].append(message)
+        # 3. 生成文件名
+        timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+        msg_hash = hashlib.sha256(
+            json.dumps(enriched, sort_keys=True).encode()
+        ).hexdigest()[:8]
+        filename = f"{timestamp}-{msg_hash}.jsonl"
 
-        # 检查是否达到最大等待时间
-        if self._should_flush(key):
-            return await self._flush(key)
+        # 4. 写入全局 inbox
+        inbox_path = (
+            Path.home() /
+            ".monoco/mailbox" /
+            provider /
+            "inbound" /
+            filename
+        )
+        inbox_path.parent.mkdir(parents=True, exist_ok=True)
+        inbox_path.write_text(json.dumps(enriched))
 
-        return None
-
-    async def _flush(self, key: str) -> List[Message]:
-        """刷新缓冲区"""
-        messages = self._buffers.pop(key, [])
-        timer = self._timers.pop(key, None)
-        if timer:
-            timer.cancel()
-        return messages
-```
-
-### 5.2 分组策略
-
-```python
-def session_thread_key_extractor(message: Message) -> str:
-    """
-    按 session + thread 分组
-
-    同一聊天/话题的消息会被合并处理
-    """
-    session_id = message.session.id
-    thread_key = message.session.thread_key or "_"
-    return f"{session_id}:{thread_key}"
+        # 5. 触发文件系统事件（供 workspace 监听）
+        # 可选: 发送通知给已连接的 workspace
 ```
 
 ---
 
-## 6. 入站流程
+## 5. HTTP API
 
-```
-External Message
-       │
-       ▼
-┌──────────────┐
-│   Adapter    │──► 转换为内部 RawMessage
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│   Validate   │──► Schema 校验
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│   Enrich     │──► 补充上下文、下载附件
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│   Debounce   │──► 合并同一 session 的连续消息
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│    Write     │──► 写入 .monoco/mailbox/inbound/
-└──────────────┘
-       │
-       ▼
-  (Agent 读取 via Mailbox CLI)
-```
+Courier 提供 HTTP API 供 Mailbox CLI 调用。
 
----
-
-## 7. HTTP API
-
-Courier 提供 HTTP API 供 Mailbox CLI 调用，实现消息状态管理。
-
-### 7.1 API 概览
+### 5.1 API 概览
 
 | 端点 | 方法 | 说明 | 调用方 |
 |------|------|------|--------|
-| `/api/v1/messages/{id}/claim` | POST | 认领消息 | `mailbox claim` |
-| `/api/v1/messages/{id}/complete` | POST | 标记完成 | `mailbox done` |
-| `/api/v1/messages/{id}/fail` | POST | 标记失败 | `mailbox fail` |
-| `/api/v1/messages/{id}` | GET | 获取消息状态 | 内部使用 |
+| `/api/v1/mail/{id}/claim` | POST | 认领 Mail，移动到 processing | `mailbox claim` |
+| `/api/v1/messages/{id}/complete` | POST | 标记完成，移动到 archive | `mailbox done` |
+| `/api/v1/messages/{id}/fail` | POST | 标记失败，可能重试或归档 | `mailbox fail` |
 | `/health` | GET | 健康检查 | 监控 |
 
-### 7.2 认领消息
+### 5.2 认领 Mail
 
 ```http
 POST /api/v1/messages/{id}/claim
@@ -342,255 +240,124 @@ Content-Type: application/json
 
 {
     "agent_id": "agent_001",
-    "timeout": 300
-}
-```
-
-**响应**:
-```json
-{
-    "success": true,
-    "message_id": "lark_om_abc123",
-    "status": "claimed",
-    "claimed_by": "agent_001",
-    "claimed_at": "2026-02-06T20:45:00Z",
-    "expires_at": "2026-02-06T20:50:00Z"
-}
-```
-
-**错误响应**:
-```json
-{
-    "success": false,
-    "error": "already_claimed",
-    "claimed_by": "agent_002",
-    "claimed_at": "2026-02-06T20:40:00Z"
-}
-```
-
-### 7.3 标记完成
-
-```http
-POST /api/v1/messages/{id}/complete
-Content-Type: application/json
-
-{
-    "agent_id": "agent_001"
+    "workspace_path": "/Users/me/Projects/alpha"
 }
 ```
 
 **Courier 行为**:
-1. 验证消息是否由 `agent_001` 认领
-2. 更新状态为 `completed`
-3. 移动到 `.monoco/mailbox/archive/`
-4. 清理锁状态
-
-### 7.4 标记失败
-
-```http
-POST /api/v1/messages/{id}/fail
-Content-Type: application/json
-
-{
-    "agent_id": "agent_001",
-    "reason": "API 超时",
-    "retryable": true
-}
-```
-
-**Courier 行为**:
-1. 验证消息是否由 `agent_001` 认领
-2. 更新状态为 `failed`，记录失败原因
-3. 根据 `retryable` 和重试次数决定：
-   - `retryable=true` 且未超次数：重新放入队列
-   - 否则：移入 `.monoco/mailbox/.deadletter/`
-4. 释放锁
-
-### 7.5 锁状态存储
-
-Courier 在内存中维护锁状态表，定期持久化到文件：
-
-```
-.monoco/mailbox/
-└── .state/
-    └── locks.json
-```
-
-```json
-{
-    "lark_om_abc123": {
-        "status": "claimed",
-        "claimed_by": "agent_001",
-        "claimed_at": "2026-02-06T20:45:00Z",
-        "expires_at": "2026-02-06T20:50:00Z"
-    }
-}
-```
-
-**锁超时机制**:
-- 默认认领超时：5 分钟
-- 超时后其他 Agent 可以强制认领（steal）
-- 原认领者会收到 `claim_expired` 错误
+1. 在全局 inbox 中查找 Mail
+2. 从 `inbound/` 移动到 `processing/`
+3. 记录认领信息
+4. 返回成功响应
 
 ---
 
-## 8. 出站流程
+## 6. 与 Workspace 的关系
 
 ```
-Agent 执行 mailbox send
-       │
-       ▼
-┌──────────────┐
-│ Create Draft │──► 创建到 .monoco/mailbox/outbound/{provider}/
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│  Notify      │──► 通知 Courier（可选）
-│  Courier     │
-└──────┬───────┘
-       │
-       ▼
-Courier 检测到新草稿 / 收到通知
-       │
-       ▼
-┌──────────────┐
-│   Validate   │──► 校验 Schema、权限
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│    Send      │──► 调用 Adapter 发送
-└──────┬───────┘
-       │
-       ▼
-   Success?
-   ┌────┴────┐
-   ▼         ▼
-┌──────┐  ┌──────┐
-│Move  │  │Retry │
-│Archive 30d│  │Queue │
-└──────┘  └──────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                     Courier Service                              │
+│                     (用户级单实例)                                │
+│                                                                  │
+│  职责:                                                           │
+│  - 接收外部消息流，聚合成 Mail                                     │
+│  - 写入 ~/.monoco/mailbox/                                 │
+│  - 提供状态管理 API                                              │
+│                                                                  │
+│  不感知 workspace，不做路由                                       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              │ 文件系统操作
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Workspace 层                                │
+│                    (分散在各处目录)                               │
+│                                                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │  ~/Proj/A    │  │ ~/Work/B     │  │ /Vol/ext/C   │           │
+│  │              │  │              │  │              │           │
+│  │ .monoco/     │  │ .monoco/     │  │ .monoco/     │           │
+│  │  mailbox/    │  │  mailbox/    │  │  mailbox/    │           │
+│  │   - 本地规则  │  │   - 本地规则  │  │   - 本地规则  │           │
+│  │   - cursor   │  │   - cursor   │  │   - cursor   │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
+│                                                                  │
+│  各 workspace:                                                   │
+│  - 独立维护自己的 cursor                                          │
+│  - 独立定义筛选规则                                               │
+│  - 自主 CRUD 全局 inbox                                          │
+└─────────────────────────────────────────────────────────────────┘
 ```
+
+**关键设计**:
+- Courier **不知道**有多少 workspace
+- Workspace **不知道**其他 workspace 存在
+- 通过**文件系统**作为唯一协调点
 
 ---
 
-## 9. 错误处理与重试
-
-### 8.1 重试策略
-
-```python
-@dataclass
-class RetryPolicy:
-    max_attempts: int = 3
-    backoff_base_ms: int = 1000
-    backoff_multiplier: float = 2.0
-    max_backoff_ms: int = 30000
-
-class RetryHandler:
-    async def execute_with_retry(
-        self,
-        operation: Callable,
-        policy: RetryPolicy
-    ) -> Result:
-        for attempt in range(policy.max_attempts):
-            try:
-                return await operation()
-            except TransientError as e:
-                if attempt == policy.max_attempts - 1:
-                    raise
-                wait_time = min(
-                    policy.backoff_base_ms * (policy.backoff_multiplier ** attempt),
-                    policy.max_backoff_ms
-                )
-                await asyncio.sleep(wait_time / 1000)
-```
-
-### 8.2 死信队列
-
-发送失败且超过重试次数的消息进入死信队列：
-
-```
-.monoco/mailbox/
-└── .deadletter/
-    ├── lark/
-    │   └── 20260206T204500_lark_abc123.md
-    └── email/
-        └── 20260206T204500_email_def456.md
-```
-
----
-
-## 9. 配置设计
+## 7. 配置设计
 
 ```yaml
-# .monoco/config/courier.yaml
+# ~/.monoco/courier/config.yaml
 courier:
   # 服务配置
   service:
-    pid_file: ".monoco/run/courier.pid"
-    log_file: ".monoco/log/courier.log"
-    log_level: "info"
+    pid_file: "~/.monoco/courier/courier.pid"
+    log_file: "~/.monoco/courier/courier.log"
+    api_port: 8080              # 单一端口
 
-  # 防抖配置
-  debounce:
-    window_ms: 5000
-    max_wait_ms: 30000
+  # 存储配置
+  storage:
+    inbox_path: "~/.monoco/mailbox"
+    max_file_size: 10MB
 
   # 适配器配置
   adapters:
     lark:
       enabled: true
+      webhook_path: "/webhook/lark"
       app_id: "${LARK_APP_ID}"
       app_secret: "${LARK_APP_SECRET}"
-      encrypt_key: "${LARK_ENCRYPT_KEY}"
-      webhook_port: 8080
 
     email:
       enabled: true
       imap_server: "imap.gmail.com"
       imap_port: 993
-      smtp_server: "smtp.gmail.com"
-      smtp_port: 587
       username: "${EMAIL_USERNAME}"
       password: "${EMAIL_PASSWORD}"
-      poll_interval: 60
-
-    slack:
-      enabled: false
-      bot_token: "${SLACK_BOT_TOKEN}"
 ```
 
 ---
 
-## 10. 监控与指标
+## 8. 监控与指标
 
-### 10.1 关键指标
+### 8.1 关键指标
 
 | 指标 | 类型 | 说明 |
 |------|------|------|
-| `courier_messages_received_total` | Counter | 接收消息总数 |
-| `courier_messages_sent_total` | Counter | 发送消息总数 |
-| `courier_messages_failed_total` | Counter | 失败消息总数 |
+| `courier_mail_received_total` | Counter | 接收 Mail 总数 |
+| `courier_mail_by_provider` | Counter | 按 provider 分 Mail 数 |
 | `courier_adapter_health` | Gauge | 适配器健康状态 |
-| `courier_debounce_merged_total` | Counter | 合并的消息数 |
-| `courier_processing_duration` | Histogram | 消息处理耗时 |
+| `courier_api_requests_total` | Counter | API 请求总数 |
 
-### 10.2 健康检查端点
+### 8.2 健康检查
 
-```python
-# 简单 HTTP 健康检查
+```bash
 GET /health
 
-Response:
 {
-    "status": "healthy",  # healthy | degraded | unhealthy
+    "status": "healthy",
+    "instance": "user-level",
     "adapters": {
-        "lark": {"status": "connected", "last_ping": "2026-02-06T20:45:00Z"},
-        "email": {"status": "connected", "last_poll": "2026-02-06T20:44:30Z"},
-        "slack": {"status": "disabled"}
+        "lark": {"status": "connected"},
+        "email": {"status": "connected"}
     },
-    "uptime_seconds": 3600
+    "inbox_stats": {
+        "new": 15,
+        "processing": 3,
+        "archive": 1024
+    }
 }
 ```
 
@@ -599,6 +366,6 @@ Response:
 ## 相关文档
 
 - [01_Architecture](01_Architecture.md) - 整体架构设计
-- [02_Mailbox_Protocol](02_Mailbox_Protocol.md) - 消息协议 Schema 规范
+- [02_Mailbox_Protocol](02_Mailbox_Protocol.md) - Mail 协议 Schema 规范
 - [03_Mailbox_CLI](03_Mailbox_CLI.md) - Mailbox CLI 命令设计
 - [05_Courier_CLI](05_Courier_CLI.md) - Courier CLI 命令设计

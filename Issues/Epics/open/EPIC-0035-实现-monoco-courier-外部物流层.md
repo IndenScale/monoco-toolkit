@@ -39,7 +39,7 @@ files_count: 0
 
 - [ ] 定义通用的 Courier 适配器架构协议。
 - [ ] 实现针对“飞书 (Lark)”的首个生产级适配器。
-- [ ] Courier 能够将外部消息写入 `.monoco/mailbox/inbound/`。
+- [ ] Courier 能够将外部消息写入 `.monoco/mailbox/{source}/inbound/`。
 - [ ] Courier 能够将附件下载至 `.monoco/dropzone/` 并由 Mailroom 自动处理。
 - [ ] Courier 能够订阅 Monoco SSE 事件并实时推送至 IM（卡片消息）。
 - [ ] 支持 Workspace-Local 配置隔离，每个项目拥有独立的 Token 和回调地址。
