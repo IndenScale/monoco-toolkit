@@ -11,6 +11,7 @@ COURIER_CONFIG_DIR = ".monoco/config"
 
 # Service files
 COURIER_PID_FILE = Path(COURIER_PID_DIR) / "courier.pid"
+COURIER_STATE_FILE = Path(COURIER_PID_DIR) / "courier.json"
 COURIER_LOG_FILE = Path(COURIER_LOG_DIR) / "courier.log"
 
 # Service defaults

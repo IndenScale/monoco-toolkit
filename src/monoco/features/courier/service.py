@@ -22,6 +22,7 @@ import json
 
 from .constants import (
     COURIER_PID_FILE,
+    COURIER_STATE_FILE,
     COURIER_LOG_FILE,
     COURIER_DEFAULT_HOST,
     COURIER_DEFAULT_PORT,
@@ -109,6 +110,7 @@ class CourierService:
         project_root: Optional[Path] = None,
     ):
         self.pid_file = Path(pid_file) if pid_file else COURIER_PID_FILE
+        self.state_file = COURIER_STATE_FILE
         self.log_file = Path(log_file) if log_file else COURIER_LOG_FILE
         self.host = host
         self.port = port
@@ -118,16 +120,22 @@ class CourierService:
         # Make paths relative to project root if not absolute
         if not self.pid_file.is_absolute():
             self.pid_file = self.project_root / self.pid_file
+        if not self.state_file.is_absolute():
+            self.state_file = self.project_root / self.state_file
         if not self.log_file.is_absolute():
             self.log_file = self.project_root / self.log_file
 
     def _read_pid(self) -> Optional[int]:
         """Read PID from pid file."""
-        if not self.pid_file.exists():
+        if not self.pid_file.exists() or not self.state_file.exists():
             return None
         try:
             with open(self.pid_file, "r") as f:
-                return int(f.read().strip())
+                pid = int(f.read().strip())
+
+            # Verify against state file just in case, or read port/host from it
+            # For strict consistency, we could return the int from state file too
+            return pid
         except (ValueError, IOError):
             return None
 
@@ -142,6 +150,26 @@ class CourierService:
         try:
             if self.pid_file.exists():
                 self.pid_file.unlink()
+        except IOError:
+            pass
+
+    def _write_state(self, pid: int) -> None:
+        """Write state file with process metadata."""
+        state = {
+            "pid": pid,
+            "host": self.host,
+            "port": self.port,
+            "started_at": datetime.now().isoformat(),
+        }
+        self.state_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.state_file, "w") as f:
+            json.dump(state, f, indent=2)
+
+    def _remove_state(self) -> None:
+        """Remove state file."""
+        try:
+            if self.state_file.exists():
+                self.state_file.unlink()
         except IOError:
             pass
 
@@ -163,15 +191,28 @@ class CourierService:
         if not self._is_process_running(pid):
             # Stale PID file
             self._remove_pid()
+            self._remove_state()
             return ServiceStatus(
                 state=ServiceState.ERROR,
                 error_message="Stale PID file found - process not running",
             )
 
+        # Read state for runtime configuration
+        api_url = self.api_url # Fallback
+        if self.state_file.exists():
+            try:
+                with open(self.state_file, "r") as f:
+                    state = json.load(f)
+                    host = state.get("host", self.host)
+                    port = state.get("port", self.port)
+                    api_url = f"http://{host}:{port}"
+            except (json.JSONDecodeError, IOError):
+                pass
+
         # Process is running, try to get more info from health endpoint
         try:
             import urllib.request
-            health_url = f"{self.api_url}/health"
+            health_url = f"{api_url}/health"
             req = urllib.request.Request(health_url, method="GET")
             with urllib.request.urlopen(req, timeout=2) as response:
                 if response.status == 200:
@@ -179,7 +220,7 @@ class CourierService:
                     return ServiceStatus(
                         state=ServiceState.RUNNING,
                         pid=pid,
-                        api_url=self.api_url,
+                        api_url=api_url,
                         version=data.get("version", "1.0.0"),
                         adapters=data.get("adapters", {}),
                         metrics=data.get("metrics", {}),
@@ -191,7 +232,7 @@ class CourierService:
         return ServiceStatus(
             state=ServiceState.STARTING,
             pid=pid,
-            api_url=self.api_url,
+            api_url=api_url,
         )
 
     def start(
@@ -230,6 +271,8 @@ class CourierService:
         # Clean up stale PID file if exists
         if self.pid_file.exists():
             self._remove_pid()
+        if self.state_file.exists():
+            self._remove_state()
 
         # Prepare log directory
         self.log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -267,8 +310,9 @@ class CourierService:
                     stderr=subprocess.STDOUT,
                     start_new_session=True,  # Detach from terminal
                 )
-                # Write PID file
+                # Write PID and State file
                 self._write_pid(process.pid)
+                self._write_state(process.pid)
             finally:
                 log_fd.close()
 
@@ -308,6 +352,7 @@ class CourierService:
 
         if not self._is_process_running(pid):
             self._remove_pid()
+            self._remove_state()
             raise ServiceNotRunningError("Courier process not found (stale PID file)")
 
         # Send SIGTERM for graceful shutdown
@@ -322,6 +367,7 @@ class CourierService:
             while time.time() - start_time < timeout:
                 if not self._is_process_running(pid):
                     self._remove_pid()
+                    self._remove_state()
                     return ServiceStatus(state=ServiceState.STOPPED)
                 time.sleep(0.5)
 
@@ -355,6 +401,7 @@ class CourierService:
             pass  # Process already gone
 
         self._remove_pid()
+        self._remove_state()
         return ServiceStatus(state=ServiceState.STOPPED)
 
     def restart(
