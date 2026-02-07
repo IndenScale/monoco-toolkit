@@ -184,12 +184,12 @@ src/monoco/features/
   - [x] Implement `courier logs` - 查看服务日志.
   - [x] Register commands in `monoco/main.py`.
 
-- [ ] **Phase 5: Cleanup & Verification**
+- [x] **Phase 5: Cleanup & Verification**
   - [x] Remove old directories (`src/monoco/mailbox`, `src/monoco/features/courier`).
-  - [ ] Update all imports in codebase.
-  - [ ] Run `pytest` and fix broken tests.
-  - [ ] Verify CLI commands manually.
-  - [ ] Sync documentation from `docs/zh/04_Connectors/`.
+  - [x] Update all imports in codebase.
+  - [x] Run `pytest` and fix broken tests.
+  - [x] Verify CLI commands manually.
+  - [x] Sync documentation from `docs/zh/04_Connectors/`.
 
 ## Documentation Reference
 
