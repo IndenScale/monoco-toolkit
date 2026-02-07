@@ -231,6 +231,10 @@ from monoco.features.courier import commands as courier_cmd
 
 app.add_typer(courier_cmd.app, name="courier", help="Manage Courier service (message transport)")
 
+from monoco.features.channel import commands as channel_cmd
+
+app.add_typer(channel_cmd.app, name="channel", help="Manage notification channels (DingTalk, Lark, Email)")
+
 
 from monoco.daemon.commands import serve_app, serve
 

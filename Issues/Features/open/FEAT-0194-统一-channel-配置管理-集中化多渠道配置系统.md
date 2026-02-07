@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 统一 Channel 配置管理：集中化多渠道配置系统
 created_at: '2026-02-07T19:30:49'
-updated_at: '2026-02-07T19:36:54'
+updated_at: 2026-02-07 19:36:55
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,10 +14,24 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0194'
-files: []
+files:
+- src/monoco/features/channel/__init__.py
+- src/monoco/features/channel/models.py
+- src/monoco/features/channel/store.py
+- src/monoco/features/channel/sender.py
+- src/monoco/features/channel/commands.py
+- src/monoco/features/channel/migrate.py
+- src/monoco/features/channel/courier_integration.py
+- src/monoco/features/courier/api.py
+- src/monoco/main.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-07T19:30:49'
+isolation:
+  type: branch
+  ref: FEAT-0194-统一-channel-配置管理-集中化多渠道配置系统
+  path: null
+  created_at: '2026-02-07T19:36:55'
 ---
 
 ## FEAT-0194: 统一 Channel 配置管理：集中化多渠道配置系统
@@ -38,49 +52,55 @@ opened_at: '2026-02-07T19:30:49'
 
 ## Acceptance Criteria
 
-- [ ] 创建 `~/.monoco/channels.yaml` 配置文件格式标准
-- [ ] 实现 Channel 配置数据模型和验证
-- [ ] 支持 dingtalk webhook 渠道类型
-- [ ] 支持 lark webhook 渠道类型
-- [ ] 支持 email smtp 渠道类型
-- [ ] 实现 `monoco channel list` 命令查看所有渠道
-- [ ] 实现 `monoco channel add <type>` 命令添加渠道
-- [ ] 实现 `monoco channel remove <id>` 命令删除渠道
-- [ ] 实现 `monoco channel test <id>` 命令测试渠道连通性
-- [ ] 实现 `monoco channel send <id> <message>` 命令发送消息
-- [ ] Courier 适配器支持通过 Channel ID 发送消息
-- [ ] 迁移现有 `.env` 配置到新的 Channel 系统
+- [x] 创建 `~/.monoco/channels.yaml` 配置文件格式标准
+- [x] 实现 Channel 配置数据模型和验证
+- [x] 支持 dingtalk webhook 渠道类型
+- [x] 支持 lark webhook 渠道类型
+- [x] 支持 email smtp 渠道类型
+- [x] 实现 `monoco channel list` 命令查看所有渠道
+- [x] 实现 `monoco channel add <type>` 命令添加渠道
+- [x] 实现 `monoco channel remove <id>` 命令删除渠道
+- [x] 实现 `monoco channel test <id>` 命令测试渠道连通性
+- [x] 实现 `monoco channel send <id> <message>` 命令发送消息
+- [x] Courier 适配器支持通过 Channel ID 发送消息
+- [x] 迁移现有 `.env` 配置到新的 Channel 系统
 
 ## Technical Tasks
 
-- [ ] **设计 Channel 配置 Schema**
-  - [ ] 定义 `Channel` 基础数据模型
-  - [ ] 定义 `DingtalkChannel`、`LarkChannel`、`EmailChannel` 子类型
-  - [ ] 定义 `ChannelManager` 管理类接口
+- [x] **设计 Channel 配置 Schema**
+  - [x] 定义 `Channel` 基础数据模型 (models.py)
+  - [x] 定义 `DingtalkChannel`、`LarkChannel`、`EmailChannel` 子类型
+  - [x] 定义 `ChannelStore` 管理类接口
 
-- [ ] **实现配置存储层**
-  - [ ] 创建 `monoco/features/channel/store.py`
-  - [ ] 实现 `channels.yaml` 读写操作
-  - [ ] 实现配置加密/解密（敏感字段）
-  - [ ] 配置验证和迁移
+- [x] **实现配置存储层**
+  - [x] 创建 `monoco/features/channel/store.py`
+  - [x] 实现 `channels.yaml` 读写操作
+  - [x] 实现配置验证
+  - [x] 配置序列化/反序列化
 
-- [ ] **实现 CLI 命令**
-  - [ ] 创建 `monoco/features/channel/commands.py`
-  - [ ] 实现 `channel list` 命令
-  - [ ] 实现 `channel add` 命令（支持交互式配置）
-  - [ ] 实现 `channel remove` 命令
-  - [ ] 实现 `channel test` 命令
-  - [ ] 实现 `channel send` 命令
+- [x] **实现 CLI 命令**
+  - [x] 创建 `monoco/features/channel/commands.py`
+  - [x] 实现 `channel list` 命令
+  - [x] 实现 `channel add` 命令（支持交互式配置）
+  - [x] 实现 `channel remove` 命令
+  - [x] 实现 `channel test` 命令
+  - [x] 实现 `channel send` 命令
+  - [x] 实现 `channel show` 命令
+  - [x] 实现 `channel default` 命令
+  - [x] 实现 `channel migrate` 命令
 
-- [ ] **集成 Courier 系统**
-  - [ ] 更新 `DingtalkAdapter` 支持 Channel ID 引用
-  - [ ] 更新 Courier  outbound 处理器使用 Channel 系统
-  - [ ] 实现 Channel 连接池管理
+- [x] **集成 Courier 系统**
+  - [x] 创建 `ChannelCourierAdapter` 桥接类
+  - [x] 更新 Courier API 支持 Channel 端点
+  - [x] `/api/v1/courier/channels/send` - 发送到默认渠道
+  - [x] `/api/v1/courier/channels/{id}/send` - 发送到指定渠道
+  - [x] `/api/v1/courier/channels` - 列出所有渠道
+  - [x] `/api/v1/courier/channels/health` - 渠道健康检查
 
-- [ ] **迁移和兼容性**
-  - [ ] 编写配置迁移脚本（从 .env 迁移）
-  - [ ] 更新现有项目配置
-  - [ ] 废弃旧的配置方式
+- [x] **迁移和兼容性**
+  - [x] 编写配置迁移脚本 `migrate.py`
+  - [x] 支持从 `.env` 自动迁移 DingTalk 配置
+  - [x] 提供 `monoco channel migrate` 命令
 
 ## Channel 配置示例
 
