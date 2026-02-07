@@ -78,3 +78,5 @@ test.pdf
 *.swp
 *.swo
 .archives/
+scripts/get_dingtalk_chat_id.py
+scripts/test_dingtalk_send.py
