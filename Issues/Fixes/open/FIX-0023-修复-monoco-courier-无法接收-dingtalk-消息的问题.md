@@ -3,10 +3,10 @@ id: FIX-0023
 uid: 1d7bf3
 type: fix
 status: open
-stage: doing
+stage: review
 title: 修复 monoco courier 无法接收 dingtalk 消息的问题
 created_at: '2026-02-07T21:21:44'
-updated_at: '2026-02-07T21:21:47'
+updated_at: '2026-02-07T22:56:14'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -14,33 +14,34 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FIX-0023'
-files: []
+files:
+- src/monoco/features/courier/api.py
+- src/monoco/features/courier/commands.py
 criticality: high
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-07T21:21:44'
+isolation:
+  type: branch
+  ref: FIX-0023-修复-monoco-courier-无法接收-dingtalk-消息的问题
+  created_at: '2026-02-07T21:21:48'
 ---
 
 ## FIX-0023: 修复 monoco courier 无法接收 dingtalk 消息的问题
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+修复 monoco courier 无法接收 dingtalk 消息的问题。
+
+CourierAPIHandler 类缺少 `_dingtalk_adapter` 类变量声明，导致在调用 `get_dingtalk_adapter()` 时抛出 `AttributeError`，无法处理 DingTalk webhook 消息。
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+- [x] 修复 `_dingtalk_adapter` 类变量缺失问题
+- [x] 添加 `monoco courier logs clean` 命令用于清理日志
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
-
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
-
-- [ ] Task 1
+- [x] 在 CourierAPIHandler 中添加 `_dingtalk_adapter: Optional["DingtalkAdapter"] = None` 声明
+- [x] 重构 logs 命令为子命令组（show/clean）
+- [x] 实现 logs clean 功能，支持 --all 和 --force 选项
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- 代码审查通过，修复了关键 bug
+- 新增 logs clean 功能增强了运维能力
