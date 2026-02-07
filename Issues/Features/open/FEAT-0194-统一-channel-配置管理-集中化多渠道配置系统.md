@@ -1,0 +1,153 @@
+---
+id: FEAT-0194
+uid: 25ec29
+type: feature
+status: open
+stage: doing
+title: 统一 Channel 配置管理：集中化多渠道配置系统
+created_at: '2026-02-07T19:30:49'
+updated_at: '2026-02-07T19:36:54'
+parent: EPIC-0000
+dependencies: []
+related: []
+domains: []
+tags:
+- '#EPIC-0000'
+- '#FEAT-0194'
+files: []
+criticality: medium
+solution: null # implemented, cancelled, wontfix, duplicate
+opened_at: '2026-02-07T19:30:49'
+---
+
+## FEAT-0194: 统一 Channel 配置管理：集中化多渠道配置系统
+
+## Objective
+
+当前 Monoco 的消息渠道配置分散在多个地方：
+- `.env` 文件存储钉钉 Webhook URL 和关键词（临时方案）
+- `~/.monoco/inventory.json` 存储项目映射和简单配置
+- 缺少统一的多渠道管理模型
+
+本 Feature 旨在建立统一的 **Channel 配置管理系统**，实现：
+1. **集中存储**: 所有渠道配置统一存储在 `~/.monoco/channels.yaml`
+2. **多租户支持**: 支持多个同类型渠道（如多个钉钉群）
+3. **类型抽象**: 统一支持 dingtalk、lark、email 等多种渠道类型
+4. **安全管理**: 敏感信息加密存储
+5. **便捷管理**: 提供 `monoco channel` CLI 命令管理渠道
+
+## Acceptance Criteria
+
+- [ ] 创建 `~/.monoco/channels.yaml` 配置文件格式标准
+- [ ] 实现 Channel 配置数据模型和验证
+- [ ] 支持 dingtalk webhook 渠道类型
+- [ ] 支持 lark webhook 渠道类型
+- [ ] 支持 email smtp 渠道类型
+- [ ] 实现 `monoco channel list` 命令查看所有渠道
+- [ ] 实现 `monoco channel add <type>` 命令添加渠道
+- [ ] 实现 `monoco channel remove <id>` 命令删除渠道
+- [ ] 实现 `monoco channel test <id>` 命令测试渠道连通性
+- [ ] 实现 `monoco channel send <id> <message>` 命令发送消息
+- [ ] Courier 适配器支持通过 Channel ID 发送消息
+- [ ] 迁移现有 `.env` 配置到新的 Channel 系统
+
+## Technical Tasks
+
+- [ ] **设计 Channel 配置 Schema**
+  - [ ] 定义 `Channel` 基础数据模型
+  - [ ] 定义 `DingtalkChannel`、`LarkChannel`、`EmailChannel` 子类型
+  - [ ] 定义 `ChannelManager` 管理类接口
+
+- [ ] **实现配置存储层**
+  - [ ] 创建 `monoco/features/channel/store.py`
+  - [ ] 实现 `channels.yaml` 读写操作
+  - [ ] 实现配置加密/解密（敏感字段）
+  - [ ] 配置验证和迁移
+
+- [ ] **实现 CLI 命令**
+  - [ ] 创建 `monoco/features/channel/commands.py`
+  - [ ] 实现 `channel list` 命令
+  - [ ] 实现 `channel add` 命令（支持交互式配置）
+  - [ ] 实现 `channel remove` 命令
+  - [ ] 实现 `channel test` 命令
+  - [ ] 实现 `channel send` 命令
+
+- [ ] **集成 Courier 系统**
+  - [ ] 更新 `DingtalkAdapter` 支持 Channel ID 引用
+  - [ ] 更新 Courier  outbound 处理器使用 Channel 系统
+  - [ ] 实现 Channel 连接池管理
+
+- [ ] **迁移和兼容性**
+  - [ ] 编写配置迁移脚本（从 .env 迁移）
+  - [ ] 更新现有项目配置
+  - [ ] 废弃旧的配置方式
+
+## Channel 配置示例
+
+```yaml
+# ~/.monoco/channels.yaml
+version: "1.0"
+
+channels:
+  dingtalk:
+    - id: "dt-monoco-dev"
+      name: "Monoco 开发群"
+      type: "webhook"
+      webhook_url: "https://oapi.dingtalk.com/robot/send?access_token=xxx"
+      keywords: "monoco"
+      secret: ""
+      enabled: true
+      created_at: "2026-02-07T12:00:00Z"
+      
+  lark:
+    - id: "lk-monoco"
+      name: "飞书测试群"
+      type: "webhook"
+      webhook_url: "https://open.feishu.cn/open-apis/bot/v2/hook/xxx"
+      enabled: true
+      
+  email:
+    - id: "email-alerts"
+      name: "告警邮箱"
+      type: "smtp"
+      smtp_host: "smtp.gmail.com"
+      smtp_port: 587
+      username: "alerts@example.com"
+      password: "encrypted:xxx"
+      use_tls: true
+      enabled: false
+
+defaults:
+  send: "dt-monoco-dev"
+  receive: ["dt-monoco-dev"]
+```
+
+## CLI 使用示例
+
+```bash
+# 列出所有渠道
+monoco channel list
+
+# 添加钉钉渠道
+monoco channel add dingtalk \
+  --id dt-monoco-dev \
+  --name "Monoco 开发群" \
+  --webhook "https://oapi.dingtalk.com/robot/send?access_token=xxx" \
+  --keywords "monoco"
+
+# 测试渠道
+monoco channel test dt-monoco-dev
+
+# 发送消息
+monoco channel send dt-monoco-dev "Hello, 钉钉！"
+
+# 删除渠道
+monoco channel remove dt-monoco-dev
+```
+
+## Related Issues
+
+- FEAT-0190: 钉钉平台适配器
+- FEAT-0193: 全局项目注册表
+
+## Review Comments
