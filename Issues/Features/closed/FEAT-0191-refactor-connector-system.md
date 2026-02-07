@@ -2,8 +2,8 @@
 id: FEAT-0191
 uid: c18ae8
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: Refactor Connector System
 created_at: '2026-02-07T09:51:13'
 updated_at: '2026-02-07T11:21:01'
@@ -54,7 +54,7 @@ files:
 - src/monoco/mailbox/validators.py
 - src/monoco/main.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-07T09:51:13'
 isolation:
   type: branch
