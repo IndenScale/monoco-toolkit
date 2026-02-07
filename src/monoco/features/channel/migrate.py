@@ -106,16 +106,32 @@ def migrate_from_env(
         messages.append("No .env configuration found")
         return False, messages
 
-    # Look for DingTalk configuration
-    webhook_url = env_config.get("DINGTALK_WEBHOOK_URL") or env_config.get("DINGTALK_WEBHOOK")
-    secret = env_config.get("DINGTALK_SECRET") or env_config.get("DINGTALK_SECRET_KEY")
+    # Look for DingTalk configuration (support multiple variable naming conventions)
+    webhook_url = (
+        env_config.get("dingding_bot_webhooks") or
+        env_config.get("DINGTALK_WEBHOOK_URL") or
+        env_config.get("DINGTALK_WEBHOOK")
+    )
+    keywords = (
+        env_config.get("dingding_bot_key_words") or
+        env_config.get("DINGTALK_KEYWORDS") or
+        env_config.get("DINGTALK_KEYWORD")
+    )
+    secret = (
+        env_config.get("DINGTALK_SECRET") or
+        env_config.get("DINGTALK_SECRET_KEY")
+    )
 
     if not webhook_url:
         messages.append("No DingTalk webhook URL found in .env")
         return False, messages
 
-    # Parse URL
-    clean_url, keywords = parse_dingtalk_webhook(webhook_url)
+    # Parse URL (remove any keywords query param, but prefer .env keywords)
+    clean_url, url_keywords = parse_dingtalk_webhook(webhook_url)
+    
+    # Use keywords from .env if available, otherwise from URL
+    if not keywords:
+        keywords = url_keywords
 
     # Check if already migrated
     store = get_channel_store()
@@ -163,10 +179,12 @@ def show_migration_status(project_root: Optional[Path] = None) -> None:
     if project_root is None:
         project_root = Path.cwd()
 
-    # Check .env
+    # Check .env (support multiple variable naming conventions)
     env_config = detect_env_config(project_root)
     has_env_dingtalk = bool(
-        env_config.get("DINGTALK_WEBHOOK_URL") or env_config.get("DINGTALK_WEBHOOK")
+        env_config.get("dingding_bot_webhooks") or
+        env_config.get("DINGTALK_WEBHOOK_URL") or
+        env_config.get("DINGTALK_WEBHOOK")
     )
 
     # Check channels.yaml
