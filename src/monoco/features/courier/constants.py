@@ -13,10 +13,11 @@ COURIER_CONFIG_DIR = ".monoco/config"
 COURIER_PID_FILE = Path(COURIER_PID_DIR) / "courier.pid"
 COURIER_STATE_FILE = Path(COURIER_PID_DIR) / "courier.json"
 COURIER_LOG_FILE = Path(COURIER_LOG_DIR) / "courier.log"
+COURIER_LOCK_FILE = Path(COURIER_PID_DIR) / "courier.lock"
 
 # Service defaults
 COURIER_DEFAULT_HOST = "localhost"
-COURIER_DEFAULT_PORT = 8080
+COURIER_DEFAULT_PORT = 8644  # Changed from 8080 to avoid common conflicts
 COURIER_DEFAULT_LOG_LEVEL = "info"
 
 # Service timeouts

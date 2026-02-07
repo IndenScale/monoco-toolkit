@@ -93,17 +93,20 @@ def start_service(
 def stop_service(
     timeout: int = typer.Option(30, "--timeout", "-t", help="Timeout in seconds before force kill"),
     wait: bool = typer.Option(False, "--wait", "-w", help="Block until service stops"),
+    all_processes: bool = typer.Option(False, "--all", "-a", help="Stop all Courier processes (orphan cleanup)"),
     json: AgentOutput = False,
 ):
     """Stop the Courier service gracefully."""
     try:
         service = _get_service()
-        status = service.stop(timeout=timeout, wait=wait)
+        status = service.stop(timeout=timeout, wait=wait, all_processes=all_processes)
 
         if json:
             OutputManager.print({"success": True, "status": status.to_dict()})
         else:
-            if status.state == ServiceState.STOPPED:
+            if all_processes:
+                console.print("[green]✓[/green] All Courier processes stopped")
+            elif status.state == ServiceState.STOPPED:
                 console.print("[green]✓[/green] Courier stopped")
             else:
                 console.print(f"[yellow]⚠[/yellow] Courier status: {status.state}")
