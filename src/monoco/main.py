@@ -172,14 +172,26 @@ def info():
     except importlib.metadata.PackageNotFoundError:
         version = "unknown"
 
+    from monoco.core.registry import get_inventory, get_workspace_inventory
+    inventory = get_inventory()
+    project_count = len(inventory.list())
+    
+    ws_inventory = get_workspace_inventory()
+    workspace_count = len(ws_inventory.list())
+
     status = Status(
         version=version,
         mode=mode,
         root=os.getcwd(),
         project=f"{settings.project.name} ({settings.project.key})",
     )
+    
+    # Add inventory info if in human mode or for agents
+    status_data = status.model_dump()
+    status_data["global_projects"] = project_count
+    status_data["global_workspaces"] = workspace_count
 
-    print_output(status, title="Monoco Status")
+    print_output(status_data, title="Monoco Status")
 
     if mode == "Human (Rich)":
         print_output(settings, title="Current Configuration")

@@ -26,6 +26,7 @@ from monoco.features.connector.protocol.constants import (
     API_HEALTH,
 )
 from monoco.features.connector.protocol.schema import MessageStatus
+from monoco.core.registry import get_inventory
 
 from .state import LockManager, MessageStateManager, LockError
 
@@ -53,7 +54,6 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
     # Class-level storage (set by server)
     lock_manager: Optional[LockManager] = None
     state_manager: Optional[MessageStateManager] = None
-    project_registry: Optional['ProjectRegistry'] = None
     version: str = "1.0.0"
 
     def log_message(self, format: str, *args):
@@ -169,10 +169,8 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
         from urllib.parse import parse_qs
         from .adapters.dingtalk import DingtalkSigner
 
-        if not self.project_registry:
-            raise APIError("Project registry not initialized", 500)
-
-        project = self.project_registry.get_project(slug)
+        inventory = get_inventory()
+        project = inventory.get(slug)
         if not project:
             raise APIError(f"Project slug '{slug}' not found", 404)
 
@@ -209,9 +207,6 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
 
     def _handle_registry_register(self):
         """Register a new project in the registry."""
-        if not self.project_registry:
-            raise APIError("Project registry not initialized", 500)
-
         data = self._read_json()
         if not data or "slug" not in data or "path" not in data:
             raise APIError("Missing slug or path", 400)
@@ -219,26 +214,24 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
         slug = data["slug"]
         root_path = Path(data["path"])
         
-        project = self.project_registry.register(slug, root_path, data.get("config"))
+        inventory = get_inventory()
+        project = inventory.register(slug, root_path, data.get("config"))
         
         self._send_json({
             "success": True, 
             "slug": slug,
-            "path": str(project.root_path)
+            "path": str(project.path)
         })
 
     def _handle_registry_list(self):
         """List all registered projects."""
-        if not self.project_registry:
-            raise APIError("Project registry not initialized", 500)
-
+        inventory = get_inventory()
         mappings = []
-        for slug in self.project_registry.list_slugs():
-            p = self.project_registry.get_project(slug)
+        for p in inventory.list():
             mappings.append({
-                "slug": slug,
-                "path": str(p.root_path),
-                "mailbox": str(p.mailbox_path)
+                "slug": p.slug,
+                "path": str(p.path),
+                "mailbox": str(p.mailbox)
             })
 
         self._send_json({
@@ -410,13 +403,11 @@ class CourierAPIServer:
         self,
         lock_manager: LockManager,
         state_manager: MessageStateManager,
-        project_registry: Optional['ProjectRegistry'] = None,
         host: str = "localhost",
         port: int = 8080,
     ):
         self.lock_manager = lock_manager
         self.state_manager = state_manager
-        self.project_registry = project_registry
         self.host = host
         self.port = port
         self._server: Optional[HTTPServer] = None
@@ -428,7 +419,6 @@ class CourierAPIServer:
         # Set class-level references for handler
         CourierAPIHandler.lock_manager = self.lock_manager
         CourierAPIHandler.state_manager = self.state_manager
-        CourierAPIHandler.project_registry = self.project_registry
 
         self._server = HTTPServer((self.host, self.port), CourierAPIHandler)
 

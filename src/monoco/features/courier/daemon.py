@@ -33,6 +33,7 @@ from .constants import COURIER_DEFAULT_PORT, COURIER_DEFAULT_HOST
 from .state import LockManager, MessageStateManager
 from .api import CourierAPIServer
 from .debounce import DebounceHandler, DebounceConfig
+from monoco.core.registry import get_inventory
 
 
 class CourierDaemon:
@@ -85,12 +86,12 @@ class CourierDaemon:
             # Ensure mailbox directory structure exists
             self._ensure_directories()
 
-            # Initialize registry and state management
-            from .registry import ProjectRegistry
-            self.registry = ProjectRegistry()
+            # Initialize global project inventory
+            inventory = get_inventory()
             
-            # Auto-register the current project as 'default'
-            self.registry.register("default", self.project_root)
+            # Auto-register the current project as 'default' if not already present
+            if not inventory.get("default"):
+                inventory.register("default", self.project_root)
 
             self.lock_manager = LockManager(self.state_dir)
             self.state_manager = MessageStateManager(
@@ -110,7 +111,6 @@ class CourierDaemon:
             self.api_server = CourierAPIServer(
                 self.lock_manager,
                 self.state_manager,
-                project_registry=self.registry,
                 host=self.host,
                 port=self.port,
             )

@@ -15,7 +15,6 @@ COURIER_PID_FILE = COURIER_PID_DIR / "courier.pid"
 COURIER_STATE_FILE = COURIER_PID_DIR / "courier.json"
 COURIER_LOG_FILE = COURIER_LOG_DIR / "courier.log"
 COURIER_LOCK_FILE = COURIER_PID_DIR / "courier.lock"
-COURIER_REGISTRY_FILE = COURIER_CONFIG_DIR / "registry.json"
 
 # Service defaults
 COURIER_DEFAULT_HOST = "localhost"
