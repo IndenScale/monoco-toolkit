@@ -49,12 +49,6 @@ class LockError(Exception):
         pass
 
 
-# Backward compatibility exports
-MessageNotFoundError = LockError.MessageNotFoundError
-MessageAlreadyClaimedError = LockError.MessageAlreadyClaimedError
-MessageNotClaimedError = LockError.MessageNotClaimedError
-MessageClaimedByOtherError = LockError.MessageClaimedByOtherError
-
 
 @dataclass
 class LockEntry:
@@ -180,7 +174,7 @@ class LockManager:
             existing = self._locks.get(message_id)
             if existing:
                 if existing.status == MessageStatus.CLAIMED.value and not existing.is_expired():
-                    raise MessageAlreadyClaimedError(
+                    raise LockError.MessageAlreadyClaimedError(
                         f"Message already claimed by {existing.claimed_by}",
                         claimed_by=existing.claimed_by,
                         claimed_at=datetime.fromisoformat(existing.claimed_at) if existing.claimed_at else None,
@@ -216,13 +210,13 @@ class LockManager:
         with self._lock:
             entry = self._locks.get(message_id)
             if not entry:
-                raise MessageNotFoundError(f"Message '{message_id}' not found")
+                raise LockError.MessageNotFoundError(f"Message '{message_id}' not found")
 
             if entry.status != MessageStatus.CLAIMED.value:
-                raise MessageNotClaimedError(f"Message '{message_id}' is not claimed")
+                raise LockError.MessageNotClaimedError(f"Message '{message_id}' is not claimed")
 
             if entry.claimed_by != agent_id:
-                raise MessageClaimedByOtherError(
+                raise LockError.MessageClaimedByOtherError(
                     f"Message claimed by {entry.claimed_by}, not {agent_id}"
                 )
 
@@ -257,13 +251,13 @@ class LockManager:
         with self._lock:
             entry = self._locks.get(message_id)
             if not entry:
-                raise MessageNotFoundError(f"Message '{message_id}' not found")
+                raise LockError.MessageNotFoundError(f"Message '{message_id}' not found")
 
             if entry.status != MessageStatus.CLAIMED.value:
-                raise MessageNotClaimedError(f"Message '{message_id}' is not claimed")
+                raise LockError.MessageNotClaimedError(f"Message '{message_id}' is not claimed")
 
             if entry.claimed_by != agent_id:
-                raise MessageClaimedByOtherError(
+                raise LockError.MessageClaimedByOtherError(
                     f"Message claimed by {entry.claimed_by}, not {agent_id}"
                 )
 
