@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Enhance Courier Status with Port Persistence and Health Check
 created_at: '2026-02-07T11:45:43'
-updated_at: '2026-02-07T12:03:21'
+updated_at: 2026-02-07 12:03:21
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -25,10 +25,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-07T11:45:43'
 closed_at: '2026-02-07T12:03:21'
-isolation:
-  type: branch
-  ref: FIX-0021-enhance-courier-status-with-port-persistence-and-h
-  created_at: '2026-02-07T11:45:52'
 ---
 
 ## FIX-0021: Enhance Courier Status with Port Persistence and Health Check

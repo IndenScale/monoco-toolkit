@@ -8,8 +8,10 @@ Manages the Courier daemon process:
 - Status reporting
 """
 
+import fcntl
 import os
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -17,13 +19,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import json
 
 from .constants import (
     COURIER_PID_FILE,
     COURIER_STATE_FILE,
     COURIER_LOG_FILE,
+    COURIER_LOCK_FILE,
     COURIER_DEFAULT_HOST,
     COURIER_DEFAULT_PORT,
     SERVICE_START_TIMEOUT,
@@ -105,6 +108,7 @@ class CourierService:
         self,
         pid_file: Optional[Path] = None,
         log_file: Optional[Path] = None,
+        lock_file: Optional[Path] = None,
         host: str = COURIER_DEFAULT_HOST,
         port: int = COURIER_DEFAULT_PORT,
         project_root: Optional[Path] = None,
@@ -112,10 +116,12 @@ class CourierService:
         self.pid_file = Path(pid_file) if pid_file else COURIER_PID_FILE
         self.state_file = COURIER_STATE_FILE
         self.log_file = Path(log_file) if log_file else COURIER_LOG_FILE
+        self.lock_file = Path(lock_file) if lock_file else COURIER_LOCK_FILE
         self.host = host
         self.port = port
         self.project_root = project_root or Path.cwd()
         self.api_url = f"http://{host}:{port}"
+        self._lock_fd: Optional[int] = None
 
         # Make paths relative to project root if not absolute
         if not self.pid_file.is_absolute():
@@ -124,6 +130,8 @@ class CourierService:
             self.state_file = self.project_root / self.state_file
         if not self.log_file.is_absolute():
             self.log_file = self.project_root / self.log_file
+        if not self.lock_file.is_absolute():
+            self.lock_file = self.project_root / self.lock_file
 
     def _read_pid(self) -> Optional[int]:
         """Read PID from pid file."""
@@ -140,16 +148,68 @@ class CourierService:
             return None
 
     def _write_pid(self, pid: int) -> None:
-        """Write PID to pid file."""
+        """Write PID to pid file atomically using O_EXCL flag.
+
+        Raises:
+            ServiceAlreadyRunningError: If PID file already exists (another instance starting)
+        """
         self.pid_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.pid_file, "w") as f:
-            f.write(str(pid))
+        try:
+            # Use O_EXCL to ensure atomic creation - fails if file exists
+            fd = os.open(self.pid_file, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+            try:
+                os.write(fd, str(pid).encode())
+            finally:
+                os.close(fd)
+        except FileExistsError:
+            raise ServiceAlreadyRunningError(
+                "Courier PID file already exists - another instance may be starting"
+            )
 
     def _remove_pid(self) -> None:
         """Remove PID file."""
         try:
             if self.pid_file.exists():
                 self.pid_file.unlink()
+        except IOError:
+            pass
+
+    def _acquire_lock(self) -> None:
+        """Acquire exclusive file lock to prevent multiple instances.
+
+        Raises:
+            ServiceAlreadyRunningError: If another instance holds the lock
+        """
+        self.lock_file.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self._lock_fd = os.open(self.lock_file, os.O_CREAT | os.O_RDWR)
+            # Try to acquire exclusive lock without blocking
+            fcntl.flock(self._lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except (IOError, OSError) as e:
+            if self._lock_fd is not None:
+                try:
+                    os.close(self._lock_fd)
+                except OSError:
+                    pass
+                self._lock_fd = None
+            raise ServiceAlreadyRunningError(
+                "Another Courier instance is already running or starting"
+            ) from e
+
+    def _release_lock(self) -> None:
+        """Release file lock."""
+        if self._lock_fd is not None:
+            try:
+                fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
+                os.close(self._lock_fd)
+            except OSError:
+                pass
+            finally:
+                self._lock_fd = None
+        # Clean up lock file if it exists
+        try:
+            if self.lock_file.exists():
+                self.lock_file.unlink()
         except IOError:
             pass
 
@@ -180,6 +240,65 @@ class CourierService:
             return True
         except (OSError, ProcessLookupError):
             return False
+
+    def _check_port_available(self, port: int) -> tuple[bool, Optional[str]]:
+        """Check if a port is available for binding.
+
+        Args:
+            port: Port number to check
+
+        Returns:
+            Tuple of (is_available, error_message)
+        """
+        try:
+            # Try to bind to the port
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind((self.host, port))
+            sock.close()
+            return True, None
+        except socket.error as e:
+            # Port is in use, try to get process info
+            error_msg = f"Port {port} is already in use"
+            try:
+                # Try to find which process is using the port
+                result = subprocess.run(
+                    ["lsof", "-ti", f":{port}"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2,
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    pids = result.stdout.strip().split("\n")
+                    error_msg += f" (PID: {', '.join(pids)})"
+            except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+                pass
+            return False, error_msg
+
+    def _find_courier_processes(self) -> List[int]:
+        """Find all Courier-related processes by name.
+
+        Returns:
+            List of PIDs for Courier daemon processes
+        """
+        pids = []
+        try:
+            # Use pgrep to find processes matching the daemon module
+            result = subprocess.run(
+                ["pgrep", "-f", "monoco.features.courier.daemon"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                for line in result.stdout.strip().split("\n"):
+                    try:
+                        pids.append(int(line.strip()))
+                    except ValueError:
+                        continue
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+            pass
+        return pids
 
     def get_status(self) -> ServiceStatus:
         """Get current service status."""
@@ -256,89 +375,110 @@ class CourierService:
             ServiceAlreadyRunningError: If service is already running
             ServiceStartError: If service fails to start
         """
-        # Check if already running
-        current_status = self.get_status()
-        if current_status.is_running():
-            raise ServiceAlreadyRunningError(
-                f"Courier is already running (PID: {current_status.pid})"
-            )
+        # Acquire file lock to prevent multiple instances
+        self._acquire_lock()
 
-        if current_status.state == ServiceState.STARTING:
-            raise ServiceAlreadyRunningError(
-                f"Courier is starting (PID: {current_status.pid})"
-            )
-
-        # Clean up stale PID file if exists
-        if self.pid_file.exists():
-            self._remove_pid()
-        if self.state_file.exists():
-            self._remove_state()
-
-        # Prepare log directory
-        self.log_file.parent.mkdir(parents=True, exist_ok=True)
-
-        # Build command
-        cmd = [
-            sys.executable,
-            "-m",
-            "monoco.features.courier.daemon",
-            "--host", self.host,
-            "--port", str(self.port),
-            "--pid-file", str(self.pid_file),
-            "--log-file", str(self.log_file),
-        ]
-
-        if debug:
-            cmd.append("--debug")
-
-        if config_path:
-            cmd.extend(["--config", str(config_path)])
-
-        if foreground:
-            # Run in foreground (for debugging)
-            try:
-                subprocess.run(cmd, check=True)
-            except subprocess.CalledProcessError as e:
-                raise ServiceStartError(f"Failed to start courier: {e}")
-        else:
-            # Daemonize - run in background
-            log_fd = open(self.log_file, "a")
-            try:
-                process = subprocess.Popen(
-                    cmd,
-                    stdout=log_fd,
-                    stderr=subprocess.STDOUT,
-                    start_new_session=True,  # Detach from terminal
+        try:
+            # Check if already running
+            current_status = self.get_status()
+            if current_status.is_running():
+                raise ServiceAlreadyRunningError(
+                    f"Courier is already running (PID: {current_status.pid})"
                 )
-                # Write PID and State file
-                self._write_pid(process.pid)
-                self._write_state(process.pid)
-            finally:
-                log_fd.close()
 
-            # Wait for service to be ready
-            start_time = time.time()
-            while time.time() - start_time < SERVICE_START_TIMEOUT:
-                status = self.get_status()
-                if status.is_running():
-                    return status
-                if status.state == ServiceState.ERROR:
-                    raise ServiceStartError(
-                        f"Service failed to start: {status.error_message}"
+            if current_status.state == ServiceState.STARTING:
+                raise ServiceAlreadyRunningError(
+                    f"Courier is starting (PID: {current_status.pid})"
+                )
+
+            # Check port availability before starting
+            port_available, port_error = self._check_port_available(self.port)
+            if not port_available:
+                raise ServiceStartError(port_error)
+
+            # Clean up stale PID file if exists
+            if self.pid_file.exists():
+                self._remove_pid()
+            if self.state_file.exists():
+                self._remove_state()
+
+            # Prepare log directory
+            self.log_file.parent.mkdir(parents=True, exist_ok=True)
+
+            # Build command
+            cmd = [
+                sys.executable,
+                "-m",
+                "monoco.features.courier.daemon",
+                "--host", self.host,
+                "--port", str(self.port),
+                "--pid-file", str(self.pid_file),
+                "--log-file", str(self.log_file),
+            ]
+
+            if debug:
+                cmd.append("--debug")
+
+            if config_path:
+                cmd.extend(["--config", str(config_path)])
+
+            if foreground:
+                # Run in foreground (for debugging)
+                try:
+                    subprocess.run(cmd, check=True)
+                except subprocess.CalledProcessError as e:
+                    raise ServiceStartError(f"Failed to start courier: {e}")
+            else:
+                # Daemonize - run in background
+                log_fd = open(self.log_file, "a")
+                try:
+                    process = subprocess.Popen(
+                        cmd,
+                        stdout=log_fd,
+                        stderr=subprocess.STDOUT,
+                        start_new_session=True,  # Detach from terminal
                     )
-                time.sleep(0.5)
+                    # Write PID and State file
+                    self._write_pid(process.pid)
+                    self._write_state(process.pid)
+                finally:
+                    log_fd.close()
 
-            raise ServiceStartError("Service did not start within timeout")
+                # Wait for service to be ready
+                start_time = time.time()
+                while time.time() - start_time < SERVICE_START_TIMEOUT:
+                    status = self.get_status()
+                    if status.is_running():
+                        return status
+                    if status.state == ServiceState.ERROR:
+                        raise ServiceStartError(
+                            f"Service failed to start: {status.error_message}"
+                        )
+                    time.sleep(0.5)
+
+                raise ServiceStartError("Service did not start within timeout")
+
+        finally:
+            # Release lock if start failed, keep it if successful
+            status = self.get_status()
+            if not status.is_running():
+                self._release_lock()
 
         return self.get_status()
 
-    def stop(self, timeout: int = SERVICE_STOP_TIMEOUT, wait: bool = False) -> ServiceStatus:
+    def stop(
+        self,
+        timeout: int = SERVICE_STOP_TIMEOUT,
+        wait: bool = False,
+        all_processes: bool = False,
+    ) -> ServiceStatus:
         """
         Stop the Courier service gracefully.
 
         Args:
             timeout: Seconds to wait before force kill
             wait: Block until service stops
+            all_processes: If True, stop all Courier-related processes (orphan cleanup)
 
         Returns:
             ServiceStatus after stopping
@@ -346,6 +486,53 @@ class CourierService:
         Raises:
             ServiceNotRunningError: If service is not running
         """
+        if all_processes:
+            # Find and stop all Courier processes
+            pids = self._find_courier_processes()
+            if not pids:
+                # Also check PID file
+                pid = self._read_pid()
+                if pid:
+                    pids = [pid]
+                else:
+                    raise ServiceNotRunningError("No Courier processes found")
+
+            stopped_count = 0
+            for pid in pids:
+                if self._is_process_running(pid):
+                    try:
+                        os.kill(pid, signal.SIGTERM)
+                        stopped_count += 1
+                    except OSError:
+                        pass
+
+            if wait and stopped_count > 0:
+                # Wait for all processes to exit
+                start_time = time.time()
+                while time.time() - start_time < timeout:
+                    all_stopped = all(
+                        not self._is_process_running(pid) for pid in pids
+                    )
+                    if all_stopped:
+                        break
+                    time.sleep(0.5)
+                else:
+                    # Timeout - force kill remaining
+                    for pid in pids:
+                        if self._is_process_running(pid):
+                            try:
+                                os.kill(pid, signal.SIGKILL)
+                            except OSError:
+                                pass
+
+            # Clean up PID/state files
+            self._remove_pid()
+            self._remove_state()
+            self._release_lock()
+
+            return ServiceStatus(state=ServiceState.STOPPED)
+
+        # Normal single-process stop
         pid = self._read_pid()
         if not pid:
             raise ServiceNotRunningError("Courier is not running")
@@ -353,6 +540,7 @@ class CourierService:
         if not self._is_process_running(pid):
             self._remove_pid()
             self._remove_state()
+            self._release_lock()
             raise ServiceNotRunningError("Courier process not found (stale PID file)")
 
         # Send SIGTERM for graceful shutdown
@@ -368,6 +556,7 @@ class CourierService:
                 if not self._is_process_running(pid):
                     self._remove_pid()
                     self._remove_state()
+                    self._release_lock()
                     return ServiceStatus(state=ServiceState.STOPPED)
                 time.sleep(0.5)
 
@@ -392,16 +581,16 @@ class CourierService:
             ServiceStatus after kill
         """
         pid = self._read_pid()
-        if not pid:
-            return ServiceStatus(state=ServiceState.STOPPED)
+        if pid:
+            try:
+                os.kill(pid, signal_type)
+            except (OSError, ProcessLookupError):
+                pass  # Process already gone
 
-        try:
-            os.kill(pid, signal_type)
-        except (OSError, ProcessLookupError):
-            pass  # Process already gone
-
+        # Always clean up files and lock, even if no PID was found
         self._remove_pid()
         self._remove_state()
+        self._release_lock()
         return ServiceStatus(state=ServiceState.STOPPED)
 
     def restart(
