@@ -74,10 +74,15 @@ class CourierDaemon:
         self.debounce_handler: Optional[DebounceHandler] = None
         self.stream_adapter: Optional[Any] = None
         self._stream_thread: Optional[threading.Thread] = None
+        
+        # IM Agent integration (FEAT-0170)
+        self.im_adapter: Optional[Any] = None
+        self._im_task: Optional[asyncio.Task] = None
 
         # Control
         self._shutdown = False
         self._shutdown_signal = False
+        self._event_loop: Optional[asyncio.AbstractEventLoop] = None
 
     def initialize(self) -> bool:
         """Initialize all daemon components."""
@@ -121,6 +126,9 @@ class CourierDaemon:
             
             # Initialize DingTalk Stream adapter if configured
             self._init_stream_adapter()
+            
+            # Initialize IM Agent adapter (FEAT-0170)
+            self._init_im_adapter()
 
             logger.info("Courier daemon initialized successfully")
             return True
@@ -178,6 +186,40 @@ class CourierDaemon:
             
         except Exception as e:
             logger.warning(f"Failed to initialize DingTalk Stream adapter: {e}")
+    
+    def _init_im_adapter(self) -> None:
+        """Initialize IM Agent adapter if enabled (FEAT-0170)."""
+        try:
+            from .im_integration import create_im_adapter
+            
+            self.im_adapter = create_im_adapter(
+                project_root=self.project_root,
+                max_concurrent_sessions=5,
+                session_timeout_minutes=30,
+            )
+            
+            logger.info("IM Agent adapter initialized")
+            
+        except Exception as e:
+            logger.warning(f"Failed to initialize IM Agent adapter: {e}")
+    
+    async def _start_im_adapter(self) -> None:
+        """Start IM Agent adapter asynchronously."""
+        if self.im_adapter:
+            try:
+                await self.im_adapter.start()
+                logger.info("IM Agent adapter started")
+            except Exception as e:
+                logger.error(f"Failed to start IM Agent adapter: {e}")
+    
+    async def _stop_im_adapter(self) -> None:
+        """Stop IM Agent adapter asynchronously."""
+        if self.im_adapter:
+            try:
+                await self.im_adapter.stop()
+                logger.info("IM Agent adapter stopped")
+            except Exception as e:
+                logger.error(f"Error stopping IM Agent adapter: {e}")
     
     def _handle_stream_message(self, message, project_slug: str) -> None:
         """Handle incoming Stream message and write to mailbox."""
@@ -261,6 +303,16 @@ class CourierDaemon:
             
             # Start Stream adapter if configured
             self._start_stream_adapter()
+            
+            # Start IM adapter (async)
+            if self.im_adapter:
+                try:
+                    # Create event loop for async operations
+                    self._event_loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(self._event_loop)
+                    self._event_loop.run_until_complete(self._start_im_adapter())
+                except Exception as e:
+                    logger.error(f"Failed to start IM adapter: {e}")
 
             logger.info(f"Courier daemon running on {self.host}:{self.port}")
 
@@ -281,6 +333,13 @@ class CourierDaemon:
             return 1
 
         finally:
+            # Stop IM adapter
+            if self.im_adapter and self._event_loop:
+                try:
+                    self._event_loop.run_until_complete(self._stop_im_adapter())
+                except Exception as e:
+                    logger.error(f"Error stopping IM adapter: {e}")
+            
             self.shutdown()
 
         return 0

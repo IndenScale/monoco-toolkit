@@ -30,7 +30,7 @@ files: []
 criticality: high
 solution: null
 opened_at: '2026-02-03T23:23:28'
-progress: 0/5
+progress: 1/6
 files_count: 0
 ---
 

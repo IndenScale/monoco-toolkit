@@ -33,10 +33,29 @@ from .core import (
     IMChannelManager,
     MessageStore,
     IMRouter,
-    IMAgentSessionManager,
+    IMAgentSessionManager as CoreIMAgentSessionManager,
     IMStorageError,
     ChannelNotFoundError,
     MessageNotFoundError,
+)
+
+from .session import (
+    SessionState,
+    CommandType,
+    Command,
+    StreamChunk,
+    SessionContext,
+    IMAgentSessionController,
+    IMAgentSessionManager,
+    CommandParser,
+)
+
+from .handlers import (
+    HandlerResult,
+    IMAgentTrigger,
+    IMMessageHandler,
+    IMCommandHandler,
+    IMStreamOutputHandler,
 )
 
 __all__ = [
@@ -60,8 +79,23 @@ __all__ = [
     "IMChannelManager",
     "MessageStore",
     "IMRouter",
-    "IMAgentSessionManager",
+    "CoreIMAgentSessionManager",
     "IMStorageError",
     "ChannelNotFoundError",
     "MessageNotFoundError",
+    # Session (FEAT-0170)
+    "SessionState",
+    "CommandType",
+    "Command",
+    "StreamChunk",
+    "SessionContext",
+    "IMAgentSessionController",
+    "IMAgentSessionManager",
+    "CommandParser",
+    # Handlers (FEAT-0170)
+    "HandlerResult",
+    "IMAgentTrigger",
+    "IMMessageHandler",
+    "IMCommandHandler",
+    "IMStreamOutputHandler",
 ]
