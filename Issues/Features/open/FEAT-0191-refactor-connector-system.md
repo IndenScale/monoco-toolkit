@@ -3,10 +3,10 @@ id: FEAT-0191
 uid: c18ae8
 type: feature
 status: open
-stage: doing
+stage: review
 title: Refactor Connector System
 created_at: '2026-02-07T09:51:13'
-updated_at: '2026-02-07T11:20:10'
+updated_at: '2026-02-07T11:21:01'
 parent: EPIC-0000
 dependencies: []
 related: []
