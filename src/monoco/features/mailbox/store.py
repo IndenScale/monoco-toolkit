@@ -361,6 +361,66 @@ class MailboxStore:
 
         return dest_path
 
+    def create_inbound_message(
+        self,
+        message: InboundMessage,
+        temp_suffix: str = ".tmp"
+    ) -> Path:
+        """
+        Create an inbound message file atomically.
+
+        Writes to a temp file first, then renames for atomicity.
+        The file is stored in the provider-specific subdirectory.
+
+        Args:
+            message: The inbound message to store
+            temp_suffix: Suffix for temporary file (default: .tmp)
+
+        Returns:
+            Path to the created file
+
+        Raises:
+            ValueError: If message validation fails
+            IOError: If file operations fail
+        """
+        # Ensure provider directory exists
+        provider_dir = self.config.inbound_path / message.provider.value
+        provider_dir.mkdir(parents=True, exist_ok=True)
+
+        # Generate filename from message
+        filename = message.to_filename()
+        final_path = provider_dir / filename
+        temp_path = provider_dir / f"{filename}{temp_suffix}"
+
+        # Build frontmatter from message model
+        frontmatter = message.model_dump(mode="json", exclude_none=True)
+
+        # Extract body text from content
+        body = ""
+        if message.content:
+            body = message.content.text or message.content.markdown or ""
+
+        # Write to temp file first (atomic write pattern)
+        yaml_content = yaml.dump(
+            frontmatter,
+            sort_keys=False,
+            allow_unicode=True,
+            default_flow_style=False,
+        )
+        content = f"---\n{yaml_content}---\n{body}"
+
+        try:
+            temp_path.write_text(content, encoding="utf-8")
+            # Atomic rename
+            temp_path.rename(final_path)
+        except Exception as e:
+            # Clean up temp file if it exists
+            if temp_path.exists():
+                temp_path.unlink()
+            raise IOError(f"Failed to write inbound message: {e}") from e
+
+        return final_path
+
 
 # Global store instance
 _store: Optional[MailboxStore] = None
