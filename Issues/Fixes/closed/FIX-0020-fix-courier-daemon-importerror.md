@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Fix Courier Daemon ImportError
 created_at: '2026-02-07T11:39:24'
-updated_at: '2026-02-07T11:45:37'
+updated_at: 2026-02-07 11:45:38
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -21,10 +21,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-07T11:39:24'
 closed_at: '2026-02-07T11:45:37'
-isolation:
-  type: branch
-  ref: FIX-0020-fix-courier-daemon-importerror
-  created_at: '2026-02-07T11:39:33'
 ---
 
 ## FIX-0020: Fix Courier Daemon ImportError

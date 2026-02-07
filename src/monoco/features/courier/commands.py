@@ -36,12 +36,20 @@ app = typer.Typer(help="Manage Courier service")
 console = Console()
 
 
-def _get_service(project_root: Optional[Path] = None) -> CourierService:
+def _get_service(
+    project_root: Optional[Path] = None,
+    port: Optional[int] = None,
+) -> CourierService:
     """Get a CourierService instance for the current project."""
     if project_root is None:
         config = get_config()
         project_root = Path(config.paths.root)
-    return CourierService(project_root=project_root)
+    
+    kwargs = {"project_root": project_root}
+    if port is not None:
+        kwargs["port"] = port
+        
+    return CourierService(**kwargs)
 
 
 @app.command("start")
@@ -54,7 +62,7 @@ def start_service(
 ):
     """Start the Courier service."""
     try:
-        service = _get_service()
+        service = _get_service(port=port)
         status = service.start(
             foreground=foreground,
             debug=debug,
