@@ -3,10 +3,13 @@ id: FEAT-0172
 uid: 2c8ce7
 type: feature
 status: open
-stage: draft
+stage: doing
 title: Courier Outbound 消息处理器与自动归档
 created_at: '2026-02-07T23:17:20'
-updated_at: '2026-02-07T23:17:20'
+updated_at: '2026-02-07T23:39:54'
+parent: EPIC-0035
+dependencies: []
+related: []
 domains:
 - CollaborationBus
 tags:
