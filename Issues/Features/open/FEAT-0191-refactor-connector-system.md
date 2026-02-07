@@ -14,7 +14,29 @@ domains: []
 tags:
   - '#EPIC-0000'
   - '#FEAT-0191'
-files: []
+files:
+  - src/monoco/features/mailbox/__init__.py
+  - src/monoco/features/mailbox/models.py
+  - src/monoco/features/mailbox/store.py
+  - src/monoco/features/mailbox/queries.py
+  - src/monoco/features/mailbox/client.py
+  - src/monoco/features/mailbox/commands.py
+  - src/monoco/features/mailbox/constants.py
+  - src/monoco/features/courier/__init__.py
+  - src/monoco/features/courier/commands.py
+  - src/monoco/features/courier/service.py
+  - src/monoco/features/courier/daemon.py
+  - src/monoco/features/courier/api.py
+  - src/monoco/features/courier/state.py
+  - src/monoco/features/courier/debounce.py
+  - src/monoco/features/courier/constants.py
+  - src/monoco/features/courier/adapters/__init__.py
+  - src/monoco/features/courier/adapters/base.py
+  - src/monoco/features/connector/protocol/__init__.py
+  - src/monoco/features/connector/protocol/schema.py
+  - src/monoco/features/connector/protocol/constants.py
+  - src/monoco/features/connector/protocol/validators.py
+  - src/monoco/main.py
 criticality: medium
 solution: null
 opened_at: '2026-02-07T09:51:13'
@@ -99,11 +121,11 @@ src/monoco/features/
 - [x] `src/monoco/mailbox` 目录被移除。
 - [x] `src/monoco/features/courier` 目录被移除。
 - [ ] **独立的 `mailbox` Feature**：`src/monoco/features/mailbox/` 完整实现
-- [ ] **独立的 `courier` Feature**：`src/monoco/features/courier/` 完整实现
+- [x] **独立的 `courier` Feature**：`src/monoco/features/courier/` 完整实现
 - [x] `courier/protocol/` 包含共享的 Schema 定义。
-- [ ] CLI 提供 `monoco mailbox` 命令组，支持 `list`, `read`, `send`, `claim`, `done`, `fail` 操作。
-- [ ] CLI 提供 `monoco courier` 命令组，支持 `start`, `stop`, `restart`, `kill`, `status`, `logs` 操作。
-- [ ] `courier kill` 实现强制停止（SIGKILL，不优雅）。
+- [x] CLI 提供 `monoco mailbox` 命令组，支持 `list`, `read`, `send`, `claim`, `done`, `fail` 操作。
+- [x] CLI 提供 `monoco courier` 命令组，支持 `start`, `stop`, `restart`, `kill`, `status`, `logs` 操作。
+- [x] `courier kill` 实现强制停止（SIGKILL，不优雅）。
 - [ ] 现有测试（Pytest）全部通过，且路径引用已更新。
 - [ ] 文档更新完成（`docs/zh/04_Connectors/`）。
 
@@ -127,25 +149,25 @@ src/monoco/features/
   - [x] Implement `mailbox fail` - 标记失败（调用 Courier API，触发重试）.
   - [x] Register commands in `monoco/main.py`.
 
-- [ ] **Phase 3: Courier Feature Setup**
+- [x] **Phase 3: Courier Feature Setup**
   - [x] Create `src/monoco/features/courier/` directory.
   - [x] Create `courier/protocol/` - 共享 Schema（供外部导入）.
-  - [ ] Move adapters to `courier/adapters/`.
-  - [ ] Create `courier/service.py` - 服务生命周期管理.
-  - [ ] Create `courier/daemon.py` - 后台进程实现.
-  - [ ] Create `courier/api.py` - HTTP API 服务（处理 claim/done/fail）.
-  - [ ] Create `courier/state.py` - 消息状态管理（锁、归档、重试）.
-  - [ ] Create `courier/debounce.py` - 防抖合并逻辑.
+  - [x] Move adapters to `courier/adapters/`.
+  - [x] Create `courier/service.py` - 服务生命周期管理.
+  - [x] Create `courier/daemon.py` - 后台进程实现.
+  - [x] Create `courier/api.py` - HTTP API 服务（处理 claim/done/fail）.
+  - [x] Create `courier/state.py` - 消息状态管理（锁、归档、重试）.
+  - [x] Create `courier/debounce.py` - 防抖合并逻辑.
 
-- [ ] **Phase 4: Courier CLI Implementation**
-  - [ ] Create `courier/commands.py`.
-  - [ ] Implement `courier start` - 启动服务（启动 HTTP API、适配器、Webhook 监听）.
-  - [ ] Implement `courier stop` - 优雅停止服务.
-  - [ ] Implement `courier restart` - 重启服务.
-  - [ ] Implement `courier kill` - 强制停止服务（SIGKILL）.
-  - [ ] Implement `courier status` - 查看服务状态.
-  - [ ] Implement `courier logs` - 查看服务日志.
-  - [ ] Register commands in `monoco/main.py`.
+- [x] **Phase 4: Courier CLI Implementation**
+  - [x] Create `courier/commands.py`.
+  - [x] Implement `courier start` - 启动服务（启动 HTTP API、适配器、Webhook 监听）.
+  - [x] Implement `courier stop` - 优雅停止服务.
+  - [x] Implement `courier restart` - 重启服务.
+  - [x] Implement `courier kill` - 强制停止服务（SIGKILL）.
+  - [x] Implement `courier status` - 查看服务状态.
+  - [x] Implement `courier logs` - 查看服务日志.
+  - [x] Register commands in `monoco/main.py`.
 
 - [ ] **Phase 5: Cleanup & Verification**
   - [x] Remove old directories (`src/monoco/mailbox`, `src/monoco/features/courier`).

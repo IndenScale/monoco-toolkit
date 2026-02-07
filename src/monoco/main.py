@@ -215,6 +215,10 @@ from monoco.features.mailbox import commands as mailbox_cmd
 
 app.add_typer(mailbox_cmd.app, name="mailbox", help="Manage messages (Mailbox)")
 
+from monoco.features.courier import commands as courier_cmd
+
+app.add_typer(courier_cmd.app, name="courier", help="Manage Courier service (message transport)")
+
 
 from monoco.daemon.commands import serve_app, serve
 
