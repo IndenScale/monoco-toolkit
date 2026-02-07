@@ -168,6 +168,22 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
                 self._handle_dingtalk_webhook(slug)
                 return
 
+            # Channel-based sending (FEAT-0194)
+            if path == f"{API_PREFIX}/channels/send":
+                self._handle_channel_send()
+                return
+            elif path.startswith(f"{API_PREFIX}/channels/") and path.endswith("/send"):
+                # Pattern: /api/v1/courier/channels/{channel_id}/send
+                channel_id = path.split("/")[-2]
+                self._handle_channel_send_by_id(channel_id)
+                return
+            elif path == f"{API_PREFIX}/channels":
+                self._handle_channel_list()
+                return
+            elif path == f"{API_PREFIX}/channels/health":
+                self._handle_channel_health()
+                return
+
             # Registry management (Internal/CLI use)
             if path == f"{API_PREFIX}/registry/register":
                 self._handle_registry_register()
@@ -276,6 +292,91 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
         self._send_json({
             "success": True,
             "projects": mappings
+        })
+
+    def _handle_channel_send(self):
+        """Send message through default channel."""
+        from monoco.features.channel.courier_integration import get_channel_adapter
+
+        data = self._read_json()
+        if not data:
+            raise APIError("Invalid request body", 400, "invalid_body")
+
+        message = data.get("message")
+        if not message:
+            raise APIError("message is required", 400, "missing_message")
+
+        title = data.get("title")
+        markdown = data.get("markdown", False)
+
+        adapter = get_channel_adapter()
+        result = adapter.send_to_default(message, title=title, markdown=markdown)
+
+        if result.success:
+            self._send_json({
+                "success": True,
+                "channel_id": result.channel_id,
+                "message_id": result.message_id,
+            })
+        else:
+            self._send_json({
+                "success": False,
+                "error": result.error,
+            }, 500)
+
+    def _handle_channel_send_by_id(self, channel_id: str):
+        """Send message through specific channel."""
+        from monoco.features.channel.courier_integration import get_channel_adapter
+
+        data = self._read_json()
+        if not data:
+            raise APIError("Invalid request body", 400, "invalid_body")
+
+        message = data.get("message")
+        if not message:
+            raise APIError("message is required", 400, "missing_message")
+
+        title = data.get("title")
+        markdown = data.get("markdown", False)
+
+        adapter = get_channel_adapter()
+        result = adapter.send_to_channel(channel_id, message, title=title, markdown=markdown)
+
+        if result.success:
+            self._send_json({
+                "success": True,
+                "channel_id": result.channel_id,
+                "message_id": result.message_id,
+            })
+        else:
+            self._send_json({
+                "success": False,
+                "error": result.error,
+            }, 500 if "not found" not in (result.error or "") else 404)
+
+    def _handle_channel_list(self):
+        """List all available channels."""
+        from monoco.features.channel.courier_integration import get_channel_adapter
+
+        adapter = get_channel_adapter()
+        channels = adapter.get_available_channels()
+
+        self._send_json({
+            "success": True,
+            "channels": channels,
+            "count": len(channels),
+        })
+
+    def _handle_channel_health(self):
+        """Get channel health status."""
+        from monoco.features.channel.courier_integration import get_channel_adapter
+
+        adapter = get_channel_adapter()
+        health = adapter.health_check()
+
+        self._send_json({
+            "success": True,
+            "health": health,
         })
 
     def _handle_health(self):
