@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Fix Courier CLI ServiceError Handling
 created_at: '2026-02-07T11:33:52'
-updated_at: '2026-02-07T11:36:56'
+updated_at: 2026-02-07 11:36:56
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -22,10 +22,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-07T11:33:52'
 closed_at: '2026-02-07T11:36:56'
-isolation:
-  type: branch
-  ref: FIX-0019-fix-courier-cli-serviceerror-handling
-  created_at: '2026-02-07T11:34:03'
 ---
 
 ## FIX-0019: Fix Courier CLI ServiceError Handling
