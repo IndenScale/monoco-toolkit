@@ -1,0 +1,333 @@
+"""
+Courier Commands - CLI commands for Courier service management.
+
+Provides commands:
+- start: Start the Courier service
+- stop: Stop the Courier service (graceful)
+- restart: Restart the Courier service
+- kill: Force stop the Courier service
+- status: Check service status
+- logs: View service logs
+"""
+
+import sys
+from pathlib import Path
+from typing import Optional
+
+import typer
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+from monoco.core.config import get_config
+from monoco.core.output import OutputManager, AgentOutput
+
+from .service import CourierService, ServiceState, ServiceError
+from .constants import COURIER_DEFAULT_PORT
+
+app = typer.Typer(help="Manage Courier service")
+console = Console()
+
+
+def _get_service(project_root: Optional[Path] = None) -> CourierService:
+    """Get a CourierService instance for the current project."""
+    if project_root is None:
+        config = get_config()
+        project_root = Path(config.paths.root)
+    return CourierService(project_root=project_root)
+
+
+@app.command("start")
+def start_service(
+    foreground: bool = typer.Option(False, "--foreground", "-f", help="Run in foreground (for debugging)"),
+    debug: bool = typer.Option(False, "--debug", "-d", help="Enable debug logging"),
+    config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to config file"),
+    port: int = typer.Option(COURIER_DEFAULT_PORT, "--port", "-p", help="API server port"),
+    json: AgentOutput = False,
+):
+    """Start the Courier service."""
+    try:
+        service = _get_service()
+        status = service.start(
+            foreground=foreground,
+            debug=debug,
+            config_path=config,
+        )
+
+        if json:
+            OutputManager.print(status.to_dict())
+        else:
+            if status.is_running():
+                console.print(f"[green]✓[/green] Courier started (PID: {status.pid})")
+                console.print(f"  API: {status.api_url}")
+            else:
+                console.print(f"[yellow]⚠[/yellow] Courier status: {status.state}")
+
+    except ServiceError.ServiceAlreadyRunningError as e:
+        OutputManager.error(str(e))
+        raise typer.Exit(code=2)
+    except ServiceError.ServiceStartError as e:
+        OutputManager.error(str(e))
+        raise typer.Exit(code=1)
+    except Exception as e:
+        OutputManager.error(f"Failed to start Courier: {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("stop")
+def stop_service(
+    timeout: int = typer.Option(30, "--timeout", "-t", help="Timeout in seconds before force kill"),
+    wait: bool = typer.Option(False, "--wait", "-w", help="Block until service stops"),
+    json: AgentOutput = False,
+):
+    """Stop the Courier service gracefully."""
+    try:
+        service = _get_service()
+        status = service.stop(timeout=timeout, wait=wait)
+
+        if json:
+            OutputManager.print({"success": True, "status": status.to_dict()})
+        else:
+            if status.state == ServiceState.STOPPED:
+                console.print("[green]✓[/green] Courier stopped")
+            else:
+                console.print(f"[yellow]⚠[/yellow] Courier status: {status.state}")
+
+    except ServiceError.ServiceNotRunningError:
+        msg = "Courier is not running"
+        if json:
+            OutputManager.print({"success": False, "error": msg})
+        else:
+            OutputManager.error(msg)
+        raise typer.Exit(code=1)
+    except Exception as e:
+        OutputManager.error(f"Failed to stop Courier: {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("kill")
+def kill_service(
+    signal_type: str = typer.Option("SIGKILL", "--signal", "-s", help="Signal to send (SIGKILL, SIGINT)"),
+    json: AgentOutput = False,
+):
+    """
+    Force stop the Courier service.
+
+    Warning: This is not graceful and may result in:
+    - Lost lock state
+    - Incomplete message processing
+    - Resource leaks
+
+    Use 'stop' for normal shutdown.
+    """
+    import signal
+
+    sig = signal.SIGKILL
+    if signal_type.upper() == "SIGINT":
+        sig = signal.SIGINT
+
+    try:
+        service = _get_service()
+        status = service.kill(signal_type=sig)
+
+        if json:
+            OutputManager.print({"success": True, "status": status.to_dict()})
+        else:
+            console.print("[red]✗[/red] Courier killed (force stop)")
+            console.print("  [yellow]Warning: Lock state may be lost[/yellow]")
+
+    except Exception as e:
+        OutputManager.error(f"Failed to kill Courier: {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("restart")
+def restart_service(
+    force: bool = typer.Option(False, "--force", help="Force restart if stop fails"),
+    debug: bool = typer.Option(False, "--debug", "-d", help="Enable debug logging"),
+    json: AgentOutput = False,
+):
+    """Restart the Courier service."""
+    try:
+        service = _get_service()
+        status = service.restart(force=force, debug=debug)
+
+        if json:
+            OutputManager.print(status.to_dict())
+        else:
+            if status.is_running():
+                console.print(f"[green]✓[/green] Courier restarted (PID: {status.pid})")
+                console.print(f"  API: {status.api_url}")
+            else:
+                console.print(f"[yellow]⚠[/yellow] Courier status: {status.state}")
+
+    except ServiceError.ServiceStartError as e:
+        OutputManager.error(str(e))
+        raise typer.Exit(code=1)
+    except Exception as e:
+        OutputManager.error(f"Failed to restart Courier: {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("status")
+def service_status(
+    watch: bool = typer.Option(False, "--watch", help="Watch mode (continuous updates)"),
+    json: AgentOutput = False,
+):
+    """Check Courier service status."""
+    import time
+
+    if watch:
+        # Simple watch mode
+        try:
+            while True:
+                # Clear screen (ANSI escape sequence)
+                console.print("\033[2J\033[H", end="")
+
+                service = _get_service()
+                status = service.get_status()
+                _print_status_table(status)
+
+                time.sleep(2)
+        except KeyboardInterrupt:
+            console.print("\nStopped watching.")
+    else:
+        service = _get_service()
+        status = service.get_status()
+
+        if json:
+            OutputManager.print(status.to_dict())
+        else:
+            _print_status_table(status)
+
+
+def _print_status_table(status: "ServiceStatus") -> None:
+    """Print service status as a formatted table."""
+    # Determine status color
+    status_colors = {
+        ServiceState.RUNNING: "green",
+        ServiceState.STARTING: "yellow",
+        ServiceState.STOPPING: "yellow",
+        ServiceState.STOPPED: "dim",
+        ServiceState.ERROR: "red",
+    }
+    color = status_colors.get(status.state, "white")
+
+    # Status indicator
+    if status.is_running():
+        indicator = "🟢"
+    elif status.state == ServiceState.STOPPED:
+        indicator = "⚪"
+    else:
+        indicator = "🟡"
+
+    table = Table(
+        title=f"{indicator} Courier Service Status",
+        show_header=False,
+        border_style="blue",
+    )
+    table.add_column("Key", style="bold")
+    table.add_column("Value")
+
+    table.add_row("State", f"[{color}]{status.state}[/{color}]")
+
+    if status.pid:
+        table.add_row("PID", str(status.pid))
+
+    if status.uptime_seconds:
+        hours = status.uptime_seconds // 3600
+        mins = (status.uptime_seconds % 3600) // 60
+        table.add_row("Uptime", f"{hours}h {mins}m")
+
+    table.add_row("Version", status.version)
+
+    if status.api_url:
+        table.add_row("API URL", status.api_url)
+
+    if status.error_message:
+        table.add_row("Error", f"[red]{status.error_message}[/red]")
+
+    # Adapters
+    if status.adapters:
+        table.add_row("", "")
+        table.add_row("[bold]Adapters[/bold]", "")
+        for name, info in status.adapters.items():
+            adapter_status = info.get("status", "unknown")
+            adapter_color = "green" if adapter_status == "connected" else "dim"
+            table.add_row(f"  {name}", f"[{adapter_color}]{adapter_status}[/{adapter_color}]")
+
+    # Metrics
+    if status.metrics:
+        table.add_row("", "")
+        table.add_row("[bold]Metrics[/bold]", "")
+        for name, value in status.metrics.items():
+            table.add_row(f"  {name}", str(value))
+
+    console.print(table)
+
+
+@app.command("logs")
+def service_logs(
+    lines: int = typer.Option(100, "--lines", "-n", help="Number of lines to show"),
+    follow: bool = typer.Option(False, "--follow", "-f", help="Follow log output (tail -f mode)"),
+    level: Optional[str] = typer.Option(None, "--level", "-l", help="Filter by level (error, warn, info, debug)"),
+    since: Optional[str] = typer.Option(None, "--since", help="Show logs since duration (e.g., 1h, 30m)"),
+):
+    """View Courier service logs."""
+    try:
+        service = _get_service()
+
+        if follow:
+            # Follow mode - similar to tail -f
+            import time
+
+            log_path = service.log_file
+            if not log_path.exists():
+                console.print("[yellow]No log file found[/yellow]")
+                return
+
+            console.print(f"Following {log_path}... (Press Ctrl+C to stop)")
+
+            with open(log_path, "r") as f:
+                # Seek to end
+                f.seek(0, 2)
+
+                try:
+                    while True:
+                        line = f.readline()
+                        if not line:
+                            time.sleep(0.1)
+                            continue
+
+                        # Filter by level if specified
+                        if level and level.upper() not in line.upper():
+                            continue
+
+                        console.print(line.rstrip())
+                except KeyboardInterrupt:
+                    console.print("\nStopped following.")
+        else:
+            # Static log view
+            logs = service.get_logs(lines=lines)
+
+            if not logs:
+                console.print("[yellow]No logs available[/yellow]")
+                return
+
+            # Filter by level if specified
+            if level:
+                filtered = []
+                for line in logs.split("\n"):
+                    if level.upper() in line.upper():
+                        filtered.append(line)
+                logs = "\n".join(filtered[-lines:])
+
+            console.print(Panel(
+                logs,
+                title=f"Courier Logs (last {lines} lines)",
+                border_style="dim",
+            ))
+
+    except Exception as e:
+        OutputManager.error(f"Failed to get logs: {e}")
+        raise typer.Exit(code=1)
