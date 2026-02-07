@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: IM Agent 工作流：实时会话与流式响应
 created_at: '2026-02-03T23:23:35'
-updated_at: '2026-02-07T23:36:46'
+updated_at: 2026-02-07 23:36:46
 parent: EPIC-0033
 dependencies:
 - FEAT-0167
@@ -30,10 +30,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-03T23:23:35'
 closed_at: '2026-02-07T23:36:46'
-isolation:
-  type: branch
-  ref: FEAT-0170-im-agent-工作流-实时会话与流式响应
-  created_at: '2026-02-07T23:22:28'
 ---
 
 ## FEAT-0170: IM Agent 工作流：实时会话与流式响应
