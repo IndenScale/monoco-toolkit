@@ -292,8 +292,13 @@ def _print_status_table(status: "ServiceStatus") -> None:
     console.print(table)
 
 
-@app.command("logs")
-def service_logs(
+# Logs sub-command group
+logs_app = typer.Typer(help="Manage Courier logs")
+app.add_typer(logs_app, name="logs")
+
+
+@logs_app.command("show")
+def logs_show(
     lines: int = typer.Option(100, "--lines", "-n", help="Number of lines to show"),
     follow: bool = typer.Option(False, "--follow", "-f", help="Follow log output (tail -f mode)"),
     level: Optional[str] = typer.Option(None, "--level", "-l", help="Filter by level (error, warn, info, debug)"),
@@ -357,6 +362,72 @@ def service_logs(
     except Exception as e:
         OutputManager.error(f"Failed to get logs: {e}")
         raise typer.Exit(code=1)
+
+
+@logs_app.command("clean")
+def logs_clean(
+    all: bool = typer.Option(False, "--all", "-a", help="Clean all log files in the system"),
+    force: bool = typer.Option(False, "--force", "-f", help="Force clean without confirmation"),
+):
+    """Clean Courier service logs.
+    
+    Examples:
+        monoco courier logs clean              # Clean current project logs
+        monoco courier logs clean --all        # Clean all logs system-wide
+        monoco courier logs clean --force      # Skip confirmation
+    """
+    from .constants import COURIER_LOG_DIR
+    
+    log_files = []
+    
+    if all:
+        # Find all .log files in the log directory
+        if COURIER_LOG_DIR.exists():
+            log_files = list(COURIER_LOG_DIR.glob("*.log"))
+        # Also include rotated logs
+        if COURIER_LOG_DIR.exists():
+            log_files.extend(COURIER_LOG_DIR.glob("*.log.*"))
+    else:
+        # Only current service log file
+        service = _get_service()
+        if service.log_file.exists():
+            log_files.append(service.log_file)
+    
+    if not log_files:
+        console.print("[green]✓[/green] No log files to clean")
+        raise typer.Exit(code=0)
+    
+    # Show what will be cleaned
+    total_size = sum(f.stat().st_size for f in log_files if f.exists())
+    
+    console.print(f"[bold]Will clean {len(log_files)} log file(s):[/bold]")
+    for f in log_files:
+        size = f.stat().st_size if f.exists() else 0
+        console.print(f"  • {f} ({size / 1024:.1f} KB)")
+    console.print(f"\nTotal size: {total_size / 1024:.1f} KB")
+    
+    # Confirm unless --force
+    if not force:
+        confirm = typer.confirm("\nAre you sure you want to delete these files?")
+        if not confirm:
+            console.print("[yellow]Cancelled[/yellow]")
+            raise typer.Exit(code=0)
+    
+    # Clean files
+    cleaned = 0
+    failed = 0
+    for f in log_files:
+        try:
+            f.unlink()
+            cleaned += 1
+        except Exception as e:
+            console.print(f"[red]✗[/red] Failed to delete {f}: {e}")
+            failed += 1
+    
+    if failed == 0:
+        console.print(f"[green]✓[/green] Cleaned {cleaned} log file(s)")
+    else:
+        console.print(f"[yellow]![/yellow] Cleaned {cleaned}, failed {failed}")
 
 
 @app.command("stream")

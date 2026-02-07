@@ -59,6 +59,9 @@ class CourierAPIHandler(BaseHTTPRequestHandler):
     # Persistent event loop for async adapters
     _loop: Optional[asyncio.AbstractEventLoop] = None
     _loop_thread: Optional[threading.Thread] = None
+    
+    # DingTalk adapter singleton
+    _dingtalk_adapter: Optional["DingtalkAdapter"] = None
 
     @classmethod
     def get_loop(cls) -> asyncio.AbstractEventLoop:
