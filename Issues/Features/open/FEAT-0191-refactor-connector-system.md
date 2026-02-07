@@ -135,14 +135,14 @@ src/monoco/features/
 
 - [x] `src/monoco/mailbox` 目录被移除。
 - [x] `src/monoco/features/courier` 目录被移除。
-- [ ] **独立的 `mailbox` Feature**：`src/monoco/features/mailbox/` 完整实现
+- [x] **独立的 `mailbox` Feature**：`src/monoco/features/mailbox/` 完整实现
 - [x] **独立的 `courier` Feature**：`src/monoco/features/courier/` 完整实现
 - [x] `courier/protocol/` 包含共享的 Schema 定义。
 - [x] CLI 提供 `monoco mailbox` 命令组，支持 `list`, `read`, `send`, `claim`, `done`, `fail` 操作。
 - [x] CLI 提供 `monoco courier` 命令组，支持 `start`, `stop`, `restart`, `kill`, `status`, `logs` 操作。
 - [x] `courier kill` 实现强制停止（SIGKILL，不优雅）。
-- [ ] 现有测试（Pytest）全部通过，且路径引用已更新。
-- [ ] 文档更新完成（`docs/zh/04_Connectors/`）。
+- [x] 现有测试（Pytest）全部通过，且路径引用已更新。
+- [x] 文档更新完成（`docs/zh/04_Connectors/`）。
 
 ## Technical Tasks
 
