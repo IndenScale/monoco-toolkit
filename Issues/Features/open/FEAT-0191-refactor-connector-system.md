@@ -6,44 +6,59 @@ status: open
 stage: doing
 title: Refactor Connector System
 created_at: '2026-02-07T09:51:13'
-updated_at: 2026-02-07 10:30:00
+updated_at: '2026-02-07T11:20:10'
 parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
 tags:
-  - '#EPIC-0000'
-  - '#FEAT-0191'
+- '#EPIC-0000'
+- '#FEAT-0191'
 files:
-  - src/monoco/features/mailbox/__init__.py
-  - src/monoco/features/mailbox/models.py
-  - src/monoco/features/mailbox/store.py
-  - src/monoco/features/mailbox/queries.py
-  - src/monoco/features/mailbox/client.py
-  - src/monoco/features/mailbox/commands.py
-  - src/monoco/features/mailbox/constants.py
-  - src/monoco/features/courier/__init__.py
-  - src/monoco/features/courier/commands.py
-  - src/monoco/features/courier/service.py
-  - src/monoco/features/courier/daemon.py
-  - src/monoco/features/courier/api.py
-  - src/monoco/features/courier/state.py
-  - src/monoco/features/courier/debounce.py
-  - src/monoco/features/courier/constants.py
-  - src/monoco/features/courier/adapters/__init__.py
-  - src/monoco/features/courier/adapters/base.py
-  - src/monoco/features/connector/protocol/__init__.py
-  - src/monoco/features/connector/protocol/schema.py
-  - src/monoco/features/connector/protocol/constants.py
-  - src/monoco/features/connector/protocol/validators.py
-  - src/monoco/main.py
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- Issues/Features/closed/FEAT-0189-定义-mailbox-协议存储格式与-schema-规范.md
+- Issues/Features/open/FEAT-0189-定义-mailbox-协议存储格式与-schema-规范.md
+- docs/examples/mailbox/draft_reply.yaml
+- docs/examples/mailbox/inbound_email_thread.yaml
+- docs/examples/mailbox/inbound_lark_group.yaml
+- docs/zh/04_Connectors/01_Architecture.md
+- docs/zh/04_Connectors/02_Mailbox_Protocol.md
+- docs/zh/04_Connectors/03_Mailbox_CLI.md
+- docs/zh/04_Connectors/04_Courier_Service.md
+- docs/zh/04_Connectors/05_Courier_CLI.md
+- docs/zh/04_Connectors/README.md
+- src/monoco/features/connector/protocol/__init__.py
+- src/monoco/features/connector/protocol/constants.py
+- src/monoco/features/connector/protocol/schema.py
+- src/monoco/features/connector/protocol/validators.py
+- src/monoco/features/courier/__init__.py
+- src/monoco/features/courier/adapters/__init__.py
+- src/monoco/features/courier/adapters/base.py
+- src/monoco/features/courier/api.py
+- src/monoco/features/courier/commands.py
+- src/monoco/features/courier/constants.py
+- src/monoco/features/courier/daemon.py
+- src/monoco/features/courier/debounce.py
+- src/monoco/features/courier/protocol/__init__.py
+- src/monoco/features/courier/service.py
+- src/monoco/features/courier/state.py
+- src/monoco/features/mailbox/__init__.py
+- src/monoco/features/mailbox/client.py
+- src/monoco/features/mailbox/commands.py
+- src/monoco/features/mailbox/models.py
+- src/monoco/features/mailbox/queries.py
+- src/monoco/features/mailbox/store.py
+- src/monoco/mailbox/__init__.py
+- src/monoco/mailbox/constants.py
+- src/monoco/mailbox/schema.py
+- src/monoco/mailbox/validators.py
+- src/monoco/main.py
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-07T09:51:13'
 isolation:
   type: branch
   ref: FEAT-0191-refactor-connector-system
-  path: null
   created_at: '2026-02-07T09:51:58'
 ---
 
