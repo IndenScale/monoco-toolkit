@@ -211,6 +211,10 @@ from monoco.features.memo import app as memo_app
 
 app.add_typer(memo_app, name="memo", help="Manage fleeting notes (memos)")
 
+from monoco.features.mailbox import commands as mailbox_cmd
+
+app.add_typer(mailbox_cmd.app, name="mailbox", help="Manage messages (Mailbox)")
+
 
 from monoco.daemon.commands import serve_app, serve
 

@@ -6,41 +6,164 @@ status: open
 stage: doing
 title: Refactor Connector System
 created_at: '2026-02-07T09:51:13'
-updated_at: '2026-02-07T09:51:57'
+updated_at: 2026-02-07 10:30:00
 parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
 tags:
-- '#EPIC-0000'
-- '#FEAT-0191'
+  - '#EPIC-0000'
+  - '#FEAT-0191'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-07T09:51:13'
+isolation:
+  type: branch
+  ref: FEAT-0191-refactor-connector-system
+  path: null
+  created_at: '2026-02-07T09:51:58'
 ---
 
 ## FEAT-0191: Refactor Connector System
 
 ## Objective
-<!-- Describe the "Why" and "What" clearly. Focus on value. -->
+
+重构 Monoco 的 Connector 系统，将 `Mailbox`（协议与数据层）与 `Courier`（传输与服务层）拆分为两个独立的 Feature，明确职责边界，并对外暴露清晰的 CLI 命令接口。
+
+## Context
+
+当前的架构存在割裂：
+
+- **概念割裂**：文档定义的 `Connector` 包含 "Courier & Mailbox"，但代码中 `mailbox` 位于顶层，而 `courier` 位于 `features`。
+- **代码重复**：`src/monoco/mailbox/schema.py` 与 `src/monoco/features/courier/schema.py` 存在定义重叠。
+- **职责不清**：`monoco courier` 目前承担了数据管理和服务管理的双重职责。
+
+## Architecture Decision
+
+**采用独立 Feature 架构，而非统一的 Connector。**
+
+### 决策理由
+
+1. **关注点分离**：Mailbox 管数据，Courier 管传输，两者可以独立演进
+2. **清晰的边界**：Mailbox CLI 只读（除标记外），Courier CLI 管理服务
+3. **简化依赖**：两个 Feature 之间通过协议松耦合，不直接依赖
+4. **测试友好**：可以独立测试数据层和服务层
+
+### 新的目录结构
+
+```text
+src/monoco/features/
+├── mailbox/                      # Mailbox Feature (数据层 + CLI)
+│   ├── __init__.py
+│   ├── commands.py              # CLI: list, read, send, claim, done, fail
+│   ├── models.py                # 数据模型定义
+│   ├── store.py                 # 文件系统操作
+│   ├── queries.py               # 查询引擎
+│   ├── client.py                # Courier HTTP API 客户端
+│   └── constants.py             # 路径、枚举等常量
+│
+└── courier/                      # Courier Feature (服务层)
+    ├── __init__.py
+    ├── commands.py              # CLI: start, stop, restart, kill, status, logs
+    ├── service.py               # 服务生命周期管理
+    ├── daemon.py                # 后台进程实现
+    ├── api.py                   # HTTP API 服务 (claim/done/fail)
+    ├── state.py                 # 消息状态管理 (锁、归档、重试)
+    ├── adapters/                # 各平台适配器
+    │   ├── __init__.py
+    │   ├── base.py
+    │   ├── lark.py
+    │   └── email.py
+    ├── protocol/                # 协议层 (共享 Schema)
+    │   ├── __init__.py
+    │   ├── schema.py            # 统一 Schema 定义
+    │   ├── constants.py
+    │   └── validators.py
+    └── debounce.py              # 防抖合并逻辑
+```
+
+### 职责划分
+
+| 职责         | Mailbox                                 | Courier                      |
+| ------------ | --------------------------------------- | ---------------------------- |
+| 数据查询     | ✅ `mailbox list/read` (本地)           | ❌                           |
+| 创建草稿     | ✅ `mailbox send`                       | ❌                           |
+| 状态流转     | ✅ `mailbox claim/done/fail` (API 调用) | ✅ 维护锁、执行归档/重试     |
+| Webhook 接收 | ❌                                      | ✅ 接收并写入 inbound        |
+| 消息发送     | ❌                                      | ✅ 读取 outbound 草稿并发送  |
+| 服务管理     | ❌                                      | ✅ `courier start/stop/kill` |
 
 ## Acceptance Criteria
-<!-- Define binary conditions for success. -->
-- [ ] Criteria 1
+
+- [x] `src/monoco/mailbox` 目录被移除。
+- [x] `src/monoco/features/courier` 目录被移除。
+- [ ] **独立的 `mailbox` Feature**：`src/monoco/features/mailbox/` 完整实现
+- [ ] **独立的 `courier` Feature**：`src/monoco/features/courier/` 完整实现
+- [x] `courier/protocol/` 包含共享的 Schema 定义。
+- [ ] CLI 提供 `monoco mailbox` 命令组，支持 `list`, `read`, `send`, `claim`, `done`, `fail` 操作。
+- [ ] CLI 提供 `monoco courier` 命令组，支持 `start`, `stop`, `restart`, `kill`, `status`, `logs` 操作。
+- [ ] `courier kill` 实现强制停止（SIGKILL，不优雅）。
+- [ ] 现有测试（Pytest）全部通过，且路径引用已更新。
+- [ ] 文档更新完成（`docs/zh/04_Connectors/`）。
 
 ## Technical Tasks
-<!-- Breakdown into atomic steps. Use nested lists for sub-tasks. -->
 
-<!-- Status Syntax: -->
-<!-- [ ] To Do -->
-<!-- [/] Doing -->
-<!-- [x] Done -->
-<!-- [~] Cancelled -->
-<!-- - [ ] Parent Task -->
-<!--   - [ ] Sub Task -->
+- [x] **Phase 1: Mailbox Feature Setup**
+  - [x] Create `src/monoco/features/mailbox/` directory.
+  - [x] Create `src/monoco/features/connector/protocol/` with shared schema.
+  - [x] Create `mailbox/models.py` - 数据模型定义.
+  - [x] Create `mailbox/store.py` - 文件系统操作.
+  - [x] Create `mailbox/queries.py` - 查询引擎.
+  - [x] Create `mailbox/client.py` - Courier HTTP API 客户端.
 
-- [ ] Task 1
+- [x] **Phase 2: Mailbox CLI Implementation**
+  - [x] Create `mailbox/commands.py`.
+  - [x] Implement `mailbox list` - 列出消息（本地查询，支持过滤、格式化）.
+  - [x] Implement `mailbox read` - 读取消息内容（本地读取）.
+  - [x] Implement `mailbox send` - 创建出站草稿（写文件）.
+  - [x] Implement `mailbox claim` - 认领消息（调用 Courier API）.
+  - [x] Implement `mailbox done` - 标记完成（调用 Courier API，触发归档）.
+  - [x] Implement `mailbox fail` - 标记失败（调用 Courier API，触发重试）.
+  - [x] Register commands in `monoco/main.py`.
+
+- [ ] **Phase 3: Courier Feature Setup**
+  - [x] Create `src/monoco/features/courier/` directory.
+  - [x] Create `courier/protocol/` - 共享 Schema（供外部导入）.
+  - [ ] Move adapters to `courier/adapters/`.
+  - [ ] Create `courier/service.py` - 服务生命周期管理.
+  - [ ] Create `courier/daemon.py` - 后台进程实现.
+  - [ ] Create `courier/api.py` - HTTP API 服务（处理 claim/done/fail）.
+  - [ ] Create `courier/state.py` - 消息状态管理（锁、归档、重试）.
+  - [ ] Create `courier/debounce.py` - 防抖合并逻辑.
+
+- [ ] **Phase 4: Courier CLI Implementation**
+  - [ ] Create `courier/commands.py`.
+  - [ ] Implement `courier start` - 启动服务（启动 HTTP API、适配器、Webhook 监听）.
+  - [ ] Implement `courier stop` - 优雅停止服务.
+  - [ ] Implement `courier restart` - 重启服务.
+  - [ ] Implement `courier kill` - 强制停止服务（SIGKILL）.
+  - [ ] Implement `courier status` - 查看服务状态.
+  - [ ] Implement `courier logs` - 查看服务日志.
+  - [ ] Register commands in `monoco/main.py`.
+
+- [ ] **Phase 5: Cleanup & Verification**
+  - [x] Remove old directories (`src/monoco/mailbox`, `src/monoco/features/courier`).
+  - [ ] Update all imports in codebase.
+  - [ ] Run `pytest` and fix broken tests.
+  - [ ] Verify CLI commands manually.
+  - [ ] Sync documentation from `docs/zh/04_Connectors/`.
+
+## Documentation Reference
+
+详细设计文档参见 `docs/zh/04_Connectors/`:
+
+- [01_Architecture.md](../04_Connectors/01_Architecture.md) - 整体架构设计
+- [02_Mailbox_Protocol.md](../04_Connectors/02_Mailbox_Protocol.md) - 消息协议 Schema 规范
+- [03_Mailbox_CLI.md](../04_Connectors/03_Mailbox_CLI.md) - Mailbox CLI 命令设计
+- [04_Courier_Service.md](../04_Connectors/04_Courier_Service.md) - Courier 服务架构设计
+- [05_Courier_CLI.md](../04_Connectors/05_Courier_CLI.md) - Courier CLI 命令设计
 
 ## Review Comments
+
 <!-- Required for Review/Done stage. Record review feedback here. -->
