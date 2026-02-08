@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Courier Outbound 消息处理器与自动归档
 created_at: '2026-02-07T23:17:20'
-updated_at: '2026-02-08T00:58:33'
+updated_at: 2026-02-08 00:58:33
 parent: EPIC-0035
 dependencies: []
 related: []
@@ -38,10 +38,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-07T23:17:20'
 closed_at: '2026-02-08T00:58:33'
-isolation:
-  type: branch
-  ref: FEAT-0172-courier-outbound-消息处理器与自动归档
-  created_at: '2026-02-07T23:39:54'
 ---
 
 ## FEAT-0172: Courier Outbound 消息处理器与自动归档
