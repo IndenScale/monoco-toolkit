@@ -10,7 +10,7 @@ It is part of the three-layer architecture:
 Example Usage:
     >>> from monoco.core.watcher import IssueWatcher, WatchConfig
     >>> from pathlib import Path
-    >>> 
+    >>>
     >>> config = WatchConfig(
     ...     path=Path("./Issues"),
     ...     patterns=["*.md"],
@@ -34,7 +34,6 @@ from .base import (
 from .issue import IssueWatcher, IssueFileEvent
 from .memo import MemoWatcher, MemoFileEvent
 from .task import TaskWatcher, TaskFileEvent
-from .dropzone import DropzoneWatcher, DropzoneFileEvent
 from .im import IMWatcher, IMFileEvent, IMInboundWatcher, IMWebhookWatcher
 
 __all__ = [
@@ -53,8 +52,6 @@ __all__ = [
     "MemoFileEvent",
     "TaskWatcher",
     "TaskFileEvent",
-    "DropzoneWatcher",
-    "DropzoneFileEvent",
     # IM watchers (FEAT-0167)
     "IMWatcher",
     "IMFileEvent",
