@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Fix VS Code Extension workflow path
 created_at: '2026-02-08T10:31:02'
-updated_at: '2026-02-08T10:32:09'
+updated_at: 2026-02-08 10:32:09
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -21,10 +21,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-08T10:31:02'
 closed_at: '2026-02-08T10:32:09'
-isolation:
-  type: branch
-  ref: FIX-0026-fix-vs-code-extension-workflow-path
-  created_at: '2026-02-08T10:31:05'
 ---
 
 ## FIX-0026: Fix VS Code Extension workflow path
