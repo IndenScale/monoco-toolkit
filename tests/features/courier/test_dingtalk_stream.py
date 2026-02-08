@@ -33,6 +33,9 @@ class MockCallbackMessage:
         self.data = data
         self.headers = MockHeaders(topic=topic)
 
+    def to_dict(self):
+        return self.data
+
 @pytest.fixture
 def adapter():
     return DingTalkStreamAdapter(
@@ -123,23 +126,13 @@ def test_dingtalk_stream_parsing_error_robustness(adapter):
 @pytest.mark.asyncio
 async def test_adapter_lifecycle(adapter):
     """Test basic lifecycle methods."""
-    with patch.object(adapter, 'run_sync') as mock_run_sync:
-        # Simulate run_sync setting connected=True
-        def side_effect():
-            adapter._connected = True
-            
-        mock_run_sync.side_effect = side_effect
-        
-        await adapter.connect()
-        
-        # Give it a moment to start thread and wait loop
-        await asyncio.sleep(0.2)
-        
-        assert mock_run_sync.called
-        assert adapter._connected is True
-        
-        status = await adapter.health_check()
-        assert status.value == "connected"
-        
-        await adapter.disconnect()
-        assert adapter._connected is False
+    # connect() initializes HTTP client for sending messages
+    await adapter.connect()
+
+    assert adapter._connected is True
+
+    status = await adapter.health_check()
+    assert status.value == "connected"
+
+    await adapter.disconnect()
+    assert adapter._connected is False

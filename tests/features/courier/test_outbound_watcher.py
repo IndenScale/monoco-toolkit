@@ -3,7 +3,7 @@ Tests for OutboundWatcher - outbound message polling and detection.
 """
 
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -56,12 +56,12 @@ def create_test_message(
         "provider": provider,
         "content_type": "text",
         "status": status,
-        "created_at": datetime.utcnow().isoformat() + "Z",
+        "created_at": datetime.now(timezone.utc).isoformat() + "Z",
         "retry_count": retry_count,
     }
     
     if next_retry_at:
-        frontmatter["next_retry_at"] = next_retry_at.isoformat() + "Z"
+        frontmatter["next_retry_at"] = next_retry_at.isoformat()
     
     content_yaml = yaml.dump(frontmatter, allow_unicode=True, sort_keys=False)
     full_content = f"---\n{content_yaml}---\n{content}\n"
@@ -144,7 +144,7 @@ class TestOutboundWatcher:
         """Test that messages with future retry are skipped."""
         provider_dir = temp_mailbox / "outbound" / "dingtalk"
         
-        future_time = datetime.utcnow() + timedelta(hours=1)
+        future_time = datetime.now(timezone.utc) + timedelta(hours=1)
         create_test_message(
             provider_dir / "retry_later.md",
             msg_id="retry_later",
@@ -160,7 +160,7 @@ class TestOutboundWatcher:
         """Test that messages with past retry are included."""
         provider_dir = temp_mailbox / "outbound" / "dingtalk"
         
-        past_time = datetime.utcnow() - timedelta(hours=1)
+        past_time = datetime.now(timezone.utc) - timedelta(hours=1)
         create_test_message(
             provider_dir / "retry_now.md",
             msg_id="retry_now",

@@ -45,7 +45,7 @@ class TestAgentTask:
         assert task.role_name == "Engineer"
         assert task.issue_id == "FEAT-123"
         assert task.prompt == "Implement feature X"
-        assert task.engine == "gemini"  # default
+        assert task.engine == "claude"  # default
         assert task.timeout == 900  # default
         assert isinstance(task.metadata, dict)
         assert isinstance(task.created_at, datetime)

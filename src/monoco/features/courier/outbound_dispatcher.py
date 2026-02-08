@@ -6,7 +6,7 @@ Manages adapter instances and dispatches messages based on provider type.
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Type
 
 from monoco.features.connector.protocol.schema import Provider, OutboundMessage, Content
@@ -121,7 +121,7 @@ class OutboundDispatcher:
             return SendResult(
                 success=False,
                 error=f"No adapter available for provider: {provider.value}",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
 
         try:
@@ -132,7 +132,7 @@ class OutboundDispatcher:
             return SendResult(
                 success=False,
                 error=f"Dispatch error: {str(e)}",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
 
     async def health_check(self, provider: Optional[Provider] = None) -> Dict[str, any]:

@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum, auto
 from typing import Any, Dict, List, Literal, Optional, Set
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class PlatformType(str, Enum):
@@ -159,9 +159,8 @@ class IMMessage(BaseModel):
     
     # Platform-specific raw data
     platform_raw: Dict[str, Any] = Field(default_factory=dict)
-    
-    class Config:
-        frozen = False
+
+    model_config = ConfigDict(frozen=False)
 
 
 class IMChannel(BaseModel):

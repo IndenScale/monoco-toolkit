@@ -3,7 +3,7 @@ Tests for OutboundProcessor - post-send processing and message lifecycle.
 """
 
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -62,7 +62,7 @@ def create_test_entry(
         "provider": provider.value,
         "content_type": "text",
         "status": status,
-        "created_at": datetime.utcnow().isoformat() + "Z",
+        "created_at": datetime.now(timezone.utc).isoformat() + "Z",
         "retry_count": retry_count,
     }
     
@@ -163,17 +163,17 @@ class TestOutboundProcessor:
         
         # First retry
         next_retry_0 = processor._calculate_next_retry(0)
-        delay_0 = (next_retry_0 - datetime.utcnow()).total_seconds()
+        delay_0 = (next_retry_0 - datetime.now(timezone.utc)).total_seconds()
         assert 0.9 < delay_0 < 1.2  # ~1 second
         
         # Second retry (2x delay)
         next_retry_1 = processor._calculate_next_retry(1)
-        delay_1 = (next_retry_1 - datetime.utcnow()).total_seconds()
+        delay_1 = (next_retry_1 - datetime.now(timezone.utc)).total_seconds()
         assert 1.9 < delay_1 < 2.2  # ~2 seconds
         
         # Third retry (4x delay)
         next_retry_2 = processor._calculate_next_retry(2)
-        delay_2 = (next_retry_2 - datetime.utcnow()).total_seconds()
+        delay_2 = (next_retry_2 - datetime.now(timezone.utc)).total_seconds()
         assert 3.9 < delay_2 < 4.2  # ~4 seconds
 
     def test_archive_handles_collision(self, processor, temp_mailbox):

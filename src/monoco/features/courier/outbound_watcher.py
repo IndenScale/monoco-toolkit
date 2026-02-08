@@ -9,7 +9,7 @@ import logging
 import re
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Set
 
@@ -136,7 +136,7 @@ class OutboundWatcher:
             return False
 
         # Check if scheduled for future retry
-        if entry.next_retry_at and datetime.utcnow() < entry.next_retry_at:
+        if entry.next_retry_at and datetime.now(timezone.utc) < entry.next_retry_at:
             return False
 
         return True
@@ -175,7 +175,7 @@ class OutboundWatcher:
                     try:
                         next_retry = datetime.fromisoformat(
                             next_retry_str.replace("Z", "+00:00")
-                        ).replace(tzinfo=None)
+                        )
                     except (ValueError, TypeError):
                         pass
 
@@ -209,7 +209,7 @@ class OutboundWatcher:
             List of OutboundMessageEntry ready to be sent
         """
         pending = []
-        self._last_scan_time = datetime.utcnow()
+        self._last_scan_time = datetime.now(timezone.utc)
 
         for provider in self.SUPPORTED_PROVIDERS:
             try:

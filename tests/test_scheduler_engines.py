@@ -40,7 +40,7 @@ class TestClaudeAdapter:
         prompt = "Refactor the authentication module"
         command = adapter.build_command(prompt)
 
-        assert command == ["claude", "-p", "Refactor the authentication module"]
+        assert command == ["claude", "-p", "Refactor the authentication module", "--permission-mode", "acceptEdits"]
 
     def test_name(self):
         adapter = ClaudeAdapter()
