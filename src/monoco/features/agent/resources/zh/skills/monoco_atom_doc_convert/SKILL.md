@@ -1,6 +1,7 @@
 ---
-name: doc_convert
+name: monoco_atom_doc_convert
 description: 文档转换与智能分析 - 使用 LibreOffice 将 Office/PDF 文档转换为可分析格式
+type: atom
 ---
 
 ## 文档智能
