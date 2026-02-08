@@ -56,7 +56,7 @@ jobs:
             --distpath ./dist \
             --workpath ./build \
             --specpath ./build \
-            monoco/main.py
+            src/monoco/main.py
         shell: bash
 
       - name: Prepare Binary
