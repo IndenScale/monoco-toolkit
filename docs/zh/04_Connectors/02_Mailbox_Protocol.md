@@ -1,8 +1,8 @@
 # Mailbox 协议规范
 
-**Version**: 1.0.0
-**Status**: Draft
-**Related**: FEAT-0189, EPIC-0035
+**Version**: 1.1.0
+**Status**: Implemented
+**Related**: FEAT-0189, EPIC-0035, FEAT-0172
 
 ---
 
@@ -28,16 +28,25 @@
 ├── inbound/                    # 外部消息输入 (Courier 写入，Agent 只读)
 │   ├── lark/                   # 飞书消息
 │   ├── email/                  # 邮件消息
-│   └── slack/                  # 其他适配器
+│   ├── slack/                  # Slack 消息
+│   └── dingtalk/               # 钉钉消息
 ├── outbound/                   # 内部消息输出 (Agent 通过 CLI 投递)
 │   ├── lark/
 │   ├── email/
-│   └── slack/
+│   ├── slack/
+│   └── dingtalk/
 ├── archive/                    # 已完成闭环的消息存档
 │   ├── lark/
 │   ├── email/
-│   └── slack/
-└── .tmp/                       # 临时工作目录 (防抖合并用)
+│   ├── slack/
+│   └── dingtalk/
+├── .state/                     # 状态目录
+│   └── locks.json              # 消息锁状态 (claim/done/fail)
+└── .deadletter/                # 死信队列（超过最大重试次数）
+    ├── lark/
+    ├── email/
+    ├── slack/
+    └── dingtalk/
 ```
 
 ### 2.2 文件名规范
@@ -621,7 +630,36 @@ ArtifactType:
 Role:
   type: enum
   values: [owner, admin, member, guest, external]
+
+MessageStatus:
+  type: enum
+  values:
+    - new:          # 新消息，等待认领
+    - claimed:      # 已被认领，处理中
+    - completed:    # 处理完成
+    - failed:       # 处理失败
+    - archived:     # 已归档
+    - deadletter:   # 死信队列（超过最大重试次数）
 ```
+
+**状态流转说明**:
+
+```
+NEW ──claim──▶ CLAIMED ──complete──▶ COMPLETED
+  │               │                      │
+  │               │ fail (retryable)     │
+  │               ▼                      │
+  │◄────────── NEW (retry)              │
+  │                                      │
+  │               │ fail (non-retryable) │
+  │               ▼                      ▼
+  │◄────────── DEADLETTER ◀────────── ARCHIVED
+```
+
+**关键配置**:
+- **认领超时**: 300 秒 (5 分钟)
+- **最大重试次数**: 3 次
+- **重试退避**: 指数退避 (1s, 2s, 4s)，最大 30 秒
 
 ### 7.2 完整 Inbound Schema (JSON Schema)
 

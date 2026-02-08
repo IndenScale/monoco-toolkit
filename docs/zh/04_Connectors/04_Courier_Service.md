@@ -1,8 +1,8 @@
 # Courier Service 设计
 
-**Version**: 2.0.0
-**Status**: Draft
-**Related**: FEAT-0191, FEAT-XXXX
+**Version**: 2.1.0
+**Status**: Implemented
+**Related**: FEAT-0191, FEAT-0172, FEAT-0189
 
 ---
 
@@ -12,12 +12,14 @@ Courier 是 Monoco 的**用户级别全局 Mail 聚合服务**。它以单一守
 
 ### 1.1 核心职责
 
-| 职责 | 说明 |
-|------|------|
-| **Webhook 接收** | 接收外部平台推送，聚合成 Mail 写入全局 inbox |
-| **Mail 聚合** | 防抖合并连续消息流，生成原子消费单位 |
-| **验证与存储** | Schema 校验、去重、写入 `~/.monoco/mailbox/` |
-| **状态 API** | 为 Mailbox CLI 提供状态管理接口 |
+| 职责             | 说明                                            |
+| ---------------- | ----------------------------------------------- |
+| **Webhook 接收** | 接收外部平台推送（钉钉 Stream、Webhook）        |
+| **Mail 聚合**    | 防抖合并连续消息流（5秒窗口），生成原子消费单位 |
+| **验证与存储**   | Schema 校验、写入 `~/.monoco/mailbox/inbound/`  |
+| **状态管理**     | 锁管理（claim）、归档（done）、死信（fail）     |
+| **出站处理**     | 轮询 `outbound/` 并发送消息                     |
+| **HTTP API**     | 提供状态管理接口（端口 8644）                   |
 
 ### 1.2 设计原则
 
@@ -34,66 +36,94 @@ Courier 是 Monoco 的**用户级别全局 Mail 聚合服务**。它以单一守
 ### 2.1 整体架构
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Courier Service (Single Instance)             │
-│                                                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │   Adapter    │  │   Adapter    │  │   Adapter    │           │
-│  │    (Lark)    │  │   (Email)    │  │   (Slack)    │           │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘           │
-│         │                 │                 │                   │
-│         └─────────────────┼─────────────────┘                   │
-│                           ▼                                     │
-│                  ┌──────────────┐                               │
-│                  │   Ingestion  │                               │
-│                  │   Pipeline   │                               │
-│                  └──────┬───────┘                               │
-│                         │                                       │
-│         ┌───────────────┼───────────────┐                       │
-│         ▼               ▼               ▼                       │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐            │
-│  │   Validate   │ │   Enrich     │ │   Deduplicate│            │
-│  └──────┬───────┘ └──────────────┘ └──────────────┘            │
-│         │                                                       │
-│         ▼                                                       │
-│  ┌──────────────┐                                              │
-│  │  Global      │────► ~/.monoco/mailbox/                      │
-│  │  Inbox       │      └── {source}/inbound/{timestamp}.jsonl  │
-│  └──────────────┘                                              │
-│                                                                  │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │                    HTTP API Service                      │    │
-│  │  POST /api/v1/messages/{id}/claim                       │    │
-│  │  POST /api/v1/messages/{id}/complete                    │    │
-│  │  POST /api/v1/messages/{id}/fail                        │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        Courier Service (Single Instance)                     │
+│                                                                              │
+│  Inbound Pipeline                                                            │
+│  ─────────────                                                               │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │
+│  │   Adapter    │───▶│   Debounce   │───▶│   Validate   │                   │
+│  │  (DingTalk)  │    │   Handler    │    │   & Enrich   │                   │
+│  └──────────────┘    └──────────────┘    └──────────────┘                   │
+│                                                   │                         │
+│                                                   ▼                         │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                     State Management                                 │   │
+│  │  ┌─────────────┐  ┌─────────────────────┐  ┌─────────────────────┐  │   │
+│  │  │ LockManager │  │ MessageStateManager │  │  DebounceConfig     │  │   │
+│  │  │  (.state/)  │  │ (archive/deadletter)│  │  (5s window)        │  │   │
+│  │  └─────────────┘  └─────────────────────┘  └─────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                              │                                              │
+│                              ▼                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                         Storage (~/.monoco/mailbox/)                 │   │
+│  │  ├── inbound/{provider}/    # 新消息 (write)                         │   │
+│  │  ├── outbound/{provider}/   # 待发送 (read)                          │   │
+│  │  ├── archive/{provider}/    # 已完成 (move)                          │   │
+│  │  ├── .deadletter/{prov}/    # 死信 (move)                            │   │
+│  │  └── .state/locks.json      # 锁状态                                │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│  Outbound Pipeline                                                           │
+│  ──────────────                                                              │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │
+│  │   Watcher    │───▶│   Outbound   │───▶│   Adapter    │                   │
+│  │  (outbound/) │    │   Processor  │    │   (Send)     │                   │
+│  └──────────────┘    └──────────────┘    └──────────────┘                   │
+│                                                                              │
+│  HTTP API (:8644)                                                            │
+│  ───────────────                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  POST /api/v1/messages/{id}/claim                                   │   │
+│  │  POST /api/v1/messages/{id}/complete                                │   │
+│  │  POST /api/v1/messages/{id}/fail                                    │   │
+│  │  GET  /health                                                       │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 2.2 存储结构
 
 ```
-~/.monoco/mailbox/
-├── lark/                       # 按 source 分目录
-│   ├── inbound/                # 新 Mail（外部输入）
-│   │   └── 20240115-103022-a7f3e8d2.jsonl
-│   ├── outbound/               # 出站 Mail（待推送）
-│   └── archive/                # 已归档
-├── email/
-│   ├── inbound/
-│   ├── outbound/
-│   └── archive/
-└── slack/
-    ├── inbound/
-    ├── outbound/
-    └── archive/
+~/.monoco/
+├── mailbox/                    # Mail 存储根目录
+│   ├── inbound/                # 入站消息（按 provider 分目录）
+│   │   ├── lark/
+│   │   ├── email/
+│   │   ├── slack/
+│   │   └── dingtalk/
+│   ├── outbound/               # 出站消息（待发送）
+│   │   ├── lark/
+│   │   ├── email/
+│   │   └── dingtalk/
+│   ├── archive/                # 已归档消息
+│   │   ├── lark/
+│   │   ├── email/
+│   │   └── dingtalk/
+│   ├── .state/                 # 状态目录
+│   │   └── locks.json          # 消息锁状态
+│   └── .deadletter/            # 死信队列
+│       ├── lark/
+│       ├── email/
+│       └── dingtalk/
+│
+├── run/                        # 运行时文件
+│   ├── courier.pid             # 进程 ID
+│   ├── courier.json            # 运行时状态（host, port, started_at）
+│   └── courier.lock            # 单实例文件锁
+│
+└── log/
+    └── courier.log             # 服务日志
 ```
 
 **设计约束**:
-- 按 `source/status` 二级目录
-- 文件名包含时间戳，不嵌套日期目录
-- 不创建 manifest、attestations 等文件
+
+- 按 `provider` 分目录，状态体现在 locks.json 而非目录
+- 文件名格式: `{YYYYMMDDTHHMMSS}_{provider}_{uid}.md`
+- Markdown + YAML Frontmatter 格式
+- 状态集中存储在 `.state/locks.json`
 
 ---
 
@@ -126,20 +156,30 @@ Courier 是 Monoco 的**用户级别全局 Mail 聚合服务**。它以单一守
 
 ```python
 # Courier 启动时检查
-class SingleInstanceLock:
-    """用户级单实例锁"""
+class CourierService:
+    """管理 Courier 守护进程生命周期"""
 
-    def acquire(self) -> bool:
-        pid_file = Path.home() / ".monoco" / "courier" / "courier.pid"
+    PID_FILE = Path.home() / ".monoco" / "run" / "courier.pid"
+    LOCK_FILE = Path.home() / ".monoco" / "run" / "courier.lock"
 
-        if pid_file.exists():
-            pid = int(pid_file.read_text())
-            if self._process_exists(pid):
-                return False  # 已有实例在运行
+    def _acquire_lock(self) -> None:
+        """获取文件锁防止多实例"""
+        self._lock_fd = os.open(self.lock_file, os.O_CREAT | os.O_RDWR)
+        fcntl.flock(self._lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
 
-        pid_file.write_text(str(os.getpid()))
-        return True
+    def _write_pid(self, pid: int) -> None:
+        """原子写入 PID 文件（使用 O_EXCL）"""
+        fd = os.open(self.pid_file, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        os.write(fd, str(pid).encode())
+        os.close(fd)
 ```
+
+**启动流程**:
+
+1. 尝试获取文件锁 (`courier.lock`)
+2. 检查 PID 文件是否存在且进程存活
+3. 原子创建 PID 文件（防止竞态）
+4. 写入状态文件 (`courier.json`) 记录 host/port/started_at
 
 ---
 
@@ -221,18 +261,18 @@ class Courier:
 
 ## 5. HTTP API
 
-Courier 提供 HTTP API 供 Mailbox CLI 调用。
+Courier 提供 HTTP API（默认端口 **8644**）供 Mailbox CLI 调用。
 
 ### 5.1 API 概览
 
-| 端点 | 方法 | 说明 | 调用方 |
-|------|------|------|--------|
-| `/api/v1/mail/{id}/claim` | POST | 认领 Mail，移动到 processing | `mailbox claim` |
-| `/api/v1/messages/{id}/complete` | POST | 标记完成，移动到 archive | `mailbox done` |
-| `/api/v1/messages/{id}/fail` | POST | 标记失败，可能重试或归档 | `mailbox fail` |
-| `/health` | GET | 健康检查 | 监控 |
+| 端点                             | 方法 | 说明                     | 调用方          |
+| -------------------------------- | ---- | ------------------------ | --------------- |
+| `/api/v1/messages/{id}/claim`    | POST | 认领消息，创建锁         | `mailbox claim` |
+| `/api/v1/messages/{id}/complete` | POST | 标记完成，归档           | `mailbox done`  |
+| `/api/v1/messages/{id}/fail`     | POST | 标记失败，触发重试或死信 | `mailbox fail`  |
+| `/health`                        | GET  | 健康检查                 | 监控            |
 
-### 5.2 认领 Mail
+### 5.2 认领消息
 
 ```http
 POST /api/v1/messages/{id}/claim
@@ -240,125 +280,197 @@ Content-Type: application/json
 
 {
     "agent_id": "agent_001",
-    "workspace_path": "/Users/me/Projects/alpha"
+    "timeout": 300
+}
+```
+
+**请求参数**:
+
+- `agent_id`: 认领者标识
+- `timeout`: 锁超时时间（秒，默认 300）
+
+**Courier 行为**:
+
+1. 检查消息是否存在于 `inbound/`
+2. 检查是否已被其他 agent 认领
+3. 在 `.state/locks.json` 中创建锁记录
+4. 设置过期时间（默认 5 分钟）
+5. 返回 `LockEntry`
+
+### 5.3 完成消息
+
+```http
+POST /api/v1/messages/{id}/complete
+Content-Type: application/json
+
+{
+    "agent_id": "agent_001"
 }
 ```
 
 **Courier 行为**:
-1. 在全局 inbox 中查找 Mail
-2. 从 `inbound/` 移动到 `processing/`
-3. 记录认领信息
-4. 返回成功响应
+
+1. 验证由当前 agent 认领
+2. 更新 locks.json 状态为 `completed`
+3. 将消息文件移动到 `archive/{provider}/`
+4. 清理锁记录
+
+### 5.4 失败消息
+
+```http
+POST /api/v1/messages/{id}/fail
+Content-Type: application/json
+
+{
+    "agent_id": "agent_001",
+    "reason": "API timeout",
+    "retryable": true
+}
+```
+
+**Courier 行为**:
+
+1. 验证由当前 agent 认领
+2. 如果 `retryable=true` 且重试次数 < 3:
+   - 增加重试计数
+   - 更新状态为 `new`（等待重新认领）
+   - 应用指数退避延迟
+3. 如果 `retryable=false` 或重试次数 >= 3:
+   - 更新状态为 `deadletter`
+   - 移动到 `.deadletter/{provider}/`
 
 ---
 
-## 6. 与 Workspace 的关系
+## 8. 核心组件详解
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Courier Service                              │
-│                     (用户级单实例)                                │
-│                                                                  │
-│  职责:                                                           │
-│  - 接收外部消息流，聚合成 Mail                                     │
-│  - 写入 ~/.monoco/mailbox/                                 │
-│  - 提供状态管理 API                                              │
-│                                                                  │
-│  不感知 workspace，不做路由                                       │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              │ 文件系统操作
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      Workspace 层                                │
-│                    (分散在各处目录)                               │
-│                                                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │  ~/Proj/A    │  │ ~/Work/B     │  │ /Vol/ext/C   │           │
-│  │              │  │              │  │              │           │
-│  │ .monoco/     │  │ .monoco/     │  │ .monoco/     │           │
-│  │  mailbox/    │  │  mailbox/    │  │  mailbox/    │           │
-│  │   - 本地规则  │  │   - 本地规则  │  │   - 本地规则  │           │
-│  │   - cursor   │  │   - cursor   │  │   - cursor   │           │
-│  └──────────────┘  └──────────────┘  └──────────────┘           │
-│                                                                  │
-│  各 workspace:                                                   │
-│  - 独立维护自己的 cursor                                          │
-│  - 独立定义筛选规则                                               │
-│  - 自主 CRUD 全局 inbox                                          │
-└─────────────────────────────────────────────────────────────────┘
+### 8.1 LockManager
+
+管理消息认领锁，确保同一消息不会被多个 agent 同时处理。
+
+```python
+class LockManager:
+    """线程安全的锁管理器"""
+
+    def claim_message(self, message_id: str, agent_id: str, timeout: int = 300) -> LockEntry
+    def complete_message(self, message_id: str, agent_id: str) -> None
+    def fail_message(self, message_id: str, agent_id: str, reason: str, retryable: bool) -> LockEntry
+    def get_status(self, message_id: str) -> MessageStatus
 ```
 
-**关键设计**:
-- Courier **不知道**有多少 workspace
-- Workspace **不知道**其他 workspace 存在
-- 通过**文件系统**作为唯一协调点
+**特性**:
+
+- 基于文件锁（`locks.json`）的持久化
+- 自动清理过期锁（启动时检查）
+- 线程安全（使用 `threading.RLock`）
+
+### 8.2 DebounceHandler
+
+防抖处理连续到达的消息，将同一 session 的短消息聚合。
+
+```python
+class DebounceHandler:
+    """消息防抖处理器"""
+
+    async def add(self, message: InboundMessage) -> Optional[List[InboundMessage]]
+    async def flush_all(self) -> Dict[str, List[InboundMessage]]
+```
+
+**默认配置**:
+
+- `window_ms`: 5000ms（5 秒窗口）
+- `max_wait_ms`: 30000ms（最大等待 30 秒）
+- 按 `session_id:thread_key` 分组
+
+### 8.3 MessageStateManager
+
+协调锁管理与文件系统操作：
+
+```python
+class MessageStateManager:
+    def archive_message(self, message_id: str) -> Optional[Path]
+    def move_to_deadletter(self, message_id: str) -> Optional[Path]
+    def get_retry_delay_ms(self, retry_count: int) -> int
+```
 
 ---
 
-## 7. 配置设计
+## 6. 配置与常量
+
+### 6.1 默认配置
+
+| 配置项                         | 默认值      | 说明                             |
+| ------------------------------ | ----------- | -------------------------------- |
+| `COURIER_DEFAULT_HOST`         | `localhost` | API 绑定地址                     |
+| `COURIER_DEFAULT_PORT`         | `8644`      | API 端口（避免与常用 8080 冲突） |
+| `CLAIM_TIMEOUT_SECONDS`        | `300`       | 认领超时（5 分钟）               |
+| `MAX_RETRY_ATTEMPTS`           | `3`         | 最大重试次数                     |
+| `RETRY_BACKOFF_BASE_MS`        | `1000`      | 退避基数（1 秒）                 |
+| `RETRY_MAX_BACKOFF_MS`         | `30000`     | 最大退避（30 秒）                |
+| `DEFAULT_DEBOUNCE_WINDOW_MS`   | `5000`      | 防抖窗口（5 秒）                 |
+| `DEFAULT_DEBOUNCE_MAX_WAIT_MS` | `30000`     | 最大等待（30 秒）                |
+| `ARCHIVE_RETENTION_DAYS`       | `30`        | 归档保留天数                     |
+| `SERVICE_START_TIMEOUT`        | `30`        | 服务启动超时                     |
+| `SERVICE_STOP_TIMEOUT`         | `30`        | 服务停止超时                     |
+
+### 6.2 配置文件示例
 
 ```yaml
 # ~/.monoco/courier/config.yaml
 courier:
   # 服务配置
   service:
-    pid_file: "~/.monoco/courier/courier.pid"
-    log_file: "~/.monoco/courier/courier.log"
-    api_port: 8080              # 单一端口
+    host: 'localhost'
+    port: 8644
+    log_level: 'info'
 
   # 存储配置
   storage:
-    inbox_path: "~/.monoco/mailbox"
-    max_file_size: 10MB
+    mailbox_root: '~/.monoco/mailbox'
+
+  # 防抖配置
+  debounce:
+    window_ms: 5000
+    max_wait_ms: 30000
 
   # 适配器配置
   adapters:
-    lark:
+    dingtalk:
       enabled: true
-      webhook_path: "/webhook/lark"
-      app_id: "${LARK_APP_ID}"
-      app_secret: "${LARK_APP_SECRET}"
-
-    email:
-      enabled: true
-      imap_server: "imap.gmail.com"
-      imap_port: 993
-      username: "${EMAIL_USERNAME}"
-      password: "${EMAIL_PASSWORD}"
+      app_key: '${DINGTALK_APP_KEY}'
+      app_secret: '${DINGTALK_APP_SECRET}'
 ```
 
 ---
 
-## 8. 监控与指标
+## 7. 监控与指标
 
-### 8.1 关键指标
-
-| 指标 | 类型 | 说明 |
-|------|------|------|
-| `courier_mail_received_total` | Counter | 接收 Mail 总数 |
-| `courier_mail_by_provider` | Counter | 按 provider 分 Mail 数 |
-| `courier_adapter_health` | Gauge | 适配器健康状态 |
-| `courier_api_requests_total` | Counter | API 请求总数 |
-
-### 8.2 健康检查
+### 7.1 健康检查
 
 ```bash
 GET /health
 
 {
     "status": "healthy",
-    "instance": "user-level",
+    "version": "1.0.0",
     "adapters": {
-        "lark": {"status": "connected"},
-        "email": {"status": "connected"}
+        "dingtalk": {"status": "connected", "mode": "stream"}
     },
-    "inbox_stats": {
-        "new": 15,
-        "processing": 3,
-        "archive": 1024
+    "metrics": {
+        "messages_received": 152,
+        "messages_sent": 43,
+        "messages_pending": 5,
     }
 }
+```
+
+### 7.2 日志查看
+
+```bash
+# 查看日志
+monoco courier logs
+
+# 清理日志
+monoco courier logs clean
 ```
 
 ---
