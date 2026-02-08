@@ -16,14 +16,22 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # Export all built-in hook functions
+# Hooks are ordered by lifecycle phase (create -> start -> submit -> close)
+# Each phase has pre/post pair for symmetry, even if not all are implemented
 __all__ = [
+    # Phase 1: Create
     "pre_create_hook",
     "post_create_hook",
-    "pre_submit_hook",
-    "post_start_hook",
+    # Phase 2: Start
     "pre_start_hook",
+    "post_start_hook",
+    # Phase 3: Submit
+    "pre_submit_hook",
     "post_submit_hook",
+    # Phase 4: Close
+    "pre_close_hook",  # Reserved for future implementation
     "post_close_hook",
+    # Registration
     "register_all_builtins",
 ]
 
@@ -71,45 +79,96 @@ def post_create_hook(context: "IssueHookContext") -> "IssueHookResult":
 
 
 
+def pre_start_hook(context: "IssueHookContext") -> "IssueHookResult":
+    """
+    Pre-start hook: Validates before starting work on an issue.
+
+    Checks:
+    - Branch context (should be on trunk if creating new branch)
+    - Issue status (should be open or backlog)
+    """
+    from ..models import IssueHookResult
+
+    # Branch context check is handled by the command itself
+    # This hook provides additional validation
+
+    if context.force:
+        return IssueHookResult.allow("Force mode: skipping pre-start checks")
+
+    return IssueHookResult.allow("Pre-start checks passed")
+
+
+def post_start_hook(context: "IssueHookContext") -> "IssueHookResult":
+    """
+    Post-start hook: Actions after starting work on an issue.
+
+    Actions:
+    - Output branch information
+    - Provide next steps suggestions
+    """
+    from ..models import IssueHookResult
+
+    suggestions = [
+        "Start implementing the solution",
+        "Run tests frequently: pytest",
+        "Use 'monoco issue sync-files' to track changed files",
+        "Use 'monoco issue submit' when ready for review",
+    ]
+
+    if context.current_branch:
+        message = f"Working on branch: {context.current_branch}"
+    else:
+        message = "Issue started successfully"
+
+    return IssueHookResult.allow(
+        message,
+        suggestions=suggestions,
+        context={
+            "branch": context.current_branch,
+            "issue_id": context.issue_id,
+        }
+    )
+
+
 def pre_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
     """
     Pre-submit hook: Validates issue before submission.
-    
+
     Checks:
     - Issue lint status
     - Files synchronization
     - Acceptance criteria completion
     """
     from ..models import IssueHookResult, HookDecision
-    
+
     # Import here to avoid circular dependencies
     from monoco.features.issue.core import find_issue_path, parse_issue
     from monoco.features.issue.linter import check_integrity
     from monoco.core.config import find_monoco_root
-    
+
     issue_id = context.issue_id
     if not issue_id:
         return IssueHookResult.deny(
             "No issue ID provided",
             suggestions=["Ensure issue_id is set in the context"]
         )
-    
+
     project_root = context.project_root or find_monoco_root()
     if not project_root:
         return IssueHookResult.deny(
             "Could not find project root",
             suggestions=["Run this command from within a Monoco project"]
         )
-    
+
     issues_root = project_root / "Issues"
     issue_path = find_issue_path(issues_root, issue_id)
-    
+
     if not issue_path:
         return IssueHookResult.deny(
             f"Issue {issue_id} not found",
             suggestions=[f"Check if issue {issue_id} exists"]
         )
-    
+
     # Parse issue to check its state
     issue = parse_issue(issue_path)
     if not issue:
@@ -117,7 +176,7 @@ def pre_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
             f"Could not parse issue {issue_id}",
             suggestions=["Check the issue file format"]
         )
-    
+
     # NEW logic: Auto-sync files before validation
     try:
         from monoco.features.issue.core import sync_issue_files
@@ -130,7 +189,7 @@ def pre_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
     diagnostics = check_integrity(issues_root, recursive=False)
     # Filter diagnostics for this specific issue
     issue_diags = [d for d in diagnostics if d.source == issue_id]
-    
+
     if issue_diags:
         from ..models import Diagnostic as HookDiagnostic
         hook_diags = [
@@ -152,75 +211,24 @@ def pre_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
     suggestions = []
     if not issue.files:
         suggestions.append("No files tracked for this issue. This might be a mistake if code changes were made.")
-    
+
     return IssueHookResult.allow("Pre-submit checks (sync & lint) passed")
-
-
-def post_start_hook(context: "IssueHookContext") -> "IssueHookResult":
-    """
-    Post-start hook: Actions after starting work on an issue.
-    
-    Actions:
-    - Output branch information
-    - Provide next steps suggestions
-    """
-    from ..models import IssueHookResult
-    
-    suggestions = [
-        "Start implementing the solution",
-        "Run tests frequently: pytest",
-        "Use 'monoco issue sync-files' to track changed files",
-        "Use 'monoco issue submit' when ready for review",
-    ]
-    
-    if context.current_branch:
-        message = f"Working on branch: {context.current_branch}"
-    else:
-        message = "Issue started successfully"
-    
-    return IssueHookResult.allow(
-        message,
-        suggestions=suggestions,
-        context={
-            "branch": context.current_branch,
-            "issue_id": context.issue_id,
-        }
-    )
-
-
-def pre_start_hook(context: "IssueHookContext") -> "IssueHookResult":
-    """
-    Pre-start hook: Validates before starting work on an issue.
-    
-    Checks:
-    - Branch context (should be on trunk if creating new branch)
-    - Issue status (should be open or backlog)
-    """
-    from ..models import IssueHookResult
-    
-    # Branch context check is handled by the command itself
-    # This hook provides additional validation
-    
-    if context.force:
-        return IssueHookResult.allow("Force mode: skipping pre-start checks")
-    
-    return IssueHookResult.allow("Pre-start checks passed")
 
 
 def post_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
     """
     Post-submit hook: Actions after submitting an issue for review.
-    
+
     Actions:
     - Generate delivery report summary
     - Provide next steps
     """
     from ..models import IssueHookResult
     from monoco.features.issue.core import generate_delivery_report
-    
+
     project_root = context.project_root
     issues_root = project_root / "Issues"
-    
+
     report_status = "generated"
     try:
         generate_delivery_report(issues_root, context.issue_id, project_root)
@@ -233,7 +241,7 @@ def post_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
         "Address any review comments",
         "Use 'monoco issue close' after approval",
     ]
-    
+
     return IssueHookResult.allow(
         f"Issue submitted for review (Report: {report_status})",
         suggestions=suggestions,
@@ -243,6 +251,21 @@ def post_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
             "report": report_status
         }
     )
+
+
+def pre_close_hook(context: "IssueHookContext") -> "IssueHookResult":
+    """
+    Pre-close hook: Reserved for future implementation.
+
+    Potential uses:
+    - Validate all changes are committed before closing
+    - Check for open dependencies
+    - Verify solution is provided
+    """
+    from ..models import IssueHookResult
+
+    # Currently a no-op, returns allow to maintain compatibility
+    return IssueHookResult.allow("Pre-close checks passed (no-op)")
 
 
 def post_close_hook(context: "IssueHookContext") -> "IssueHookResult":
@@ -278,20 +301,21 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
     """
     Register all built-in hooks with the dispatcher.
 
+    Hooks are registered in lifecycle phase order (create -> start -> submit -> close)
+    with pre/post pairs for each phase.
+
     Args:
         dispatcher: The IssueHookDispatcher instance
     """
     from ..models import IssueEvent
 
-    # Register pre-create hook
+    # Phase 1: Create
     dispatcher.register_callable(
         name="builtin.pre-issue-create",
         events=[IssueEvent.PRE_CREATE],
         fn=pre_create_hook,
         priority=10,
     )
-
-    # Register post-create hook
     dispatcher.register_callable(
         name="builtin.post-issue-create",
         events=[IssueEvent.POST_CREATE],
@@ -299,23 +323,13 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
         priority=100,
     )
 
-    # Register pre-submit hook
-    dispatcher.register_callable(
-        name="builtin.pre-issue-submit",
-        events=[IssueEvent.PRE_SUBMIT],
-        fn=pre_submit_hook,
-        priority=10,
-    )
-
-    # Register pre-start hook
+    # Phase 2: Start
     dispatcher.register_callable(
         name="builtin.pre-issue-start",
         events=[IssueEvent.PRE_START],
         fn=pre_start_hook,
         priority=10,
     )
-
-    # Register post-start hook
     dispatcher.register_callable(
         name="builtin.post-issue-start",
         events=[IssueEvent.POST_START],
@@ -323,7 +337,13 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
         priority=100,
     )
 
-    # Register post-submit hook
+    # Phase 3: Submit
+    dispatcher.register_callable(
+        name="builtin.pre-issue-submit",
+        events=[IssueEvent.PRE_SUBMIT],
+        fn=pre_submit_hook,
+        priority=10,
+    )
     dispatcher.register_callable(
         name="builtin.post-issue-submit",
         events=[IssueEvent.POST_SUBMIT],
@@ -331,7 +351,13 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
         priority=100,
     )
 
-    # Register post-close hook
+    # Phase 4: Close
+    dispatcher.register_callable(
+        name="builtin.pre-issue-close",
+        events=[IssueEvent.PRE_CLOSE],
+        fn=pre_close_hook,
+        priority=10,
+    )
     dispatcher.register_callable(
         name="builtin.post-issue-close",
         events=[IssueEvent.POST_CLOSE],
