@@ -52,4 +52,24 @@ opened_at: '2026-02-08T00:04:23'
 参考文档：https://open.dingtalk.com/document/isvapp-server/send-a-single-message
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
+
+### 2026-02-08 - 调查结论
+
+经过代码审查，此功能不再需要实现：
+
+1. **Webhook 发送功能已完全实现**
+   - `dingtalk_outbound.py` 提供了完整的 Webhook 发送实现，支持文本/Markdown/卡片消息
+   - `sender.py` 中的 `ChannelSender` 也提供了钉钉 Webhook 发送功能
+
+2. **Stream Adapter 发送功能已实现**
+   - `dingtalk_stream.py` 的 `send()` 方法已完整实现
+   - 支持通过 OpenAPI 发送消息到群聊 (`_send_to_conversation`) 和私聊 (`_send_to_user`)
+   - 支持 Webhook 回退机制
+   - 支持 Access Token 自动获取和缓存
+
+3. **Stream 模式设计定位**
+   - Stream 模式主要用于接收消息（实时推送）
+   - 发送消息通过 OpenAPI 或 Webhook 均可满足需求
+   - 无需强制通过 Stream 连接发送
+
+**结论**：标记为 `wontfix`，移至 backlog。
