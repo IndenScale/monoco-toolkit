@@ -74,7 +74,16 @@ def build_hook_context(
                 default_branch = "master"
         except Exception:
             pass
-    
+
+    # Check for uncommitted changes
+    has_uncommitted_changes = False
+    if project_root:
+        try:
+            from monoco.core import git
+            has_uncommitted_changes = git.has_uncommitted_changes(project_root)
+        except Exception:
+            pass
+
     return IssueHookContext(
         event=event,
         trigger_source="cli",
@@ -86,6 +95,7 @@ def build_hook_context(
         project_root=project_root,
         current_branch=current_branch,
         default_branch=default_branch,
+        has_uncommitted_changes=has_uncommitted_changes,
         force=force,
         no_hooks=no_hooks,
         debug_hooks=debug_hooks,
