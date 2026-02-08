@@ -1,8 +1,8 @@
 # Courier CLI 设计
 
-**Version**: 1.1.0
-**Status**: Draft
-**Related**: FEAT-0191
+**Version**: 2.0.0
+**Status**: Implemented
+**Related**: FEAT-0191, FEAT-0172
 
 ---
 
@@ -28,7 +28,9 @@ monoco courier
 ├── restart       # 重启 Courier 服务
 ├── kill          # 强制停止 Courier 服务（不优雅）
 ├── status        # 查看服务状态
-└── logs          # 查看服务日志
+├── logs          # 查看服务日志
+├── stream        # 查看 DingTalk Stream 状态
+└── stream-test   # 测试 DingTalk Stream 连接
 ```
 
 **注意**: Courier CLI **没有** `send`、`archive`、`config` 等命令。这些功能通过 `mailbox` 命令或 Courier 服务自动完成。
@@ -46,6 +48,7 @@ monoco courier
 monoco courier start                          # 后台启动服务
 monoco courier start --foreground             # 前台启动（调试用）
 monoco courier start --debug                  # 调试模式（详细日志）
+monoco courier start --port 8644              # 指定端口（默认 8644）
 
 # 配置选项
 monoco courier start --config /path/to/config.yaml  # 指定配置文件
@@ -54,7 +57,7 @@ monoco courier start --config /path/to/config.yaml  # 指定配置文件
 **行为**:
 - 创建 PID 文件 `.monoco/run/courier.pid`
 - 启动日志写入 `.monoco/log/courier.log`
-- 启动 HTTP API 服务（默认端口 8080）
+- 启动 HTTP API 服务（默认端口 8644）
 - 初始化所有启用的适配器
 - 开始监听 Webhook 和轮询
 
@@ -159,7 +162,7 @@ monoco courier status --watch                 # 持续监控
 │ PID:         12345                                               │
 │ Uptime:      2 hours 15 minutes                                  │
 │ Version:     1.0.0                                               │
-│ API:         http://localhost:8080                               │
+│ API:         http://localhost:8644                               │
 │                                                                  │
 │ Adapters:                                                        │
 │   lark       🟢 connected     (webhook: 8080)                   │
@@ -175,11 +178,15 @@ monoco courier status --watch                 # 持续监控
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**状态说明**:
+**适配器状态**:
 - 🟢 `connected`: 正常连接
 - 🟡 `connecting`: 正在连接
 - 🔴 `error`: 连接错误
 - ⚪ `disabled`: 已禁用
+
+**适配器类型**:
+- **Webhook**: HTTP 回调接收消息（需要公网 IP）
+- **Stream**: 长连接接收消息（无需公网 IP，推荐）
 
 ---
 
@@ -201,7 +208,64 @@ monoco courier logs --since "1h"              # 最近1小时
 
 ---
 
-## 4. kill vs stop 对比
+## 4. Stream 命令（钉钉专用）
+
+### 4.1 `courier stream`
+
+查看 DingTalk Stream 适配器状态。
+
+```bash
+monoco courier stream
+```
+
+**输出示例**:
+
+```
+┌─────────────────────────────────────┐
+│      DingTalk Stream Adapter        │
+├─────────────────────────────────────┤
+│ Configuration  │ ✓ Configured       │
+│ Client ID      │ dingxxx...         │
+│ Courier Daemon │ ✓ Running          │
+│ Stream Adapter │ ✓ Active           │
+│                │ Messages will be   │
+│                │ written to mailbox │
+└─────────────────────────────────────┘
+```
+
+**环境变量**:
+- `DINGTALK_CLIENT_ID` 或 `DINGTALK_APP_KEY`: 钉钉应用凭证
+- `DINGTALK_CLIENT_SECRET` 或 `DINGTALK_APP_SECRET`: 钉钉应用密钥
+
+### 4.2 `courier stream-test`
+
+测试 DingTalk Stream 模式连接（无需公网 IP）。
+
+```bash
+# 使用环境变量
+export DINGTALK_CLIENT_ID=xxx
+export DINGTALK_CLIENT_SECRET=xxx
+monoco courier stream-test
+
+# 直接指定凭证
+monoco courier stream-test --app-key xxx --app-secret yyy
+
+# 指定测试时长
+monoco courier stream-test --duration 120
+```
+
+**用途**:
+- 验证钉钉凭证是否正确
+- 测试 Stream 长连接是否能接收消息
+- 调试接收问题（无需启动完整 Courier 服务）
+
+**输出**:
+- 实时显示接收到的消息
+- 显示连接状态和错误信息
+
+---
+
+## 5. kill vs stop 对比
 
 | 特性 | `stop` | `kill` |
 |------|--------|--------|
@@ -248,18 +312,28 @@ monoco courier kill
 monoco courier start
 ```
 
-### 5.3 配置更新流程
+### 5.3 钉钉 Stream 模式启动流程
 
 ```bash
-# 1. 停止服务
-monoco courier stop
+# 1. 配置钉钉凭证（从 https://open.dingtalk.com/ 获取）
+export DINGTALK_CLIENT_ID=your_client_id
+export DINGTALK_CLIENT_SECRET=your_client_secret
 
-# 2. 编辑配置文件
-vim .monoco/config/courier.yaml
+# 2. 测试连接（可选）
+monoco courier stream-test --duration 30
 
-# 3. 启动服务
+# 3. 启动 Courier 服务
 monoco courier start
+
+# 4. 查看 Stream 状态
+monoco courier stream
 ```
+
+**Stream 模式优势**:
+- 无需公网 IP 或域名
+- 无需配置 Webhook
+- 自动重连，稳定可靠
+- 适合本地开发和内网环境
 
 ---
 
@@ -271,7 +345,7 @@ monoco courier start
 | 服务未运行 | `stop`/`kill`/`restart` | 1 | `Error: Courier is not running` |
 | PID 文件存在但进程不存在 | `start` | 1 | `Error: Stale PID file found, cleaning up...` |
 | 权限不足 | `start` | 3 | `Error: Permission denied to write PID file` |
-| 端口被占用 | `start` | 4 | `Error: Port 8080 is already in use` |
+| 端口被占用 | `start` | 4 | `Error: Port 8644 is already in use` |
 
 ---
 
@@ -290,7 +364,7 @@ monoco courier start
 │  │    done   ───┤      │              │                    │
 │  │    fail   ───┘      │              │                    │
 │  └──────────────┘      └──────────────┘                    │
-│         │                      │                            │
+│         │                      │ HTTP API :8644             │
 │         ▼                      ▼                            │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │              Courier Service (Daemon)                │   │
