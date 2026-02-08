@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 修复 datetime.utcnow() 废弃警告
 created_at: '2026-02-08T10:06:09'
-updated_at: '2026-02-08T10:12:46'
+updated_at: 2026-02-08 10:12:46
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -37,10 +37,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-08T10:06:09'
 closed_at: '2026-02-08T10:12:46'
-isolation:
-  type: branch
-  ref: FIX-0025-修复-datetime-utcnow-废弃警告
-  created_at: '2026-02-08T10:06:12'
 ---
 
 ## FIX-0025: 修复 datetime.utcnow() 废弃警告
