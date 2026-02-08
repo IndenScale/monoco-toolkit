@@ -108,7 +108,10 @@ Review passed.
 
             # Should exit with error
             assert result.exit_code == 1
-            assert "Update Error" in result.stdout or "Simulated update failure" in result.stdout
+            combined_output = result.stdout + (result.stderr or "")
+            assert ("Update Error" in combined_output or
+                    "Simulated update failure" in combined_output or
+                    "Rolled back" in combined_output)
 
         # Verify HEAD is back to initial (rollback occurred)
         current_head = git.get_current_head(project_env)

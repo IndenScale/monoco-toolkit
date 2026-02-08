@@ -4,7 +4,7 @@ Tests for OutboundDispatcher - message routing to adapters.
 
 import asyncio
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 
 from monoco.features.connector.protocol.schema import (
     OutboundMessage,
@@ -41,13 +41,13 @@ class MockAdapter(BaseAdapter):
             return SendResult(
                 success=True,
                 provider_message_id="mock_123",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
         else:
             return SendResult(
                 success=False,
                 error="Mock failure",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
     
     async def health_check(self) -> HealthStatus:

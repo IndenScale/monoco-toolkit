@@ -9,7 +9,7 @@ Manages:
 
 import logging
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -83,7 +83,7 @@ class OutboundProcessor:
         delay_ms = min(delay_ms, RETRY_MAX_BACKOFF_MS)
         delay_seconds = delay_ms / 1000.0
 
-        return datetime.utcnow() + timedelta(seconds=delay_seconds)
+        return datetime.now(timezone.utc) + timedelta(seconds=delay_seconds)
 
     def _update_frontmatter(
         self,
@@ -215,7 +215,7 @@ class OutboundProcessor:
         # Update frontmatter with success status
         updates = {
             "status": "sent",
-            "sent_at": datetime.utcnow().isoformat() + "Z",
+            "sent_at": datetime.now(timezone.utc).isoformat() + "Z",
         }
 
         if result.provider_message_id:
@@ -256,7 +256,7 @@ class OutboundProcessor:
                 "status": "failed",
                 "retry_count": new_retry_count,
                 "error_message": result.error,
-                "failed_at": datetime.utcnow().isoformat() + "Z",
+                "failed_at": datetime.now(timezone.utc).isoformat() + "Z",
             }
 
             self._update_frontmatter(entry.file_path, updates)

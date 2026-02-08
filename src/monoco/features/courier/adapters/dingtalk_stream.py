@@ -9,7 +9,7 @@ import logging
 import threading
 import time
 from typing import Callable, Dict, Any, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
@@ -111,7 +111,7 @@ class DingTalkStreamAdapter(BaseAdapter):
         """
         # Check if we have a valid cached token
         if self._access_token and self._token_expires_at:
-            if datetime.utcnow() < self._token_expires_at - timedelta(minutes=5):
+            if datetime.now(timezone.utc) < self._token_expires_at - timedelta(minutes=5):
                 return self._access_token
         
         # Fetch new token
@@ -139,7 +139,7 @@ class DingTalkStreamAdapter(BaseAdapter):
             
             if access_token:
                 self._access_token = access_token
-                self._token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+                self._token_expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
                 logger.debug(f"Got new access token, expires in {expires_in}s")
                 return access_token
             else:
@@ -177,7 +177,7 @@ class DingTalkStreamAdapter(BaseAdapter):
             return SendResult(
                 success=False,
                 error="No webhook URL configured for fallback",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
         
         try:
@@ -196,20 +196,20 @@ class DingTalkStreamAdapter(BaseAdapter):
             if result.get("errcode") == 0:
                 return SendResult(
                     success=True,
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                 )
             else:
                 return SendResult(
                     success=False,
                     error=f"Webhook error: {result.get('errmsg')}",
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                 )
         except Exception as e:
             logger.error(f"Webhook fallback failed: {e}")
             return SendResult(
                 success=False,
                 error=f"Webhook fallback failed: {str(e)}",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
     
     async def _send_to_conversation(
@@ -278,7 +278,7 @@ class DingTalkStreamAdapter(BaseAdapter):
                 return SendResult(
                     success=True,
                     provider_message_id=result.get("processQueryKey"),
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                 )
             else:
                 # Try to parse error
@@ -298,7 +298,7 @@ class DingTalkStreamAdapter(BaseAdapter):
                 return SendResult(
                     success=False,
                     error=f"DingTalk API error ({response.status_code}): {error_msg}",
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                 )
                 
         except httpx.HTTPError as e:
@@ -306,14 +306,14 @@ class DingTalkStreamAdapter(BaseAdapter):
             return SendResult(
                 success=False,
                 error=f"HTTP error: {str(e)}",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
         except Exception as e:
             logger.exception(f"Error sending to conversation: {e}")
             return SendResult(
                 success=False,
                 error=f"Send error: {str(e)}",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
     
     async def _send_to_user(
@@ -372,13 +372,13 @@ class DingTalkStreamAdapter(BaseAdapter):
                 return SendResult(
                     success=True,
                     provider_message_id=result.get("processQueryKey"),
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                 )
             else:
                 return SendResult(
                     success=False,
                     error=f"DingTalk API error: {result}",
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                 )
                 
         except httpx.HTTPError as e:
@@ -386,14 +386,14 @@ class DingTalkStreamAdapter(BaseAdapter):
             return SendResult(
                 success=False,
                 error=f"HTTP error: {str(e)}",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
         except Exception as e:
             logger.exception(f"Error sending to user: {e}")
             return SendResult(
                 success=False,
                 error=f"Send error: {str(e)}",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
     
     async def send(self, message: OutboundMessage) -> SendResult:
@@ -414,7 +414,7 @@ class DingTalkStreamAdapter(BaseAdapter):
             return SendResult(
                 success=False,
                 error="Failed to get access token",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
         
         # Ensure HTTP client is initialized
@@ -430,7 +430,7 @@ class DingTalkStreamAdapter(BaseAdapter):
             return SendResult(
                 success=False,
                 error="No target specified (to field is empty)",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
         
         # Send based on target type
@@ -493,8 +493,8 @@ class DingTalkStreamAdapter(BaseAdapter):
                     },
                     "to": [],
                 },
-                timestamp=datetime.utcnow(),
-                received_at=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
+                received_at=datetime.now(timezone.utc),
                 type=ContentType.TEXT if msg_type == "text" else ContentType.MARKDOWN,
                 content=Content(
                     text=content_text if msg_type == "text" else None,

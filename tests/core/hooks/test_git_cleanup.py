@@ -15,26 +15,26 @@ class TestGitCleanupHook:
 
     def test_hook_initialization_defaults(self):
         hook = GitCleanupHook()
-        
+
         assert hook.name == "git_cleanup"
-        assert hook.auto_switch_to_main is True
+        assert hook.auto_switch_to_trunk is True
         assert hook.auto_delete_merged_branches is False
-        assert hook.main_branch == "main"
+        assert hook.trunk_branch == "main"
         assert hook.require_clean_worktree is True
 
     def test_hook_initialization_with_config(self):
         config = {
             "enabled": True,
-            "auto_switch_to_main": False,
+            "auto_switch_to_trunk": False,
             "auto_delete_merged_branches": False,
-            "main_branch": "master",
+            "trunk_branch": "master",
             "require_clean_worktree": False,
         }
         hook = GitCleanupHook(config=config)
-        
-        assert hook.auto_switch_to_main is False
+
+        assert hook.auto_switch_to_trunk is False
         assert hook.auto_delete_merged_branches is False
-        assert hook.main_branch == "master"
+        assert hook.trunk_branch == "master"
         assert hook.require_clean_worktree is False
 
     def test_on_session_start(self):
@@ -87,36 +87,36 @@ class TestGitCleanupHook:
 
     @patch("monoco.core.git.branch_exists")
     @patch("monoco.core.git.checkout_branch")
-    def test_switch_to_main_success(self, mock_checkout, mock_branch_exists):
+    def test_switch_to_trunk_success(self, mock_checkout, mock_branch_exists):
         mock_branch_exists.return_value = True
-        
+
         hook = GitCleanupHook()
-        result = hook._switch_to_main(
+        result = hook._switch_to_trunk(
             project_root=Path("/fake"),
             current_branch="feature-branch",
             default_branch="main",
             has_changes=False,
         )
-        
+
         assert result.status == HookStatus.SUCCESS
         mock_checkout.assert_called_once_with(Path("/fake"), "main")
 
-    def test_switch_to_main_with_uncommitted_changes(self):
+    def test_switch_to_trunk_with_uncommitted_changes(self):
         hook = GitCleanupHook()
-        result = hook._switch_to_main(
+        result = hook._switch_to_trunk(
             project_root=Path("/fake"),
             current_branch="feature-branch",
             default_branch="main",
             has_changes=True,
         )
-        
+
         assert result.status == HookStatus.WARNING
         assert "uncommitted changes" in result.message
 
-    def test_switch_to_main_disabled(self):
-        hook = GitCleanupHook(config={"auto_switch_to_main": False})
+    def test_switch_to_trunk_disabled(self):
+        hook = GitCleanupHook(config={"auto_switch_to_trunk": False})
         # This scenario is handled at a higher level, but we test the config works
-        assert hook.auto_switch_to_main is False
+        assert hook.auto_switch_to_trunk is False
 
     @patch("monoco.core.git.branch_exists")
     def test_cleanup_feature_branch_not_completed(self, mock_branch_exists):
