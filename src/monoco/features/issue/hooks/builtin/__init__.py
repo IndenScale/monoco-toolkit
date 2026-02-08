@@ -23,6 +23,7 @@ __all__ = [
     "post_start_hook",
     "pre_start_hook",
     "post_submit_hook",
+    "post_close_hook",
     "register_all_builtins",
 ]
 
@@ -244,15 +245,44 @@ def post_submit_hook(context: "IssueHookContext") -> "IssueHookResult":
     )
 
 
+def post_close_hook(context: "IssueHookContext") -> "IssueHookResult":
+    """
+    Post-close hook: Actions after closing an issue.
+
+    Actions:
+    - Check for uncommitted changes
+    - Prompt agent to complete git add and commit
+    """
+    from ..models import IssueHookResult
+
+    suggestions = []
+
+    if context.has_uncommitted_changes:
+        suggestions.extend([
+            "Uncommitted changes detected after close operation",
+            "Run: git add -A && git commit -m \"chore(issue): close <issue_id>\"",
+            "Or use the commit skill if available"
+        ])
+
+    return IssueHookResult.allow(
+        f"Issue {context.issue_id} closed successfully",
+        suggestions=suggestions if suggestions else None,
+        context={
+            "issue_id": context.issue_id,
+            "has_uncommitted_changes": context.has_uncommitted_changes,
+        }
+    )
+
+
 def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
     """
     Register all built-in hooks with the dispatcher.
-    
+
     Args:
         dispatcher: The IssueHookDispatcher instance
     """
     from ..models import IssueEvent
-    
+
     # Register pre-create hook
     dispatcher.register_callable(
         name="builtin.pre-issue-create",
@@ -276,7 +306,7 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
         fn=pre_submit_hook,
         priority=10,
     )
-    
+
     # Register pre-start hook
     dispatcher.register_callable(
         name="builtin.pre-issue-start",
@@ -284,7 +314,7 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
         fn=pre_start_hook,
         priority=10,
     )
-    
+
     # Register post-start hook
     dispatcher.register_callable(
         name="builtin.post-issue-start",
@@ -292,11 +322,19 @@ def register_all_builtins(dispatcher: "IssueHookDispatcher") -> None:
         fn=post_start_hook,
         priority=100,
     )
-    
+
     # Register post-submit hook
     dispatcher.register_callable(
         name="builtin.post-issue-submit",
         events=[IssueEvent.POST_SUBMIT],
         fn=post_submit_hook,
+        priority=100,
+    )
+
+    # Register post-close hook
+    dispatcher.register_callable(
+        name="builtin.post-issue-close",
+        events=[IssueEvent.POST_CLOSE],
+        fn=post_close_hook,
         priority=100,
     )

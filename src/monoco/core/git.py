@@ -50,6 +50,26 @@ def get_git_status(path: Path, subpath: Optional[str] = None) -> List[str]:
     return lines
 
 
+def has_uncommitted_changes(path: Path) -> bool:
+    """
+    Check if the git repository has uncommitted changes.
+
+    Args:
+        path: Path to the git repository
+
+    Returns:
+        True if there are uncommitted changes, False otherwise
+    """
+    try:
+        # Check both staged and unstaged changes
+        code, stdout, _ = _run_git(["status", "--porcelain"], path)
+        if code != 0:
+            return False
+        return bool(stdout.strip())
+    except Exception:
+        return False
+
+
 def git_add(path: Path, files: List[str]) -> None:
     if not files:
         return
