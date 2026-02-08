@@ -209,6 +209,7 @@ class SkillManager:
 
     def _discover_skills_from_features(self) -> None:
         """Discover skills from Feature resources."""
+        import importlib
         from monoco.core.feature import MonocoFeature
 
         for feature in self.features:
@@ -223,7 +224,12 @@ class SkillManager:
             ):
                 feature_name = module_parts[2]
 
-                feature_dir = self.root / "monoco" / "features" / feature_name
+                # Use the feature module's actual file location to find resources
+                module = importlib.import_module(feature.__class__.__module__)
+                if not hasattr(module, "__file__") or not module.__file__:
+                    continue
+
+                feature_dir = Path(module.__file__).parent
                 resources_dir = feature_dir / "resources"
 
                 if not resources_dir.exists():
@@ -281,12 +287,13 @@ class SkillManager:
 
     def _discover_three_level_skills(self) -> None:
         """Discover skills from the new three-level architecture in resources/{atoms,workflows,roles}/."""
+        import importlib
         from monoco.core.feature import MonocoFeature
-        
+
         for feature in self.features:
             if not isinstance(feature, MonocoFeature):
                 continue
-                
+
             module_parts = feature.__class__.__module__.split(".")
             if (
                 len(module_parts) >= 3
@@ -294,7 +301,14 @@ class SkillManager:
                 and module_parts[1] == "features"
             ):
                 feature_name = module_parts[2]
-                resources_dir = self.root / "monoco" / "features" / feature_name / "resources"
+
+                # Use the feature module's actual file location to find resources
+                module = importlib.import_module(feature.__class__.__module__)
+                if not hasattr(module, "__file__") or not module.__file__:
+                    continue
+
+                feature_dir = Path(module.__file__).parent
+                resources_dir = feature_dir / "resources"
                 
                 if not resources_dir.exists():
                     continue

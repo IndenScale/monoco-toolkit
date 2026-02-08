@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Agent resources 添加文档智能 skill
 created_at: '2026-02-08T20:53:57'
-updated_at: '2026-02-08T21:02:24'
+updated_at: 2026-02-08 21:02:24
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -21,10 +21,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-08T20:53:57'
 closed_at: '2026-02-08T21:02:24'
-isolation:
-  type: branch
-  ref: FEAT-0196-agent-resources-添加文档智能-skill
-  created_at: '2026-02-08T20:54:01'
 ---
 
 ## FEAT-0196: Agent resources 添加文档智能 skill
