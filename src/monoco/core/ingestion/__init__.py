@@ -1,20 +1,13 @@
 """
-Monoco Mailroom - Automated Ingestion System
+Monoco Ingestion - Environment Discovery
 
-Provides environment discovery, file watching, and automated conversion
-for document ingestion into the Monoco Artifact System.
+Provides environment discovery for document conversion tools.
 """
 
-from .discovery import EnvironmentDiscovery, ConversionTool
-from .worker import ConversionWorker, ConversionTask, ConversionResult
-from .watcher import DropzoneWatcher, IngestionEvent
+from .discovery import EnvironmentDiscovery, ConversionTool, ToolCapability
 
 __all__ = [
     "EnvironmentDiscovery",
     "ConversionTool",
-    "ConversionWorker",
-    "ConversionTask",
-    "ConversionResult",
-    "DropzoneWatcher",
-    "IngestionEvent",
+    "ToolCapability",
 ]

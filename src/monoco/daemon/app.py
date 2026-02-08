@@ -10,7 +10,6 @@ from monoco.daemon.services import Broadcaster, ProjectManager
 from monoco.core.git import GitMonitor
 from monoco.core.config import get_config
 from monoco.daemon.scheduler import SchedulerService
-from monoco.daemon.mailroom_service import MailroomService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -31,7 +30,6 @@ broadcaster = Broadcaster()
 git_monitor: GitMonitor | None = None
 project_manager: ProjectManager | None = None
 scheduler_service: SchedulerService | None = None
-mailroom_service: MailroomService | None = None
 
 
 @asynccontextmanager
@@ -39,7 +37,7 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Monoco Daemon services...")
 
-    global project_manager, git_monitor, scheduler_service, mailroom_service
+    global project_manager, git_monitor, scheduler_service
     # Use MONOCO_SERVER_ROOT if set, otherwise CWD
     env_root = os.getenv("MONOCO_SERVER_ROOT")
     workspace_root = Path(env_root) if env_root else Path.cwd()
@@ -56,13 +54,6 @@ async def lifespan(app: FastAPI):
     scheduler_service = SchedulerService(project_manager)
     await scheduler_service.start()
     
-    # Start Mailroom Service
-    mailroom_service = MailroomService(
-        workspace_root=workspace_root,
-        broadcaster=broadcaster,
-    )
-    await mailroom_service.start()
-    
     git_task = asyncio.create_task(git_monitor.start())
 
     yield
@@ -74,8 +65,6 @@ async def lifespan(app: FastAPI):
         project_manager.stop_all()
     if scheduler_service:
         scheduler_service.stop()
-    if mailroom_service:
-        await mailroom_service.stop()
 
     await git_task
 
@@ -468,43 +457,3 @@ async def update_workspace_state(state: WorkspaceState):
         )
 
 
-# --- Mailroom API Endpoints ---
-
-
-@app.get("/api/v1/mailroom/status")
-async def get_mailroom_status():
-    """
-    Get Mailroom service status, capabilities, and statistics.
-    """
-    if not mailroom_service:
-        raise HTTPException(status_code=503, detail="Mailroom service not initialized")
-    
-    return mailroom_service.get_status()
-
-
-@app.post("/api/v1/mailroom/discover")
-async def trigger_mailroom_discovery():
-    """
-    Trigger environment discovery for conversion tools.
-    """
-    if not mailroom_service:
-        raise HTTPException(status_code=503, detail="Mailroom service not initialized")
-    
-    discovery = mailroom_service.get_discovery()
-    tools = discovery.discover(force=True)
-    
-    total_tools = sum(len(t) for t in tools.values())
-    capabilities = discovery.get_capabilities_summary()
-    
-    return {
-        "discovered": total_tools,
-        "capabilities": capabilities,
-        "tools": [
-            {
-                "name": tool.name,
-                "type": tool.tool_type.value,
-                "version": tool.version,
-            }
-            for tool in discovery.get_all_tools()
-        ],
-    }
