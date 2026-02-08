@@ -6,7 +6,7 @@ status: backlog
 stage: freezed
 title: 实现 DingTalk Stream 模式下的消息发送功能
 created_at: '2026-02-08T00:04:23'
-updated_at: '2026-02-08T09:27:53'
+updated_at: '2026-02-08T09:27:56'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,7 +16,7 @@ tags:
 - '#FEAT-0195'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: wontfix
 opened_at: '2026-02-08T00:04:23'
 ---
 
