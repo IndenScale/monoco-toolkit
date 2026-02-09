@@ -206,6 +206,7 @@ from monoco.features.config import commands as config_cmd
 from monoco.features.hooks import commands as hooks_cmd
 from monoco.cli import project as project_cmd
 from monoco.cli import workspace as workspace_cmd
+from monoco.features.doc_extractor import commands as doc_extractor_cmd
 
 app.add_typer(issue_cmd.app, name="issue", help="Manage development issues")
 app.add_typer(spike_cmd.app, name="spike", help="Manage research spikes")
@@ -214,6 +215,7 @@ app.add_typer(config_cmd.app, name="config", help="Manage configuration")
 app.add_typer(hooks_cmd.app, name="hook", help="Manage git hooks for development workflow")
 app.add_typer(project_cmd.app, name="project", help="Manage projects")
 app.add_typer(workspace_cmd.app, name="workspace", help="Manage workspace")
+app.add_typer(doc_extractor_cmd.app, name="doc-extractor", help="Extract and render documents to WebP pages")
 
 from monoco.features.agent import cli as scheduler_cmd
 
