@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 修复 doc-extractor 错误处理不完善导致残留不完整 blob 目录的问题
 created_at: '2026-02-10T01:34:49'
-updated_at: '2026-02-10T01:49:46'
+updated_at: 2026-02-10 01:49:46
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -24,10 +24,6 @@ criticality: high
 solution: implemented
 opened_at: '2026-02-10T01:34:49'
 closed_at: '2026-02-10T01:49:46'
-isolation:
-  type: branch
-  ref: FIX-0027-修复-doc-extractor-错误处理不完善导致残留不完整-blob-目录的问题
-  created_at: '2026-02-10T01:34:54'
 ---
 
 ## FIX-0027: 修复 doc-extractor 错误处理不完善导致残留不完整 blob 目录的问题
