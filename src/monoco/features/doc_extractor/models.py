@@ -43,8 +43,13 @@ class BlobRef:
         return self.path / "meta.json"
     
     def exists(self) -> bool:
-        """Check if the blob exists."""
-        return self.path.exists()
+        """Check if the blob exists and is complete.
+
+        A complete blob must have both the directory and meta.json file.
+        This prevents incomplete blobs (from failed extractions) from
+        being treated as valid cache entries.
+        """
+        return self.path.exists() and self.meta_path.exists()
 
 
 @dataclass

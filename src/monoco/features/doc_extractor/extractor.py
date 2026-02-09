@@ -492,16 +492,20 @@ class DocExtractor:
             raise ValueError("No valid documents found in archive")
 
     async def _process_single(
-        self, 
-        input_path: Path, 
+        self,
+        input_path: Path,
         config: ExtractConfig,
         source_archive: tuple[str, str, str] | None = None,
     ) -> ExtractionResult:
-        """Process a single file."""
+        """Process a single file with transactional semantics.
+
+        Uses a temporary directory for processing and only moves to final
+        location on success. Ensures no incomplete blobs on failure.
+        """
         # Compute hash
         file_hash = self.compute_hash(input_path)
         blob = BlobRef(hash=file_hash)
-        
+
         # Check cache
         if blob.exists():
             # Read metadata to get page count
@@ -513,51 +517,63 @@ class DocExtractor:
                 page_count=page_count,
                 page_paths=page_paths,
             )
-        
-        # Create blob directory
-        blob.path.mkdir(parents=True, exist_ok=True)
-        
-        # Copy source file
-        source_ext = input_path.suffix
-        source_path = blob.path / f"source{source_ext}"
-        shutil.copy(input_path, source_path)
-        
-        # Convert to PDF
-        pdf_path = blob.path / "source.pdf"
-        success = await FormatConverter.convert_to_pdf(input_path, pdf_path)
-        if not success:
-            raise RuntimeError(f"Failed to convert to PDF: {input_path}")
-        
-        # Render to WebP
-        pages_dir = blob.path / "pages"
-        renderer = PDFRenderer(config)
-        page_paths = await renderer.render(pdf_path, pages_dir)
-        
-        # Write metadata
-        category, file_type = FileTypeDetector.detect(input_path)
-        meta = {
-            "original_name": input_path.name,
-            "original_hash": file_hash,
-            "original_path": str(input_path),
-            "file_type": file_type,
-            "category": category,
-            "page_count": len(page_paths),
-            "dpi": config.dpi,
-            "quality": config.quality,
-            "created_at": datetime.now().isoformat(),
-            "source_archive": {
-                "hash": source_archive[0],
-                "name": source_archive[1],
-                "inner_path": source_archive[2],
-            } if source_archive else None,
-        }
-        blob.meta_path.write_text(json.dumps(meta, indent=2))
-        
-        return ExtractionResult(
-            blob=blob,
-            page_count=len(page_paths),
-            page_paths=page_paths,
-        )
+
+        # Use temporary directory for atomic processing
+        temp_dir = Path(tempfile.mkdtemp(prefix="blob_", dir=self.BLOBS_DIR))
+        try:
+            # Copy source file
+            source_ext = input_path.suffix
+            source_path = temp_dir / f"source{source_ext}"
+            shutil.copy(input_path, source_path)
+
+            # Convert to PDF
+            pdf_path = temp_dir / "source.pdf"
+            success = await FormatConverter.convert_to_pdf(input_path, pdf_path)
+            if not success:
+                raise RuntimeError(f"Failed to convert to PDF: {input_path}")
+
+            # Render to WebP
+            pages_dir = temp_dir / "pages"
+            renderer = PDFRenderer(config)
+            page_paths = await renderer.render(pdf_path, pages_dir)
+
+            # Prepare metadata
+            category, file_type = FileTypeDetector.detect(input_path)
+            meta = {
+                "original_name": input_path.name,
+                "original_hash": file_hash,
+                "original_path": str(input_path),
+                "file_type": file_type,
+                "category": category,
+                "page_count": len(page_paths),
+                "dpi": config.dpi,
+                "quality": config.quality,
+                "created_at": datetime.now().isoformat(),
+                "source_archive": {
+                    "hash": source_archive[0],
+                    "name": source_archive[1],
+                    "inner_path": source_archive[2],
+                } if source_archive else None,
+            }
+
+            # Write metadata to temp location
+            meta_path = temp_dir / "meta.json"
+            meta_path.write_text(json.dumps(meta, indent=2))
+
+            # Atomic move: temp -> final
+            shutil.move(str(temp_dir), str(blob.path))
+
+            return ExtractionResult(
+                blob=blob,
+                page_count=len(page_paths),
+                page_paths=page_paths,
+            )
+
+        except Exception:
+            # Clean up temp directory on any failure
+            if temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            raise
     
     async def extract_batch(
         self, 
