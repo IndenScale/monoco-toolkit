@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: '实现 doc-extractor: 文档标准化与渲染工具'
 created_at: '2026-02-09T21:03:26'
-updated_at: '2026-02-10T00:34:30'
+updated_at: 2026-02-10 00:34:31
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -38,10 +38,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-09T21:03:26'
 closed_at: '2026-02-10T00:34:30'
-isolation:
-  type: branch
-  ref: FEAT-0197-实现-doc-extractor-文档标准化与渲染工具
-  created_at: '2026-02-09T21:03:53'
 ---
 
 ## FEAT-0197: 实现 doc-extractor: 文档标准化与渲染工具
