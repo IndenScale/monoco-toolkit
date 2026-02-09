@@ -227,20 +227,25 @@ def delete(
 @app.command()
 def clean(
     older_than: Annotated[int | None, typer.Option("--older-than", "-d", help="Delete blobs older than N days")] = None,
+    incomplete: Annotated[bool, typer.Option("--incomplete", "-i", help="Remove incomplete blobs (missing meta.json)")] = False,
     dry_run: Annotated[bool, typer.Option("--dry-run", help="Show what would be deleted without deleting")] = False,
     json: AgentOutput = False,
 ):
     """Clean up extracted document blobs."""
     from datetime import datetime, timedelta
-    
+
     extractor = DocExtractor()
     index = BlobIndex()
     blobs = extractor.list_blobs()
-    
+
     to_delete = []
-    
+
     for blob in blobs:
-        if older_than:
+        if incomplete:
+            # Find blobs that exist as directories but lack meta.json
+            if blob.path.exists() and not blob.meta_path.exists():
+                to_delete.append(blob)
+        elif older_than:
             if not blob.meta_path.exists():
                 continue
             try:
@@ -250,17 +255,17 @@ def clean(
                     to_delete.append(blob)
             except Exception:
                 pass
-    
+
     if not to_delete:
         OutputManager.print({"status": "empty", "message": "No blobs to clean"})
         return
-    
+
     result = {
         "dry_run": dry_run,
         "to_delete_count": len(to_delete),
         "blobs": [{"hash": b.hash[:16], "full_hash": b.hash} for b in to_delete],
     }
-    
+
     if dry_run:
         OutputManager.print(result, title="Clean Preview")
     else:
