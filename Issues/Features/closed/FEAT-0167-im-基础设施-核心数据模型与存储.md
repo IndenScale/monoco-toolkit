@@ -4,11 +4,12 @@ uid: 68dadf
 type: feature
 status: closed
 stage: done
-title: IM 基础设施：核心数据模型与存储
+title: '[DEPRECATED] IM 基础设施：核心数据模型与存储'
 created_at: '2026-02-03T23:23:32'
-updated_at: '2026-02-03T23:58:00'
+updated_at: '2026-02-10T14:30:00'
 parent: EPIC-0033
-dependencies: []
+dependencies:
+- CHORE-0051
 related:
 - FEAT-0170
 domains:
@@ -17,10 +18,13 @@ tags:
 - '#EPIC-0033'
 - '#FEAT-0167'
 - '#FEAT-0170'
+- '#CHORE-0051'
+- '#deprecated'
 files: []
-criticality: high
-solution: implemented
+criticality: low
+solution: deprecated
 opened_at: '2026-02-03T23:23:32'
+closed_at: '2026-02-03T23:58:00'
 isolation:
   type: branch
   ref: feat/feat-0167-im-基础设施-核心数据模型与存储
@@ -28,7 +32,25 @@ isolation:
   created_at: '2026-02-03T23:44:33'
 ---
 
-## FEAT-0167: IM 基础设施：核心数据模型与存储
+## ⚠️ DEPRECATED - 已废除
+
+> **本项目级 IM 基础设施已被废除 (CHORE-0051)**
+>
+> **原因**: 项目级存储 (`.monoco/im/`) 与 Monoco 的全局 mailbox 架构冲突。
+>
+> **替代方案**: 使用全局 Mailbox 系统
+> - 存储位置: `~/.monoco/mailbox/inbound/` (全局)
+> - Watcher: `MailboxInboundWatcher` (planned)
+> - 事件: `MAILBOX_INBOUND_RECEIVED`
+>
+> **删除内容**:
+> - `src/monoco/core/watcher/im.py` - 已删除
+> - `AgentEventType.IM_*` - 已替换为 `MAILBOX_*`
+> - `.monoco/im/messages/` - 停止使用
+
+---
+
+## FEAT-0167: IM 基础设施：核心数据模型与存储 (已归档)
 
 ## Objective
 定义 IM 系统的核心数据模型，建立独立于 Memo 的存储架构，为平台适配和 Agent 集成提供基础。
