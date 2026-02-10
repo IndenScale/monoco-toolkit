@@ -22,7 +22,7 @@ class ArtifactFeature(FeatureModule):
         lang = config.get("i18n", {}).get("source_lang", "zh")
         base_dir = Path(__file__).parent / "resources"
         prompt_file = base_dir / lang / "AGENTS.md"
-        
+
         if not prompt_file.exists():
             prompt_file = base_dir / "en" / "AGENTS.md"
 
@@ -30,4 +30,4 @@ class ArtifactFeature(FeatureModule):
         if prompt_file.exists():
             content = prompt_file.read_text(encoding="utf-8").strip()
 
-        return IntegrationData(system_prompts={"Artifacts & Mailroom": content})
+        return IntegrationData(system_prompts={"Artifacts": content})
