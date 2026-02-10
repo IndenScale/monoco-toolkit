@@ -7,7 +7,7 @@ stage: draft
 title: Test Epic
 created_at: '2026-02-08T09:54:48'
 updated_at: '2026-02-08T09:54:48'
-parent: null # <EPIC-ID> Optional
+parent: EPIC-0000
 dependencies: []
 related: []
 domains: []
@@ -15,7 +15,7 @@ tags:
 - '#EPIC-0036'
 files: []
 criticality: high
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-08T09:54:48'
 ---
 
