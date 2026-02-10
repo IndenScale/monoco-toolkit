@@ -15,8 +15,6 @@ domains:
 tags:
   - '#CHORE-0051'
   - '#EPIC-0000'
-  - '#FEAT-0167'
-  - '#FEAT-0170'
   - '#deprecated'
 files:
   - Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
