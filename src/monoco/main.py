@@ -237,6 +237,9 @@ from monoco.features.channel import commands as channel_cmd
 
 app.add_typer(channel_cmd.app, name="channel", help="Manage notification channels (DingTalk, Lark, Email)")
 
+from monoco.features.ralph import cli as ralph_cmd
+
+app.add_typer(ralph_cmd.app, name="ralph", help="Ralph Loop - Agent session relay for long-running issues")
 
 from monoco.daemon.commands import serve_app, serve
 
