@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 实现 DingTalk 附件获取与存储系统
 created_at: '2026-02-10T09:22:32'
-updated_at: '2026-02-10T10:13:23'
+updated_at: 2026-02-10 10:13:23
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -33,10 +33,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-10T09:22:32'
 closed_at: '2026-02-10T10:13:23'
-isolation:
-  type: branch
-  ref: FEAT-0198-实现-dingtalk-附件获取与存储系统
-  created_at: '2026-02-10T09:23:04'
 ---
 
 ## FEAT-0198: 实现 DingTalk 附件获取与存储系统
