@@ -3,7 +3,7 @@ id: FEAT-0194
 uid: 25ec29
 type: feature
 status: closed
-stage: review
+stage: done
 title: 统一 Channel 配置管理：集中化多渠道配置系统
 created_at: '2026-02-07T19:30:49'
 updated_at: '2026-02-07T19:51:25'
@@ -26,7 +26,7 @@ files:
 - src/monoco/features/courier/api.py
 - src/monoco/main.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-07T19:30:49'
 isolation:
   type: branch

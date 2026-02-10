@@ -71,6 +71,6 @@ closed_at: '2026-02-07T17:55:54'
 
 ## Review Comments
 
-- **2026-02-06**: 由 IndenScale 确认，废弃旧的 FEAT-0168/0169，采用全新的 Mailbox 架构实现。
+- **2026-02-06**: 由 IndenScale 确认，废弃旧的飞书/钉钉平台适配器方案，采用全新的 Mailbox 架构实现。
 - **2026-02-07**: IndenScale 提出更新：因 FEAT-0191/192/193 已重构底层架构，FEAT-0190 需适配全局项目注册表与多租户路由。
 - **2026-02-07**: 实现完成。包括：`DingtalkAdapter` 类、`MailboxStore.create_inbound_message()` 原子写入、`CourierAPIHandler` 集成。

@@ -10,19 +10,13 @@ updated_at: '2026-02-03T23:58:00'
 parent: EPIC-0033
 dependencies: []
 related:
-- FEAT-0168
-- FEAT-0169
 - FEAT-0170
-- FEAT-0171
 domains:
 - Foundation
 tags:
 - '#EPIC-0033'
 - '#FEAT-0167'
-- '#FEAT-0168'
-- '#FEAT-0169'
 - '#FEAT-0170'
-- '#FEAT-0171'
 files: []
 criticality: high
 solution: implemented
@@ -163,4 +157,4 @@ class MessageContent(BaseModel):
 
 #### 后续依赖
 
-本 Issue 完成后，FEAT-0168 (平台适配器)、FEAT-0169 (Agent 集成)、FEAT-0170 (安全与权限)、FEAT-0171 (测试与文档) 可以并行开发。
+本 Issue 完成后，FEAT-0170 (Agent 集成) 可以继续开发。
