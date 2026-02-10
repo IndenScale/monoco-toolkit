@@ -2,11 +2,11 @@
 id: CHORE-0050
 uid: c9153b
 type: chore
-status: open
+status: closed
 stage: done
 title: 废除项目 mailbox，迁移到全局 mailbox (~/.monoco/mailbox)
 created_at: '2026-02-10T12:23:01'
-updated_at: '2026-02-10T12:23:01'
+updated_at: '2026-02-10T12:35:00'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,8 +19,9 @@ files:
 - src/monoco/features/mailbox/commands.py
 - src/monoco/features/courier/daemon.py
 criticality: low
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-10T12:23:01'
+closed_at: '2026-02-10T12:35:00'
 ---
 
 ## CHORE-0050: 废除项目 mailbox，迁移到全局 mailbox (~/.monoco/mailbox)
@@ -87,3 +88,8 @@ project: my-project  # 新增：标识消息归属项目
 - 配置文件中不再支持项目级 mailbox 路径自定义
 
 ## Review Comments
+
+- 架构变更验证通过：`DEFAULT_MAILBOX_ROOT` 现在正确指向 `~/.monoco/mailbox`
+- 代码变更简洁：只修改了 3 个核心文件，影响范围清晰
+- 删除 ADR 目录符合代码即文档的原则
+- 已验证命令：`python -c "from monoco.features.connector.protocol.constants import DEFAULT_MAILBOX_ROOT; print(DEFAULT_MAILBOX_ROOT)"` 输出正确

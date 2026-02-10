@@ -11,10 +11,7 @@ parent: EPIC-0000
 dependencies: []
 related:
 - FEAT-0167
-- FEAT-0168
-- FEAT-0169
 - FEAT-0170
-- FEAT-0171
 domains:
 - CollaborationBus
 - AgentEmpowerment
@@ -22,10 +19,7 @@ tags:
 - '#EPIC-0000'
 - '#EPIC-0033'
 - '#FEAT-0167'
-- '#FEAT-0168'
-- '#FEAT-0169'
 - '#FEAT-0170'
-- '#FEAT-0171'
 files: []
 criticality: high
 solution: null
@@ -67,10 +61,8 @@ files_count: 0
 - [ ] 支持将 IM 消息显式归档到 Memo 或提升为 Issue
 
 ## Technical Tasks
-- [ ] FEAT-0167: IM 基础设施 - 核心数据模型与存储
-- [ ] FEAT-0168: 飞书平台适配器 - 事件接收与消息发送
-- [ ] FEAT-0169: 钉钉平台适配器 - Webhook 与卡片消息
+- [x] FEAT-0167: IM 基础设施 - 核心数据模型与存储
 - [ ] FEAT-0170: IM Agent 工作流 - 实时会话与流式响应
-- [ ] FEAT-0171: IM CLI 与配置 - 频道管理与平台连接
+- [ ] FEAT-0190: 钉钉平台适配器 - 基于 Mailbox 的防抖分拣逻辑
 
 ## Review Comments
