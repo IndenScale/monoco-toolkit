@@ -9,9 +9,7 @@ created_at: '2026-02-10T14:26:12'
 updated_at: '2026-02-10T14:45:00'
 parent: EPIC-0000
 dependencies: []
-related:
-  - FEAT-0167
-  - FEAT-0170
+related: []
 domains:
   - Foundation
 tags:
