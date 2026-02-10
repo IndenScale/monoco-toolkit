@@ -94,6 +94,84 @@ class DingTalkArtifactDownloader:
             logger.exception(f"Failed to download media: {e}")
             return None
 
+    async def _get_download_url_from_code(
+        self,
+        download_code: str,
+        file_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """
+        Get download URL from DingTalk downloadCode (Stream mode).
+        
+        Uses DingTalk OpenAPI: POST /v1.0/robot/messageFiles/download
+        """
+        if not download_code:
+            return None
+            
+        try:
+            # Get access token first
+            access_token = await self._get_access_token()
+            if not access_token:
+                logger.error("No access token available for file download")
+                return None
+            
+            client = await self._get_http_client()
+            
+            # Call DingTalk OpenAPI to get download URL
+            # API: POST https://api.dingtalk.com/v1.0/robot/messageFiles/download
+            url = "https://api.dingtalk.com/v1.0/robot/messageFiles/download"
+            headers = {
+                "Content-Type": "application/json",
+                "x-acs-dingtalk-access-token": access_token,
+            }
+            payload = {
+                "robotCode": self.client_id,
+                "downloadCode": download_code,
+            }
+            
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            
+            result = response.json()
+            download_url = result.get("downloadUrl")
+            if download_url:
+                logger.debug(f"Got download URL from downloadCode: {download_code[:20]}...")
+                return download_url
+            else:
+                logger.warning(f"Failed to get download URL: {result}")
+                return None
+                
+        except Exception as e:
+            logger.exception(f"Failed to get download URL from code: {e}")
+            return None
+    
+    async def _get_access_token(self) -> Optional[str]:
+        """Get DingTalk access token using client credentials."""
+        if self._access_token:
+            return self._access_token
+            
+        try:
+            client = await self._get_http_client()
+            url = "https://oapi.dingtalk.com/gettoken"
+            params = {
+                "appkey": self.client_id,
+                "appsecret": self.client_secret,
+            }
+            
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            
+            result = response.json()
+            if result.get("errcode") == 0:
+                self._access_token = result.get("access_token")
+                return self._access_token
+            else:
+                logger.error(f"Failed to get access token: {result.get('errmsg')}")
+                return None
+                
+        except Exception as e:
+            logger.exception(f"Failed to get access token: {e}")
+            return None
+
     async def _get_download_url_from_media_id(
         self,
         media_id: str,
@@ -203,13 +281,20 @@ class DingTalkArtifactDownloader:
 
         # File messages might have downloadUrl or need media_id resolution
         download_url = file_data.get("downloadUrl") or file_data.get("download_url")
+        download_code = file_data.get("downloadCode") or file_data.get("download_code")
+        file_id = file_data.get("fileId") or file_data.get("file_id")
         media_id = file_data.get("mediaId") or file_data.get("media_id")
         filename = file_data.get("fileName", "unknown_file")
+
+        if not download_url and download_code:
+            # Stream mode file message uses downloadCode
+            download_url = await self._get_download_url_from_code(download_code, file_id)
 
         if not download_url and media_id:
             download_url = await self._get_download_url_from_media_id(media_id)
 
         if not download_url:
+            logger.warning(f"No download URL for file: {filename}")
             return None
 
         result = await self._download_media(
