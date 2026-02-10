@@ -68,7 +68,8 @@ class CourierDaemon:
         self.debug = debug
 
         # Set up paths
-        self.mailbox_root = self.project_root / DEFAULT_MAILBOX_ROOT
+        # CHORE-0050: Use global mailbox path instead of project-level
+        self.mailbox_root = DEFAULT_MAILBOX_ROOT
         self.state_dir = self.mailbox_root / ".state"
 
         # Components

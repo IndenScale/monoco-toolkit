@@ -21,7 +21,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from monoco.core.config import get_config
 from monoco.core.output import OutputManager, AgentOutput
 from monoco.features.connector.protocol.schema import (
     Provider,
@@ -49,9 +48,13 @@ console = Console()
 
 
 def _get_mailbox_root() -> Path:
-    """Get the mailbox root path from config."""
-    config = get_config()
-    return Path(config.paths.root) / ".monoco" / "mailbox"
+    """Get the global mailbox root path.
+
+    CHORE-0050: Changed from project-level (~/.monoco/mailbox) to global-level (~/.monoco/mailbox).
+    All projects now share a single global mailbox.
+    """
+    from monoco.features.connector.protocol.constants import DEFAULT_MAILBOX_ROOT
+    return DEFAULT_MAILBOX_ROOT
 
 
 def _init_mailbox():
