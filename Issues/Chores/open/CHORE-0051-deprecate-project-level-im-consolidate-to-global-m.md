@@ -6,20 +6,23 @@ status: open
 stage: doing
 title: 废除项目级 IM，统一使用全局 Mailbox
 created_at: '2026-02-10T14:26:12'
-updated_at: '2026-02-10T14:45:00'
+updated_at: '2026-02-10T14:46:29'
 parent: EPIC-0000
 dependencies: []
 related: []
 domains:
-  - Foundation
+- Foundation
 tags:
-  - '#CHORE-0051'
-  - '#EPIC-0000'
-  - '#deprecated'
+- '#CHORE-0051'
+- '#EPIC-0000'
+- '#deprecated'
 files:
-  - Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
-  - src/monoco/core/scheduler/events.py
-  - src/monoco/core/watcher/__init__.py
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
+- Issues/Features/closed/FEAT-0167-im-基础设施-核心数据模型与存储.md
+- Issues/Features/closed/FEAT-0170-im-agent-工作流-实时会话与流式响应.md
+- src/monoco/core/scheduler/events.py
+- src/monoco/core/watcher/__init__.py
+- src/monoco/core/watcher/im.py
 criticality: low
 solution: implemented
 opened_at: '2026-02-10T14:26:12'
