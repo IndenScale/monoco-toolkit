@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 清除遗留 IM 系统，统一使用 Mailbox/Courier 架构
 created_at: '2026-02-10T12:10:42'
-updated_at: '2026-02-10T12:16:59'
+updated_at: 2026-02-10 12:17:00
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -28,10 +28,6 @@ criticality: low
 solution: implemented
 opened_at: '2026-02-10T12:10:42'
 closed_at: '2026-02-10T12:16:59'
-isolation:
-  type: branch
-  ref: CHORE-0049-清除遗留-im-系统-统一使用-mailbox-courier-架构
-  created_at: '2026-02-10T12:10:47'
 ---
 
 ## CHORE-0049: 清除遗留 IM 系统，统一使用 Mailbox/Courier 架构
