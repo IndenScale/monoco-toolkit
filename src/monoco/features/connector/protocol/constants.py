@@ -14,8 +14,9 @@ DEADLETTER_DIR = ".deadletter"
 TMP_DIR = ".tmp"
 ARTIFACTS_DIR = "artifacts"
 
-# Default mailbox root path (relative to project root)
-DEFAULT_MAILBOX_ROOT = Path(".monoco") / MAILBOX_DIR
+# Default mailbox root path (global ~/.monoco/mailbox)
+# CHORE-0050: Migrated from project-level to global-level mailbox
+DEFAULT_MAILBOX_ROOT = Path.home() / ".monoco" / "mailbox"
 
 # File patterns
 MESSAGE_FILE_PATTERN = "*.md"
