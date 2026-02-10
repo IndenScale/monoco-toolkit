@@ -5,20 +5,20 @@ This module provides high-level query capabilities for the mailbox.
 """
 
 from datetime import datetime, timedelta
-from typing import List, Optional
 from pathlib import Path
+from typing import List, Optional
 
 from monoco.features.connector.protocol.schema import (
     InboundMessage,
-    Provider,
     MessageStatus,
+    Provider,
 )
 
 from .models import (
+    ListFormat,
     MailboxConfig,
     MessageFilter,
     MessageListItem,
-    ListFormat,
 )
 from .store import MailboxStore
 
@@ -162,21 +162,21 @@ class MessageQuery:
         if since_str.endswith("h"):
             try:
                 hours = int(since_str[:-1])
-                return datetime.utcnow() - timedelta(hours=hours)
+                return datetime.now(timezone.utc) - timedelta(hours=hours)
             except ValueError:
                 pass
 
         if since_str.endswith("d"):
             try:
                 days = int(since_str[:-1])
-                return datetime.utcnow() - timedelta(days=days)
+                return datetime.now(timezone.utc) - timedelta(days=days)
             except ValueError:
                 pass
 
         if since_str.endswith("m"):
             try:
                 minutes = int(since_str[:-1])
-                return datetime.utcnow() - timedelta(minutes=minutes)
+                return datetime.now(timezone.utc) - timedelta(minutes=minutes)
             except ValueError:
                 pass
 
@@ -187,7 +187,7 @@ class MessageQuery:
             pass
 
         # Default to 24 hours ago if parsing fails
-        return datetime.utcnow() - timedelta(days=1)
+        return datetime.now(timezone.utc) - timedelta(days=1)
 
 
 # Global query instance

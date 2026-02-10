@@ -16,8 +16,8 @@ import yaml
 from .models import (
     BaseChannel,
     ChannelDefaults,
-    ChannelType,
     ChannelsConfig,
+    ChannelType,
     DingtalkChannel,
     EmailChannel,
     LarkChannel,
@@ -218,14 +218,14 @@ class ChannelStore:
         Raises:
             ValueError: If channel ID already exists
         """
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         if channel.id in self._channels:
             # Update existing channel
-            channel.updated_at = datetime.utcnow()
+            channel.updated_at = datetime.now(timezone.utc)
         else:
             # New channel
-            channel.created_at = datetime.utcnow()
+            channel.created_at = datetime.now(timezone.utc)
 
         self._channels[channel.id] = channel
         self.save()
@@ -262,7 +262,7 @@ class ChannelStore:
         if not channel:
             return None
 
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         # Update allowed fields
         allowed_fields = {"name", "enabled", "metadata"}
@@ -273,16 +273,24 @@ class ChannelStore:
         elif isinstance(channel, LarkChannel):
             allowed_fields.update({"webhook_url", "secret"})
         elif isinstance(channel, EmailChannel):
-            allowed_fields.update({
-                "smtp_host", "smtp_port", "username", "password",
-                "use_tls", "use_ssl", "from_address", "to_addresses"
-            })
+            allowed_fields.update(
+                {
+                    "smtp_host",
+                    "smtp_port",
+                    "username",
+                    "password",
+                    "use_tls",
+                    "use_ssl",
+                    "from_address",
+                    "to_addresses",
+                }
+            )
 
         for key, value in updates.items():
             if key in allowed_fields and hasattr(channel, key):
                 setattr(channel, key, value)
 
-        channel.updated_at = datetime.utcnow()
+        channel.updated_at = datetime.now(timezone.utc)
         self.save()
         return channel
 
@@ -306,9 +314,15 @@ class ChannelStore:
         """
         if not self._config or not self._config.defaults.receive:
             return []
-        return [self._channels.get(cid) for cid in self._config.defaults.receive if cid in self._channels]
+        return [
+            self._channels.get(cid)
+            for cid in self._config.defaults.receive
+            if cid in self._channels
+        ]
 
-    def set_defaults(self, send: Optional[str] = None, receive: Optional[List[str]] = None) -> None:
+    def set_defaults(
+        self, send: Optional[str] = None, receive: Optional[List[str]] = None
+    ) -> None:
         """
         Set default channels.
 

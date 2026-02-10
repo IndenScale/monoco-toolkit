@@ -6,10 +6,11 @@ messages within a time window before writing to the mailbox.
 """
 
 import asyncio
-from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional, Any
-from datetime import datetime
+import inspect
 import time
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
 
 from monoco.features.connector.protocol.schema import InboundMessage
 
@@ -17,14 +18,16 @@ from monoco.features.connector.protocol.schema import InboundMessage
 @dataclass
 class DebounceConfig:
     """Configuration for debounce behavior."""
-    window_ms: int = 5000        # Buffer window in milliseconds
-    max_wait_ms: int = 30000     # Maximum wait time before flush
+
+    window_ms: int = 5000  # Buffer window in milliseconds
+    max_wait_ms: int = 30000  # Maximum wait time before flush
     key_extractor: Optional[Callable[[InboundMessage], str]] = None
 
 
 @dataclass
 class MessageBuffer:
     """Buffer for debounced messages."""
+
     key: str
     messages: List[InboundMessage] = field(default_factory=list)
     first_arrival: Optional[float] = None
@@ -137,7 +140,7 @@ class DebounceHandler:
         messages = buffer.flush()
         if messages:
             # Call the flush callback
-            if asyncio.iscoroutinefunction(self.flush_callback):
+            if inspect.iscoroutinefunction(self.flush_callback):
                 await self.flush_callback(messages)
             else:
                 self.flush_callback(messages)

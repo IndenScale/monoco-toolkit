@@ -11,37 +11,37 @@ Provides commands:
 """
 
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
+from getpass import getuser
 from pathlib import Path
 from typing import List, Optional
-from getpass import getuser
 
 import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from monoco.core.output import OutputManager, AgentOutput
+from monoco.core.output import AgentOutput, OutputManager
 from monoco.features.connector.protocol.schema import (
-    Provider,
     MessageStatus,
+    Provider,
 )
 
+from .client import (
+    CourierError,
+    CourierNotRunningError,
+    MessageAlreadyClaimedError,
+    MessageNotFoundError,
+    get_courier_client,
+)
 from .models import (
+    ListFormat,
     MailboxConfig,
     MessageFilter,
-    ListFormat,
     OutboundDraft,
 )
-from .store import get_mailbox_store
 from .queries import get_message_query
-from .client import (
-    get_courier_client,
-    CourierNotRunningError,
-    MessageNotFoundError,
-    MessageAlreadyClaimedError,
-    CourierError,
-)
+from .store import get_mailbox_store
 
 app = typer.Typer(help="Manage messages (Mailbox)")
 console = Console()
@@ -54,6 +54,7 @@ def _get_mailbox_root() -> Path:
     All projects now share a single global mailbox.
     """
     from monoco.features.connector.protocol.constants import DEFAULT_MAILBOX_ROOT
+
     return DEFAULT_MAILBOX_ROOT
 
 
@@ -75,13 +76,27 @@ def _get_agent_id() -> str:
 
 @app.command("list")
 def list_messages(
-    status: Optional[str] = typer.Option(None, "--status", "-s", help="Filter by status: new, claimed"),
-    provider: Optional[str] = typer.Option(None, "--provider", "-p", help="Filter by provider: lark, email, slack"),
-    since: Optional[str] = typer.Option(None, "--since", help="Filter by time: 2h, 1d, 30m"),
-    correlation: Optional[str] = typer.Option(None, "--correlation", "-c", help="Filter by correlation ID"),
-    all: bool = typer.Option(False, "--all", "-a", help="Show all messages including archived"),
-    format: str = typer.Option("table", "--format", "-f", help="Output format: table, json, compact, id"),
-    with_attachments: bool = typer.Option(False, "--with-attachments", help="Include attachment info in output"),
+    status: Optional[str] = typer.Option(
+        None, "--status", "-s", help="Filter by status: new, claimed"
+    ),
+    provider: Optional[str] = typer.Option(
+        None, "--provider", "-p", help="Filter by provider: lark, email, slack"
+    ),
+    since: Optional[str] = typer.Option(
+        None, "--since", help="Filter by time: 2h, 1d, 30m"
+    ),
+    correlation: Optional[str] = typer.Option(
+        None, "--correlation", "-c", help="Filter by correlation ID"
+    ),
+    all: bool = typer.Option(
+        False, "--all", "-a", help="Show all messages including archived"
+    ),
+    format: str = typer.Option(
+        "table", "--format", "-f", help="Output format: table, json, compact, id"
+    ),
+    with_attachments: bool = typer.Option(
+        False, "--with-attachments", help="Include attachment info in output"
+    ),
     json: AgentOutput = False,
 ):
     """List messages in the mailbox."""
@@ -99,7 +114,9 @@ def list_messages(
             filter.status = MessageStatus(status.lower())
         except ValueError:
             valid_statuses = [s.value for s in MessageStatus]
-            OutputManager.error(f"Invalid status '{status}'. Valid: {', '.join(valid_statuses)}")
+            OutputManager.error(
+                f"Invalid status '{status}'. Valid: {', '.join(valid_statuses)}"
+            )
             raise typer.Exit(code=1)
 
     if provider:
@@ -107,7 +124,9 @@ def list_messages(
             filter.provider = Provider(provider.lower())
         except ValueError:
             valid_providers = [p.value for p in Provider]
-            OutputManager.error(f"Invalid provider '{provider}'. Valid: {', '.join(valid_providers)}")
+            OutputManager.error(
+                f"Invalid provider '{provider}'. Valid: {', '.join(valid_providers)}"
+            )
             raise typer.Exit(code=1)
 
     if since:
@@ -121,7 +140,9 @@ def list_messages(
         list_format = ListFormat(format.lower())
     except ValueError:
         valid_formats = [f.value for f in ListFormat]
-        OutputManager.error(f"Invalid format '{format}'. Valid: {', '.join(valid_formats)}")
+        OutputManager.error(
+            f"Invalid format '{format}'. Valid: {', '.join(valid_formats)}"
+        )
         raise typer.Exit(code=1)
 
     # Get messages
@@ -141,16 +162,22 @@ def list_messages(
     # Handle compact format
     if list_format == ListFormat.COMPACT:
         for msg in messages:
-            time_str = msg.timestamp.strftime("%H:%M") if datetime.now().date() == msg.timestamp.date() else msg.timestamp.strftime("%m-%d")
+            time_str = (
+                msg.timestamp.strftime("%H:%M")
+                if datetime.now().date() == msg.timestamp.date()
+                else msg.timestamp.strftime("%m-%d")
+            )
             attach_marker = " [📎]" if msg.artifact_count > 0 else ""
-            console.print(f"{msg.id} | {msg.from_name} | {time_str} | {msg.preview[:40]}{attach_marker}")
+            console.print(
+                f"{msg.id} | {msg.from_name} | {time_str} | {msg.preview[:40]}{attach_marker}"
+            )
         return
 
     # Table format (default)
     table = Table(
         title=f"Messages ({len(messages)})",
         show_header=True,
-        header_style="bold magenta"
+        header_style="bold magenta",
     )
     table.add_column("ID", style="cyan", width=25, no_wrap=True)
     table.add_column("Provider", width=10)
@@ -181,7 +208,7 @@ def list_messages(
         ]
 
         if with_attachments:
-            attach_count = msg.artifact_count if hasattr(msg, 'artifact_count') else 0
+            attach_count = msg.artifact_count if hasattr(msg, "artifact_count") else 0
             attach_display = str(attach_count) if attach_count > 0 else "-"
             row_data.append(attach_display)
 
@@ -196,7 +223,9 @@ def list_messages(
 def read_message(
     message_id: str = typer.Argument(..., help="Message ID to read"),
     raw: bool = typer.Option(False, "--raw", help="Show raw file content"),
-    content_only: bool = typer.Option(False, "--content", help="Show only message body"),
+    content_only: bool = typer.Option(
+        False, "--content", help="Show only message body"
+    ),
     json: AgentOutput = False,
 ):
     """Read a message's content."""
@@ -236,10 +265,12 @@ def read_message(
 
     # JSON/Agent mode
     if json:
-        OutputManager.print({
-            "message": message.model_dump(mode="json"),
-            "status": status.value,
-        })
+        OutputManager.print(
+            {
+                "message": message.model_dump(mode="json"),
+                "status": status.value,
+            }
+        )
         return
 
     # Human-readable format
@@ -251,7 +282,9 @@ def read_message(
     time_str = message.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
     time_ago = _format_time_ago(message.timestamp)
 
-    content_text = message.content.text or message.content.markdown or "[No text content]"
+    content_text = (
+        message.content.text or message.content.markdown or "[No text content]"
+    )
 
     mentions = message.get_mentions()
     mentions_str = ""
@@ -282,20 +315,24 @@ def read_message(
         panel_content += f"\n\n[bold]Mentions:[/bold]\n{mentions_str}"
 
     if message.artifacts:
-        artifacts_str = "\n".join(f"  • {a.name} ({a.type.value})" for a in message.artifacts)
+        artifacts_str = "\n".join(
+            f"  • {a.name} ({a.type.value})" for a in message.artifacts
+        )
         panel_content += f"\n\n[bold]Artifacts:[/bold]\n{artifacts_str}"
 
-    console.print(Panel(
-        panel_content,
-        title=f"Message: {message_id}",
-        border_style="blue",
-    ))
+    console.print(
+        Panel(
+            panel_content,
+            title=f"Message: {message_id}",
+            border_style="blue",
+        )
+    )
 
 
 def _format_time_ago(timestamp: datetime) -> str:
     """Format a timestamp as a human-readable relative time."""
-    now = datetime.utcnow()
-    diff = now - timestamp.replace(tzinfo=None)
+    now = datetime.now(timezone.utc)
+    diff = now - timestamp.replace(tzinfo=timezone.utc)
 
     if diff.days > 0:
         return f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
@@ -311,11 +348,19 @@ def _format_time_ago(timestamp: datetime) -> str:
 @app.command("send")
 def send_message(
     file: Optional[Path] = typer.Argument(None, help="Draft file to send"),
-    provider: Optional[str] = typer.Option(None, "--provider", help="Target provider: lark, email"),
+    provider: Optional[str] = typer.Option(
+        None, "--provider", help="Target provider: lark, email"
+    ),
     to: Optional[str] = typer.Option(None, "--to", help="Target recipient/group ID"),
-    text: Optional[str] = typer.Option(None, "--text", "-t", help="Message text content"),
-    reply_to: Optional[str] = typer.Option(None, "--reply-to", help="Message ID being replied to"),
-    correlation: Optional[str] = typer.Option(None, "--correlation", "-c", help="Correlation ID"),
+    text: Optional[str] = typer.Option(
+        None, "--text", "-t", help="Message text content"
+    ),
+    reply_to: Optional[str] = typer.Option(
+        None, "--reply-to", help="Message ID being replied to"
+    ),
+    correlation: Optional[str] = typer.Option(
+        None, "--correlation", "-c", help="Correlation ID"
+    ),
     json: AgentOutput = False,
 ):
     """Create an outbound message draft."""
@@ -337,18 +382,23 @@ def send_message(
 
     # Quick send mode
     if not provider or not to or not text:
-        OutputManager.error("Must provide either --file or all of --provider, --to, and --text")
+        OutputManager.error(
+            "Must provide either --file or all of --provider, --to, and --text"
+        )
         raise typer.Exit(code=1)
 
     try:
         provider_enum = Provider(provider.lower())
     except ValueError:
         valid_providers = [p.value for p in Provider]
-        OutputManager.error(f"Invalid provider '{provider}'. Valid: {', '.join(valid_providers)}")
+        OutputManager.error(
+            f"Invalid provider '{provider}'. Valid: {', '.join(valid_providers)}"
+        )
         raise typer.Exit(code=1)
 
     # Generate draft ID
     import uuid
+
     draft_id = f"out_{provider_enum.value}_{uuid.uuid4().hex[:8]}"
 
     draft = OutboundDraft(
@@ -376,7 +426,9 @@ def send_message(
 
     result = {
         "draft_id": draft_id,
-        "file_path": str(file_path.relative_to(Path.cwd())) if file_path.is_relative_to(Path.cwd()) else str(file_path),
+        "file_path": str(file_path.relative_to(Path.cwd()))
+        if file_path.is_relative_to(Path.cwd())
+        else str(file_path),
         "provider": provider_enum.value,
         "to": to,
         "courier_notified": courier_notified,
@@ -388,7 +440,9 @@ def send_message(
         console.print(f"[green]✓[/green] Created draft: {draft_id}")
         console.print(f"  File: {result['file_path']}")
         if not courier_notified:
-            console.print("  [yellow]⚠ Courier not running - draft will be sent when service starts[/yellow]")
+            console.print(
+                "  [yellow]⚠ Courier not running - draft will be sent when service starts[/yellow]"
+            )
 
 
 @app.command("claim")
@@ -415,44 +469,56 @@ def claim_message(
     for message_id in message_ids:
         try:
             lock_info = client.claim_message(message_id, agent_id, timeout)
-            results.append({
-                "message_id": message_id,
-                "status": "claimed",
-                "claimed_by": lock_info.claimed_by,
-                "expires_at": lock_info.expires_at.isoformat() if lock_info.expires_at else None,
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "claimed",
+                    "claimed_by": lock_info.claimed_by,
+                    "expires_at": lock_info.expires_at.isoformat()
+                    if lock_info.expires_at
+                    else None,
+                }
+            )
         except MessageNotFoundError as e:
-            results.append({
-                "message_id": message_id,
-                "status": "error",
-                "error": "not_found",
-                "message": str(e),
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "error",
+                    "error": "not_found",
+                    "message": str(e),
+                }
+            )
             exit_code = 1
         except MessageAlreadyClaimedError as e:
-            results.append({
-                "message_id": message_id,
-                "status": "error",
-                "error": "already_claimed",
-                "claimed_by": e.claimed_by,
-                "message": str(e),
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "error",
+                    "error": "already_claimed",
+                    "claimed_by": e.claimed_by,
+                    "message": str(e),
+                }
+            )
             exit_code = 2
         except CourierNotRunningError as e:
-            results.append({
-                "message_id": message_id,
-                "status": "error",
-                "error": "courier_not_running",
-                "message": str(e),
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "error",
+                    "error": "courier_not_running",
+                    "message": str(e),
+                }
+            )
             exit_code = 3
         except CourierError as e:
-            results.append({
-                "message_id": message_id,
-                "status": "error",
-                "error": "courier_error",
-                "message": str(e),
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "error",
+                    "error": "courier_error",
+                    "message": str(e),
+                }
+            )
             exit_code = 4
 
     if json:
@@ -460,7 +526,9 @@ def claim_message(
     else:
         for r in results:
             if r["status"] == "claimed":
-                console.print(f"[green]✓[/green] Claimed: {r['message_id']} (expires: {r.get('expires_at', 'N/A')})")
+                console.print(
+                    f"[green]✓[/green] Claimed: {r['message_id']} (expires: {r.get('expires_at', 'N/A')})"
+                )
             else:
                 console.print(f"[red]✗[/red] {r['message_id']}: {r['message']}")
 
@@ -490,25 +558,31 @@ def complete_message(
     for message_id in message_ids:
         try:
             client.complete_message(message_id, agent_id)
-            results.append({
-                "message_id": message_id,
-                "status": "completed",
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "completed",
+                }
+            )
         except MessageNotFoundError as e:
-            results.append({
-                "message_id": message_id,
-                "status": "error",
-                "error": "not_found",
-                "message": str(e),
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "error",
+                    "error": "not_found",
+                    "message": str(e),
+                }
+            )
             exit_code = 1
         except CourierError as e:
-            results.append({
-                "message_id": message_id,
-                "status": "error",
-                "error": "courier_error",
-                "message": str(e),
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "error",
+                    "error": "courier_error",
+                    "message": str(e),
+                }
+            )
             exit_code = 2
 
     if json:
@@ -527,7 +601,9 @@ def complete_message(
 def fail_message(
     message_ids: List[str] = typer.Argument(..., help="Message ID(s) to mark failed"),
     reason: str = typer.Option("", "--reason", "-r", help="Failure reason"),
-    retryable: bool = typer.Option(True, "--retryable/--no-retryable", help="Whether failure is retryable"),
+    retryable: bool = typer.Option(
+        True, "--retryable/--no-retryable", help="Whether failure is retryable"
+    ),
     json: AgentOutput = False,
 ):
     """Mark message(s) as failed."""
@@ -548,27 +624,33 @@ def fail_message(
     for message_id in message_ids:
         try:
             client.fail_message(message_id, agent_id, reason, retryable)
-            results.append({
-                "message_id": message_id,
-                "status": "failed",
-                "retryable": retryable,
-                "reason": reason,
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "failed",
+                    "retryable": retryable,
+                    "reason": reason,
+                }
+            )
         except MessageNotFoundError as e:
-            results.append({
-                "message_id": message_id,
-                "status": "error",
-                "error": "not_found",
-                "message": str(e),
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "error",
+                    "error": "not_found",
+                    "message": str(e),
+                }
+            )
             exit_code = 1
         except CourierError as e:
-            results.append({
-                "message_id": message_id,
-                "status": "error",
-                "error": "courier_error",
-                "message": str(e),
-            })
+            results.append(
+                {
+                    "message_id": message_id,
+                    "status": "error",
+                    "error": "courier_error",
+                    "message": str(e),
+                }
+            )
             exit_code = 2
 
     if json:
@@ -577,7 +659,9 @@ def fail_message(
         for r in results:
             if r["status"] == "failed":
                 retry_str = "(will retry)" if retryable else "(deadletter)"
-                console.print(f"[yellow]⚠[/yellow] Failed: {r['message_id']} {retry_str}")
+                console.print(
+                    f"[yellow]⚠[/yellow] Failed: {r['message_id']} {retry_str}"
+                )
                 if reason:
                     console.print(f"       Reason: {reason}")
             else:

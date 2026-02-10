@@ -8,15 +8,16 @@ Can be used for:
 """
 
 import logging
-from datetime import datetime
-from typing import Any, Dict, Optional, AsyncIterator
+from datetime import datetime, timezone
+from typing import Any, AsyncIterator, Dict, Optional
 
 from monoco.features.connector.protocol.schema import (
     InboundMessage,
     OutboundMessage,
     Provider,
 )
-from .base import BaseAdapter, AdapterConfig, SendResult, HealthStatus
+
+from .base import AdapterConfig, BaseAdapter, HealthStatus, SendResult
 
 logger = logging.getLogger("courier.adapters.stub")
 
@@ -74,14 +75,14 @@ class StubAdapter(BaseAdapter):
         if self._should_succeed:
             return SendResult(
                 success=True,
-                provider_message_id=f"stub_{datetime.utcnow().timestamp()}",
-                timestamp=datetime.utcnow(),
+                provider_message_id=f"stub_{datetime.now(timezone.utc).timestamp()}",
+                timestamp=datetime.now(timezone.utc),
             )
         else:
             return SendResult(
                 success=False,
                 error="Stub adapter configured to fail",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
 
     async def health_check(self) -> HealthStatus:
