@@ -427,6 +427,7 @@ class CourierService:
                         stdout=log_fd,
                         stderr=subprocess.STDOUT,
                         start_new_session=True,  # Detach from terminal
+                        env=os.environ.copy(),  # Pass environment variables (e.g., DINGTALK credentials)
                     )
                     # Write PID and State file
                     self._write_pid(process.pid)

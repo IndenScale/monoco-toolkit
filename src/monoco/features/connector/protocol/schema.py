@@ -218,7 +218,9 @@ class InboundMessage(BaseModel):
     def to_filename(self) -> str:
         """Generate the storage filename for this message."""
         ts = self.timestamp.strftime("%Y%m%dT%H%M%S")
-        return f"{ts}_{self.provider.value}_{self.id}.md"
+        # Sanitize message id to be filesystem-safe
+        safe_id = self.id.replace("/", "_").replace("\\", "_")
+        return f"{ts}_{self.provider.value}_{safe_id}.md"
 
 
 class OutboundMessage(BaseModel):
@@ -253,7 +255,9 @@ class OutboundMessage(BaseModel):
     def to_filename(self, uid: str) -> str:
         """Generate the storage filename for this outbound message."""
         ts = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
-        return f"{ts}_{self.provider.value}_{uid}.md"
+        # Sanitize uid to be filesystem-safe
+        safe_uid = uid.replace("/", "_").replace("\\", "_")
+        return f"{ts}_{self.provider.value}_{safe_uid}.md"
 
 
 # Union type for generic message handling

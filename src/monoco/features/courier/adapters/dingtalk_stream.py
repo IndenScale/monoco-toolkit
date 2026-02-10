@@ -456,8 +456,11 @@ class DingTalkStreamAdapter(BaseAdapter):
     async def _parse_message(self, message: Any) -> Optional[InboundMessage]:
         """Parse DingTalk message to InboundMessage format."""
         try:
-            msg_dict = message.to_dict() if hasattr(message, 'to_dict') else {}
-
+            # Stream SDK wraps message in CallbackMessage, actual data is in .data
+            msg_dict = message.data if hasattr(message, 'data') else {}
+            if isinstance(msg_dict, str):
+                msg_dict = json.loads(msg_dict)
+            
             logger.debug(f"Parsing message: {msg_dict}")
 
             msg_type = msg_dict.get("msgtype", "text")
@@ -555,17 +558,10 @@ class DingTalkStreamAdapter(BaseAdapter):
             adapter = self
             
             class MonocoChatbotHandler(ChatbotHandler):
-                def process(self, message):
+                async def process(self, message):
                     try:
-                        # Run async parsing in sync context
-                        import asyncio
-                        try:
-                            loop = asyncio.get_event_loop()
-                        except RuntimeError:
-                            loop = asyncio.new_event_loop()
-                            asyncio.set_event_loop(loop)
-
-                        inbound_msg = loop.run_until_complete(adapter._parse_message(message))
+                        # Parse message (async)
+                        inbound_msg = await adapter._parse_message(message)
                         if inbound_msg and adapter._message_handler:
                             conversation_id = inbound_msg.session.id if inbound_msg.session else "unknown"
                             project_slug = adapter._project_mapping.get(
