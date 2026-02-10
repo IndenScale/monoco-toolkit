@@ -13,7 +13,7 @@ Example Usage:
     >>>
     >>> config = WatchConfig(
     ...     path=Path("./Issues"),
-    ...     patterns=["*.md"],
+    ...     patterns=["*.md"),
     ...     recursive=True,
     ... )
     >>> watcher = IssueWatcher(config)
@@ -34,7 +34,6 @@ from .base import (
 from .issue import IssueWatcher, IssueFileEvent
 from .memo import MemoWatcher, MemoFileEvent
 from .task import TaskWatcher, TaskFileEvent
-from .im import IMWatcher, IMFileEvent, IMInboundWatcher, IMWebhookWatcher
 
 __all__ = [
     # Base classes
@@ -52,9 +51,4 @@ __all__ = [
     "MemoFileEvent",
     "TaskWatcher",
     "TaskFileEvent",
-    # IM watchers (FEAT-0167)
-    "IMWatcher",
-    "IMFileEvent",
-    "IMInboundWatcher",
-    "IMWebhookWatcher",
 ]
