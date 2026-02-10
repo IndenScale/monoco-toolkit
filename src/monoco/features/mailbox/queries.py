@@ -92,6 +92,7 @@ class MessageQuery:
                 preview=message.get_preview(),
                 session_name=message.session.name,
                 correlation_id=message.correlation_id,
+                artifact_count=len(message.artifacts) if message.artifacts else 0,
             )
             results.append(item)
 

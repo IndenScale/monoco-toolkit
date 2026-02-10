@@ -78,6 +78,7 @@ def list_messages(
     correlation: Optional[str] = typer.Option(None, "--correlation", "-c", help="Filter by correlation ID"),
     all: bool = typer.Option(False, "--all", "-a", help="Show all messages including archived"),
     format: str = typer.Option("table", "--format", "-f", help="Output format: table, json, compact, id"),
+    with_attachments: bool = typer.Option(False, "--with-attachments", help="Include attachment info in output"),
     json: AgentOutput = False,
 ):
     """List messages in the mailbox."""
@@ -138,7 +139,8 @@ def list_messages(
     if list_format == ListFormat.COMPACT:
         for msg in messages:
             time_str = msg.timestamp.strftime("%H:%M") if datetime.now().date() == msg.timestamp.date() else msg.timestamp.strftime("%m-%d")
-            console.print(f"{msg.id} | {msg.from_name} | {time_str} | {msg.preview[:40]}")
+            attach_marker = " [📎]" if msg.artifact_count > 0 else ""
+            console.print(f"{msg.id} | {msg.from_name} | {time_str} | {msg.preview[:40]}{attach_marker}")
         return
 
     # Table format (default)
@@ -152,6 +154,8 @@ def list_messages(
     table.add_column("From", width=15)
     table.add_column("Status", width=10)
     table.add_column("Time", width=12)
+    if with_attachments:
+        table.add_column("Attachments", width=5)
     table.add_column("Preview", style="white")
 
     status_colors = {
@@ -164,14 +168,23 @@ def list_messages(
     for msg in messages:
         status_color = status_colors.get(msg.status, "white")
         time_str = msg.timestamp.strftime("%Y-%m-%d %H:%M")
-        table.add_row(
+
+        row_data = [
             msg.id,
             msg.provider.value,
             msg.from_name[:14] if len(msg.from_name) > 14 else msg.from_name,
             f"[{status_color}]{msg.status.value}[/{status_color}]",
             time_str,
-            msg.preview[:50],
-        )
+        ]
+
+        if with_attachments:
+            attach_count = msg.artifact_count if hasattr(msg, 'artifact_count') else 0
+            attach_display = str(attach_count) if attach_count > 0 else "-"
+            row_data.append(attach_display)
+
+        row_data.append(msg.preview[:50])
+
+        table.add_row(*row_data)
 
     console.print(table)
 

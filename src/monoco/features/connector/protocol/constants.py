@@ -12,6 +12,7 @@ ARCHIVE_DIR = "archive"
 STATE_DIR = ".state"
 DEADLETTER_DIR = ".deadletter"
 TMP_DIR = ".tmp"
+ARTIFACTS_DIR = "artifacts"
 
 # Default mailbox root path (relative to project root)
 DEFAULT_MAILBOX_ROOT = Path(".monoco") / MAILBOX_DIR

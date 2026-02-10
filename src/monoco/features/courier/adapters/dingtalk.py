@@ -28,8 +28,10 @@ from monoco.features.connector.protocol.schema import (
 from monoco.features.mailbox.store import MailboxStore
 from monoco.features.mailbox.models import MailboxConfig
 from monoco.core.registry import ProjectInventoryEntry
+from monoco.core.config import get_config
 
 from ..debounce import DebounceHandler, DebounceConfig
+from .dingtalk_artifacts import DingTalkArtifactDownloader
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +110,9 @@ class DingtalkAdapter:
         # Map: project_slug -> MailboxStore
         self._stores: Dict[str, MailboxStore] = {}
 
+        # Map: project_slug -> DingTalkArtifactDownloader
+        self._artifact_downloaders: Dict[str, DingTalkArtifactDownloader] = {}
+
         self._lock = asyncio.Lock()
 
     async def handle_webhook(
@@ -145,8 +150,8 @@ class DingtalkAdapter:
                 logger.warning(f"Timestamp expired for project '{slug}'")
                 raise ValueError("Timestamp expired")
 
-        # 2. Parse and validate payload
-        message = self._parse_payload(payload)
+        # 2. Parse and validate payload (async for attachment downloading)
+        message = await self._parse_payload(payload, project)
         if not message:
             raise ValueError("Failed to parse DingTalk payload")
 
@@ -171,13 +176,19 @@ class DingtalkAdapter:
             "message_id": message.id,
         }
 
-    def _parse_payload(self, payload: Dict[str, Any]) -> Optional[InboundMessage]:
+    async def _parse_payload(
+        self,
+        payload: Dict[str, Any],
+        project: ProjectInventoryEntry,
+    ) -> Optional[InboundMessage]:
         """
         Parse DingTalk payload into standardized InboundMessage.
 
         Supports multiple DingTalk event types:
         - chatbot_message: Direct bot messages
         - conversation: Group chat messages
+
+        Also downloads any attachments and stores them in the artifact store.
         """
         try:
             # Extract message info based on DingTalk format
@@ -215,9 +226,26 @@ class DingtalkAdapter:
                 ).hexdigest()[:16]
                 msg_id = content_hash
 
+            message_id = f"{Provider.DINGTALK.value}_{msg_id}"
+
+            # Download attachments if any
+            artifacts = []
+            if msg_type in ("image", "file", "voice", "video", "rich"):
+                try:
+                    downloader = await self._get_artifact_downloader(project)
+                    artifacts = await downloader.download_from_payload(
+                        payload=payload,
+                        message_id=message_id,
+                    )
+                    if artifacts:
+                        logger.info(f"Downloaded {len(artifacts)} attachments for {message_id}")
+                except Exception as e:
+                    logger.exception(f"Failed to download attachments: {e}")
+                    # Continue without attachments rather than failing the entire message
+
             # Build standardized message
             return InboundMessage(
-                id=f"{Provider.DINGTALK.value}_{msg_id}",
+                id=message_id,
                 provider=Provider.DINGTALK,
                 session=Session(
                     id=conversation_id or sender_staff_id or "unknown",
@@ -240,11 +268,12 @@ class DingtalkAdapter:
                     text=content_text if msg_type == "text" else None,
                     markdown=content_text if msg_type == "markdown" else None,
                 ),
-                artifacts=[],  # TODO: Handle file attachments
+                artifacts=artifacts,
                 metadata={
                     "dingtalk_raw": payload,
                     "msg_type": msg_type,
                     "conversation_id": conversation_id,
+                    "attachment_count": len(artifacts),
                 },
             )
 
@@ -296,14 +325,37 @@ class DingtalkAdapter:
             async with self._lock:
                 if slug not in self._stores:
                     config = MailboxConfig(
-                        project_path=project.path,
-                        inbound_path=project.mailbox / "inbound",
-                        outbound_path=project.mailbox / "outbound",
-                        archive_path=project.mailbox / "archive",
-                        state_path=project.mailbox / "state",
+                        root_path=project.mailbox,
                     )
                     self._stores[slug] = MailboxStore(config)
         return self._stores[slug]
+
+    async def _get_artifact_downloader(
+        self,
+        project: ProjectInventoryEntry,
+    ) -> DingTalkArtifactDownloader:
+        """Get or create an artifact downloader for the project."""
+        slug = project.slug
+        if slug not in self._artifact_downloaders:
+            async with self._lock:
+                if slug not in self._artifact_downloaders:
+                    # Get global artifacts directory
+                    config = get_config()
+                    artifacts_dir = Path(config.paths.root).expanduser() / ".monoco" / "artifacts"
+
+                    # Get DingTalk credentials from project config
+                    client_id = ""
+                    client_secret = ""
+                    if project.config:
+                        client_id = project.config.get("dingtalk_client_id", "")
+                        client_secret = project.config.get("dingtalk_secret", "")
+
+                    self._artifact_downloaders[slug] = DingTalkArtifactDownloader(
+                        artifacts_dir=artifacts_dir,
+                        client_id=client_id,
+                        client_secret=client_secret,
+                    )
+        return self._artifact_downloaders[slug]
 
     async def flush_project(self, slug: str) -> Dict[str, Any]:
         """

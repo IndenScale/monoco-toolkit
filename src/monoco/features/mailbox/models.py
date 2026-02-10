@@ -89,6 +89,7 @@ class MessageListItem:
     preview: str
     session_name: Optional[str] = None
     correlation_id: Optional[str] = None
+    artifact_count: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON output."""
@@ -104,6 +105,7 @@ class MessageListItem:
             "preview": self.preview,
             "session_name": self.session_name,
             "correlation_id": self.correlation_id,
+            "artifact_count": self.artifact_count,
         }
 
 

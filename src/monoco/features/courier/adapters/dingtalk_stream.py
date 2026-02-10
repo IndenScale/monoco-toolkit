@@ -8,6 +8,7 @@ import json
 import logging
 import threading
 import time
+from pathlib import Path
 from typing import Callable, Dict, Any, Optional
 from datetime import datetime, timedelta, timezone
 
@@ -22,8 +23,10 @@ from monoco.features.connector.protocol.schema import (
     Content,
     ContentType,
 )
+from monoco.features.artifact.store import ArtifactStore
 
 from .base import BaseAdapter, AdapterConfig, SendResult, HealthStatus
+from .dingtalk_artifacts import DingTalkArtifactDownloader
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +101,16 @@ class DingTalkStreamAdapter(BaseAdapter):
         self._access_token: Optional[str] = None
         self._token_expires_at: Optional[datetime] = None
         self._http_client: Optional[httpx.AsyncClient] = None
-        
+
+        # Artifact downloader
+        from monoco.core.config import get_config
+        artifacts_dir = Path(get_config().paths.root).expanduser() / ".monoco" / "artifacts"
+        self._artifact_downloader = DingTalkArtifactDownloader(
+            artifacts_dir=artifacts_dir,
+            client_id=self._client_id,
+            client_secret=self._client_secret,
+        )
+
     def set_message_handler(self, handler: Callable[[InboundMessage, str], None]):
         """Set handler for incoming messages."""
         self._message_handler = handler
@@ -441,22 +453,22 @@ class DingTalkStreamAdapter(BaseAdapter):
             logger.info(f"Sending message to user: {target[:30]}...")
             return await self._send_to_user(access_token, target, message)
     
-    def _parse_message(self, message: Any) -> Optional[InboundMessage]:
+    async def _parse_message(self, message: Any) -> Optional[InboundMessage]:
         """Parse DingTalk message to InboundMessage format."""
         try:
             msg_dict = message.to_dict() if hasattr(message, 'to_dict') else {}
-            
+
             logger.debug(f"Parsing message: {msg_dict}")
-            
+
             msg_type = msg_dict.get("msgtype", "text")
             sender_staff_id = msg_dict.get("senderStaffId", "unknown")
             sender_nick = msg_dict.get("senderNick", "Unknown")
             conversation_id = msg_dict.get("conversationId", "unknown")
             conversation_title = msg_dict.get("conversationTitle")
             chat_type = msg_dict.get("chatType", "")
-            
+
             session_type = SessionType.GROUP if str(chat_type) == "2" else SessionType.DIRECT
-            
+
             # Extract content
             content_text = ""
             if msg_type == "text":
@@ -465,7 +477,7 @@ class DingTalkStreamAdapter(BaseAdapter):
             elif msg_type == "markdown":
                 md_obj = msg_dict.get("markdown", {})
                 content_text = md_obj.get("text", "") if isinstance(md_obj, dict) else str(md_obj)
-            
+
             msg_id = msg_dict.get("msgId", "")
             if not msg_id:
                 import hashlib
@@ -473,11 +485,26 @@ class DingTalkStreamAdapter(BaseAdapter):
                     f"{sender_staff_id}:{conversation_id}:{content_text}:{time.time()}".encode()
                 ).hexdigest()[:16]
                 msg_id = content_hash
-            
+
+            message_id = f"dingtalk_{msg_id}"
+
+            # Download attachments if any
+            artifacts = []
+            if msg_type in ("image", "file", "voice", "video", "rich"):
+                try:
+                    artifacts = await self._artifact_downloader.download_from_payload(
+                        payload=msg_dict,
+                        message_id=message_id,
+                    )
+                    if artifacts:
+                        logger.info(f"Downloaded {len(artifacts)} attachments for {message_id}")
+                except Exception as e:
+                    logger.exception(f"Failed to download attachments: {e}")
+
             logger.info(f"✉️  Received from {sender_nick}: {content_text[:50]}")
-            
+
             return InboundMessage(
-                id=f"dingtalk_{msg_id}",
+                id=message_id,
                 provider=Provider.DINGTALK,
                 session=Session(
                     id=conversation_id,
@@ -500,14 +527,15 @@ class DingTalkStreamAdapter(BaseAdapter):
                     text=content_text if msg_type == "text" else None,
                     markdown=content_text if msg_type == "markdown" else None,
                 ),
-                artifacts=[],
+                artifacts=artifacts,
                 metadata={
                     "dingtalk_raw": msg_dict,
                     "msg_type": msg_type,
                     "receive_mode": "stream",
+                    "attachment_count": len(artifacts),
                 },
             )
-            
+
         except Exception as e:
             logger.exception(f"Failed to parse message: {e}")
             return None
@@ -529,11 +557,19 @@ class DingTalkStreamAdapter(BaseAdapter):
             class MonocoChatbotHandler(ChatbotHandler):
                 def process(self, message):
                     try:
-                        inbound_msg = adapter._parse_message(message)
+                        # Run async parsing in sync context
+                        import asyncio
+                        try:
+                            loop = asyncio.get_event_loop()
+                        except RuntimeError:
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+
+                        inbound_msg = loop.run_until_complete(adapter._parse_message(message))
                         if inbound_msg and adapter._message_handler:
                             conversation_id = inbound_msg.session.id if inbound_msg.session else "unknown"
                             project_slug = adapter._project_mapping.get(
-                                conversation_id, 
+                                conversation_id,
                                 adapter._default_project
                             )
                             adapter._message_handler(inbound_msg, project_slug)
@@ -572,6 +608,8 @@ class DingTalkStreamAdapter(BaseAdapter):
         if self._http_client:
             await self._http_client.aclose()
             self._http_client = None
+        if self._artifact_downloader:
+            await self._artifact_downloader.aclose()
         logger.info("DingTalk Stream adapter disconnected")
     
     async def listen(self):

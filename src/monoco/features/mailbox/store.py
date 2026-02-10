@@ -337,6 +337,10 @@ class MailboxStore:
         """
         Move a message to the archive directory.
 
+        Note: Artifacts are content-addressed and remain in place
+        (they may be referenced by multiple messages). Only the
+        message metadata file is moved.
+
         Args:
             message_id: Message identifier
 
@@ -359,7 +363,30 @@ class MailboxStore:
         dest_path = archive_provider_dir / source_path.name
         source_path.rename(dest_path)
 
+        # Note: Artifacts are content-addressed and shared across messages
+        # They remain in ~/.monoco/artifacts/ and are not moved
+        # The manifest records which messages reference each artifact
+
         return dest_path
+
+    def get_message_artifacts(self, message_id: str) -> List[Dict]:
+        """
+        Get artifact information for a message.
+
+        Args:
+            message_id: Message identifier
+
+        Returns:
+            List of artifact metadata dicts
+        """
+        message = self.read_inbound_message(message_id)
+        if not message:
+            message = self.read_outbound_message(message_id)
+
+        if message and message.artifacts:
+            return [a.model_dump(mode="json") for a in message.artifacts]
+
+        return []
 
     def create_inbound_message(
         self,

@@ -44,7 +44,8 @@ def adapter():
         default_project="test_project"
     )
 
-def test_dingtalk_stream_parsing_text(adapter):
+@pytest.mark.asyncio
+async def test_dingtalk_stream_parsing_text(adapter):
     """Test parsing of a standard DingTalk text message via Stream."""
     raw_payload = {
         "msgtype": "text",
@@ -57,7 +58,7 @@ def test_dingtalk_stream_parsing_text(adapter):
     }
     mock_msg = MockCallbackMessage(raw_payload)
     
-    inbound = adapter._parse_message(mock_msg)
+    inbound = await adapter._parse_message(mock_msg)
     
     assert inbound is not None
     assert inbound.id == "dingtalk_ding_msg_001"
@@ -65,7 +66,8 @@ def test_dingtalk_stream_parsing_text(adapter):
     assert inbound.session.type == SessionType.GROUP
     assert inbound.participants["from"]["name"] == "Alice"
 
-def test_dingtalk_stream_parsing_markdown(adapter):
+@pytest.mark.asyncio
+async def test_dingtalk_stream_parsing_markdown(adapter):
     """Test parsing of a DingTalk markdown message."""
     raw_payload = {
         "msgtype": "markdown",
@@ -78,14 +80,15 @@ def test_dingtalk_stream_parsing_markdown(adapter):
     }
     mock_msg = MockCallbackMessage(raw_payload)
     
-    inbound = adapter._parse_message(mock_msg)
+    inbound = await adapter._parse_message(mock_msg)
     
     assert inbound is not None
     assert inbound.type == ContentType.MARKDOWN
     assert inbound.content.markdown == "### Monoco\\nUpdate available"
     assert inbound.session.type == SessionType.DIRECT
 
-def test_dingtalk_stream_handler_callback(adapter):
+@pytest.mark.asyncio
+async def test_dingtalk_stream_handler_callback(adapter):
     """Test that the internal handler correctly invokes the message handler."""
     message_received = []
     
@@ -105,7 +108,7 @@ def test_dingtalk_stream_handler_callback(adapter):
     mock_msg = MockCallbackMessage(raw_payload)
     
     # Simulate what happens inside the handler's process method
-    inbound_msg = adapter._parse_message(mock_msg)
+    inbound_msg = await adapter._parse_message(mock_msg)
     if inbound_msg:
         adapter._message_handler(inbound_msg, "test_project")
         
@@ -113,11 +116,12 @@ def test_dingtalk_stream_handler_callback(adapter):
     assert message_received[0][0].content.text == "Hello"
     assert message_received[0][1] == "test_project"
 
-def test_dingtalk_stream_parsing_error_robustness(adapter):
+@pytest.mark.asyncio
+async def test_dingtalk_stream_parsing_error_robustness(adapter):
     """Test that parsing handles malformed or minimal data gracefully."""
     # Empty data
     mock_msg = MockCallbackMessage({})
-    inbound = adapter._parse_message(mock_msg)
+    inbound = await adapter._parse_message(mock_msg)
     
     assert inbound is not None
     assert inbound.participants["from"]["id"] == "unknown"
