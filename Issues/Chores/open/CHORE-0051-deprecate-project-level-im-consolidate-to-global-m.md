@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: Deprecate project-level IM, consolidate to global mailbox
 created_at: '2026-02-10T14:26:12'
-updated_at: '2026-02-10T14:26:32'
+updated_at: 2026-02-10 14:26:32
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -16,8 +16,13 @@ tags:
 - '#EPIC-0000'
 files: []
 criticality: low
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-10T14:26:12'
+isolation:
+  type: branch
+  ref: CHORE-0051-deprecate-project-level-im-consolidate-to-global-m
+  path: null
+  created_at: '2026-02-10T14:26:32'
 ---
 
 ## CHORE-0051: Deprecate project-level IM, consolidate to global mailbox
