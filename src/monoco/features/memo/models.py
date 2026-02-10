@@ -19,7 +19,7 @@ class Memo(BaseModel):
         timestamp: When the memo was created
         context: Optional context (file:line, etc.)
         author: Who created the memo (User, Assistant, Agent name)
-        source: How the memo was created (cli, agent, mailroom)
+        source: How the memo was created (cli, agent)
         type: Type of memo (insight, bug, feature, task)
     """
     uid: str
@@ -31,7 +31,7 @@ class Memo(BaseModel):
     
     # Metadata Fields
     author: str = "User"  # User, Assistant, or specific Agent Name
-    source: str = "cli"   # cli, agent, mailroom, etc.
+    source: str = "cli"   # cli, agent, etc.
     type: Literal["insight", "bug", "feature", "task"] = "insight"
     
     def to_markdown(self) -> str:

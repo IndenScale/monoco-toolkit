@@ -128,7 +128,7 @@ class Artifact(BaseModel):
     type: ArtifactType = Field(..., description="Type of artifact")
     mime_type: Optional[str] = Field(None, description="MIME type")
     size: Optional[int] = Field(None, description="File size in bytes")
-    path: Optional[str] = Field(None, description="Path relative to .monoco/dropzone/")
+    path: Optional[str] = Field(None, description="Path relative to artifact storage")
     inline: bool = Field(False, description="Whether this is an inline attachment")
 
 

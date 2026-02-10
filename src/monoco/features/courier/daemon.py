@@ -50,7 +50,7 @@ class CourierDaemon:
     - HTTP API server
     - Message state
     - Outbound message processing
-    - Inbound message ingestion
+    - Inbound message processing
     """
 
     def __init__(
