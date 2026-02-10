@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 实现Mailbox目录监听与Prime Agent触发机制
 created_at: '2026-02-10T15:16:49'
-updated_at: '2026-02-10T16:44:10'
+updated_at: 2026-02-10 16:44:10
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -41,10 +41,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-10T15:16:49'
 closed_at: '2026-02-10T16:44:10'
-isolation:
-  type: branch
-  ref: FEAT-0199-实现mailbox目录监听与prime-agent触发机制
-  created_at: '2026-02-10T15:17:53'
 ---
 
 ## FEAT-0199: 实现Mailbox目录监听与Prime Agent触发机制
