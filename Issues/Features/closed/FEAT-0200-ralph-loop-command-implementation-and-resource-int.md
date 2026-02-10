@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: Ralph Loop command implementation and resource integration
 created_at: '2026-02-10T17:45:51'
-updated_at: '2026-02-10T17:58:48'
+updated_at: 2026-02-10 17:58:48
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -25,10 +25,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-10T17:45:51'
 closed_at: '2026-02-10T17:58:48'
-isolation:
-  type: branch
-  ref: FEAT-0200-ralph-loop-command-implementation-and-resource-int
-  created_at: '2026-02-10T17:45:57'
 ---
 
 ## FEAT-0200: Ralph Loop command implementation and resource integration
