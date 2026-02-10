@@ -4,12 +4,13 @@ uid: 7d8a2c
 type: feature
 status: closed
 stage: done
-title: IM Agent 工作流：实时会话与流式响应
+title: '[DEPRECATED] IM Agent 工作流：实时会话与流式响应'
 created_at: '2026-02-03T23:23:35'
-updated_at: 2026-02-07 23:36:46
+updated_at: '2026-02-10T14:30:00'
 parent: EPIC-0033
 dependencies:
 - FEAT-0167
+- CHORE-0051
 related: []
 domains:
 - AgentEmpowerment
@@ -17,22 +18,36 @@ tags:
 - '#EPIC-0033'
 - '#FEAT-0167'
 - '#FEAT-0170'
+- '#CHORE-0051'
+- '#deprecated'
 files:
 - Issues/Epics/open/EPIC-0033-im-系统集成-实时通信与-agent-编排.md
 - Issues/Features/open/FEAT-0172-courier-outbound-message-processor-and-archival.md
 - src/monoco/features/courier/daemon.py
-- src/monoco/features/courier/im_integration.py
-- src/monoco/features/im/__init__.py
-- src/monoco/features/im/handlers.py
-- src/monoco/features/im/session.py
-- tests/features/im/test_session.py
-criticality: high
-solution: implemented
+criticality: low
+solution: deprecated
 opened_at: '2026-02-03T23:23:35'
 closed_at: '2026-02-07T23:36:46'
 ---
 
-## FEAT-0170: IM Agent 工作流：实时会话与流式响应
+## ⚠️ DEPRECATED - 已废除
+
+> **本项目级 IM Agent 工作流已被废除 (CHORE-0051)**
+>
+> **原因**: 依赖的 FEAT-0167 (项目级 IM 基础设施) 已被废除。
+>
+> **替代方案**: 使用全局 Mailbox 系统
+> - 消息流: Platform → Courier → `~/.monoco/mailbox/inbound/`
+> - Agent 触发: `MailboxInboundWatcher` → `MAILBOX_AGENT_TRIGGER`
+> - 会话管理: 通过 Mailbox Handler 实现
+>
+> **相关代码已删除**:
+> - `src/monoco/core/watcher/im.py`
+> - `src/monoco/features/im/*` (未实现/已删除)
+
+---
+
+## FEAT-0170: IM Agent 工作流：实时会话与流式响应 (已归档)
 
 ## Objective
 

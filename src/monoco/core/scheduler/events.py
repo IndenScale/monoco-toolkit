@@ -56,14 +56,10 @@ class AgentEventType(Enum):
     PR_CREATED = "pr.created"
     PR_UPDATED = "pr.updated"
     
-    # IM events (FEAT-0167)
-    IM_MESSAGE_RECEIVED = "im.message.received"
-    IM_MESSAGE_REPLIED = "im.message.replied"
-    IM_AGENT_TRIGGER = "im.agent.trigger"
-    IM_SESSION_STARTED = "im.session.started"
-    IM_SESSION_CLOSED = "im.session.closed"
-    IM_CHANNEL_CREATED = "im.channel.created"
-    IM_CHANNEL_UPDATED = "im.channel.updated"
+    # MAILBOX events (replaces deprecated IM events, CHORE-0051)
+    MAILBOX_INBOUND_RECEIVED = "mailbox.inbound.received"
+    MAILBOX_INBOUND_CLAIMED = "mailbox.inbound.claimed"
+    MAILBOX_AGENT_TRIGGER = "mailbox.agent.trigger"
 
 
 @dataclass
