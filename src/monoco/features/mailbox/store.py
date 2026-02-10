@@ -12,16 +12,16 @@ from typing import Dict, List, Optional, Tuple
 
 import yaml
 
-from monoco.features.connector.protocol.schema import InboundMessage, OutboundMessage
 from monoco.features.connector.protocol.constants import (
-    INBOUND_DIR,
-    OUTBOUND_DIR,
     ARCHIVE_DIR,
-    STATE_DIR,
+    INBOUND_DIR,
     LOCKS_FILE,
+    OUTBOUND_DIR,
+    STATE_DIR,
 )
+from monoco.features.connector.protocol.schema import InboundMessage, OutboundMessage
 
-from .models import MailboxConfig, LockInfo, MessageStatus, OutboundDraft
+from .models import LockInfo, MailboxConfig, MessageStatus, OutboundDraft
 
 
 class MailboxStore:
@@ -47,6 +47,7 @@ class MailboxStore:
 
         # Create provider subdirectories
         from monoco.features.connector.protocol.schema import Provider
+
         for provider in Provider:
             (self.config.inbound_path / provider.value).mkdir(exist_ok=True)
             (self.config.outbound_path / provider.value).mkdir(exist_ok=True)
@@ -73,10 +74,7 @@ class MailboxStore:
         return None, content
 
     def _write_frontmatter_file(
-        self,
-        path: Path,
-        frontmatter: Dict,
-        body: str = ""
+        self, path: Path, frontmatter: Dict, body: str = ""
     ) -> None:
         """Write a file with YAML frontmatter."""
         yaml_content = yaml.dump(
@@ -168,9 +166,7 @@ class MailboxStore:
         if provider:
             search_paths = [self.config.inbound_path / provider]
         else:
-            search_paths = [
-                d for d in self.config.inbound_path.iterdir() if d.is_dir()
-            ]
+            search_paths = [d for d in self.config.inbound_path.iterdir() if d.is_dir()]
 
         for search_path in search_paths:
             if not search_path.exists():
@@ -217,7 +213,9 @@ class MailboxStore:
         provider_dir = self.config.outbound_path / draft.provider.value
         provider_dir.mkdir(parents=True, exist_ok=True)
 
-        filename = f"{datetime.utcnow().strftime('%Y%m%dT%H%M%S')}_{draft.id}.md"
+        filename = (
+            f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}_{draft.id}.md"
+        )
         file_path = provider_dir / filename
 
         frontmatter = draft.to_frontmatter()
@@ -389,9 +387,7 @@ class MailboxStore:
         return []
 
     def create_inbound_message(
-        self,
-        message: InboundMessage,
-        temp_suffix: str = ".tmp"
+        self, message: InboundMessage, temp_suffix: str = ".tmp"
     ) -> Path:
         """
         Create an inbound message file atomically.

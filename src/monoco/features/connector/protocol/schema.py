@@ -4,16 +4,17 @@ Mailbox Protocol Schema - Core data models for message exchange.
 This module defines the unified Schema for messages between Monoco and external platforms.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator
 
 
 class Provider(str, Enum):
     """Message provider/platform types."""
+
     LARK = "lark"
     EMAIL = "email"
     SLACK = "slack"
@@ -25,19 +26,22 @@ class Provider(str, Enum):
 
 class Direction(str, Enum):
     """Message direction."""
+
     INBOUND = "inbound"
     OUTBOUND = "outbound"
 
 
 class SessionType(str, Enum):
     """Session/chat types."""
+
     DIRECT = "direct"  # 1-on-1 chat
-    GROUP = "group"    # Group chat
+    GROUP = "group"  # Group chat
     THREAD = "thread"  # Thread/topic-based discussion
 
 
 class ContentType(str, Enum):
     """Content type of the message."""
+
     TEXT = "text"
     HTML = "html"
     MARKDOWN = "markdown"
@@ -45,12 +49,13 @@ class ContentType(str, Enum):
     FILE = "file"
     AUDIO = "audio"
     VIDEO = "video"
-    CARD = "card"      # Structured card (Lark/Slack)
-    MIXED = "mixed"    # Mixed content
+    CARD = "card"  # Structured card (Lark/Slack)
+    MIXED = "mixed"  # Mixed content
 
 
 class ArtifactType(str, Enum):
     """Type of attached artifact."""
+
     IMAGE = "image"
     DOCUMENT = "document"
     AUDIO = "audio"
@@ -62,6 +67,7 @@ class ArtifactType(str, Enum):
 
 class Role(str, Enum):
     """Role of a participant in a session."""
+
     OWNER = "owner"
     ADMIN = "admin"
     MEMBER = "member"
@@ -71,34 +77,40 @@ class Role(str, Enum):
 
 class MentionType(str, Enum):
     """Type of mention in a message."""
+
     USER = "user"
-    ALL = "all"        # @everyone/@all
+    ALL = "all"  # @everyone/@all
     CHANNEL = "channel"  # @channel
-    ROLE = "role"      # @role
+    ROLE = "role"  # @role
 
 
 class MessageStatus(str, Enum):
     """Status of a message in the processing pipeline."""
-    NEW = "new"                # Just received, not yet claimed
-    CLAIMED = "claimed"        # Claimed by an agent
-    COMPLETED = "completed"    # Successfully processed
-    FAILED = "failed"          # Processing failed
-    ARCHIVED = "archived"      # Moved to archive
+
+    NEW = "new"  # Just received, not yet claimed
+    CLAIMED = "claimed"  # Claimed by an agent
+    COMPLETED = "completed"  # Successfully processed
+    FAILED = "failed"  # Processing failed
+    ARCHIVED = "archived"  # Moved to archive
     DEADLETTER = "deadletter"  # Failed permanently
 
 
 class Participant(BaseModel):
     """A participant (sender or recipient) in a message."""
+
     id: str = Field(..., description="Platform user unique identifier")
     name: str = Field(..., description="Display name")
     email: Optional[str] = Field(None, description="Email address (required for email)")
-    platform_id: Optional[str] = Field(None, description="Platform-specific ID (e.g., open_id)")
+    platform_id: Optional[str] = Field(
+        None, description="Platform-specific ID (e.g., open_id)"
+    )
     role: Role = Field(Role.MEMBER, description="Role in the session")
     avatar: Optional[str] = Field(None, description="Avatar URL")
 
 
 class Mention(BaseModel):
     """An @mention in a message."""
+
     type: MentionType = Field(..., description="Type of mention")
     target: str = Field(..., description="Target user ID or special identifier")
     name: Optional[str] = Field(None, description="Display text of the mention")
@@ -107,6 +119,7 @@ class Mention(BaseModel):
 
 class Session(BaseModel):
     """Session/chat context for a message."""
+
     id: str = Field(..., description="Physical aggregation identifier (chat_id, email)")
     type: SessionType = Field(..., description="Type of session")
     name: Optional[str] = Field(None, description="Session display name")
@@ -115,6 +128,7 @@ class Session(BaseModel):
 
 class Content(BaseModel):
     """Message content in various formats."""
+
     text: Optional[str] = Field(None, description="Plain text content")
     html: Optional[str] = Field(None, description="HTML format (email mainly)")
     markdown: Optional[str] = Field(None, description="Markdown format")
@@ -123,6 +137,7 @@ class Content(BaseModel):
 
 class Artifact(BaseModel):
     """An attached artifact/file."""
+
     id: str = Field(..., description="Artifact ID (SHA256 hash)")
     name: str = Field(..., description="Original filename")
     type: ArtifactType = Field(..., description="Type of artifact")
@@ -140,6 +155,7 @@ class InboundMessage(BaseModel):
 
     This is the primary data model for messages written by Courier and read by Mailbox.
     """
+
     # Core Identity
     id: str = Field(..., description="Global unique identifier: {provider}_{uid}")
     provider: Provider = Field(..., description="Message source platform")
@@ -151,12 +167,14 @@ class InboundMessage(BaseModel):
     # Participants
     participants: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Message participants: from, to, cc, bcc, mentions"
+        description="Message participants: from, to, cc, bcc, mentions",
     )
 
     # Timestamps
     timestamp: datetime = Field(..., description="Original send time (UTC)")
-    received_at: Optional[datetime] = Field(None, description="Courier received time (UTC)")
+    received_at: Optional[datetime] = Field(
+        None, description="Courier received time (UTC)"
+    )
     processed_at: Optional[datetime] = Field(None, description="Agent processed time")
 
     # Content
@@ -164,7 +182,9 @@ class InboundMessage(BaseModel):
     content: Content = Field(default_factory=Content, description="Message content")
 
     # Artifacts
-    artifacts: List[Artifact] = Field(default_factory=list, description="Attached files")
+    artifacts: List[Artifact] = Field(
+        default_factory=list, description="Attached files"
+    )
 
     # Correlation
     correlation_id: Optional[str] = Field(None, description="Business correlation ID")
@@ -173,35 +193,38 @@ class InboundMessage(BaseModel):
 
     # Metadata
     metadata: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Provider-specific raw metadata"
+        default_factory=dict, description="Provider-specific raw metadata"
     )
 
-    @field_validator('id')
+    @field_validator("id")
     @classmethod
     def validate_id_format(cls, v: str) -> str:
         """Validate ID format: {provider}_{uid}"""
-        if '_' not in v:
-            raise ValueError(f"Message ID must follow format {{provider}}_{{uid}}, got: {v}")
+        if "_" not in v:
+            raise ValueError(
+                f"Message ID must follow format {{provider}}_{{uid}}, got: {v}"
+            )
         return v
 
     def get_sender(self) -> Optional[Participant]:
         """Get the sender participant."""
-        from_participant = self.participants.get('from')
+        from_participant = self.participants.get("from")
         if from_participant and isinstance(from_participant, dict):
             return Participant(**from_participant)
         return None
 
     def get_recipients(self) -> List[Participant]:
         """Get the recipient participants."""
-        to_participants = self.participants.get('to', [])
+        to_participants = self.participants.get("to", [])
         if to_participants and isinstance(to_participants, list):
-            return [Participant(**p) if isinstance(p, dict) else p for p in to_participants]
+            return [
+                Participant(**p) if isinstance(p, dict) else p for p in to_participants
+            ]
         return []
 
     def get_mentions(self) -> List[Mention]:
         """Get @mentions in the message."""
-        mentions = self.participants.get('mentions', [])
+        mentions = self.participants.get("mentions", [])
         if mentions and isinstance(mentions, list):
             return [Mention(**m) if isinstance(m, dict) else m for m in mentions]
         return []
@@ -212,7 +235,7 @@ class InboundMessage(BaseModel):
         if not text:
             return f"[{self.type.value}]"
         if len(text) > max_length:
-            return text[:max_length - 3] + "..."
+            return text[: max_length - 3] + "..."
         return text
 
     def to_filename(self) -> str:
@@ -229,10 +252,17 @@ class OutboundMessage(BaseModel):
 
     This is created by Mailbox CLI and processed by Courier.
     """
+
     # Target
-    to: Union[str, List[str]] = Field(..., description="Target user/group ID(s) or email(s)")
-    cc: Optional[Union[str, List[str]]] = Field(None, description="CC recipients (email)")
-    bcc: Optional[Union[str, List[str]]] = Field(None, description="BCC recipients (email)")
+    to: Union[str, List[str]] = Field(
+        ..., description="Target user/group ID(s) or email(s)"
+    )
+    cc: Optional[Union[str, List[str]]] = Field(
+        None, description="CC recipients (email)"
+    )
+    bcc: Optional[Union[str, List[str]]] = Field(
+        None, description="BCC recipients (email)"
+    )
 
     # Context
     provider: Provider = Field(..., description="Target platform")
@@ -244,17 +274,18 @@ class OutboundMessage(BaseModel):
     content: Content = Field(default_factory=Content, description="Message content")
 
     # Artifacts
-    artifacts: List[Artifact] = Field(default_factory=list, description="Files to attach")
+    artifacts: List[Artifact] = Field(
+        default_factory=list, description="Files to attach"
+    )
 
     # Options
     options: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Sending options: silent, urgent, schedule_at"
+        default_factory=dict, description="Sending options: silent, urgent, schedule_at"
     )
 
     def to_filename(self, uid: str) -> str:
         """Generate the storage filename for this outbound message."""
-        ts = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
         # Sanitize uid to be filesystem-safe
         safe_uid = uid.replace("/", "_").replace("\\", "_")
         return f"{ts}_{self.provider.value}_{safe_uid}.md"

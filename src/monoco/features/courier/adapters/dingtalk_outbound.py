@@ -8,13 +8,18 @@ Supports:
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import httpx
 
-from monoco.features.connector.protocol.schema import OutboundMessage, ContentType, Provider
-from .base import BaseAdapter, AdapterConfig, SendResult, HealthStatus
+from monoco.features.connector.protocol.schema import (
+    ContentType,
+    OutboundMessage,
+    Provider,
+)
+
+from .base import AdapterConfig, BaseAdapter, HealthStatus, SendResult
 
 logger = logging.getLogger("courier.adapters.dingtalk_outbound")
 
@@ -80,9 +85,9 @@ class DingTalkOutboundAdapter(BaseAdapter):
 
     def _generate_sign(self, timestamp: str) -> str:
         """Generate signature for DingTalk webhook."""
-        import hmac
-        import hashlib
         import base64
+        import hashlib
+        import hmac
 
         if not self.secret:
             return ""
@@ -137,14 +142,14 @@ class DingTalkOutboundAdapter(BaseAdapter):
             return SendResult(
                 success=False,
                 error="Adapter not connected",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
 
         if not self.webhook_url:
             return SendResult(
                 success=False,
                 error="DingTalk webhook URL not configured",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
 
         try:
@@ -181,13 +186,13 @@ class DingTalkOutboundAdapter(BaseAdapter):
                 return SendResult(
                     success=True,
                     provider_message_id=result.get("message_id"),
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                 )
             else:
                 return SendResult(
                     success=False,
                     error=f"DingTalk API error: {result.get('errmsg', 'Unknown error')}",
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                 )
 
         except httpx.HTTPError as e:
@@ -195,14 +200,14 @@ class DingTalkOutboundAdapter(BaseAdapter):
             return SendResult(
                 success=False,
                 error=f"HTTP error: {str(e)}",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
         except Exception as e:
             logger.exception(f"Error sending to DingTalk: {e}")
             return SendResult(
                 success=False,
                 error=f"Send error: {str(e)}",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
 
     async def health_check(self) -> HealthStatus:
@@ -215,4 +220,6 @@ class DingTalkOutboundAdapter(BaseAdapter):
 
     async def listen(self):
         """Not implemented for outbound-only adapter."""
-        raise NotImplementedError("DingTalk outbound adapter does not support listening")
+        raise NotImplementedError(
+            "DingTalk outbound adapter does not support listening"
+        )

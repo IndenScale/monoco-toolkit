@@ -6,31 +6,31 @@ This module provides:
 - DingtalkAdapter: Full adapter with debouncing and storage integration
 """
 
-import hmac
-import hashlib
-import base64
-import time
-import logging
 import asyncio
-from typing import Dict, Any, Optional, List
-from datetime import datetime
+import base64
+import hashlib
+import hmac
+import logging
+import time
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
+from monoco.core.config import get_config
+from monoco.core.registry import ProjectInventoryEntry
 from monoco.features.connector.protocol.schema import (
+    Content,
+    ContentType,
     InboundMessage,
+    Participant,
     Provider,
     Session,
     SessionType,
-    Participant,
-    Content,
-    ContentType,
 )
-from monoco.features.mailbox.store import MailboxStore
 from monoco.features.mailbox.models import MailboxConfig
-from monoco.core.registry import ProjectInventoryEntry
-from monoco.core.config import get_config
+from monoco.features.mailbox.store import MailboxStore
 
-from ..debounce import DebounceHandler, DebounceConfig
+from ..debounce import DebounceConfig, DebounceHandler
 from .dingtalk_artifacts import DingTalkArtifactDownloader
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class DingtalkSigner:
         hmac_code = hmac.new(
             secret.encode("utf-8"),
             string_to_sign.encode("utf-8"),
-            digestmod=hashlib.sha256
+            digestmod=hashlib.sha256,
         ).digest()
 
         calculated_sign = base64.b64encode(hmac_code).decode("utf-8")
@@ -100,8 +100,8 @@ class DingtalkAdapter:
                            Defaults to 5s window, 30s max wait.
         """
         self.debounce_config = debounce_config or DebounceConfig(
-            window_ms=5000,      # 5 second window
-            max_wait_ms=30000,   # 30 second max wait
+            window_ms=5000,  # 5 second window
+            max_wait_ms=30000,  # 30 second max wait
         )
 
         # Map: project_slug -> DebounceHandler
@@ -195,13 +195,23 @@ class DingtalkAdapter:
             msg_type = payload.get("msgtype", "text")
 
             # Get sender info
-            sender_staff_id = payload.get("senderStaffId") or payload.get("sender", {}).get("staff_id")
-            sender_nick = payload.get("senderNick") or payload.get("sender", {}).get("nick")
+            sender_staff_id = payload.get("senderStaffId") or payload.get(
+                "sender", {}
+            ).get("staff_id")
+            sender_nick = payload.get("senderNick") or payload.get("sender", {}).get(
+                "nick"
+            )
 
             # Get conversation info
-            conversation_id = payload.get("conversationId") or payload.get("conversation", {}).get("id")
-            conversation_title = payload.get("conversationTitle") or payload.get("conversation", {}).get("title")
-            chat_type = payload.get("chatType") or payload.get("conversation", {}).get("type", "")
+            conversation_id = payload.get("conversationId") or payload.get(
+                "conversation", {}
+            ).get("id")
+            conversation_title = payload.get("conversationTitle") or payload.get(
+                "conversation", {}
+            ).get("title")
+            chat_type = payload.get("chatType") or payload.get("conversation", {}).get(
+                "type", ""
+            )
 
             # Determine session type
             session_type = SessionType.GROUP if chat_type == "2" else SessionType.DIRECT
@@ -221,6 +231,7 @@ class DingtalkAdapter:
             if not msg_id:
                 # Generate from content hash if not provided
                 import hashlib
+
                 content_hash = hashlib.sha256(
                     f"{sender_staff_id}:{conversation_id}:{content_text}".encode()
                 ).hexdigest()[:16]
@@ -238,7 +249,9 @@ class DingtalkAdapter:
                         message_id=message_id,
                     )
                     if artifacts:
-                        logger.info(f"Downloaded {len(artifacts)} attachments for {message_id}")
+                        logger.info(
+                            f"Downloaded {len(artifacts)} attachments for {message_id}"
+                        )
                 except Exception as e:
                     logger.exception(f"Failed to download attachments: {e}")
                     # Continue without attachments rather than failing the entire message
@@ -261,8 +274,10 @@ class DingtalkAdapter:
                     },
                     "to": [],  # Bot is the recipient
                 },
-                timestamp=datetime.utcnow(),  # DingTalk provides createAt in ms
-                received_at=datetime.utcnow(),
+                timestamp=datetime.now(
+                    timezone.utc
+                ),  # DingTalk provides createAt in ms
+                received_at=datetime.now(timezone.utc),
                 type=ContentType.TEXT if msg_type == "text" else ContentType.MARKDOWN,
                 content=Content(
                     text=content_text if msg_type == "text" else None,
@@ -341,7 +356,9 @@ class DingtalkAdapter:
                 if slug not in self._artifact_downloaders:
                     # Get global artifacts directory
                     config = get_config()
-                    artifacts_dir = Path(config.paths.root).expanduser() / ".monoco" / "artifacts"
+                    artifacts_dir = (
+                        Path(config.paths.root).expanduser() / ".monoco" / "artifacts"
+                    )
 
                     # Get DingTalk credentials from project config
                     client_id = ""
@@ -401,9 +418,7 @@ class DingtalkAdapter:
             return {"project": slug, "pending": 0, "buffers": 0}
 
         # Global stats
-        total_pending = sum(
-            d.get_pending_count() for d in self._debouncers.values()
-        )
+        total_pending = sum(d.get_pending_count() for d in self._debouncers.values())
         return {
             "projects": len(self._debouncers),
             "total_pending": total_pending,

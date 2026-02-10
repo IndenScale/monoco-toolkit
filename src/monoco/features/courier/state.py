@@ -9,14 +9,13 @@ Manages message state including:
 
 import json
 import shutil
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+import threading
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-import threading
+from typing import Any, Dict, List, Optional
 
-from monoco.features.connector.protocol.schema import MessageStatus
 from monoco.features.connector.protocol.constants import (
     CLAIM_TIMEOUT_SECONDS,
     MAX_RETRY_ATTEMPTS,
@@ -24,6 +23,7 @@ from monoco.features.connector.protocol.constants import (
     RETRY_BACKOFF_MULTIPLIER,
     RETRY_MAX_BACKOFF_MS,
 )
+from monoco.features.connector.protocol.schema import MessageStatus
 
 
 class LockError(Exception):
@@ -31,28 +31,37 @@ class LockError(Exception):
 
     class MessageNotFoundError(Exception):
         """Raised when a message is not found."""
+
         pass
 
     class MessageAlreadyClaimedError(Exception):
         """Raised when trying to claim a message that's already claimed."""
-        def __init__(self, message: str, claimed_by: Optional[str] = None, claimed_at: Optional[datetime] = None):
+
+        def __init__(
+            self,
+            message: str,
+            claimed_by: Optional[str] = None,
+            claimed_at: Optional[datetime] = None,
+        ):
             super().__init__(message)
             self.claimed_by = claimed_by
             self.claimed_at = claimed_at
 
     class MessageNotClaimedError(Exception):
         """Raised when trying to complete/fail a message that isn't claimed."""
+
         pass
 
     class MessageClaimedByOtherError(Exception):
         """Raised when trying to complete/fail a message claimed by another agent."""
-        pass
 
+        pass
 
 
 @dataclass
 class LockEntry:
     """Represents a lock entry for a claimed message."""
+
     message_id: str
     status: str
     claimed_by: Optional[str] = None
@@ -82,7 +91,7 @@ class LockEntry:
             return False
         try:
             expires = datetime.fromisoformat(self.expires_at.replace("Z", "+00:00"))
-            return datetime.utcnow() > expires.replace(tzinfo=None)
+            return datetime.now(timezone.utc) > expires.replace(tzinfo=timezone.utc)
         except (ValueError, TypeError):
             return False
 
@@ -106,9 +115,7 @@ class LockManager:
             try:
                 with open(self.locks_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    self._locks = {
-                        k: LockEntry.from_dict(v) for k, v in data.items()
-                    }
+                    self._locks = {k: LockEntry.from_dict(v) for k, v in data.items()}
             except (json.JSONDecodeError, IOError):
                 self._locks = {}
 
@@ -132,7 +139,8 @@ class LockManager:
     def _cleanup_expired_locks(self) -> None:
         """Remove expired locks."""
         expired = [
-            msg_id for msg_id, entry in self._locks.items()
+            msg_id
+            for msg_id, entry in self._locks.items()
             if entry.status == MessageStatus.CLAIMED.value and entry.is_expired()
         ]
         for msg_id in expired:
@@ -173,14 +181,19 @@ class LockManager:
 
             existing = self._locks.get(message_id)
             if existing:
-                if existing.status == MessageStatus.CLAIMED.value and not existing.is_expired():
+                if (
+                    existing.status == MessageStatus.CLAIMED.value
+                    and not existing.is_expired()
+                ):
                     raise LockError.MessageAlreadyClaimedError(
                         f"Message already claimed by {existing.claimed_by}",
                         claimed_by=existing.claimed_by,
-                        claimed_at=datetime.fromisoformat(existing.claimed_at) if existing.claimed_at else None,
+                        claimed_at=datetime.fromisoformat(existing.claimed_at)
+                        if existing.claimed_at
+                        else None,
                     )
 
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             expires = now + timedelta(seconds=timeout)
 
             entry = LockEntry(
@@ -210,10 +223,14 @@ class LockManager:
         with self._lock:
             entry = self._locks.get(message_id)
             if not entry:
-                raise LockError.MessageNotFoundError(f"Message '{message_id}' not found")
+                raise LockError.MessageNotFoundError(
+                    f"Message '{message_id}' not found"
+                )
 
             if entry.status != MessageStatus.CLAIMED.value:
-                raise LockError.MessageNotClaimedError(f"Message '{message_id}' is not claimed")
+                raise LockError.MessageNotClaimedError(
+                    f"Message '{message_id}' is not claimed"
+                )
 
             if entry.claimed_by != agent_id:
                 raise LockError.MessageClaimedByOtherError(
@@ -251,10 +268,14 @@ class LockManager:
         with self._lock:
             entry = self._locks.get(message_id)
             if not entry:
-                raise LockError.MessageNotFoundError(f"Message '{message_id}' not found")
+                raise LockError.MessageNotFoundError(
+                    f"Message '{message_id}' not found"
+                )
 
             if entry.status != MessageStatus.CLAIMED.value:
-                raise LockError.MessageNotClaimedError(f"Message '{message_id}' is not claimed")
+                raise LockError.MessageNotClaimedError(
+                    f"Message '{message_id}' is not claimed"
+                )
 
             if entry.claimed_by != agent_id:
                 raise LockError.MessageClaimedByOtherError(
@@ -385,7 +406,5 @@ class MessageStateManager:
         Returns:
             Delay in milliseconds
         """
-        delay = int(
-            RETRY_BACKOFF_BASE_MS * (RETRY_BACKOFF_MULTIPLIER ** retry_count)
-        )
+        delay = int(RETRY_BACKOFF_BASE_MS * (RETRY_BACKOFF_MULTIPLIER**retry_count))
         return min(delay, RETRY_MAX_BACKOFF_MS)

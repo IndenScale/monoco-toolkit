@@ -20,7 +20,7 @@ import sys
 import threading
 import time
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 # Setup logging before other imports
 logging.basicConfig(
@@ -29,17 +29,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger("courier.daemon")
 
+from monoco.core.registry import get_inventory
 from monoco.features.connector.protocol.constants import DEFAULT_MAILBOX_ROOT
-from .constants import COURIER_DEFAULT_PORT, COURIER_DEFAULT_HOST
+from monoco.features.connector.protocol.schema import Content, OutboundMessage, Provider
 
-from .state import LockManager, MessageStateManager
 from .api import CourierAPIServer
-from .debounce import DebounceHandler, DebounceConfig
-from .outbound_watcher import OutboundWatcher
+from .constants import COURIER_DEFAULT_HOST, COURIER_DEFAULT_PORT
+from .debounce import DebounceConfig, DebounceHandler
 from .outbound_dispatcher import OutboundDispatcher
 from .outbound_processor import OutboundProcessor
-from monoco.core.registry import get_inventory
-from monoco.features.connector.protocol.schema import OutboundMessage, Content, Provider
+from .outbound_watcher import OutboundWatcher
+from .state import LockManager, MessageStateManager
 
 
 class CourierDaemon:
@@ -51,6 +51,7 @@ class CourierDaemon:
     - Message state
     - Outbound message processing
     - Inbound message processing
+    - Mailbox directory watching and agent triggering (FEAT-0199)
     """
 
     def __init__(
@@ -79,7 +80,7 @@ class CourierDaemon:
         self.debounce_handler: Optional[DebounceHandler] = None
         self.stream_adapter: Optional[Any] = None
         self._stream_thread: Optional[threading.Thread] = None
-        
+
         # IM Agent integration (FEAT-0170)
         self.im_adapter: Optional[Any] = None
         self._im_task: Optional[asyncio.Task] = None
@@ -90,6 +91,12 @@ class CourierDaemon:
         self.outbound_processor: Optional[OutboundProcessor] = None
         self._outbound_poll_interval: float = 5.0  # seconds
         self._last_outbound_scan: float = 0.0
+
+        # Mailbox agent triggering (FEAT-0199)
+        self.mailbox_inbound_watcher: Optional[Any] = None
+        self.mailbox_agent_handler: Optional[Any] = None
+        self._mailbox_watcher_interval: float = 2.0  # seconds
+        self._agent_scheduler: Optional[Any] = None
 
         # Control
         self._shutdown = False
@@ -107,9 +114,14 @@ class CourierDaemon:
             # Ensure mailbox directory structure exists
             self._ensure_directories()
 
+            # Initialize mailbox agent components (FEAT-0199)
+            if not self._init_mailbox_agent_components():
+                logger.error("Failed to initialize mailbox agent components")
+                return False
+
             # Initialize global project inventory
             inventory = get_inventory()
-            
+
             # Auto-register the current project as 'default' if not already present
             if not inventory.get("default"):
                 inventory.register("default", self.project_root)
@@ -135,13 +147,13 @@ class CourierDaemon:
                 host=self.host,
                 port=self.port,
             )
-            
+
             # Initialize outbound processing (FEAT-0172)
             self._init_outbound_processing()
-            
+
             # Initialize DingTalk Stream adapter if configured
             self._init_stream_adapter()
-            
+
             # Initialize IM Agent adapter (FEAT-0170)
             self._init_im_adapter()
 
@@ -172,36 +184,79 @@ class CourierDaemon:
         # Messages would be written to inbound directory here
         # This is handled by the adapters in a full implementation
 
+    def _init_mailbox_agent_components(self) -> bool:
+        """Initialize mailbox agent triggering components (FEAT-0199)."""
+        try:
+            from monoco.core.scheduler import LocalProcessScheduler, event_bus
+            from monoco.features.mailbox.handler import MailboxAgentHandler
+            from monoco.features.mailbox.watcher import MailboxInboundWatcher
+
+            # Initialize agent scheduler
+            self._agent_scheduler = LocalProcessScheduler()
+
+            # Initialize mailbox inbound watcher
+            self.mailbox_inbound_watcher = MailboxInboundWatcher(
+                mailbox_root=self.mailbox_root,
+                event_bus=event_bus,
+                poll_interval=self._mailbox_watcher_interval,
+            )
+
+            # Initialize mailbox agent handler
+            self.mailbox_agent_handler = MailboxAgentHandler(
+                event_bus=event_bus,
+                agent_scheduler=self._agent_scheduler,
+                mailbox_root=self.mailbox_root,
+                debounce_window=30,  # 30 seconds debounce window
+            )
+
+            logger.info("Mailbox agent components initialized")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to initialize mailbox agent components: {e}")
+            return False
+
     def _init_stream_adapter(self) -> None:
         """Initialize DingTalk Stream adapter if credentials are configured."""
         # Read credentials from environment
-        client_id = os.environ.get("DINGTALK_CLIENT_ID") or os.environ.get("DINGTALK_APP_KEY")
-        client_secret = os.environ.get("DINGTALK_CLIENT_SECRET") or os.environ.get("DINGTALK_APP_SECRET")
-        
+        client_id = os.environ.get("DINGTALK_CLIENT_ID") or os.environ.get(
+            "DINGTALK_APP_KEY"
+        )
+        client_secret = os.environ.get("DINGTALK_CLIENT_SECRET") or os.environ.get(
+            "DINGTALK_APP_SECRET"
+        )
+
         if not client_id or not client_secret:
-            logger.info("DingTalk Stream adapter not configured (set DINGTALK_CLIENT_ID and DINGTALK_CLIENT_SECRET)")
+            logger.info(
+                "DingTalk Stream adapter not configured (set DINGTALK_CLIENT_ID and DINGTALK_CLIENT_SECRET)"
+            )
             return
-        
+
         try:
+            from monoco.features.mailbox.store import MailboxConfig, MailboxStore
+
             from .adapters.dingtalk_stream import create_dingtalk_stream_adapter
-            from monoco.features.mailbox.store import MailboxStore, MailboxConfig
-            
-            default_project = os.environ.get("DINGTALK_STREAM_DEFAULT_PROJECT", "default")
-            
+
+            default_project = os.environ.get(
+                "DINGTALK_STREAM_DEFAULT_PROJECT", "default"
+            )
+
             self.stream_adapter = create_dingtalk_stream_adapter(
                 client_id=client_id,
                 client_secret=client_secret,
                 default_project=default_project,
             )
-            
+
             # Set up message handler to write to mailbox
             self.stream_adapter.set_message_handler(self._handle_stream_message)
-            
-            logger.info(f"DingTalk Stream adapter initialized for project: {default_project}")
-            
+
+            logger.info(
+                f"DingTalk Stream adapter initialized for project: {default_project}"
+            )
+
         except Exception as e:
             logger.warning(f"Failed to initialize DingTalk Stream adapter: {e}")
-    
+
     def _init_outbound_processing(self) -> None:
         """Initialize outbound message processing components (FEAT-0172)."""
         try:
@@ -211,22 +266,22 @@ class CourierDaemon:
                 poll_interval=self._outbound_poll_interval,
             )
             self.outbound_watcher.initialize()
-            
+
             # Initialize dispatcher
             self.outbound_dispatcher = OutboundDispatcher()
-            
+
             # Register adapters for each provider
             from .adapters import create_adapter
+
             for provider in OutboundWatcher.SUPPORTED_PROVIDERS:
                 adapter = create_adapter(provider)
                 if adapter:
                     # Register the pre-configured instance directly
                     # This ensures custom initialization (e.g., Flow mode credentials) is preserved
                     self.outbound_dispatcher.register_adapter_instance(
-                        provider,
-                        adapter
+                        provider, adapter
                     )
-            
+
             # Initialize processor
             self.outbound_processor = OutboundProcessor(
                 outbound_path=self.mailbox_root / "outbound",
@@ -234,72 +289,79 @@ class CourierDaemon:
                 deadletter_path=self.mailbox_root / ".deadletter",
             )
             self.outbound_processor.initialize()
-            
+
             logger.info("Outbound processing initialized")
-            
+
         except Exception as e:
             logger.warning(f"Failed to initialize outbound processing: {e}")
-    
+
     def _process_outbound_queue(self) -> None:
         """Process pending outbound messages (FEAT-0172)."""
-        if not self.outbound_watcher or not self.outbound_dispatcher or not self.outbound_processor:
+        if (
+            not self.outbound_watcher
+            or not self.outbound_dispatcher
+            or not self.outbound_processor
+        ):
             return
-        
+
         # Rate limit scans
         now = time.time()
         if now - self._last_outbound_scan < self._outbound_poll_interval:
             return
         self._last_outbound_scan = now
-        
+
         try:
             # Scan for pending messages
             pending = self.outbound_watcher.scan()
-            
+
             if not pending:
                 return
-            
+
             logger.info(f"Processing {len(pending)} outbound messages")
-            
+
             for entry in pending:
                 try:
                     # Mark as processing to prevent duplicate pickup
                     self.outbound_watcher.mark_processing(entry.id)
-                    
+
                     # Build OutboundMessage from entry
                     message = self._build_outbound_message(entry)
                     if not message:
                         logger.warning(f"Failed to build message for {entry.id}")
                         self.outbound_watcher.mark_done(entry.id)
                         continue
-                    
+
                     # Dispatch to adapter
                     import asyncio
+
                     result = asyncio.run(self.outbound_dispatcher.dispatch(message))
-                    
+
                     # Process result
                     self.outbound_processor.process_send_result(entry, result)
-                    
+
                 except Exception as e:
-                    logger.exception(f"Error processing outbound message {entry.id}: {e}")
+                    logger.exception(
+                        f"Error processing outbound message {entry.id}: {e}"
+                    )
                 finally:
                     self.outbound_watcher.mark_done(entry.id)
-                    
+
         except Exception as e:
             logger.error(f"Error in outbound queue processing: {e}")
-    
+
     def _build_outbound_message(self, entry) -> Optional[OutboundMessage]:
         """Build OutboundMessage from OutboundMessageEntry."""
         try:
             # Read full content
             content = entry.file_path.read_text(encoding="utf-8")
-            
+
             # Parse frontmatter and body
             body_text = ""
             if content.startswith("---"):
                 parts = content.split("---", 2)
                 if len(parts) >= 3:
                     body_text = parts[2].strip()
-            
+
             # Determine content type
             content_type = entry.content_type
             if content_type == "markdown":
@@ -307,6 +369,7 @@ class CourierDaemon:
             elif content_type == "card":
                 # Parse card JSON
                 import json
+
                 try:
                     card_data = json.loads(body_text)
                     content = Content(card=card_data)
@@ -314,7 +377,7 @@ class CourierDaemon:
                     content = Content(text=body_text)
             else:
                 content = Content(text=body_text)
-            
+
             return OutboundMessage(
                 to=entry.to,
                 provider=entry.provider,
@@ -323,7 +386,7 @@ class CourierDaemon:
                 type=content_type,
                 content=content,
             )
-            
+
         except Exception as e:
             logger.error(f"Failed to build outbound message: {e}")
             return None
@@ -332,18 +395,18 @@ class CourierDaemon:
         """Initialize IM Agent adapter if enabled (FEAT-0170)."""
         try:
             from .im_integration import create_im_adapter
-            
+
             self.im_adapter = create_im_adapter(
                 project_root=self.project_root,
                 max_concurrent_sessions=5,
                 session_timeout_minutes=30,
             )
-            
+
             logger.info("IM Agent adapter initialized")
-            
+
         except Exception as e:
             logger.warning(f"Failed to initialize IM Agent adapter: {e}")
-    
+
     async def _start_im_adapter(self) -> None:
         """Start IM Agent adapter asynchronously."""
         if self.im_adapter:
@@ -352,7 +415,7 @@ class CourierDaemon:
                 logger.info("IM Agent adapter started")
             except Exception as e:
                 logger.error(f"Failed to start IM Agent adapter: {e}")
-    
+
     async def _stop_im_adapter(self) -> None:
         """Stop IM Agent adapter asynchronously."""
         if self.im_adapter:
@@ -361,50 +424,54 @@ class CourierDaemon:
                 logger.info("IM Agent adapter stopped")
             except Exception as e:
                 logger.error(f"Error stopping IM Agent adapter: {e}")
-    
+
     def _handle_stream_message(self, message, project_slug: str) -> None:
         """Handle incoming Stream message and write to mailbox."""
         try:
-            from monoco.features.mailbox.store import MailboxStore, MailboxConfig
             from monoco.core.registry import get_inventory
-            
+            from monoco.features.mailbox.store import MailboxConfig, MailboxStore
+
             # Get project path from registry
             inventory = get_inventory()
             project = inventory.get(project_slug)
-            
+
             if not project:
-                logger.warning(f"Project '{project_slug}' not found, using default path")
+                logger.warning(
+                    f"Project '{project_slug}' not found, using default path"
+                )
                 project_path = self.project_root
             else:
                 project_path = project.path
-            
+
             # Create mailbox store for this project
             mailbox_path = project_path / ".monoco" / "mailbox"
             config = MailboxConfig(
                 root_path=mailbox_path,
             )
             store = MailboxStore(config)
-            
+
             # Write message to inbound
             path = store.create_inbound_message(message)
             logger.info(f"Stream message written to {path}")
-            
+
         except Exception as e:
             logger.exception(f"Failed to handle Stream message: {e}")
-    
+
     def _start_stream_adapter(self) -> None:
         """Start Stream adapter in background thread."""
         if not self.stream_adapter:
             return
-        
+
         def run_stream():
             """Run stream adapter synchronously."""
             try:
                 self.stream_adapter.run_sync()
             except Exception as e:
                 logger.exception(f"Stream adapter error: {e}")
-        
-        self._stream_thread = threading.Thread(target=run_stream, daemon=True, name="DingTalkStream")
+
+        self._stream_thread = threading.Thread(
+            target=run_stream, daemon=True, name="DingTalkStream"
+        )
         self._stream_thread.start()
         logger.info("DingTalk Stream adapter started in background thread")
 
@@ -437,10 +504,10 @@ class CourierDaemon:
         try:
             # Start API server
             self.api_server.start()
-            
+
             # Start Stream adapter if configured
             self._start_stream_adapter()
-            
+
             # Start IM adapter (async)
             if self.im_adapter:
                 try:
@@ -451,13 +518,26 @@ class CourierDaemon:
                 except Exception as e:
                     logger.error(f"Failed to start IM adapter: {e}")
 
+            # Start mailbox watcher (FEAT-0199)
+            if self.mailbox_inbound_watcher:
+                try:
+                    if not self._event_loop:
+                        self._event_loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(self._event_loop)
+                    self._event_loop.run_until_complete(
+                        self.mailbox_inbound_watcher.start()
+                    )
+                    logger.info("Mailbox inbound watcher started")
+                except Exception as e:
+                    logger.error(f"Failed to start mailbox inbound watcher: {e}")
+
             logger.info(f"Courier daemon running on {self.host}:{self.port}")
 
             # Main loop
             while not self._shutdown:
                 # Process outbound queue (FEAT-0172)
                 self._process_outbound_queue()
-                
+
                 # TODO: Poll adapters for inbound messages
                 # TODO: Retry failed messages
 
@@ -473,12 +553,31 @@ class CourierDaemon:
 
         finally:
             # Stop IM adapter
-            if self.im_adapter and self._event_loop:
+            if self.im_adapter:
                 try:
                     self._event_loop.run_until_complete(self._stop_im_adapter())
                 except Exception as e:
                     logger.error(f"Error stopping IM adapter: {e}")
-            
+
+            # Stop mailbox components (FEAT-0199)
+            if self.mailbox_inbound_watcher:
+                try:
+                    self._event_loop.run_until_complete(
+                        self.mailbox_inbound_watcher.stop()
+                    )
+                    logger.info("Mailbox inbound watcher stopped")
+                except Exception as e:
+                    logger.error(f"Error stopping mailbox inbound watcher: {e}")
+
+            if self.mailbox_agent_handler:
+                try:
+                    self._event_loop.run_until_complete(
+                        self.mailbox_agent_handler.shutdown()
+                    )
+                    logger.info("Mailbox agent handler stopped")
+                except Exception as e:
+                    logger.error(f"Error stopping mailbox agent handler: {e}")
+
             self.shutdown()
 
         return 0
@@ -503,11 +602,12 @@ class CourierDaemon:
                 # Note: In async context we'd await flush_all()
             except Exception as e:
                 logger.error(f"Error flushing debounce buffers: {e}")
-        
+
         # Stop Stream adapter
         if self.stream_adapter:
             try:
                 import asyncio
+
                 asyncio.run(self.stream_adapter.disconnect())
                 logger.info("DingTalk Stream adapter stopped")
             except Exception as e:

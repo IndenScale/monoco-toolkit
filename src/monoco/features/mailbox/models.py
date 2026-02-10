@@ -10,14 +10,15 @@ from typing import Any, Dict, List, Optional
 
 from monoco.features.connector.protocol.schema import (
     InboundMessage,
-    OutboundMessage,
     MessageStatus,
+    OutboundMessage,
     Provider,
 )
 
 
 class ListFormat(str, Enum):
     """Output format for message listing."""
+
     TABLE = "table"
     JSON = "json"
     COMPACT = "compact"
@@ -27,6 +28,7 @@ class ListFormat(str, Enum):
 @dataclass
 class MailboxConfig:
     """Configuration for the mailbox feature."""
+
     root_path: Path
     courier_api_url: str = "http://localhost:8080"
     courier_api_prefix: str = "/api/v1"
@@ -55,6 +57,7 @@ class MailboxConfig:
 @dataclass
 class MessageFilter:
     """Filter criteria for message listing."""
+
     status: Optional[MessageStatus] = None
     provider: Optional[Provider] = None
     since: Optional[datetime] = None
@@ -80,6 +83,7 @@ class MessageFilter:
 @dataclass
 class MessageListItem:
     """Summary item for message listing."""
+
     id: str
     provider: Provider
     from_name: str
@@ -112,6 +116,7 @@ class MessageListItem:
 @dataclass
 class LockInfo:
     """Lock information for a claimed message."""
+
     message_id: str
     status: MessageStatus
     claimed_by: Optional[str] = None
@@ -123,7 +128,7 @@ class LockInfo:
         """Check if the lock has expired."""
         if not self.expires_at:
             return False
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at
 
     @property
     def is_claimed(self) -> bool:
@@ -148,6 +153,7 @@ class LockInfo:
 @dataclass
 class OutboundDraft:
     """Draft for an outbound message."""
+
     id: str
     to: str
     provider: Provider
