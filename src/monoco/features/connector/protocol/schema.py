@@ -123,12 +123,14 @@ class Content(BaseModel):
 
 class Artifact(BaseModel):
     """An attached artifact/file."""
-    id: str = Field(..., description="Artifact ID (SHA256 or UUID)")
+    id: str = Field(..., description="Artifact ID (SHA256 hash)")
     name: str = Field(..., description="Original filename")
     type: ArtifactType = Field(..., description="Type of artifact")
     mime_type: Optional[str] = Field(None, description="MIME type")
     size: Optional[int] = Field(None, description="File size in bytes")
-    path: Optional[str] = Field(None, description="Path relative to artifact storage")
+    path: str = Field(..., description="Path relative to ~/.monoco/dropbox/")
+    url: Optional[str] = Field(None, description="Original download URL")
+    downloaded_at: Optional[datetime] = Field(None, description="Download timestamp")
     inline: bool = Field(False, description="Whether this is an inline attachment")
 
 
