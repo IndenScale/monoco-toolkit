@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 测试 worktree 默认行为
 created_at: '2026-02-16T15:55:56'
-updated_at: '2026-02-16T15:56:40'
+updated_at: '2026-02-16T15:56:45'
 parent: EPIC-0000
 dependencies: []
 related: []
