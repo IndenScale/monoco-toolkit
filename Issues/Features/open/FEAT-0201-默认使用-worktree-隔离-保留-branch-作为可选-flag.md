@@ -3,10 +3,10 @@ id: FEAT-0201
 uid: a078e4
 type: feature
 status: open
-stage: draft
+stage: doing
 title: 默认使用 worktree 隔离，保留 branch 作为可选 flag
 created_at: '2026-02-16T15:49:56'
-updated_at: '2026-02-16T15:49:56'
+updated_at: '2026-02-16T15:58:07'
 parent: EPIC-0000
 dependencies: []
 related: []
