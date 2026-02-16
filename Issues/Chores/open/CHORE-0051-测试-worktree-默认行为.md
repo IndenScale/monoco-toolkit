@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 测试 worktree 默认行为
 created_at: '2026-02-16T15:55:56'
-updated_at: '2026-02-16T15:56:53'
+updated_at: '2026-02-16T15:57:09'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -18,10 +18,6 @@ files: []
 criticality: low
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-16T15:55:56'
-isolation:
-  type: branch
-  ref: CHORE-0051-测试-worktree-默认行为
-  created_at: '2026-02-16T15:56:46'
 ---
 
 ## CHORE-0051: 测试 worktree 默认行为
