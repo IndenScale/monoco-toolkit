@@ -44,4 +44,3 @@ opened_at: '2026-02-16T15:49:56'
 - [x] 更新 `--help` 文本，清晰描述 flag 行为
 
 ## Review Comments
-<!-- Required for Review/Done stage. Record review feedback here. -->
