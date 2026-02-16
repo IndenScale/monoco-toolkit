@@ -6,7 +6,8 @@
 - Do NOT add content after MONOCO_GENERATED_END (use separate files instead).
 -->
 
-<!-- MONOCO_GENERATED_START -->
+# AGENTS.md
+
 ## Monoco
 
 > **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
@@ -61,6 +62,7 @@ Monoco 遵循 **Trunk Based Development (TBD)** 模式。所有的开发工作�
 - **检查**: `monoco issue lint`
 - **生命周期**: `monoco issue start|submit|delete <id>`
 - **上下文同步**: `monoco issue sync-files [id]`
+- **结构**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (如 `Issues/Features/open/`)
 
 #### Issue 目录结构
 
@@ -145,7 +147,7 @@ Issues/
 
 #### 指南
 
-- 使用 Memo 记录** fleeting 想法** - 可能成为 Issue 的事情
+- 使用 Memo 记录**fleeting 想法** - 可能成为 Issue 的事情
 - 使用 Issue 进行**可操作的工作** - 结构化、可跟踪、有生命周期
 - 永远不要手动将 memo 链接到 Issue - 如果重要，创建一个 Issue
 
