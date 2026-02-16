@@ -37,6 +37,10 @@ class ProjectConfig(BaseModel):
 
     name: str = Field(default="Monoco Project", description="Project name")
     key: str = Field(default="MON", description="Project key/prefix for IDs")
+    trunk_branch: str = Field(
+        default="main",
+        description="Trunk branch name for TBD workflow (default: main, fallback: master)"
+    )
     spike_repos: Dict[str, str] = Field(
         default_factory=dict,
         description="Managed external research repositories (name -> url)",
