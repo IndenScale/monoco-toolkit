@@ -61,7 +61,45 @@ Monoco 遵循 **Trunk Based Development (TBD)** 模式。所有的开发工作�
 - **检查**: `monoco issue lint`
 - **生命周期**: `monoco issue start|submit|delete <id>`
 - **上下文同步**: `monoco issue sync-files [id]`
-- **结构**: `Issues/{CapitalizedPluralType}/{lowercase_status}/` (如 `Issues/Features/open/`)
+
+#### Issue 目录结构
+
+```
+Issues/
+├── {CapitalizedPluralType}/     # Issue 类型（复数形式，大驼峰）
+│   ├── open/                    # 进行中（draft/doing/review）
+│   ├── closed/                  # 已完成（done + solution）
+│   └── backlog/                 # 待办（frozen）
+├── Domains/                     # 领域分类（与类型正交，可选）
+│   └── {domain-name}/
+│       └── open/
+│       └── closed/
+└── Epics/                       # 史诗（大粒度规划单元）
+```
+
+**标准类型目录**
+
+| 目录 | 用途 | ID 前缀 | 示例 |
+|------|------|---------|------|
+| `Features/` | 功能需求 | `FEAT-XXXX` | FEAT-0201-默认使用-worktree |
+| `Fixes/` | 缺陷修复 | `FIX-XXXX` | FIX-0154-合并策略优化 |
+| `Chores/` | 杂项/重构/文档 | `CHORE-XXXX` | CHORE-0036-代码清理 |
+| `Epics/` | 史诗/大功能规划 | `EPIC-XXXX` | EPIC-0000-Monoco-Toolkit |
+| `Arch/` | 架构决策记录 | `ARCH-XXXX` | ARCH-0001-事件驱动架构 |
+
+**状态目录**
+
+| 目录 | 含义 | 阶段 |
+|------|------|------|
+| `open/` | 活跃中 | draft → doing → review |
+| `closed/` | 已完成 | done (+ solution) |
+| `backlog/` | 冻结/待办 | frozen |
+
+**重要规则**
+- Issue 文件命名：`{ID}-{slug}.md`（小写，连字符分隔）
+- `Domains/` 是**横向分类**，与类型正交（一个 Issue 可同时属于 `Features/` 和 `Domains/Backend/`）
+- 状态变更时，Issue 文件会**物理移动**（如 `open/` → `closed/`）
+- 查找 Issue 时优先搜索当前目录，找不到时递归搜索全库
 
 #### 标准工作流 (Trunk-Branch)
 
