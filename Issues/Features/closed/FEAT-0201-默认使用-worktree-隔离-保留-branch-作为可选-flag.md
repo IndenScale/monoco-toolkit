@@ -2,8 +2,8 @@
 id: FEAT-0201
 uid: a078e4
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: 默认使用 worktree 隔离，保留 branch 作为可选 flag
 created_at: '2026-02-16T15:49:56'
 updated_at: '2026-02-16T15:58:07'
@@ -16,7 +16,7 @@ tags:
 - '#FEAT-0201'
 files: []
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-16T15:49:56'
 ---
 
