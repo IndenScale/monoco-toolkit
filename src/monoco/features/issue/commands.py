@@ -275,10 +275,10 @@ def move_open(
 def start(
     issue_id: str = typer.Argument(..., help="Issue ID to start"),
     branch: bool = typer.Option(
-        True,
-        "--branch/--no-branch",
+        False,
+        "--branch",
         "-b",
-        help="[Default] Start in a new git branch (feat/<id>-<slug>). Use --no-branch to disable.",
+        help="Start in a new git branch (feat/<id>-<slug>). Mutually exclusive with --worktree.",
     ),
     direct: bool = typer.Option(
         False,
@@ -286,10 +286,10 @@ def start(
         help="Privileged: Work directly on current branch (equivalent to --no-branch).",
     ),
     worktree: bool = typer.Option(
-        False,
-        "--worktree",
+        True,
+        "--worktree/--no-worktree",
         "-w",
-        help="Start in a new git worktree for parallel development",
+        help="[Default] Start in a new git worktree for parallel development. Use --no-worktree to disable.",
     ),
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
@@ -309,8 +309,9 @@ def start(
     """
     Start working on an issue (Stage -> Doing).
 
-    Default behavior is to create a feature branch.
-    Use --direct or --no-branch to work on current branch.
+    Default behavior is to create a git worktree for isolated development.
+    Use --branch to create a feature branch instead.
+    Use --direct or --no-worktree to work on current branch directly.
     """
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
@@ -322,21 +323,21 @@ def start(
     # Initialize hooks system
     init_hooks(project_root)
 
-    # Handle direct flag override
+    # Handle flag overrides and mutual exclusivity
+    # --branch and --worktree are mutually exclusive; --branch takes precedence
+    if branch:
+        worktree = False
     if direct:
+        worktree = False
         branch = False
 
     # Context Check
-    # If creating a new branch (default), we MUST be on trunk to avoid nesting.
-    # If direct/no-branch, we don't care.
-    if branch:
+    # If creating isolation (worktree or branch), we MUST be on trunk to avoid nesting.
+    # If direct mode, we don't care.
+    if worktree or branch:
         _validate_branch_context(
             project_root, allowed=["TRUNK"], force=force, command_name="start"
         )
-
-    if branch and worktree:
-        OutputManager.error("Cannot specify both --branch and --worktree.")
-        raise typer.Exit(code=1)
 
     try:
         # Use HookContextManager to execute pre/post hooks

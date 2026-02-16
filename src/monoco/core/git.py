@@ -243,15 +243,18 @@ def get_worktrees(path: Path) -> List[Tuple[str, str, str]]:
 
 
 def worktree_add(path: Path, branch_name: str, worktree_path: Path):
-    # If branch doesn't exist, -b will create it.
-    # Logic: git worktree add [-b <new_branch>] <path> <commit-ish>
+    # If branch doesn't exist, -b will create it based on HEAD.
+    # Logic: git worktree add [-b <new_branch>] <path> [<commit-ish>]
 
     # We assume if branch_exists, use it. If not, create it.
     cmd = ["worktree", "add"]
     if not branch_exists(path, branch_name):
+        # Create new branch based on HEAD
         cmd.extend(["-b", branch_name])
-
-    cmd.extend([str(worktree_path), branch_name])
+        cmd.append(str(worktree_path))
+    else:
+        # Use existing branch
+        cmd.extend([str(worktree_path), branch_name])
 
     code, _, stderr = _run_git(cmd, path)
     if code != 0:

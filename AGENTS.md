@@ -31,8 +31,9 @@
 ##### 标准流程
 
 1. **创建 Issue**: `monoco issue create feature -t "功能标题"`
-2. **🔒 启动 Branch**: `monoco issue start FEAT-XXX --branch`
-   - ⚠️ **强制要求隔离**: 使用 `--branch` 或 `--worktree` 参数
+2. **🔒 启动隔离环境**: `monoco issue start FEAT-XXX`
+   - ⚠️ **默认 Worktree 隔离**: 自动创建 `.monoco/worktrees/<id>/` 目录
+   - 可选 `--branch` 切换到 branch 模式，`--direct` 在当前分支直接工作
    - ❌ **严禁操作 Trunk**: 禁止在 Trunk (`main`/`master`) 分支直接修改代码
 3. **实现功能**: 正常编码和测试
 4. **同步文件**: `monoco issue sync-files` (提交前必须运行)
@@ -65,7 +66,7 @@ Monoco 遵循 **Trunk Based Development (TBD)** 模式。所有的开发工作�
 #### 标准工作流 (Trunk-Branch)
 
 1. **创建 Issue**: `monoco issue create feature -t "标题"`
-2. **开启 Branch**: `monoco issue start FEAT-XXX --branch` (隔离环境)
+2. **开启隔离环境**: `monoco issue start FEAT-XXX` (默认 worktree 隔离，可选 `--branch`)
 3. **实现功能**: 正常编码与测试。
 4. **同步变更**: `monoco issue sync-files` (更新 `files` 字段)。
 5. **提交审查**: `monoco issue submit FEAT-XXX`。

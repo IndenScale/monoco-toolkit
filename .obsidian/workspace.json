@@ -1,0 +1,189 @@
+{
+  "main": {
+    "id": "67d6188fee52de7b",
+    "type": "split",
+    "children": [
+      {
+        "id": "cdbaeafbccd2e6ee",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4bab3e487b9f25cd",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "新标签页"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "c3882e4f89b74b06",
+    "type": "split",
+    "children": [
+      {
+        "id": "ee65863b0129ba21",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "167ae713ac544b2c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "671c59f519be04e9",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "endgame",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "50a0904ec33a69b7",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "0a10d120ec74cd7a",
+    "type": "split",
+    "children": [
+      {
+        "id": "f156e81a19441172",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "255ddcbc5c75ebd9",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "反向链接"
+            }
+          },
+          {
+            "id": "41dbeeaebd942330",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "出链"
+            }
+          },
+          {
+            "id": "495410cc1ded80ce",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "f18fb6dc6b01b1f8",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "9b367a6816b25110",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "671c59f519be04e9",
+  "lastOpenFiles": [
+    "docs/zh/97_Blogs/The Endgame for Professional Software.md",
+    "docs/zh/97_Blogs/The Endgame for Profesional Software.md",
+    "docs/zh/97_Blogs/The End for Profesional Software.md",
+    "docs/zh/97_Blogs/End for Profesional Software.md",
+    "docs/zh/97_Blogs",
+    "Memo/cli_comparison_codex_kimi_gemini.md"
+  ]
+}
