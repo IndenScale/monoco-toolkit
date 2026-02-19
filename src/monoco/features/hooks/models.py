@@ -47,14 +47,91 @@ class AgentEvent(str, Enum):
     Agent lifecycle events.
 
     Events that occur during agent session execution.
+    Compatible with agenthooks open standard (14 event types).
+
+    See: https://github.com/IndenScale/agenthooks/blob/main/docs/en/SPECIFICATION.md
     """
 
-    SESSION_START = "session-start"
-    BEFORE_TOOL = "before-tool"
-    AFTER_TOOL = "after-tool"
-    BEFORE_AGENT = "before-agent"
-    AFTER_AGENT = "after-agent"
-    SESSION_END = "session-end"
+    # Session Lifecycle (2 events)
+    SESSION_START = "session-start"  # Maps to: pre-session
+    SESSION_END = "session-end"  # Maps to: post-session
+
+    # Agent Turn Lifecycle (2 events)
+    BEFORE_AGENT = "before-agent"  # Maps to: pre-agent-turn
+    AFTER_AGENT = "after-agent"  # Maps to: post-agent-turn
+
+    # Agent Turn Stop - Quality Gate (2 events)
+    PRE_AGENT_TURN_STOP = "pre-agent-turn-stop"
+    POST_AGENT_TURN_STOP = "post-agent-turn-stop"
+
+    # Tool Interception (3 events)
+    BEFORE_TOOL = "before-tool"  # Maps to: pre-tool-call
+    AFTER_TOOL = "after-tool"  # Maps to: post-tool-call
+    POST_TOOL_CALL_FAILURE = "post-tool-call-failure"
+
+    # Subagent Lifecycle (2 events)
+    PRE_SUBAGENT = "pre-subagent"
+    POST_SUBAGENT = "post-subagent"
+
+    # Context Management (2 events)
+    PRE_CONTEXT_COMPACT = "pre-context-compact"
+    POST_CONTEXT_COMPACT = "post-context-compact"
+
+    # Legacy aliases for backward compatibility
+    PRE_SESSION = "pre-session"
+    POST_SESSION = "post-session"
+    PRE_AGENT_TURN = "pre-agent-turn"
+    POST_AGENT_TURN = "post-agent-turn"
+    PRE_TOOL_CALL = "pre-tool-call"
+    POST_TOOL_CALL = "post-tool-call"
+    POST_TOOL_FAILURE = "post-tool-call-failure"
+
+
+# Agenthooks event name mapping (agenthooks -> monoco)
+AGENTHOOKS_EVENT_MAP: dict[str, str] = {
+    # Standard agenthooks names
+    "pre-session": AgentEvent.SESSION_START.value,
+    "post-session": AgentEvent.SESSION_END.value,
+    "pre-agent-turn": AgentEvent.BEFORE_AGENT.value,
+    "post-agent-turn": AgentEvent.AFTER_AGENT.value,
+    "pre-agent-turn-stop": AgentEvent.PRE_AGENT_TURN_STOP.value,
+    "post-agent-turn-stop": AgentEvent.POST_AGENT_TURN_STOP.value,
+    "pre-tool-call": AgentEvent.BEFORE_TOOL.value,
+    "post-tool-call": AgentEvent.AFTER_TOOL.value,
+    "post-tool-call-failure": AgentEvent.POST_TOOL_CALL_FAILURE.value,
+    "pre-subagent": AgentEvent.PRE_SUBAGENT.value,
+    "post-subagent": AgentEvent.POST_SUBAGENT.value,
+    "pre-context-compact": AgentEvent.PRE_CONTEXT_COMPACT.value,
+    "post-context-compact": AgentEvent.POST_CONTEXT_COMPACT.value,
+    # Legacy aliases
+    "session_start": AgentEvent.SESSION_START.value,
+    "session_end": AgentEvent.SESSION_END.value,
+    "before_agent": AgentEvent.BEFORE_AGENT.value,
+    "after_agent": AgentEvent.AFTER_AGENT.value,
+    "before_stop": AgentEvent.PRE_AGENT_TURN_STOP.value,
+    "before_tool": AgentEvent.BEFORE_TOOL.value,
+    "after_tool": AgentEvent.AFTER_TOOL.value,
+    "after_tool_failure": AgentEvent.POST_TOOL_CALL_FAILURE.value,
+    "subagent_start": AgentEvent.PRE_SUBAGENT.value,
+    "subagent_stop": AgentEvent.POST_SUBAGENT.value,
+    "pre_compact": AgentEvent.PRE_CONTEXT_COMPACT.value,
+}
+
+
+def normalize_agent_event(event: str) -> str:
+    """
+    Normalize an agent event name to monoco standard.
+
+    Supports both agenthooks standard names and legacy aliases.
+
+    Args:
+        event: The event name (could be agenthooks or monoco format)
+
+    Returns:
+        Normalized monoco event name
+    """
+    event_lower = event.lower().replace("_", "-")
+    return AGENTHOOKS_EVENT_MAP.get(event_lower, event_lower)
 
 
 class IDEEvent(str, Enum):
