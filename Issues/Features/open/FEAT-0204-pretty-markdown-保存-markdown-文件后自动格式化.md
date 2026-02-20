@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 'pretty-markdown: 自动格式化 Markdown 及配置同步分发'
 created_at: '2026-02-20T07:17:02'
-updated_at: '2026-02-20T09:40:00'
+updated_at: '2026-02-20T09:37:55'
 parent: EPIC-0000
 dependencies: []
 related:
@@ -15,19 +15,9 @@ domains: []
 tags:
 - '#EPIC-0000'
 - '#FEAT-0204'
-files:
-- Issues/Features/open/FEAT-0204-pretty-markdown-保存-markdown-文件后自动格式化.md
-- resources/config-templates/prettier/.prettierrc
-- resources/config-templates/prettier/.prettierignore
-- resources/config-templates/prettier/package.json
-- resources/config-templates/markdownlint/.markdownlint.json
-- resources/config-templates/markdownlint/.markdownlintignore
-- src/monoco/features/hooks/resources/pretty-markdown.sh
-- src/monoco/features/pretty_markdown/__init__.py
-- src/monoco/features/pretty_markdown/core.py
-- src/monoco/features/pretty_markdown/commands.py
+files: []
 criticality: medium
-solution: null
+solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-20T07:17:02'
 isolation:
   type: worktree
