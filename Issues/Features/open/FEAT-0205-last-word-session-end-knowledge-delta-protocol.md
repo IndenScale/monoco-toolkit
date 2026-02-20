@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 'last-word: 会话结束知识增量更新协议'
 created_at: '2026-02-20T07:25:07'
-updated_at: '2026-02-20T08:28:47'
+updated_at: '2026-02-20T08:28:55'
 parent: EPIC-0000
 dependencies: []
 related: []
