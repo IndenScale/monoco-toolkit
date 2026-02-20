@@ -1135,8 +1135,23 @@ def start_issue_isolation(
             wt_path.parent.mkdir(parents=True, exist_ok=True)
             git.worktree_add(project_root, branch_name, wt_path)
 
+        # FIX-0028: Get actual worktree path from git (handles macOS iCloud Firmlink)
+        # Git canonicalizes paths, which may resolve to a different physical location
+        # e.g., ~/Documents/... -> ~/Library/Mobile Documents/...
+        actual_wt_path = wt_path
+        try:
+            worktrees = git.get_worktrees(project_root)
+            for wt_info in worktrees:
+                wt_disk_path, _, wt_branch = wt_info
+                if wt_branch and branch_name in wt_branch:
+                    actual_wt_path = Path(wt_disk_path)
+                    break
+        except Exception:
+            # Fallback to original path if git worktree list fails
+            pass
+
         isolation_meta = IssueIsolation(
-            type="worktree", ref=branch_name, path=str(wt_path)
+            type="worktree", ref=branch_name, path=str(actual_wt_path)
         )
 
     # Persist Metadata
