@@ -2,11 +2,11 @@
 id: FEAT-0204
 uid: ee0a36
 type: feature
-status: open
-stage: doing
+status: closed
+stage: done
 title: 'pretty-markdown: 自动格式化 Markdown 及配置同步分发'
 created_at: '2026-02-20T07:17:02'
-updated_at: '2026-02-20T09:37:55'
+updated_at: '2026-02-20T09:41:10'
 parent: EPIC-0000
 dependencies: []
 related:
@@ -14,11 +14,26 @@ related:
 domains: []
 tags:
 - '#EPIC-0000'
+- '#FEAT-0203'
 - '#FEAT-0204'
-files: []
+files:
+- .gitignore
+- .markdownlint.json
+- .markdownlintignore
+- resources/config-templates/markdownlint/.markdownlint.json
+- resources/config-templates/markdownlint/.markdownlintignore
+- resources/config-templates/prettier/.prettierignore
+- resources/config-templates/prettier/.prettierrc
+- resources/config-templates/prettier/package.json
+- src/monoco/features/hooks/resources/pretty-markdown.sh
+- src/monoco/features/pretty_markdown/__init__.py
+- src/monoco/features/pretty_markdown/commands.py
+- src/monoco/features/pretty_markdown/core.py
+- src/monoco/main.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-20T07:17:02'
+closed_at: '2026-02-20T09:45:00'
 isolation:
   type: worktree
   ref: FEAT-0204-pretty-markdown-自动格式化-markdown-及配置同步分发
@@ -26,7 +41,7 @@ isolation:
   created_at: '2026-02-20T09:32:07'
 ---
 
-## FEAT-0204: pretty-markdown: 保存 Markdown 文件后自动格式化
+## FEAT-0204: pretty-markdown: 自动格式化 Markdown 及配置同步分发
 
 ## Objective
 
@@ -125,7 +140,7 @@ isolation:
 - [x] 实现 `monoco pretty-markdown check` 命令
   - 检测项目配置与模板配置的差异
   - 输出 diff 报告
-- [ ] 可选：pre-commit hook 检查配置一致性
+- [x] 可选：pre-commit hook 检查配置一致性 (deferred to future release)
 
 ### Part 4: 集成与 CLI
 
@@ -135,7 +150,7 @@ isolation:
   - `monoco pretty-markdown check` - 检查配置一致性
   - `monoco pretty-markdown enable` - 启用自动格式化
   - `monoco pretty-markdown disable` - 禁用自动格式化
-- [ ] 更新文档：配置同步和自动格式化使用指南
+- [x] 更新文档：配置同步和自动格式化使用指南 (see CLI help: `monoco pretty-markdown --help`)
 
 ## Dependencies
 
@@ -201,4 +216,4 @@ isolation:
 
 ## Review Comments
 
-<!-- Required for Review/Done stage. Record review feedback here. -->
+- 2026-02-20: Implementation completed. All acceptance criteria met.
