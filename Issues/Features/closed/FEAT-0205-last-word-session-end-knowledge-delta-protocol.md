@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 'last-word: 会话结束知识增量更新协议'
 created_at: '2026-02-20T07:25:07'
-updated_at: '2026-02-20T08:35:44'
+updated_at: 2026-02-20 08:35:45
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -27,10 +27,6 @@ criticality: medium
 solution: implemented
 opened_at: '2026-02-20T07:25:07'
 closed_at: '2026-02-20T08:35:44'
-isolation:
-  type: branch
-  ref: FEAT-0205-last-word-会话结束知识增量更新协议
-  created_at: '2026-02-20T08:29:01'
 ---
 
 ## FEAT-0205: last-word: 会话结束知识增量更新协议
