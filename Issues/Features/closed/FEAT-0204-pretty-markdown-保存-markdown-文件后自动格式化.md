@@ -10,26 +10,26 @@ updated_at: '2026-02-20T09:41:10'
 parent: EPIC-0000
 dependencies: []
 related:
-- FEAT-0203
+  - FEAT-0203
 domains: []
 tags:
-- '#EPIC-0000'
-- '#FEAT-0203'
-- '#FEAT-0204'
+  - '#EPIC-0000'
+  - '#FEAT-0203'
+  - '#FEAT-0204'
 files:
-- .gitignore
-- .markdownlint.json
-- .markdownlintignore
-- resources/config-templates/markdownlint/.markdownlint.json
-- resources/config-templates/markdownlint/.markdownlintignore
-- resources/config-templates/prettier/.prettierignore
-- resources/config-templates/prettier/.prettierrc
-- resources/config-templates/prettier/package.json
-- src/monoco/features/hooks/resources/pretty-markdown.sh
-- src/monoco/features/pretty_markdown/__init__.py
-- src/monoco/features/pretty_markdown/commands.py
-- src/monoco/features/pretty_markdown/core.py
-- src/monoco/main.py
+  - .gitignore
+  - .markdownlint.json
+  - .markdownlintignore
+  - resources/config-templates/markdownlint/.markdownlint.json
+  - resources/config-templates/markdownlint/.markdownlintignore
+  - resources/config-templates/prettier/.prettierignore
+  - resources/config-templates/prettier/.prettierrc
+  - resources/config-templates/prettier/package.json
+  - src/monoco/features/hooks/resources/pretty-markdown.sh
+  - src/monoco/features/pretty_markdown/__init__.py
+  - src/monoco/features/pretty_markdown/commands.py
+  - src/monoco/features/pretty_markdown/core.py
+  - src/monoco/main.py
 criticality: medium
 solution: implemented
 opened_at: '2026-02-20T07:17:02'
@@ -168,21 +168,23 @@ isolation:
 - Agent 结合自身当前任务状态，**自主判断**如何处理
 
 这种模式的优势：
+
 - **零打扰**：无问题时完全静默
 - **有上下文**：Agent 知道问题在哪、什么类型
 - **可解释**：Agent 的决策过程通过工具调用链可见
 
 ### 2. 问题分类策略
 
-| 类型 | 规则示例 | 建议操作 |
-|------|----------|----------|
-| **格式类** | MD013(行长度), MD004(列表缩进) | `prettier --write` |
-| **内容类** | MD033(HTML), MD041(首行标题) | 需理解语义后修改 |
-| **结构类** | MD002(一级标题), MD025(唯一标题) | Agent 判断优先级 |
+| 类型       | 规则示例                         | 建议操作           |
+| ---------- | -------------------------------- | ------------------ |
+| **格式类** | MD013(行长度), MD004(列表缩进)   | `prettier --write` |
+| **内容类** | MD033(HTML), MD041(首行标题)     | 需理解语义后修改   |
+| **结构类** | MD002(一级标题), MD025(唯一标题) | Agent 判断优先级   |
 
 ### 3. 与 Feat-0203 的关系
 
 本 Hook 是 **AgentHooks 框架的验证用例**，验证以下能力：
+
 - `post-tool-call` 拦截
 - 选择性上下文注入（有问题时才注入）
 - Agent 对 Hook 输出的响应能力
