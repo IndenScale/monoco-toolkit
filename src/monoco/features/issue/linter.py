@@ -838,9 +838,35 @@ def run_lint(
             diagnostics = []  # Reset
             # Re-validate file list
             validator = IssueValidator(issues_root)
-            # We assume all_issue_ids is already populated from the first pass if it was needed
-            # But let's be safe and assume we might need to re-scan if IDs changed (unlikely during lint)
-            # For simplicity, we reuse the validator instance but might need fresh content
+            
+            # FIX-0029: Ensure all_issue_ids and valid_domains are available for re-validation
+            # These variables may not be defined if we reach here via fix path
+            try:
+                all_issue_ids
+            except NameError:
+                all_issue_ids = set()
+                for subdir in ["Epics", "Features", "Chores", "Fixes"]:
+                    d = issues_root / subdir
+                    if d.exists():
+                        for status in ["open", "closed", "backlog"]:
+                            status_dir = d / status
+                            if status_dir.exists():
+                                for f in status_dir.rglob("*.md"):
+                                    try:
+                                        m = core.parse_issue(f)
+                                        if m:
+                                            all_issue_ids.add(m.id)
+                                    except Exception:
+                                        pass
+            
+            try:
+                valid_domains
+            except NameError:
+                valid_domains = set()
+                domains_dir = issues_root / "Domains"
+                if domains_dir.exists():
+                    for f in domains_dir.rglob("*.md"):
+                        valid_domains.add(f.stem)
 
             for file_path in file_paths:
                 file = Path(file_path).resolve()
