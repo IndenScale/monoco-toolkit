@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 将 monoco sync 重构为 monoco install，支持全局/项目安装和分模块安装
 created_at: '2026-02-20T18:28:50'
-updated_at: '2026-02-20T21:33:24'
+updated_at: '2026-02-20T21:33:49'
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -19,6 +19,7 @@ tags:
 files:
 - .gitignore
 - .monoco
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
 - src/monoco/core/install.py
 - src/monoco/core/sync.py
 - src/monoco/main.py
