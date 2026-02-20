@@ -21,7 +21,7 @@ domains:
 - CollaborationBus
 - AgentEmpowerment
 - AgentGuardrail
-progress: 64/79
+progress: 64/78
 files_count: 11
 ---
 
