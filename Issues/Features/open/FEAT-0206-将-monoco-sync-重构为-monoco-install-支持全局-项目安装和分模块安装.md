@@ -11,8 +11,7 @@ parent: EPIC-0000
 dependencies: []
 related: []
 domains:
-- Cli
-- Core
+- DevEx
 tags:
 - '#EPIC-0000'
 - '#FEAT-0206'
