@@ -23,6 +23,39 @@ def is_git_repo(path: Path) -> bool:
     return code == 0
 
 
+def get_trunk_branch(path: Path, configured_trunk: str = "main") -> str:
+    """
+    Determine the trunk branch name for the repository.
+    
+    Priority:
+    1. Use configured trunk branch if it exists
+    2. Fallback to 'main' if it exists
+    3. Fallback to 'master' if it exists
+    4. Return configured value as last resort
+    
+    Args:
+        path: Path to the git repository
+        configured_trunk: The configured trunk branch name (default: "main")
+        
+    Returns:
+        The resolved trunk branch name
+    """
+    # Priority 1: Check configured trunk branch
+    if branch_exists(path, configured_trunk):
+        return configured_trunk
+    
+    # Priority 2: Check 'main'
+    if branch_exists(path, "main"):
+        return "main"
+    
+    # Priority 3: Check 'master'
+    if branch_exists(path, "master"):
+        return "master"
+    
+    # Fallback: return configured value (caller may need to handle missing branch)
+    return configured_trunk
+
+
 def get_git_status(path: Path, subpath: Optional[str] = None) -> List[str]:
     """
     Get list of modified files.

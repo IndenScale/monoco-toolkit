@@ -1940,14 +1940,18 @@ def _validate_branch_context(
         # Let's assume strictness.
         return
 
-    is_trunk = current in ["main", "master"]
+    # Get trunk branch from config (FEAT-0202)
+    config = get_config(str(project_root))
+    configured_trunk = config.project.trunk_branch
+    trunk_branch = git.get_trunk_branch(project_root, configured_trunk)
+    is_trunk = current == trunk_branch
 
     if allowed:
         if "TRUNK" in allowed and not is_trunk:
             # Check if current is strictly in allowed list otherwise
             if current not in allowed:
                 OutputManager.error(
-                    f"❌ {command_name} restricted to 'main' branch. Current: {current}\n"
+                    f"❌ {command_name} restricted to '{trunk_branch}' branch. Current: {current}\n"
                     f"   Use --force to bypass if necessary."
                 )
                 raise typer.Exit(code=1)
@@ -1955,7 +1959,7 @@ def _validate_branch_context(
     if forbidden:
         if "TRUNK" in forbidden and is_trunk:
             OutputManager.error(
-                f"❌ {command_name} cannot be run on 'main' branch.\n"
+                f"❌ {command_name} cannot be run on '{trunk_branch}' branch.\n"
                 f"   Please checkout your feature branch first."
             )
             raise typer.Exit(code=1)

@@ -1334,17 +1334,10 @@ def sync_issue_files(issues_root: Path, issue_id: str, project_root: Path) -> Li
             f"Could not determine git branch for Issue {issue_id}. Please ensure issue is started or you are on the feature branch."
         )
 
-    # Determine Base Branch (assume main, or config?)
-    # For now hardcode main, eventually read from config
-    base_ref = "main"
-
-    # Check if base exists, if not try master
-    if not git.branch_exists(project_root, base_ref):
-        if git.branch_exists(project_root, "master"):
-            base_ref = "master"
-        else:
-            # Fallback: remote/main?
-            pass
+    # Determine Base Branch from config (FEAT-0202)
+    config = get_config(str(project_root))
+    configured_trunk = config.project.trunk_branch
+    base_ref = git.get_trunk_branch(project_root, configured_trunk)
 
     # Git Diff
     # git diff --name-only base...target
