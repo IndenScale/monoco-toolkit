@@ -6,7 +6,7 @@ status: closed
 stage: done
 title: 测试 worktree 全流程并评估问题
 created_at: '2026-02-20T22:31:08'
-updated_at: '2026-02-20T22:34:04'
+updated_at: 2026-02-20 22:34:05
 parent: EPIC-0000
 dependencies: []
 related: []
@@ -21,11 +21,6 @@ criticality: low
 solution: implemented
 opened_at: '2026-02-20T22:31:08'
 closed_at: '2026-02-20T22:34:04'
-isolation:
-  type: worktree
-  ref: CHORE-0051-测试-worktree-全流程并评估问题
-  path: /Users/indenscale/Documents/Projects/Monoco/Monoco/.monoco/worktrees/chore-0051-测试-worktree-全流程并评估问题
-  created_at: '2026-02-20T22:31:15'
 ---
 
 ## CHORE-0051: 测试 worktree 全流程并评估问题
