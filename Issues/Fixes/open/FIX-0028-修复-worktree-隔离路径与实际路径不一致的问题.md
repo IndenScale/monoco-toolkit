@@ -3,10 +3,10 @@ id: FIX-0028
 uid: d37f98
 type: fix
 status: open
-stage: draft
+stage: doing
 title: 修复 worktree 隔离路径与实际路径不一致的问题
 created_at: '2026-02-20T22:37:16'
-updated_at: '2026-02-20T22:37:16'
+updated_at: '2026-02-20T22:40:45'
 parent: EPIC-0000
 dependencies: []
 related: []
