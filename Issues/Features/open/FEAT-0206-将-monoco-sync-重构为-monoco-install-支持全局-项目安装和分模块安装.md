@@ -6,7 +6,7 @@ status: open
 stage: review
 title: 将 monoco sync 重构为 monoco install，支持全局/项目安装和分模块安装
 created_at: '2026-02-20T18:28:50'
-updated_at: '2026-02-20T21:33:49'
+updated_at: '2026-02-20T21:34:00'
 parent: EPIC-0000
 dependencies: []
 related: []
