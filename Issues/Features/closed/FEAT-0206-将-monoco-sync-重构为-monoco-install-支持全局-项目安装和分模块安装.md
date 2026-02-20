@@ -2,27 +2,27 @@
 id: FEAT-0206
 uid: 40b1d1
 type: feature
-status: open
-stage: review
+status: closed
+stage: done
 title: 将 monoco sync 重构为 monoco install，支持全局/项目安装和分模块安装
 created_at: '2026-02-20T18:28:50'
-updated_at: '2026-02-20T21:31:00'
+updated_at: '2026-02-20T21:34:05'
 parent: EPIC-0000
 dependencies: []
 related: []
 domains:
-- cli
-- core
+- DevEx
 tags:
 - '#EPIC-0000'
 - '#FEAT-0206'
 files:
+- .gitignore
+- .monoco
+- Issues/Epics/open/EPIC-0000-Monoco-Toolkit-Root.md
 - src/monoco/core/install.py
 - src/monoco/main.py
-- src/monoco/core/skills.py
-- src/monoco/core/config.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: implemented
 opened_at: '2026-02-20T18:28:50'
 ---
 
@@ -97,3 +97,11 @@ monoco install --global  # hooks 被跳过
 | skills | `./.agents/skills/` | `~/.config/agents/skills/` |
 | hooks | `./.git/hooks/` | N/A |
 | prompts | `./AGENTS.md` | `~/.config/agents/AGENTS.md` |
+
+## Review Comments
+
+### 2026-02-20
+- 重构完成，所有 AC 已通过
+- 代码结构清晰，模块职责分明
+- 向后兼容已验证（sync 命令作为别名正常工作）
+- 测试通过 162/162
