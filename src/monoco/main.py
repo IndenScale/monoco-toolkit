@@ -241,6 +241,10 @@ from monoco.features.ralph import cli as ralph_cmd
 
 app.add_typer(ralph_cmd.app, name="ralph", help="Ralph Loop - Agent session relay for long-running issues")
 
+from monoco.features.pretty_markdown import commands as pretty_markdown_cmd
+
+app.add_typer(pretty_markdown_cmd.app, name="pretty-markdown", help="Markdown formatting and linting utilities")
+
 from monoco.daemon.commands import serve_app, serve
 
 app.add_typer(serve_app, name="serve", help="Manage Monoco Daemon server")

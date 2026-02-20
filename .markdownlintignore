@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# Build outputs
+dist/
+build/
+
+# Generated files
+*.lock
+*.log
+
+# Monoco
+.monoco/
+
+# Archives
+.archives/

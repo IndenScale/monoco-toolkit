@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 'pretty-markdown: 自动格式化 Markdown 及配置同步分发'
 created_at: '2026-02-20T07:17:02'
-updated_at: '2026-02-20T09:32:07'
+updated_at: '2026-02-20T09:40:00'
 parent: EPIC-0000
 dependencies: []
 related:
@@ -17,9 +17,23 @@ tags:
 - '#FEAT-0204'
 files:
 - Issues/Features/open/FEAT-0204-pretty-markdown-保存-markdown-文件后自动格式化.md
+- resources/config-templates/prettier/.prettierrc
+- resources/config-templates/prettier/.prettierignore
+- resources/config-templates/prettier/package.json
+- resources/config-templates/markdownlint/.markdownlint.json
+- resources/config-templates/markdownlint/.markdownlintignore
+- src/monoco/features/hooks/resources/pretty-markdown.sh
+- src/monoco/features/pretty_markdown/__init__.py
+- src/monoco/features/pretty_markdown/core.py
+- src/monoco/features/pretty_markdown/commands.py
 criticality: medium
-solution: null # implemented, cancelled, wontfix, duplicate
+solution: null
 opened_at: '2026-02-20T07:17:02'
+isolation:
+  type: worktree
+  ref: FEAT-0204-pretty-markdown-自动格式化-markdown-及配置同步分发
+  path: /Users/indenscale/Documents/Projects/Monoco/Monoco/.monoco/worktrees/feat-0204-pretty-markdown-自动格式化-markdown-及配置同步分发
+  created_at: '2026-02-20T09:32:07'
 ---
 
 ## FEAT-0204: pretty-markdown: 保存 Markdown 文件后自动格式化
@@ -35,26 +49,26 @@ opened_at: '2026-02-20T07:17:02'
 
 ## Acceptance Criteria
 
-- [ ] Hook 拦截 Markdown 文件保存 (`WriteFile`, `StrReplaceFile`)
-- [ ] 仅处理 `.md` 和 `.mdx` 文件
-- [ ] 运行 `markdownlint` 检查，仅当发现问题时拦截
+- [x] Hook 拦截 Markdown 文件保存 (`WriteFile`, `StrReplaceFile`)
+- [x] 仅处理 `.md` 和 `.mdx` 文件
+- [x] 运行 `markdownlint` 检查，仅当发现问题时拦截
   - 无问题 → 静默通过，零打扰
   - 有 warning/error → 拦截并注入 Agent 上下文
-- [ ] Agent 根据问题类型自主决策：
+- [x] Agent 根据问题类型自主决策：
   - 纯格式问题（MD013/行长度等）→ 调用 `prettier --write` 自动修复
   - 内容/语义问题（MD033/HTML 等）→ 手动修改
   - 混合/不确定 → Agent 自行判断优先级
-- [ ] 格式化失败不阻断 Agent 工作流（记录警告日志）
-- [ ] 使用项目根目录的 `.prettierrc` 配置（如存在）
-- [ ] 可作为可选内置 Hook 启用/禁用
-- [ ] 支持将标准配置从模板分发到项目
-- [ ] 检测配置不一致时提示同步
+- [x] 格式化失败不阻断 Agent 工作流（记录警告日志）
+- [x] 使用项目根目录的 `.prettierrc` 配置（如存在）
+- [x] 可作为可选内置 Hook 启用/禁用
+- [x] 支持将标准配置从模板分发到项目
+- [x] 检测配置不一致时提示同步
 
 ## Technical Tasks
 
 ### Part 1: 配置模板管理
 
-- [ ] 创建配置模板目录 `resources/config-templates/`
+- [x] 创建配置模板目录 `resources/config-templates/`
 
   ```text
   resources/config-templates/
@@ -67,10 +81,10 @@ opened_at: '2026-02-20T07:17:02'
       └── .markdownlintignore   # 忽略模式
   ```
 
-- [ ] 定义 Monoco 标准配置
+- [x] 定义 Monoco 标准配置
   - `.prettierrc`: 100 列宽、2 空格缩进、无分号
   - `.markdownlint.json`: 允许 HTML、适当行长度
-- [ ] 实现配置同步命令
+- [x] 实现配置同步命令
 
   ```bash
   monoco pretty-markdown sync      # 同步 prettier 和 markdownlint 配置到项目
@@ -78,7 +92,7 @@ opened_at: '2026-02-20T07:17:02'
 
 ### Part 2: 自动格式化 Hook
 
-- [ ] 创建 `pretty-markdown` hook 目录结构
+- [x] 创建 `pretty-markdown` hook 目录结构
 
   ```text
   src/monoco/core/hooks/builtin/pretty-markdown/
@@ -87,7 +101,7 @@ opened_at: '2026-02-20T07:17:02'
       └── run.sh
   ```
 
-- [ ] 编写 `HOOK.md` 配置
+- [x] 编写 `HOOK.md` 配置 (Frontmatter embedded in script)
 
   ```yaml
   ---
@@ -103,7 +117,7 @@ opened_at: '2026-02-20T07:17:02'
   ---
   ```
 
-- [ ] 编写 `scripts/run.sh`
+- [x] 编写 `scripts/run.sh` (implemented as pretty-markdown.sh)
   - 从 stdin 解析 `tool_input.path`
   - 检查文件扩展名（仅 `.md`, `.mdx`）
   - 运行 `npx markdownlint --json <filepath>` 收集问题
@@ -118,15 +132,15 @@ opened_at: '2026-02-20T07:17:02'
 
 ### Part 3: 配置一致性检查
 
-- [ ] 实现 `monoco pretty-markdown check` 命令
+- [x] 实现 `monoco pretty-markdown check` 命令
   - 检测项目配置与模板配置的差异
   - 输出 diff 报告
 - [ ] 可选：pre-commit hook 检查配置一致性
 
 ### Part 4: 集成与 CLI
 
-- [ ] 注册为内置 Hook，默认禁用
-- [ ] 添加 `monoco pretty-markdown` 子命令
+- [x] 注册为内置 Hook，默认禁用
+- [x] 添加 `monoco pretty-markdown` 子命令
   - `monoco pretty-markdown sync` - 同步配置
   - `monoco pretty-markdown check` - 检查配置一致性
   - `monoco pretty-markdown enable` - 启用自动格式化

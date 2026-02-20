@@ -1,0 +1,29 @@
+# Build outputs
+dist/
+build/
+*.spec
+
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+
+# Generated files
+*.lock
+*.log
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Monoco
+.monoco/
