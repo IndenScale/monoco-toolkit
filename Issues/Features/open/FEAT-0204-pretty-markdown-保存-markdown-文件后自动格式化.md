@@ -3,19 +3,20 @@ id: FEAT-0204
 uid: ee0a36
 type: feature
 status: open
-stage: draft
+stage: doing
 title: 'pretty-markdown: 自动格式化 Markdown 及配置同步分发'
 created_at: '2026-02-20T07:17:02'
-updated_at: '2026-02-20T09:15:22'
+updated_at: '2026-02-20T09:31:20'
 parent: EPIC-0000
 dependencies: []
-related: ['FEAT-0203']
+related:
+- FEAT-0203
 domains: []
 tags:
-  - '#EPIC-0000'
-  - '#FEAT-0204'
+- '#EPIC-0000'
+- '#FEAT-0204'
 files:
-  - Issues/Features/open/FEAT-0204-pretty-markdown-保存-markdown-文件后自动格式化.md
+- Issues/Features/open/FEAT-0204-pretty-markdown-保存-markdown-文件后自动格式化.md
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-20T07:17:02'
