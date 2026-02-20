@@ -97,3 +97,11 @@ monoco install --global  # hooks 被跳过
 | skills | `./.agents/skills/` | `~/.config/agents/skills/` |
 | hooks | `./.git/hooks/` | N/A |
 | prompts | `./AGENTS.md` | `~/.config/agents/AGENTS.md` |
+
+## Review Comments
+
+### 2026-02-20
+- 重构完成，所有 AC 已通过
+- 代码结构清晰，模块职责分明
+- 向后兼容已验证（sync 命令作为别名正常工作）
+- 测试通过 162/162
