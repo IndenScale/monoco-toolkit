@@ -20,7 +20,6 @@ from .models import (
     ParsedHook,
 )
 from .parser import HookParser, ParseError
-from .agenthooks_parser import AgenthooksParser, convert_agenthooks_to_parsed_hook
 
 
 @dataclass
@@ -356,80 +355,3 @@ class UniversalHookManager:
     def clear_parsing_errors(self) -> None:
         """Clear parsing errors."""
         self.parser.clear_errors()
-
-    def scan_agenthooks(
-        self,
-        directory: Path | str,
-    ) -> dict[str, HookGroup]:
-        """
-        Scan a directory for agenthooks-style HOOK.md configurations.
-
-        Discovers all agenthooks with valid HOOK.md files and organizes
-        them into groups. Each subdirectory should contain a HOOK.md file.
-
-        Args:
-            directory: Directory to scan (e.g., ~/.config/agents/hooks/)
-
-        Returns:
-            Dictionary mapping group keys to HookGroup objects
-        """
-        dir_path = Path(directory)
-        groups: dict[str, HookGroup] = {}
-
-        # Parse all agenthooks in the directory
-        agenthooks_parser = AgenthooksParser()
-        configs = agenthooks_parser.discover_hooks(dir_path)
-
-        # Convert to ParsedHook and organize into groups
-        for config in configs:
-            hook_dir = Path(config.metadata.get("_hook_dir", dir_path / config.name))
-            parsed_hook = convert_agenthooks_to_parsed_hook(config, hook_dir)
-
-            if parsed_hook:
-                key = parsed_hook.metadata.get_key()
-
-                if key not in groups:
-                    groups[key] = HookGroup(
-                        key=key,
-                        hook_type=parsed_hook.metadata.type,
-                        provider=parsed_hook.metadata.provider,
-                    )
-
-                groups[key].add_hook(parsed_hook)
-
-        return groups
-
-    def scan_all_agent_hooks(
-        self,
-        project_root: Optional[Path | str] = None,
-    ) -> dict[str, HookGroup]:
-        """
-        Scan all standard agent hooks discovery paths.
-
-        Discovery order (project-level > user-level):
-        1. Project-level: {project_root}/.agents/hooks/
-        2. User-level: ~/.config/agents/hooks/
-
-        Args:
-            project_root: Optional project root directory for project-level hooks
-
-        Returns:
-            Dictionary mapping group keys to HookGroup objects
-        """
-        all_groups: dict[str, HookGroup] = {}
-
-        # Scan user-level hooks first (lower priority)
-        user_hooks_dir = Path.home() / ".config" / "agents" / "hooks"
-        if user_hooks_dir.exists():
-            user_groups = self.scan_agenthooks(user_hooks_dir)
-            all_groups.update(user_groups)
-
-        # Scan project-level hooks (higher priority, overrides user-level)
-        if project_root:
-            project_hooks_dir = Path(project_root) / ".agents" / "hooks"
-            if project_hooks_dir.exists():
-                project_groups = self.scan_agenthooks(project_hooks_dir)
-                # Project-level overrides user-level
-                all_groups.update(project_groups)
-
-        return all_groups

@@ -13,8 +13,6 @@ from .models import (
     IDEEvent,
     ParsedHook,
     HookGroup,
-    AGENTHOOKS_EVENT_MAP,
-    normalize_agent_event,
 )
 from .parser import HookParser, ParseError
 from .manager import UniversalHookManager, ValidationResult, HookDispatcher
@@ -34,12 +32,6 @@ from .universal_interceptor import (
     UnifiedDecision,
     UnifiedHookInput,
 )
-from .agenthooks_parser import (
-    AgenthooksParser,
-    AgenthooksConfig,
-    AgenthooksMatcher,
-    convert_agenthooks_to_parsed_hook,
-)
 
 __all__ = [
     # Models
@@ -50,16 +42,9 @@ __all__ = [
     "IDEEvent",
     "ParsedHook",
     "HookGroup",
-    "AGENTHOOKS_EVENT_MAP",
-    "normalize_agent_event",
     # Parser
     "HookParser",
     "ParseError",
-    # Agenthooks Parser
-    "AgenthooksParser",
-    "AgenthooksConfig",
-    "AgenthooksMatcher",
-    "convert_agenthooks_to_parsed_hook",
     # Manager
     "UniversalHookManager",
     "ValidationResult",

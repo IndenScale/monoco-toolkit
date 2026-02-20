@@ -460,43 +460,27 @@ class UniversalInterceptor:
             timeout=300,  # 5 minute timeout
         )
 
-        # Parse output according to agenthooks protocol
-        # Exit code 0 = success, 2 = blocked, other = failure (fail open)
-        stdout_str = result.stdout.strip()
-        stderr_str = result.stderr.strip()
-
-        if result.returncode == 2:
-            # Agenthooks block protocol: exit code 2 means operation blocked
-            # stderr contains the block reason to display to user
+        # Parse output
+        if result.returncode == 0 and result.stdout.strip():
+            try:
+                output_data = json.loads(result.stdout.strip())
+                return UnifiedDecision.from_dict(output_data)
+            except json.JSONDecodeError:
+                # Non-JSON output - treat as allow with message
+                return UnifiedDecision(
+                    decision="allow",
+                    message=result.stdout.strip(),
+                )
+        elif result.returncode != 0:
+            # Script failed - deny
             return UnifiedDecision(
                 decision="deny",
-                reason=stderr_str or "Operation blocked by hook",
-                message=stderr_str or "The hook blocked this operation",
+                reason=f"Hook script exited with code {result.returncode}",
+                message=result.stderr.strip() or "Hook script failed",
             )
-
-        if result.returncode == 0:
-            # Success - parse JSON output if present
-            if stdout_str:
-                try:
-                    output_data = json.loads(stdout_str)
-                    return UnifiedDecision.from_dict(output_data)
-                except json.JSONDecodeError:
-                    # Non-JSON output - treat as allow with message
-                    return UnifiedDecision(
-                        decision="allow",
-                        message=stdout_str,
-                    )
-            else:
-                # No output - allow by default
-                return UnifiedDecision(decision="allow")
-
-        # Other non-zero exit codes = script failure (fail open per agenthooks spec)
-        # Log warning but don't block
-        return UnifiedDecision(
-            decision="allow",
-            reason=f"Hook script failed with exit code {result.returncode}",
-            message=stderr_str or f"Hook script failed (exit code {result.returncode})",
-        )
+        else:
+            # No output - allow by default
+            return UnifiedDecision(decision="allow")
 
 
 def main() -> int:
