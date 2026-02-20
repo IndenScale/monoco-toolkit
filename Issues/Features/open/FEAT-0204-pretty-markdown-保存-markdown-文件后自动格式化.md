@@ -6,7 +6,7 @@ status: open
 stage: draft
 title: 'pretty-markdown: 自动格式化 Markdown 及配置同步分发'
 created_at: '2026-02-20T07:17:02'
-updated_at: '2026-02-20T07:17:02'
+updated_at: '2026-02-20T09:15:22'
 parent: EPIC-0000
 dependencies: []
 related: ['FEAT-0203']
@@ -14,7 +14,8 @@ domains: []
 tags:
   - '#EPIC-0000'
   - '#FEAT-0204'
-files: []
+files:
+  - Issues/Features/open/FEAT-0204-pretty-markdown-保存-markdown-文件后自动格式化.md
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
 opened_at: '2026-02-20T07:17:02'
@@ -33,11 +34,17 @@ opened_at: '2026-02-20T07:17:02'
 
 ## Acceptance Criteria
 
-- [ ] Agent 保存 Markdown 文件后自动 prettier 格式化
-- [ ] 支持 `WriteFile` 和 `StrReplaceFile` 工具拦截
-- [ ] 只处理 `.md` 和 `.mdx` 文件
+- [ ] Hook 拦截 Markdown 文件保存 (`WriteFile`, `StrReplaceFile`)
+- [ ] 仅处理 `.md` 和 `.mdx` 文件
+- [ ] 运行 `markdownlint` 检查，仅当发现问题时拦截
+  - 无问题 → 静默通过，零打扰
+  - 有 warning/error → 拦截并注入 Agent 上下文
+- [ ] Agent 根据问题类型自主决策：
+  - 纯格式问题（MD013/行长度等）→ 调用 `prettier --write` 自动修复
+  - 内容/语义问题（MD033/HTML 等）→ 手动修改
+  - 混合/不确定 → Agent 自行判断优先级
 - [ ] 格式化失败不阻断 Agent 工作流（记录警告日志）
-- [ ] 使用项目根目录的 `.prettierrc` 配置
+- [ ] 使用项目根目录的 `.prettierrc` 配置（如存在）
 - [ ] 可作为可选内置 Hook 启用/禁用
 - [ ] 支持将标准配置从模板分发到项目
 - [ ] 检测配置不一致时提示同步
@@ -84,7 +91,7 @@ opened_at: '2026-02-20T07:17:02'
   ```yaml
   ---
   name: pretty-markdown
-  description: Auto-format Markdown files after save
+  description: Lint Markdown files after save and inject issues into Agent context
   trigger: post-tool-call
   matcher:
     tool: 'WriteFile|StrReplaceFile'
@@ -97,9 +104,16 @@ opened_at: '2026-02-20T07:17:02'
 
 - [ ] 编写 `scripts/run.sh`
   - 从 stdin 解析 `tool_input.path`
-  - 检查文件扩展名
-  - 执行 `npx prettier --write <filepath>`
-  - 失败时输出警告到 stderr，但 exit 0
+  - 检查文件扩展名（仅 `.md`, `.mdx`）
+  - 运行 `npx markdownlint --json <filepath>` 收集问题
+  - **如无问题**：静默退出（exit 0，零输出）
+  - **如有问题**：
+    - 输出结构化报告到 stderr（注入 Agent 上下文）
+    - 标注问题类型（格式类 vs 内容类）
+    - exit 0（不阻断工作流，让 Agent 自主决策）
+  - 分类规则：
+    - 格式类（prettier 可修复）：MD013, MD004, MD009, MD012
+    - 内容类（需 Agent 判断）：MD033, MD041, MD024, MD002, MD025
 
 ### Part 3: 配置一致性检查
 
@@ -123,21 +137,61 @@ opened_at: '2026-02-20T07:17:02'
 - 依赖 FEAT-0203（agenthooks 标准支持）完成后实施
 - 或作为 FEAT-0203 的验证用例同步开发
 
+## Design Decisions
+
+### 1. Agent 自主决策模式
+
+不同于传统 Hook 的「自动修复」或「人工确认」，本设计采用 **L3 Agentic 模式**：
+
+- Hook **只收集信息**（lint 结果），**不决策**
+- 将问题上下文 **注入 Agent 工作记忆**
+- Agent 结合自身当前任务状态，**自主判断**如何处理
+
+这种模式的优势：
+- **零打扰**：无问题时完全静默
+- **有上下文**：Agent 知道问题在哪、什么类型
+- **可解释**：Agent 的决策过程通过工具调用链可见
+
+### 2. 问题分类策略
+
+| 类型 | 规则示例 | 建议操作 |
+|------|----------|----------|
+| **格式类** | MD013(行长度), MD004(列表缩进) | `prettier --write` |
+| **内容类** | MD033(HTML), MD041(首行标题) | 需理解语义后修改 |
+| **结构类** | MD002(一级标题), MD025(唯一标题) | Agent 判断优先级 |
+
+### 3. 与 Feat-0203 的关系
+
+本 Hook 是 **AgentHooks 框架的验证用例**，验证以下能力：
+- `post-tool-call` 拦截
+- 选择性上下文注入（有问题时才注入）
+- Agent 对 Hook 输出的响应能力
+
 ## Scope
 
 本 Issue 覆盖 Markdown 格式化的完整工作流：
 
 ```text
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  配置模板中心    │────▶│  项目配置同步    │────▶│  自动格式化执行  │
+│  配置模板中心    │────▶│  项目配置同步    │────▶│   Lint 检查     │
 │  (monoco 内置)   │     │ (monoco config) │     │  (agent hook)   │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
                                                         │
-                                                        ▼
-                                                ┌─────────────────┐
-                                                │  一致性检查      │
-                                                │ (monoco check)  │
-                                                └─────────────────┘
+                            ┌──────────────────────────┘
+                            │ 有问题时注入上下文
+                            ▼
+                    ┌─────────────────┐
+                    │  Agent 自主决策  │
+                    │  • prettier fix │
+                    │  • 手动修改      │
+                    │  • 延后处理      │
+                    └─────────────────┘
+                            │
+                            ▼
+                    ┌─────────────────┐
+                    │  一致性检查      │
+                    │ (monoco check)  │
+                    └─────────────────┘
 ```
 
 ## Review Comments
