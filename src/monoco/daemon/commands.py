@@ -28,8 +28,8 @@ serve_app = typer.Typer(
 )
 
 
-def _get_workspace_root(root: Optional[str] = None) -> Path:
-    """Get workspace root path."""
+def _get_project_root(root: Optional[str] = None) -> Path:
+    """Get Project root path."""
     if root:
         return Path(root).resolve()
     env_root = os.getenv("MONOCO_SERVER_ROOT")
@@ -59,7 +59,7 @@ def _setup_signal_handlers(pid_manager: PIDManager):
 
 
 def _daemonize(
-    workspace_root: Path,
+    project_root: Path,
     host: str,
     port: int,
     log_file: Optional[Path] = None,
@@ -67,7 +67,7 @@ def _daemonize(
     """Daemonize the current process using double-fork technique.
 
     Args:
-        workspace_root: Workspace root path
+        project_root: Project root path
         host: Host to bind
         port: Port to bind
         log_file: Optional log file path (defaults to .monoco/log/daemon.log)
@@ -76,7 +76,7 @@ def _daemonize(
         Parent process returns child PID, child process returns 0
     """
     if log_file is None:
-        log_dir = workspace_root / ".monoco" / "log"
+        log_dir = project_root / ".monoco" / "log"
         log_dir.mkdir(parents=True, exist_ok=True)
         log_file = log_dir / "daemon.log"
 
@@ -92,7 +92,7 @@ def _daemonize(
         sys.exit(1)
 
     # Child process continues
-    os.chdir(str(workspace_root))
+    os.chdir(str(project_root))
     os.setsid()  # Create new session, detach from terminal
 
     # Second fork
@@ -124,7 +124,7 @@ def serve_start(
         False, "--daemon", "-d", help="Run as background daemon"
     ),
     root: Optional[str] = typer.Option(
-        None, "--root", help="Workspace root directory"
+        None, "--root", help="Project root directory"
     ),
     max_agents: Optional[int] = typer.Option(
         None, "--max-agents", help="Override global maximum concurrent agents"
@@ -134,8 +134,8 @@ def serve_start(
     ),
 ):
     """Start the Monoco Daemon server."""
-    workspace_root = _get_workspace_root(root)
-    pid_manager = PIDManager(workspace_root)
+    project_root = _get_project_root(root)
+    pid_manager = PIDManager(project_root)
 
     # Check if already running
     existing = pid_manager.get_daemon_info()
@@ -162,17 +162,17 @@ def serve_start(
         raise typer.Exit(code=1)
 
     # Set environment variables
-    os.environ["MONOCO_SERVER_ROOT"] = str(workspace_root)
+    os.environ["MONOCO_SERVER_ROOT"] = str(project_root)
     if max_agents is not None:
         os.environ["MONOCO_MAX_AGENTS"] = str(max_agents)
 
     if daemon:
         # Daemonize
-        log_dir = workspace_root / ".monoco" / "log"
+        log_dir = project_root / ".monoco" / "log"
         log_dir.mkdir(parents=True, exist_ok=True)
         log_file = log_dir / "daemon.log"
 
-        pid = _daemonize(workspace_root, host, port, log_file)
+        pid = _daemonize(project_root, host, port, log_file)
         if pid > 0:
             # Parent process: show success message and exit
             console.print(f"[green]Daemon started (PID: {pid})[/green]")
@@ -217,12 +217,12 @@ def serve_start(
 
 
 def serve_stop(
-    root: Optional[str] = typer.Option(None, "--root", help="Workspace root directory"),
+    root: Optional[str] = typer.Option(None, "--root", help="Project root directory"),
     force: bool = typer.Option(False, "--force", "-f", help="Force kill the daemon"),
 ):
     """Stop the running Monoco Daemon."""
-    workspace_root = _get_workspace_root(root)
-    pid_manager = PIDManager(workspace_root)
+    project_root = _get_project_root(root)
+    pid_manager = PIDManager(project_root)
 
     daemon_info = pid_manager.get_daemon_info()
     if not daemon_info:
@@ -245,17 +245,17 @@ def serve_stop(
 
 
 def serve_status(
-    root: Optional[str] = typer.Option(None, "--root", help="Workspace root directory"),
+    root: Optional[str] = typer.Option(None, "--root", help="Project root directory"),
 ):
     """Show the status of the Monoco Daemon."""
-    workspace_root = _get_workspace_root(root)
-    pid_manager = PIDManager(workspace_root)
+    project_root = _get_project_root(root)
+    pid_manager = PIDManager(project_root)
 
     daemon_info = pid_manager.get_daemon_info()
 
     if not daemon_info:
         console.print("[yellow]Daemon is not running[/yellow]")
-        console.print(f"Workspace: {workspace_root}")
+        console.print(f"Project: {project_root}")
         raise typer.Exit(code=0)
 
     # Calculate uptime
@@ -275,7 +275,7 @@ def serve_status(
     table.add_row("Version", daemon_info.get("version", "unknown"))
     table.add_row("Started At", daemon_info["started_at"])
     table.add_row("Uptime", uptime_str)
-    table.add_row("Workspace", str(workspace_root))
+    table.add_row("Project", str(project_root))
 
     console.print(table)
 
@@ -287,7 +287,7 @@ def serve_restart(
         False, "--daemon", "-d", help="Run as background daemon"
     ),
     root: Optional[str] = typer.Option(
-        None, "--root", help="Workspace root directory"
+        None, "--root", help="Project root directory"
     ),
     max_agents: Optional[int] = typer.Option(
         None, "--max-agents", help="Override global maximum concurrent agents"
@@ -297,8 +297,8 @@ def serve_restart(
     ),
 ):
     """Restart the Monoco Daemon."""
-    workspace_root = _get_workspace_root(root)
-    pid_manager = PIDManager(workspace_root)
+    project_root = _get_project_root(root)
+    pid_manager = PIDManager(project_root)
 
     # Stop if running
     if pid_manager.get_daemon_info():
@@ -318,7 +318,7 @@ def serve_restart(
 
 
 def serve_cleanup(
-    root: Optional[str] = typer.Option(None, "--root", help="Workspace root directory"),
+    root: Optional[str] = typer.Option(None, "--root", help="Project root directory"),
     port: int = typer.Option(8642, "--port", "-p", help="Default port to check for orphans"),
     dry_run: bool = typer.Option(
         False, "--dry-run", help="Show what would be cleaned without actually doing it"
@@ -329,8 +329,8 @@ def serve_cleanup(
     Scans for and terminates orphaned uvicorn processes that may have been
     left behind when terminals were closed without proper shutdown.
     """
-    workspace_root = _get_workspace_root(root)
-    pid_manager = PIDManager(workspace_root)
+    project_root = _get_project_root(root)
+    pid_manager = PIDManager(project_root)
 
     cleaned = []
     errors = []
@@ -438,7 +438,7 @@ def serve_legacy(
         False, "--reload", "-r", help="Enable auto-reload for dev"
     ),
     root: Optional[str] = typer.Option(
-        None, "--root", help="Workspace root directory"
+        None, "--root", help="Project root directory"
     ),
     max_agents: Optional[int] = typer.Option(
         None, "--max-agents", help="Override global maximum concurrent agents (default: 3)"
@@ -447,8 +447,8 @@ def serve_legacy(
     """Start the Monoco Daemon server (legacy command, same as 'serve start')."""
     # For backward compatibility, --reload implies foreground mode
     if reload:
-        workspace_root = _get_workspace_root(root)
-        os.environ["MONOCO_SERVER_ROOT"] = str(workspace_root)
+        project_root = _get_project_root(root)
+        os.environ["MONOCO_SERVER_ROOT"] = str(project_root)
         if max_agents is not None:
             os.environ["MONOCO_MAX_AGENTS"] = str(max_agents)
 

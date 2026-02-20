@@ -90,16 +90,16 @@ def find_projects(workspace_root: Path) -> List[MonocoProject]:
     return projects
 
 
-class Workspace(BaseModel):
+class ProjectScanner(BaseModel):
     """
-    Standardized Workspace primitive.
+    Project scanner for discovering Monoco projects within a directory.
     """
 
     root: Path
     projects: List[MonocoProject] = []
 
     @classmethod
-    def discover(cls, root: Path) -> "Workspace":
+    def discover(cls, root: Path) -> "ProjectScanner":
         projects = find_projects(root)
         return cls(root=root, projects=projects)
 

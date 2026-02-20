@@ -2,13 +2,13 @@ from pathlib import Path
 from typing import Optional, List
 from monoco.core.lsp import Location, Position, Range
 from ..domain.parser import MarkdownParser
-from ..domain.workspace import WorkspaceSymbolIndex
+from ..domain.project_index import ProjectSymbolIndex
 
 
 class DefinitionProvider:
-    def __init__(self, workspace_root: Path):
-        self.workspace_root = workspace_root
-        self.index = WorkspaceSymbolIndex(workspace_root)
+    def __init__(self, project_root: Path):
+        self.project_root = project_root
+        self.index = ProjectSymbolIndex(project_root)
         # Lazy indexing handled by the index class itself
 
     def provide_definition(self, file_path: Path, position: Position) -> List[Location]:
@@ -49,7 +49,7 @@ class DefinitionProvider:
         if target_span.type in ["wikilink", "issue_id"]:
             issue_id = target_span.metadata.get("issue_id")
             if issue_id:
-                # Resolve using Workspace Index
+                # Resolve using Project Index
                 location = self.index.resolve(
                     issue_id, context_project=self._get_context_project(file_path)
                 )
@@ -71,9 +71,9 @@ class DefinitionProvider:
         # Or rely on configuration.
         # For now, let's assume the index handles context if passed, or we pass None.
         # Actually resolving context project from file path is tricky without config loaded for that specific root.
-        # Let's try to deduce from path relative to workspace root.
+        # Let's try to deduce from path relative to project root.
         try:
-            rel = file_path.relative_to(self.workspace_root)
-            return rel.parts[0]  # First dir is likely project name in a workspace
+            rel = file_path.relative_to(self.project_root)
+            return rel.parts[0]  # First dir is likely project name
         except ValueError:
             return "local"

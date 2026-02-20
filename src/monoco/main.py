@@ -69,7 +69,7 @@ def main(
         is_eager=True,
     ),
     root: Optional[str] = typer.Option(
-        None, "--root", help="Explicitly specify the Monoco Workspace root directory."
+        None, "--root", help="Explicitly specify the Monoco Project root directory."
     ),
 ):
     """
@@ -81,17 +81,17 @@ def main(
     if ctx.invoked_subcommand:
         capture_event("cli_command_executed", {"command": ctx.invoked_subcommand})
 
-    # Strict Workspace Resolution
-    # Commands allowed to run without a workspace
-    NO_WORKSPACE_COMMANDS = ["init", "clone"]
+    # Strict Project Resolution
+    # Commands allowed to run without a project
+    NO_PROJECT_COMMANDS = ["init", "clone"]
 
     # Initialize Config
     from monoco.core.config import get_config, find_monoco_root
 
-    # If subcommand is not in whitelist, we enforce workspace
-    require_workspace = False
-    if ctx.invoked_subcommand and ctx.invoked_subcommand not in NO_WORKSPACE_COMMANDS:
-        require_workspace = True
+    # If subcommand is not in whitelist, we enforce project
+    require_project = False
+    if ctx.invoked_subcommand and ctx.invoked_subcommand not in NO_PROJECT_COMMANDS:
+        require_project = True
 
     try:
         # We pass root if provided. If require_workspace is True, get_config will throw if not found.
@@ -105,10 +105,10 @@ def main(
             if (discovered / ".monoco").exists():
                 config_root = str(discovered)
 
-        config = get_config(project_root=config_root, require_project=require_workspace)
+        config = get_config(project_root=config_root, require_project=require_project)
         
-        # Initialize FeatureLoader and mount features when workspace is available
-        if require_workspace and config_root:
+        # Initialize FeatureLoader and mount features when project is available
+        if require_project and config_root:
             loader = get_feature_loader()
             # Load all features (with lazy loading for non-critical features)
             loader.load_all(lazy=True)
@@ -132,7 +132,7 @@ def main(
         console = Console()
         console.print(f"[bold red]Error:[/bold red] {e}")
         console.print(
-            "[yellow]Tip:[/yellow] Run this command in a Monoco Workspace root (containing .monoco), or use [bold]--root <path>[/bold]."
+            "[yellow]Tip:[/yellow] Run this command in a Monoco Project root (containing .monoco), or use [bold]--root <path>[/bold]."
         )
         raise typer.Exit(code=1)
 
@@ -173,12 +173,9 @@ def info():
     except importlib.metadata.PackageNotFoundError:
         version = "unknown"
 
-    from monoco.core.registry import get_inventory, get_workspace_inventory
+    from monoco.core.registry import get_inventory
     inventory = get_inventory()
     project_count = len(inventory.list())
-    
-    ws_inventory = get_workspace_inventory()
-    workspace_count = len(ws_inventory.list())
 
     status = Status(
         version=version,
@@ -190,7 +187,6 @@ def info():
     # Add inventory info if in human mode or for agents
     status_data = status.model_dump()
     status_data["global_projects"] = project_count
-    status_data["global_workspaces"] = workspace_count
 
     print_output(status_data, title="Monoco Status")
 
@@ -206,7 +202,6 @@ from monoco.features.i18n import commands as i18n_cmd
 from monoco.features.config import commands as config_cmd
 from monoco.features.hooks import commands as hooks_cmd
 from monoco.cli import project as project_cmd
-from monoco.cli import workspace as workspace_cmd
 from monoco.features.doc_extractor import commands as doc_extractor_cmd
 
 app.add_typer(issue_cmd.app, name="issue", help="Manage development issues")
@@ -215,7 +210,6 @@ app.add_typer(i18n_cmd.app, name="i18n", help="Manage documentation i18n")
 app.add_typer(config_cmd.app, name="config", help="Manage configuration")
 app.add_typer(hooks_cmd.app, name="hook", help="Manage git hooks for development workflow")
 app.add_typer(project_cmd.app, name="project", help="Manage projects")
-app.add_typer(workspace_cmd.app, name="workspace", help="Manage workspace")
 app.add_typer(doc_extractor_cmd.app, name="doc-extractor", help="Extract and render documents to WebP pages")
 
 from monoco.features.agent import cli as scheduler_cmd

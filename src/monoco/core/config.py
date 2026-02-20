@@ -45,9 +45,9 @@ class ProjectConfig(BaseModel):
         default_factory=dict,
         description="Managed external research repositories (name -> url)",
     )
-    members: Dict[str, str] = Field(
+    linked_projects: Dict[str, str] = Field(
         default_factory=dict,
-        description="Workspace member projects (name -> relative_path)",
+        description="Linked projects for cross-project issue resolution (name -> relative_path)",
     )
 
 
@@ -309,14 +309,12 @@ class MonocoConfig(BaseModel):
 
         # Determine project path
         cwd = Path(project_root) if project_root else Path.cwd()
-        # FIX-0009: strict separation of workspace and project config
-        workspace_config_path = cwd / ".monoco" / "workspace.yaml"
         project_config_path = cwd / ".monoco" / "project.yaml"
 
-        # Strict Workspace Check
+        # Strict Project Check
         if require_project and not (cwd / ".monoco").exists():
             raise FileNotFoundError(
-                f"Monoco workspace not found in {cwd}. (No .monoco directory)"
+                f"Monoco project not found in {cwd}. (No .monoco directory)"
             )
 
         # 3. Load User Config
@@ -330,20 +328,7 @@ class MonocoConfig(BaseModel):
                 # We don't want to crash on config load fail, implementing simple warning equivalent
                 pass
 
-        # 4. Load Project/Workspace Config
-
-        # 4a. Load workspace.yaml (Global Environment)
-        if workspace_config_path.exists():
-            try:
-                with open(workspace_config_path, "r") as f:
-                    ws_config = yaml.safe_load(f)
-                    if ws_config:
-                        # workspace.yaml contains core, paths, i18n, ui, telemetry, agent
-                        cls._deep_merge(config_data, ws_config)
-            except Exception:
-                pass
-
-        # 4b. Load project.yaml (Identity)
+        # 4. Load Project Config
         if project_config_path.exists():
             try:
                 with open(project_config_path, "r") as f:
@@ -384,16 +369,12 @@ def get_config(
 class ConfigScope(str, Enum):
     GLOBAL = "global"
     PROJECT = "project"
-    WORKSPACE = "workspace"
 
 
 def get_config_path(scope: ConfigScope, project_root: Optional[str] = None) -> Path:
     """Get the path to the configuration file for a given scope."""
     if scope == ConfigScope.GLOBAL:
         return Path.home() / ".monoco" / "config.yaml"
-    elif scope == ConfigScope.WORKSPACE:
-        cwd = Path(project_root) if project_root else Path.cwd()
-        return cwd / ".monoco" / "workspace.yaml"
     else:
         # ConfigScope.PROJECT
         cwd = Path(project_root) if project_root else Path.cwd()
@@ -402,7 +383,7 @@ def get_config_path(scope: ConfigScope, project_root: Optional[str] = None) -> P
 
 def find_monoco_root(start_path: Optional[Path] = None) -> Path:
     """
-    Find the Monoco Workspace root.
+    Find the Monoco Project root.
     Strictly restricted to checking the current directory (or its parent if CWD is .monoco).
     Recursive upward lookup is disabled per FIX-0009.
     """

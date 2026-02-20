@@ -40,14 +40,14 @@ async def lifespan(app: FastAPI):
     global project_manager, git_monitor, scheduler_service
     # Use MONOCO_SERVER_ROOT if set, otherwise CWD
     env_root = os.getenv("MONOCO_SERVER_ROOT")
-    workspace_root = Path(env_root) if env_root else Path.cwd()
-    logger.info(f"Workspace Root: {workspace_root}")
-    project_manager = ProjectManager(workspace_root, broadcaster)
+    projects_root = Path(env_root) if env_root else Path.cwd()
+    logger.info(f"Projects Root: {projects_root}")
+    project_manager = ProjectManager(projects_root, broadcaster)
 
     async def on_git_change(new_hash: str):
         await broadcaster.broadcast("HEAD_UPDATED", {"ref": "HEAD", "hash": new_hash})
 
-    git_monitor = GitMonitor(workspace_root, on_git_change)
+    git_monitor = GitMonitor(projects_root, on_git_change)
 
     await project_manager.start_all()
     # Start Scheduler
@@ -311,7 +311,7 @@ async def get_issue_endpoint(issue_id: str, project_id: Optional[str] = None):
         project = get_project_or_404(project_id)
         path = find_issue_path(project.issues_root, issue_id)
     else:
-        # Global Search across all projects in the workspace
+        # Global Search across all projects
         if not project_manager:
             raise HTTPException(status_code=503, detail="Daemon not fully initialized")
 
@@ -424,31 +424,31 @@ async def refresh_monitor():
     return {"status": "refreshed", "head": current_hash}
 
 
-# --- Workspace State Management ---
-from monoco.core.state import WorkspaceState
+# --- Daemon State Management ---
+from monoco.core.state import DaemonState
 
 
-@app.get("/api/v1/workspace/state", response_model=WorkspaceState)
-async def get_workspace_state():
+@app.get("/api/v1/daemon/state", response_model=DaemonState)
+async def get_daemon_state():
     """
-    Get the persisted workspace state (e.g. last active project).
+    Get the persisted daemon state (e.g. last active project).
     """
     if not project_manager:
         raise HTTPException(status_code=503, detail="Daemon not initialized")
 
-    return WorkspaceState.load(project_manager.workspace_root)
+    return DaemonState.load(project_manager.projects_root)
 
 
-@app.post("/api/v1/workspace/state", response_model=WorkspaceState)
-async def update_workspace_state(state: WorkspaceState):
+@app.post("/api/v1/daemon/state", response_model=DaemonState)
+async def update_daemon_state(state: DaemonState):
     """
-    Update the workspace state.
+    Update the daemon state.
     """
     if not project_manager:
         raise HTTPException(status_code=503, detail="Daemon not initialized")
 
     try:
-        state.save(project_manager.workspace_root)
+        state.save(project_manager.projects_root)
         return state
     except Exception as e:
         logger.error(f"Failed to write state file: {e}")

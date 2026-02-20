@@ -11,9 +11,9 @@ class IssueLocation(BaseModel):
     issue_id: str
 
 
-class WorkspaceSymbolIndex:
+class ProjectSymbolIndex:
     """
-    Maintains a global index of all issues in the Monoco Workspace.
+    Maintains a global index of all issues in the Monoco Project.
     Allows resolving Issue IDs (local or namespaced) to file locations.
     """
 
@@ -27,7 +27,7 @@ class WorkspaceSymbolIndex:
 
     def build_index(self, recursive: bool = True):
         """
-        Scans the workspace and subprojects to build the index.
+        Scans the project and linked projects to build the index.
         """
         self.index.clear()
 
@@ -39,13 +39,13 @@ class WorkspaceSymbolIndex:
 
         self._index_project(self.root_path, project_name)
 
-        # 2. Index workspace members
+        # 2. Index linked projects
         if recursive:
             try:
-                for member_name, rel_path in conf.project.members.items():
-                    member_root = (self.root_path / rel_path).resolve()
-                    if member_root.exists():
-                        self._index_project(member_root, member_name.lower())
+                for linked_name, rel_path in conf.project.linked_projects.items():
+                    linked_root = (self.root_path / rel_path).resolve()
+                    if linked_root.exists():
+                        self._index_project(linked_root, linked_name.lower())
             except Exception:
                 pass
 

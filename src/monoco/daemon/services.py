@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 from asyncio import Queue
 from pathlib import Path
 
-from monoco.core.workspace import MonocoProject, Workspace
+from monoco.core.project_scanner import MonocoProject, ProjectScanner
 from monoco.core.config import ConfigMonitor, get_config_path
 
 logger = logging.getLogger("monoco.daemon.services")
@@ -103,23 +103,23 @@ class ProjectContext:
 
 class ProjectManager:
     """
-    Discovers and manages multiple Monoco projects within a workspace.
-    Uses core Workspace primitive for discovery.
+    Discovers and manages multiple Monoco projects within a directory.
+    Uses ProjectScanner for discovery.
     """
 
-    def __init__(self, workspace_root: Path, broadcaster: Broadcaster):
-        self.workspace_root = workspace_root
+    def __init__(self, projects_root: Path, broadcaster: Broadcaster):
+        self.projects_root = projects_root
         self.broadcaster = broadcaster
         self.projects: Dict[str, ProjectContext] = {}
 
     def scan(self):
         """
-        Scans workspace for Monoco projects using core logic.
+        Scans directory for Monoco projects using core logic.
         """
-        logger.info(f"Scanning workspace: {self.workspace_root}")
-        workspace = Workspace.discover(self.workspace_root)
+        logger.info(f"Scanning projects: {self.projects_root}")
+        scanner = ProjectScanner.discover(self.projects_root)
 
-        for project in workspace.projects:
+        for project in scanner.projects:
             if project.id not in self.projects:
                 ctx = ProjectContext(project, self.broadcaster)
                 self.projects[ctx.id] = ctx

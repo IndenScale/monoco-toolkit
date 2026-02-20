@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.table import Table
 import yaml
 
-from monoco.core.workspace import find_projects
+from monoco.core.project_scanner import find_projects
 from monoco.core.output import AgentOutput, OutputManager
 from monoco.core.registry import get_inventory
 

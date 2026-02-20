@@ -207,38 +207,34 @@ def init_cli(
     # --- 2. Project Configuration ---
     cwd = Path.cwd()
     project_config_dir = cwd / ".monoco"
-    workspace_config_path = project_config_dir / "workspace.yaml"
     project_config_path = project_config_dir / "project.yaml"
 
     project_initialized = False
-    workspace_config = {}
+    project_config_data = {}
     project_key = "MON"
 
     # Check if we should init project
-    if workspace_config_path.exists() or project_config_path.exists():
+    if project_config_path.exists():
         if interactive:
             from rich.prompt import Confirm
 
             if not Confirm.ask(
-                f"Project/Workspace config already exists in [dim]{project_config_dir}[/dim]. Overwrite?"
+                f"Project config already exists in [dim]{project_config_dir}[/dim]. Overwrite?"
             ):
                 console.print("[dim]Skipping configuration overwrite.[/dim]")
                 project_initialized = True
         else:
             console.print(
-                f"[dim]Project/Workspace config already exists in {project_config_dir}. skipping generation.[/dim]"
+                f"[dim]Project config already exists in {project_config_dir}. skipping generation.[/dim]"
             )
             project_initialized = True
 
         # Load existing config for downstream usage
-        if workspace_config_path.exists():
-            try:
-                with open(workspace_config_path, "r") as f:
-                    workspace_config = yaml.safe_load(f) or {}
-            except Exception:
-                workspace_config = {}
-        else:
-            workspace_config = {}
+        try:
+            with open(project_config_path, "r") as f:
+                project_config_data = yaml.safe_load(f) or {}
+        except Exception:
+            project_config_data = {}
 
     if not project_initialized:
         console.rule("[bold blue]Project Setup[/bold blue]")
@@ -267,28 +263,21 @@ def init_cli(
 
         project_config_dir.mkdir(exist_ok=True)
 
-        # 2a. Create project.yaml (Identity)
-        project_config = {"project": {"name": project_name, "key": project_key}}
-
-        with open(project_config_path, "w") as f:
-            yaml.dump(project_config, f, default_flow_style=False)
-
-        # 2b. Create workspace.yaml (Environment)
-        workspace_config = {
+        # Create unified project.yaml (Identity + Environment)
+        project_config = {
+            "project": {
+                "name": project_name,
+                "key": project_key,
+            },
             "paths": {"issues": "Issues", "spikes": ".references"},
             "hooks": {"pre-commit": "monoco issue lint --recursive"},
         }
 
-        with open(workspace_config_path, "w") as f:
-            yaml.dump(workspace_config, f, default_flow_style=False)
-
-        # 2c. Generate Config Template (Optional - might need update)
-        # For now, let's skip template generation or update it later.
-        # Or generate a workspace_template.yaml
+        with open(project_config_path, "w") as f:
+            yaml.dump(project_config, f, default_flow_style=False)
 
         console.print(f"[green]✓ Project initialized in {cwd}[/green]")
-        console.print("[dim]  - Identity: .monoco/project.yaml[/dim]")
-        console.print("[dim]  - Environment: .monoco/workspace.yaml[/dim]")
+        console.print("[dim]  - Config: .monoco/project.yaml[/dim]")
 
     # Common Post-Init Logic (Idempotent)
 
@@ -333,8 +322,8 @@ def init_cli(
             subprocess.run(["git", "init"], cwd=cwd, check=False)
 
         # Re-load config to get the just-written hooks (or default ones)
-        # Actually we have the dict right here in workspace_config['hooks']
-        hooks_config = workspace_config.get("hooks", {})
+        # Get hooks config from project config
+        hooks_config = project_config_data.get("hooks", {})
         if hooks_config:
             install_hooks(cwd, hooks_config)
     except Exception as e:

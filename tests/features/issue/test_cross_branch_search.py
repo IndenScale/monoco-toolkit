@@ -246,7 +246,7 @@ class TestCrossBranchIntegration:
         with patch("monoco.features.issue.core.git.is_git_repo") as mock_is_git:
             mock_is_git.return_value = True
             
-            # Workspace issues should be handled differently
+            # Project issues should be handled differently
             path, branch, conflicting = find_issue_path_across_branches(
                 issues_root, "other::FEAT-0001", tmp_path
             )

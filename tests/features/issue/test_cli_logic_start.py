@@ -7,11 +7,11 @@ from monoco.features.issue.models import IssueType
 runner = CliRunner()
 
 
-def test_start_command_default_branch(issues_root):
-    """Test that start command defaults to creating a branch."""
+def test_start_command_default_worktree(issues_root):
+    """Test that start command defaults to creating a worktree (FEAT-0201)."""
     # Setup: Create an issue
     meta, _ = core.create_issue_file(
-        issues_root, IssueType.FEATURE, "Test Issue Branch"
+        issues_root, IssueType.FEATURE, "Test Issue Worktree"
     )
 
     # Mock update_issue to return a valid issue to avoid real logic if needed,
@@ -21,7 +21,7 @@ def test_start_command_default_branch(issues_root):
     with patch("monoco.features.issue.core.start_issue_isolation") as mock_isolation:
         # Mock return value of start_issue_isolation
         mock_issue = MagicMock()
-        mock_issue.isolation.ref = "FEAT-0001-test-issue-branch"
+        mock_issue.isolation.ref = "FEAT-0001-test-issue-worktree"
         mock_isolation.return_value = mock_issue
 
         # Invoke command with --no-commit and --force to avoid git issues in temp directories
@@ -30,24 +30,24 @@ def test_start_command_default_branch(issues_root):
 
         assert result.exit_code == 0
 
-        # Verify isolation was called with "branch"
+        # Verify isolation was called with "worktree" (default since FEAT-0201)
         mock_isolation.assert_called_once()
         args, _ = mock_isolation.call_args
         # args: (issues_root, issue_id, type, project_root)
         assert args[1] == meta.id
-        assert args[2] == "branch"
+        assert args[2] == "worktree"
 
 
-def test_start_command_no_branch(issues_root):
-    """Test that --no-branch disables branch creation."""
+def test_start_command_no_worktree(issues_root):
+    """Test that --no-worktree disables worktree creation."""
     meta, _ = core.create_issue_file(
-        issues_root, IssueType.FEATURE, "Test Issue No Branch"
+        issues_root, IssueType.FEATURE, "Test Issue No Worktree"
     )
 
     with patch("monoco.features.issue.core.start_issue_isolation") as mock_isolation:
-        # Invoke command with --no-branch
+        # Invoke command with --no-worktree
         result = runner.invoke(
-            app, ["start", meta.id, "--no-branch", "--root", str(issues_root)]
+            app, ["start", meta.id, "--no-worktree", "--root", str(issues_root)]
         )
 
         assert result.exit_code == 0

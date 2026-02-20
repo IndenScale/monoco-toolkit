@@ -270,24 +270,22 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
     if conf and conf.project and conf.project.name:
         local_project_name = conf.project.name.lower()
 
-    # Find Topmost Workspace Root
-    workspace_root = issues_root.parent
-    for parent in [workspace_root] + list(workspace_root.parents):
-        if (parent / ".monoco" / "workspace.yaml").exists() or (
-            parent / ".monoco" / "project.yaml"
-        ).exists():
-            workspace_root = parent
+    # Find Topmost Project Root
+    project_root = issues_root.parent
+    for parent in [project_root] + list(project_root.parents):
+        if (parent / ".monoco" / "project.yaml").exists():
+            project_root = parent
 
     # Identify local project name
     local_project_name = "local"
     if conf and conf.project and conf.project.name:
         local_project_name = conf.project.name.lower()
 
-    workspace_root_name = local_project_name
-    if workspace_root != issues_root.parent:
-        root_conf = get_config(str(workspace_root))
+    project_root_name = local_project_name
+    if project_root != issues_root.parent:
+        root_conf = get_config(str(project_root))
         if root_conf and root_conf.project and root_conf.project.name:
-            workspace_root_name = root_conf.project.name.lower()
+            project_root_name = root_conf.project.name.lower()
 
     # Collect from local issues_root
     proj_issues, proj_diagnostics = collect_project_issues(
@@ -298,29 +296,29 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
 
     if recursive:
         try:
-            # Re-read config from workspace root to get all members
-            ws_conf = get_config(str(workspace_root))
+            # Re-read config from project root to get all linked projects
+            root_conf = get_config(str(project_root))
 
             # Index Root project if different from current
-            if workspace_root != issues_root.parent:
-                root_issues_dir = workspace_root / "Issues"
+            if project_root != issues_root.parent:
+                root_issues_dir = project_root / "Issues"
                 if root_issues_dir.exists():
                     r_issues, r_diags = collect_project_issues(
-                        root_issues_dir, ws_conf.project.name.lower()
+                        root_issues_dir, root_conf.project.name.lower()
                     )
                     all_issues.extend(r_issues)
                     diagnostics.extend(r_diags)
 
-            # Index all members
-            for member_name, rel_path in ws_conf.project.members.items():
-                member_root = (workspace_root / rel_path).resolve()
-                member_issues_dir = member_root / "Issues"
-                if member_issues_dir.exists() and member_issues_dir != issues_root:
-                    m_issues, m_diags = collect_project_issues(
-                        member_issues_dir, member_name.lower()
+            # Index all linked projects
+            for linked_name, rel_path in root_conf.project.linked_projects.items():
+                linked_root = (project_root / rel_path).resolve()
+                linked_issues_dir = linked_root / "Issues"
+                if linked_issues_dir.exists() and linked_issues_dir != issues_root:
+                    l_issues, l_diags = collect_project_issues(
+                        linked_issues_dir, linked_name.lower()
                     )
-                    all_issues.extend(m_issues)
-                    diagnostics.extend(m_diags)
+                    all_issues.extend(l_issues)
+                    diagnostics.extend(l_diags)
         except Exception:
             pass
 
@@ -407,7 +405,7 @@ def check_integrity(issues_root: Path, recursive: bool = False) -> List[Diagnost
             content,
             all_issue_ids,
             current_project=project_name,
-            workspace_root=workspace_root_name,
+            project_root=project_root_name,
             valid_domains=valid_domains,
             all_issues=all_issue_metas,
         )
@@ -433,7 +431,7 @@ def run_lint(
 
     Args:
         issues_root: Root directory of issues
-        recursive: Recursively scan workspace members
+        recursive: Recursively scan linked projects
         fix: Apply auto-fixes
         format: Output format (table, json)
         file_paths: Optional list of paths to files to validate (LSP/Pre-commit mode)
@@ -445,7 +443,7 @@ def run_lint(
 
     # File list mode (for LSP integration or pre-commit)
     if file_paths:
-        # Pre-scan entire workspace to get all issue IDs for reference validation
+        # Pre-scan entire project to get all issue IDs for reference validation
         # We need this context even when validating a single file
         all_issue_ids = set()
         for subdir in ["Epics", "Features", "Chores", "Fixes"]:

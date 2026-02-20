@@ -100,89 +100,9 @@ class ProjectInventory:
             logger.error(f"Failed to load project inventory: {e}")
 
 
-@dataclass
-class WorkspaceInventoryEntry:
-    """Information about a Monoco workspace in the global inventory."""
-    path: Path
-    name: str
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "path": str(self.path),
-            "name": self.name
-        }
-
-    @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "WorkspaceInventoryEntry":
-        return cls(
-            path=Path(d["path"]),
-            name=d.get("name", Path(d["path"]).name)
-        )
-
-
-class WorkspaceInventory:
-    """
-    Global workspace inventory management.
-    Stored at ~/.monoco/workspaces.json
-    """
-    FILE_PATH = Path.home() / ".monoco" / "workspaces.json"
-
-    def __init__(self):
-        self._entries: Dict[str, WorkspaceInventoryEntry] = {}  # path string -> entry
-        self.load()
-
-    def register(self, path: Path, name: Optional[str] = None) -> WorkspaceInventoryEntry:
-        """Register a workspace path."""
-        path = Path(path).resolve()
-        path_str = str(path)
-        
-        entry = WorkspaceInventoryEntry(
-            path=path,
-            name=name or path.name
-        )
-        self._entries[path_str] = entry
-        self.save()
-        logger.info(f"Registered workspace: {path_str}")
-        return entry
-
-    def list(self) -> List[WorkspaceInventoryEntry]:
-        """List all registered workspaces."""
-        return list(self._entries.values())
-
-    def remove(self, path: Path):
-        """Remove a workspace registration."""
-        path_str = str(Path(path).resolve())
-        if path_str in self._entries:
-            del self._entries[path_str]
-            self.save()
-            logger.info(f"Removed workspace: {path_str}")
-
-    def save(self):
-        """Persist inventory to disk."""
-        try:
-            self.FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
-            data = {path: entry.to_dict() for path, entry in self._entries.items()}
-            with open(self.FILE_PATH, "w") as f:
-                json.dump(data, f, indent=2)
-        except Exception as e:
-            logger.error(f"Failed to save workspace inventory: {e}")
-
-    def load(self):
-        """Load inventory from disk."""
-        if not self.FILE_PATH.exists():
-            return
-        try:
-            with open(self.FILE_PATH, "r") as f:
-                data = json.load(f)
-                self._entries = {path: WorkspaceInventoryEntry.from_dict(d) for path, d in data.items()}
-            logger.debug(f"Loaded {len(self._entries)} workspaces from global inventory")
-        except Exception as e:
-            logger.error(f"Failed to load workspace inventory: {e}")
-
-
-# Singleton instances
+# Singleton instance
 _inventory: Optional[ProjectInventory] = None
-_workspace_inventory: Optional[WorkspaceInventory] = None
+
 
 def get_inventory() -> ProjectInventory:
     """Get the global project inventory singleton."""
@@ -190,13 +110,6 @@ def get_inventory() -> ProjectInventory:
     if _inventory is None:
         _inventory = ProjectInventory()
     return _inventory
-
-def get_workspace_inventory() -> WorkspaceInventory:
-    """Get the global workspace inventory singleton."""
-    global _workspace_inventory
-    if _workspace_inventory is None:
-        _workspace_inventory = WorkspaceInventory()
-    return _workspace_inventory
 
 
 

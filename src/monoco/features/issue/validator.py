@@ -26,7 +26,7 @@ class IssueValidator:
         content: str,
         all_issue_ids: Set[str] = set(),
         current_project: Optional[str] = None,
-        workspace_root: Optional[str] = None,
+        project_root: Optional[str] = None,
         valid_domains: Set[str] = set(),
         all_issues: List[IssueMetadata] = None,
     ) -> List[Diagnostic]:
@@ -38,13 +38,13 @@ class IssueValidator:
             content: Full content of the issue file
             all_issue_ids: Set of all issue IDs in the project (for reference validation)
             current_project: Current project name
-            workspace_root: Workspace root project name
+            project_root: Project root name
             valid_domains: Set of valid domain names
             all_issues: List of all IssueMetadata objects (for domain governance checks, FEAT-0136)
         """
         diagnostics = []
         self._current_project = current_project
-        self._workspace_root = workspace_root
+        self._project_root = project_root
 
         # Parse Content into Blocks (Domain Layer)
         # Handle case where content might be just body (from update_issue) or full file

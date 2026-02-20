@@ -2,12 +2,12 @@
 Reference Resolution Engine for Multi-Project Environments.
 
 This module implements a priority-based resolution strategy for Issue ID references
-in multi-project/workspace environments.
+in multi-project environments.
 
 Resolution Priority:
 1. Explicit Namespace (namespace::ID) - Highest priority
 2. Proximity Rule (Current Project Context)
-3. Root Fallback (Workspace Root)
+3. Root Fallback (Project Root)
 """
 
 from typing import Optional, Set, Dict
@@ -21,8 +21,8 @@ class ResolutionContext:
     current_project: str
     """Name of the current project (e.g., 'toolkit', 'typedown')."""
 
-    workspace_root: Optional[str] = None
-    """Name of the workspace root project (e.g., 'monoco')."""
+    project_root: Optional[str] = None
+    """Name of the project root (e.g., 'monoco')."""
 
     available_ids: Set[str] = None
     """Set of all available Issue IDs (both local and namespaced)."""
@@ -76,7 +76,7 @@ class ReferenceResolver:
         1. If reference contains "::", treat as explicit namespace
         2. Otherwise, apply proximity rule:
            a. Check current project context
-           b. Check workspace root (if different from current)
+           b. Check project root (if different from current)
            c. Check if exists as local ID
         """
         # Strategy 1: Explicit Namespace
@@ -98,7 +98,7 @@ class ReferenceResolver:
 
         Priority:
         1. Current project namespace
-        2. Workspace root namespace
+        2. Project root namespace
         3. Local (unnamespaced) ID
         """
         # Priority 1: Current project
@@ -140,10 +140,10 @@ class ReferenceResolver:
             chain.append(f"{self.context.current_project}::{reference}")
 
             if (
-                self.context.workspace_root
-                and self.context.workspace_root != self.context.current_project
+                self.context.project_root
+                and self.context.project_root != self.context.current_project
             ):
-                chain.append(f"{self.context.workspace_root}::{reference}")
+                chain.append(f"{self.context.project_root}::{reference}")
 
             chain.append(reference)
 
@@ -163,14 +163,14 @@ def resolve_reference(
         reference: The Issue ID to resolve
         context_project: Current project name
         available_ids: Set of all available Issue IDs
-        workspace_root: Optional workspace root project name
+        project_root: Optional project root name
 
     Returns:
         Resolved canonical ID or None if not found
     """
     context = ResolutionContext(
         current_project=context_project,
-        workspace_root=workspace_root,
+        project_root=project_root,
         available_ids=available_ids,
     )
     resolver = ReferenceResolver(context)

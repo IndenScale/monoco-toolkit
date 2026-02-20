@@ -928,8 +928,8 @@ def list_cmd(
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
-    workspace: bool = typer.Option(
-        False, "--workspace", "-w", help="Include issues from workspace members"
+    include_linked: bool = typer.Option(
+        False, "--linked", "-l", help="Include issues from linked projects"
     ),
     all: bool = typer.Option(
         False, "--all", "-a", help="Include archived issues in the list"
@@ -949,7 +949,7 @@ def list_cmd(
 
     target_status = status.lower() if status else "open"
 
-    issues = core.list_issues(issues_root, recursive_workspace=workspace, include_archived=all)
+    issues = core.list_issues(issues_root, include_linked=include_linked, include_archived=all)
     filtered = []
 
     for i in issues:
@@ -1068,8 +1068,8 @@ def scope(
     root: Optional[str] = typer.Option(
         None, "--root", help="Override issues root directory"
     ),
-    workspace: bool = typer.Option(
-        False, "--workspace", "-w", help="Include issues from workspace members"
+    include_linked: bool = typer.Option(
+        False, "--linked", "-l", help="Include issues from linked projects"
     ),
     json: AgentOutput = False,
 ):
@@ -1077,7 +1077,7 @@ def scope(
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
 
-    issues = core.list_issues(issues_root, recursive_workspace=workspace)
+    issues = core.list_issues(issues_root, include_linked=include_linked)
     filtered_issues = []
 
     for meta in issues:
@@ -1278,9 +1278,9 @@ def lint(
 def _resolve_issues_root(config, cli_root: Optional[str]) -> Path:
     """
     Resolve the absolute path to the issues directory.
-    Implements Smart Path Resolution & Workspace Awareness.
+    Implements Smart Path Resolution & Project Awareness.
     """
-    from monoco.core.workspace import is_project_root
+    from monoco.core.project_scanner import is_project_root
 
     # 1. Handle Explicit CLI Root
     if cli_root:
@@ -1296,7 +1296,7 @@ def _resolve_issues_root(config, cli_root: Optional[str]) -> Path:
         return path
 
     # 2. Handle Default / Contextual Execution (No --root)
-    # Strict Workspace Check: If not in a project root, we rely on the config root.
+    # Strict Project Check: If not in a project root, we rely on the config root.
     # (The global app callback already enforces presence of .monoco for most commands)
     cwd = Path.cwd()
 
@@ -1494,20 +1494,18 @@ def lsp_definition(
     from monoco.features.issue.lsp import DefinitionProvider
 
     config = get_config()
-    # Workspace Root resolution is key here.
-    # If we are in a workspace, we want the workspace root, not just issue root.
+    # Project Root resolution is key here.
+    # If we are in a project, we want the project root, not just issue root.
     # _resolve_project_root returns the closest project root or monoco root.
-    workspace_root = _resolve_project_root(config)
-    # Search for topmost workspace root to enable cross-project navigation
-    current_best = workspace_root
-    for parent in [workspace_root] + list(workspace_root.parents):
-        if (parent / ".monoco" / "workspace.yaml").exists() or (
-            parent / ".monoco" / "project.yaml"
-        ).exists():
+    project_root = _resolve_project_root(config)
+    # Search for topmost project root to enable cross-project navigation
+    current_best = project_root
+    for parent in [project_root] + list(project_root.parents):
+        if (parent / ".monoco" / "project.yaml").exists():
             current_best = parent
-    workspace_root = current_best
+    project_root = current_best
 
-    provider = DefinitionProvider(workspace_root)
+    provider = DefinitionProvider(project_root)
     file_path = Path(file)
 
     locations = provider.provide_definition(
@@ -1539,7 +1537,7 @@ def escalate(
         EscalationApprovalWorkflow,
         CriticalityValidator,
     )
-    from monoco.core.workspace import find_monoco_root
+    from monoco.core.config import find_monoco_root
 
     config = get_config()
     issues_root = _resolve_issues_root(config, root)
@@ -1619,7 +1617,7 @@ def approve_escalation(
         EscalationApprovalWorkflow,
         EscalationStatus,
     )
-    from monoco.core.workspace import find_monoco_root
+    from monoco.core.config import find_monoco_root
 
     config = get_config()
     issues_root = _resolve_issues_root(config, root)

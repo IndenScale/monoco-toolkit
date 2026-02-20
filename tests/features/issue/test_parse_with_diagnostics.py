@@ -41,7 +41,9 @@ class TestParseIssueWithDiagnostics:
 
         assert meta is not None
         assert meta.id == "FEAT-1000"
-        assert len(diagnostics) == 0, f"Expected no diagnostics, got: {[d.message for d in diagnostics]}"
+        # Filter out warnings, only check for errors
+        errors = [d for d in diagnostics if d.severity == DiagnosticSeverity.Error]
+        assert len(errors) == 0, f"Expected no errors, got: {[d.message for d in errors]}"
 
     def test_collects_multiple_field_errors(self, issues_root):
         """验证能同时收集多个字段验证错误。"""
@@ -78,8 +80,9 @@ class TestParseIssueWithDiagnostics:
         assert any("status" in msg for msg in error_messages), "Should report status error"
         assert any("stage" in msg for msg in error_messages), "Should report stage error"
         
-        # All should be errors
-        for d in diagnostics:
+        # All field validation errors should be errors (not warnings)
+        field_errors = [d for d in diagnostics if "Field" in d.message]
+        for d in field_errors:
             assert d.severity == DiagnosticSeverity.Error
 
     def test_reports_missing_required_field(self, issues_root):

@@ -7,17 +7,17 @@ from pydantic import BaseModel
 logger = logging.getLogger("monoco.core.state")
 
 
-class WorkspaceState(BaseModel):
+class DaemonState(BaseModel):
     """
-    Persisted state for a Monoco workspace (collection of projects).
-    Stored in <workspace_root>/.monoco/state.json
+    Persisted state for the Monoco daemon.
+    Stored in <projects_root>/.monoco/state.json
     """
 
     last_active_project_id: Optional[str] = None
 
     @classmethod
-    def load(cls, workspace_root: Path) -> "WorkspaceState":
-        state_file = workspace_root / ".monoco" / "state.json"
+    def load(cls, projects_root: Path) -> "DaemonState":
+        state_file = projects_root / ".monoco" / "state.json"
         if not state_file.exists():
             return cls()
 
@@ -28,11 +28,11 @@ class WorkspaceState(BaseModel):
             data = json.loads(content)
             return cls(**data)
         except Exception as e:
-            logger.error(f"Failed to load workspace state from {state_file}: {e}")
+            logger.error(f"Failed to load daemon state from {state_file}: {e}")
             return cls()
 
-    def save(self, workspace_root: Path):
-        state_file = workspace_root / ".monoco" / "state.json"
+    def save(self, projects_root: Path):
+        state_file = projects_root / ".monoco" / "state.json"
         state_file.parent.mkdir(parents=True, exist_ok=True)
 
         try:
@@ -51,5 +51,5 @@ class WorkspaceState(BaseModel):
 
             state_file.write_text(json.dumps(current_data, indent=2), encoding="utf-8")
         except Exception as e:
-            logger.error(f"Failed to save workspace state to {state_file}: {e}")
+            logger.error(f"Failed to save daemon state to {state_file}: {e}")
             raise
