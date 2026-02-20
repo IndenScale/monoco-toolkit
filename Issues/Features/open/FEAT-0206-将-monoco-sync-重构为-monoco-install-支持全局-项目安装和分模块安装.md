@@ -11,8 +11,8 @@ parent: EPIC-0000
 dependencies: []
 related: []
 domains:
-- cli
-- core
+- Cli
+- Core
 tags:
 - '#EPIC-0000'
 - '#FEAT-0206'
