@@ -3,7 +3,7 @@ id: FEAT-0207
 uid: ced828
 type: feature
 status: open
-stage: doing
+stage: review
 title: 使用 mdp CLI 工具替换 PromptInjector 的 HTML marker 机制
 created_at: '2026-02-20T20:29:53'
 updated_at: '2026-02-20T20:35:56'

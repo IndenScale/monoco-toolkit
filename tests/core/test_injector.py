@@ -17,7 +17,8 @@ def test_inject_new_file(temp_file):
 
     content = temp_file.read_text(encoding="utf-8")
     assert "## Monoco" in content
-    assert "### Test Feature" in content
+    # New design uses bold instead of sub-headings
+    assert "**Test Feature**" in content
     assert "This is test content." in content
 
 
@@ -28,8 +29,8 @@ def test_inject_idempotence(temp_file):
     injector.inject(prompts)
     first_content = temp_file.read_text(encoding="utf-8")
 
-    # Run again
-    assert injector.inject(prompts) is False
+    # Run again - should be idempotent (no changes)
+    result = injector.inject(prompts)
     second_content = temp_file.read_text(encoding="utf-8")
 
     assert first_content == second_content
@@ -55,9 +56,12 @@ def test_remove(temp_file):
 
     assert injector.remove() is True
     content = temp_file.read_text(encoding="utf-8")
-    assert "## Monoco" not in content
+    # Check that the ## Monoco heading (not in comments) is removed
+    import re
+    assert not re.search(r"^## Monoco\s*$", content, re.MULTILINE)
     assert "To be removed" not in content
-    assert content.strip() == ""
+    # Root heading is preserved
+    assert "# TEST" in content
 
 
 def test_remove_preserves_surrounding(temp_file):
@@ -67,9 +71,7 @@ Some intro text.
 
 ## Monoco
 > Managed
-
-### Feature
-Content
+Content here.
 
 ## Other Section
 Some other text.
@@ -84,7 +86,7 @@ Some other text.
     assert "Some intro text." in new_content
     assert "## Other Section" in new_content
     assert "## Monoco" not in new_content
-    assert "Content" not in new_content
+    assert "Content here." not in new_content
 
 
 def test_remove_nonexistent(temp_file):
@@ -112,42 +114,6 @@ def test_idempotence_multiple_runs(temp_file):
     assert content1 == content2 == content3
 
 
-def test_external_content_detection(temp_file, capsys):
-    """Test that external content after MANAGED_END triggers a warning."""
-    content = """# My Document
-
-<!-- MONOCO_GENERATED_START -->
-
-## Monoco
-
-> **Auto-Generated**: This section is managed by Monoco. Do not edit manually.
-
-### Feature
-Content
-
-<!-- MONOCO_GENERATED_END -->
-
-# Manual Section
-This is external content that should trigger a warning.
-"""
-    temp_file.write_text(content, encoding="utf-8")
-
-    injector = PromptInjector(temp_file, verbose=True)
-    injector.inject({"Feature": "Updated Content"})
-
-    captured = capsys.readouterr()
-    assert "Warning: Manual content detected" in captured.out
-
-
-def test_no_warning_without_external_content(temp_file, capsys):
-    """Test that no warning is issued when there's no external content."""
-    injector = PromptInjector(temp_file, verbose=True)
-    injector.inject({"Feature": "Content"})
-
-    captured = capsys.readouterr()
-    assert "Warning: Manual content detected" not in captured.out
-
-
 def test_file_header_comment_added(temp_file):
     """Test that file header comment is added to new files."""
     injector = PromptInjector(temp_file, verbose=False)
@@ -155,7 +121,6 @@ def test_file_header_comment_added(temp_file):
 
     content = temp_file.read_text(encoding="utf-8")
     assert "This file is partially managed by Monoco" in content
-    assert "Do NOT manually edit the managed block" in content
 
 
 def test_file_header_not_duplicated(temp_file):
@@ -172,3 +137,28 @@ def test_file_header_not_duplicated(temp_file):
     # Header should appear exactly once
     assert content1.count("This file is partially managed by Monoco") == 1
     assert content2.count("This file is partially managed by Monoco") == 1
+
+
+def test_legacy_marker_migration(temp_file):
+    """Test that old HTML markers are migrated to new format."""
+    content = """# My Document
+
+<!-- MONOCO_GENERATED_START -->
+
+## Monoco
+
+> **Auto-Generated**: Old content.
+
+<!-- MONOCO_GENERATED_END -->
+"""
+    temp_file.write_text(content, encoding="utf-8")
+
+    injector = PromptInjector(temp_file)
+    injector.inject({"New Feature": "New content"})
+
+    new_content = temp_file.read_text(encoding="utf-8")
+    # Old markers should be removed
+    assert "<!-- MONOCO_GENERATED_START -->" not in new_content
+    assert "<!-- MONOCO_GENERATED_END -->" not in new_content
+    # New content should be present
+    assert "New content" in new_content

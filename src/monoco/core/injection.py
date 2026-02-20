@@ -1,24 +1,27 @@
 import re
+import subprocess
+import tempfile
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 
 class PromptInjector:
     """
-    Engine for injecting managed content into Markdown-like files (e.g., .cursorrules, GEMINI.md).
-    Maintains a 'Managed Block' defined by a specific header.
+    Engine for injecting managed content into AGENTS.md using mdp (md-patch) CLI tool.
+    Maintains a 'Managed Section' under the '## Monoco' heading.
     """
 
     MANAGED_HEADER = "## Monoco"
+
+    # Backward compatibility: still recognize old markers for migration
     MANAGED_START = "<!-- MONOCO_GENERATED_START -->"
     MANAGED_END = "<!-- MONOCO_GENERATED_END -->"
 
     FILE_HEADER_COMMENT = """<!--
 ⚠️ IMPORTANT: This file is partially managed by Monoco.
-- Content between MONOCO_GENERATED_START and MONOCO_GENERATED_END is auto-generated.
+- Content under the '## Monoco' section is auto-generated.
 - Use `monoco sync` to refresh this content.
-- Do NOT manually edit the managed block.
-- Do NOT add content after MONOCO_GENERATED_END (use separate files instead).
+- Do NOT manually edit the managed section.
 -->
 
 """
@@ -26,44 +29,242 @@ class PromptInjector:
     def __init__(self, target_file: Path, verbose: bool = True):
         self.target_file = target_file
         self.verbose = verbose
+        self._mdp_path = self._find_mdp()
 
-    def _detect_external_content(self, content: str) -> Optional[str]:
-        """
-        Detects content outside the managed block.
+    def _find_mdp(self) -> str:
+        """Find mdp CLI executable."""
+        candidates = [
+            "mdp",
+            str(Path.home() / ".local" / "bin" / "mdp"),
+            str(Path.home() / ".cargo" / "bin" / "mdp"),
+        ]
+        for candidate in candidates:
+            try:
+                result = subprocess.run(
+                    [candidate, "--version"],
+                    capture_output=True,
+                    check=False,
+                )
+                if result.returncode == 0:
+                    return candidate
+            except FileNotFoundError:
+                continue
+        raise RuntimeError(
+            "mdp (md-patch) CLI not found. Please install it from https://github.com/tzmfreedom/md-patch"
+        )
 
-        Returns:
-            The external content string if found, None otherwise.
-        """
-        if not content or self.MANAGED_END not in content:
-            return None
+    def _run_mdp(
+        self,
+        args: List[str],
+        check: bool = True,
+        capture: bool = True,
+    ) -> subprocess.CompletedProcess:
+        """Run mdp CLI with given arguments."""
+        cmd = [self._mdp_path] + args
+        if self.verbose:
+            print(f"  Running: {' '.join(cmd)}")
 
-        # Split by MANAGED_END and check if there's non-empty content after
-        parts = content.split(self.MANAGED_END)
-        if len(parts) < 2:
-            return None
+        result = subprocess.run(
+            cmd,
+            capture_output=capture,
+            text=True,
+            check=False,
+        )
 
-        post_content = parts[-1].strip()
-        # Check if there's meaningful content (not just whitespace or newlines)
-        if post_content and len(post_content) > 10:  # Threshold to avoid false positives
-            return post_content
-        return None
+        if check and result.returncode != 0:
+            if result.returncode == 2:
+                raise MdpHeadingNotFoundError(
+                    f"Heading not found in {self.target_file}: {result.stderr}"
+                )
+            elif result.returncode == 3:
+                raise MdpFingerprintError(
+                    f"Fingerprint mismatch in {self.target_file}: {result.stderr}"
+                )
+            else:
+                raise MdpError(
+                    f"mdp failed with code {result.returncode}: {result.stderr}"
+                )
 
-    def _warn_external_content(self, external_content: str):
-        """Outputs warning about external content."""
-        if not self.verbose:
-            return
+        return result
 
-        # Truncate long content for warning message
-        preview = external_content[:200].replace("\n", " ")
-        if len(external_content) > 200:
-            preview += "..."
+    def _generate_content(self, prompts: Dict[str, str]) -> str:
+        """Generate the content to inject (as a single section, no sub-headings)."""
+        lines = ["> **Auto-Generated**: This section is managed by Monoco. Do not edit manually."]
 
-        print(f"⚠️  Warning: Manual content detected after Managed Block in {self.target_file}")
-        print(f"   Consider moving to a separate file. Found content starting with: {preview}")
+        for title, content in prompts.items():
+            lines.append("")
+            # Use bold instead of heading to avoid creating new sections
+            lines.append(f"**{title}**")
+            lines.append("")
+
+            # Sanitize content
+            clean_content = content.strip()
+            # Remove leading header if it matches the title
+            pattern = r"^(#+\s*)" + re.escape(title) + r"\s*\n"
+            match = re.match(pattern, clean_content, re.IGNORECASE)
+            if match:
+                clean_content = clean_content[match.end() :].strip()
+
+            # Demote any headers in content to bold (to avoid creating sections)
+            clean_content = self._demote_headers_to_bold(clean_content)
+            lines.append(clean_content)
+
+        return "\n".join(lines)
+
+    def _demote_headers_to_bold(self, content: str) -> str:
+        """Convert headers to bold text to avoid creating sections."""
+        result_lines = []
+        for line in content.splitlines():
+            if line.strip().startswith("#"):
+                # Convert header to bold
+                match = re.match(r"^(#+)\s*(.+)$", line.strip())
+                if match:
+                    hashes, text = match.groups()
+                    level = len(hashes)
+                    # Use multiple levels of bold for visual hierarchy
+                    if level == 1:
+                        result_lines.append(f"**{text}**")
+                    elif level == 2:
+                        result_lines.append(f"**{text}**")
+                    else:
+                        result_lines.append(f"*{text}*")
+                else:
+                    result_lines.append(line)
+            else:
+                result_lines.append(line)
+        return "\n".join(result_lines)
+
+    def _demote_headers(self, content: str) -> str:
+        """Demote headers in content to start at level 4 (####)."""
+        header_lines = [
+            line for line in content.splitlines() if line.lstrip().startswith("#")
+        ]
+        min_level = 99
+        for line in header_lines:
+            match = re.match(r"^(#+)\s", line.lstrip())
+            if match:
+                min_level = min(min_level, len(match.group(1)))
+
+        if min_level == 99:
+            return content
+
+        shift = 4 - min_level
+        result_lines = []
+        for line in content.splitlines():
+            stripped = line.lstrip()
+            if stripped.startswith("#"):
+                match = re.match(r"^(#+)(.*)", stripped)
+                if match:
+                    hashes, rest = match.groups()
+                    new_level = max(1, len(hashes) + shift)
+                    result_lines.append("#" * new_level + rest)
+                else:
+                    result_lines.append(line)
+            else:
+                result_lines.append(line)
+
+        return "\n".join(result_lines)
+
+    def _ensure_file_and_heading(self) -> bool:
+        """Ensure target file exists and has the managed heading."""
+        created = False
+
+        if not self.target_file.exists():
+            root_heading = f"# {self.target_file.stem}"
+            self.target_file.parent.mkdir(parents=True, exist_ok=True)
+            self.target_file.write_text(
+                self.FILE_HEADER_COMMENT
+                + f"{root_heading}\n\n{self.MANAGED_HEADER}\n\n<!-- placeholder -->\n",
+                encoding="utf-8",
+            )
+            created = True
+            if self.verbose:
+                print(f"  Created new file: {self.target_file}")
+        else:
+            content = self.target_file.read_text(encoding="utf-8")
+
+            # If file is empty, treat it as new file
+            if not content.strip():
+                root_heading = f"# {self.target_file.stem}"
+                self.target_file.write_text(
+                    self.FILE_HEADER_COMMENT
+                    + f"{root_heading}\n\n{self.MANAGED_HEADER}\n\n<!-- placeholder -->\n",
+                    encoding="utf-8",
+                )
+                if self.verbose:
+                    print(f"  Initialized empty file: {self.target_file}")
+                return True
+
+            if self.MANAGED_START in content or self.MANAGED_END in content:
+                content = self._migrate_from_markers(content)
+                self.target_file.write_text(content, encoding="utf-8")
+                if self.verbose:
+                    print(f"  Migrated old HTML markers in {self.target_file}")
+
+            # Check if file has any heading
+            has_heading = re.search(r"^#\s+.+$", content, re.MULTILINE)
+            if not has_heading:
+                # Add root heading if none exists
+                root_heading = f"# {self.target_file.stem}"
+                if not content.endswith("\n"):
+                    content += "\n"
+                content = f"{root_heading}\n\n{content}"
+                self.target_file.write_text(content, encoding="utf-8")
+
+            heading_pattern = re.compile(
+                rf"^{re.escape(self.MANAGED_HEADER)}\s*$", re.MULTILINE
+            )
+            if not heading_pattern.search(content):
+                if not content.endswith("\n"):
+                    content += "\n"
+                content += f"\n{self.MANAGED_HEADER}\n\n<!-- placeholder -->\n"
+                self.target_file.write_text(content, encoding="utf-8")
+                if self.verbose:
+                    print(f"  Added {self.MANAGED_HEADER} heading to {self.target_file}")
+
+        return created
+
+    def _migrate_from_markers(self, content: str) -> str:
+        """Migrate content from old HTML marker format to heading-based format."""
+        lines = content.splitlines()
+        result = []
+        in_managed_block = False
+
+        for line in lines:
+            if self.MANAGED_START in line:
+                in_managed_block = True
+                continue
+            if self.MANAGED_END in line:
+                in_managed_block = False
+                continue
+            if in_managed_block:
+                result.append(line)
+            else:
+                result.append(line)
+
+        while result and not result[-1].strip():
+            result.pop()
+
+        content = "\n".join(result)
+
+        heading_pattern = re.compile(
+            rf"^{re.escape(self.MANAGED_HEADER)}\s*$", re.MULTILINE
+        )
+        if not heading_pattern.search(content):
+            content += f"\n\n{self.MANAGED_HEADER}\n\n<!-- placeholder -->\n"
+
+        return content + "\n"
+
+    def _detect_root_heading(self, content: str) -> str:
+        """Detect the root heading (e.g., '# AGENTS.md')."""
+        match = re.search(r"^(# .+)$", content, re.MULTILINE)
+        if match:
+            return match.group(1).strip()
+        return "# " + self.target_file.stem
 
     def inject(self, prompts: Dict[str, str]) -> bool:
         """
-        Injects the provided prompts into the target file.
+        Injects the provided prompts into the target file using mdp CLI.
 
         Args:
             prompts: A dictionary where key is the section title and value is the content.
@@ -71,263 +272,113 @@ class PromptInjector:
         Returns:
             True if changes were written, False otherwise.
         """
-        current_content = ""
-        if self.target_file.exists():
-            current_content = self.target_file.read_text(encoding="utf-8")
+        # Ensure file and heading exist
+        self._ensure_file_and_heading()
 
-        # Check for external content and warn
-        external_content = self._detect_external_content(current_content)
-        if external_content:
-            self._warn_external_content(external_content)
+        # Detect root heading
+        content = self.target_file.read_text(encoding="utf-8")
+        root_heading = self._detect_root_heading(content)
+        
+        # Build heading path
+        heading_path = [root_heading, self.MANAGED_HEADER]
 
-        new_content = self._merge_content(current_content, prompts)
+        # Generate content
+        new_content = self._generate_content(prompts)
 
-        if new_content != current_content:
-            self.target_file.write_text(new_content, encoding="utf-8")
-            return True
-        return False
-
-    def _merge_content(self, original: str, prompts: Dict[str, str]) -> str:
-        """
-        Merges the generated prompts into the original content within the managed block.
-        """
-        # 1. Generate the new managed block content
-        managed_block = [self.MANAGED_HEADER, ""]
-        managed_block.append(
-            "> **Auto-Generated**: This section is managed by Monoco. Do not edit manually.\n"
+        # Use mdp replace to update the section
+        result = self._run_mdp(
+            [
+                "patch",
+                "-f",
+                str(self.target_file),
+                "-H",
+                " ".join(heading_path),
+                "--op",
+                "replace",
+                "-c",
+                new_content,
+                "--force",
+            ],
+            check=False,
         )
 
-        for title, content in prompts.items():
-            managed_block.append(f"### {title}")
-            managed_block.append("")  # Blank line after header
+        if result.returncode != 0:
+            raise MdpError(f"Failed to inject content: {result.stderr}")
 
-            # Sanitize content: remove leading header if it matches the title
-            clean_content = content.strip()
-            # Regex to match optional leading hash header matching the title (case insensitive)
-            pattern = r"^(#+\s*)" + re.escape(title) + r"\s*\n"
-            match = re.match(pattern, clean_content, re.IGNORECASE)
-
-            if match:
-                clean_content = clean_content[match.end() :].strip()
-            
-            # Demote headers in content to be below ### (so start at ####)
-            # Find the minimum header level in the source content to calculate shift
-            header_lines = [line for line in clean_content.splitlines() if line.lstrip().startswith("#")]
-            min_level = 99
-            for line in header_lines:
-                match = re.match(r"^(#+)\s", line.lstrip())
-                if match:
-                    min_level = min(min_level, len(match.group(1)))
-            
-            if min_level == 99:
-                # No headers found, just use splitlines
-                demoted_content = clean_content.splitlines()
-            else:
-                # Shift so that min_level maps to level 4
-                shift = 4 - min_level
-                demoted_content = []
-                for line in clean_content.splitlines():
-                    stripped_line = line.lstrip()
-                    if stripped_line.startswith("#"):
-                        # Use regex to separate hashes from the rest of the line
-                        match = re.match(r"^(#+)(.*)", stripped_line)
-                        if match:
-                            hashes, rest = match.groups()
-                            # Apply shift, ensuring minimum level is 1
-                            new_level = max(1, len(hashes) + shift)
-                            demoted_content.append("#" * new_level + rest)
-                        else:
-                            demoted_content.append(line)
-                    else:
-                        demoted_content.append(line)
-            
-            managed_block.append("\n".join(demoted_content))
-            managed_block.append("")  # Blank line after section
-
-        managed_block_str = "\n".join(managed_block).strip() + "\n"
-        managed_block_str = f"{self.MANAGED_START}\n{managed_block_str}\n{self.MANAGED_END}\n"
-
-        # 2. Add file header comment if not present
-        has_header = original.strip().startswith("<!--") and "IMPORTANT: This file is partially managed by Monoco" in original
-
-        # 2. Find and replace/append in the original content
-        # Check for delimiters first
-        if self.MANAGED_START in original and self.MANAGED_END in original:
-            try:
-                pre = original.split(self.MANAGED_START)[0]
-                post = original.split(self.MANAGED_END)[1]
-                # Add header comment if not present
-                if not has_header and not pre.strip().startswith("<!--"):
-                    pre = self.FILE_HEADER_COMMENT + pre
-                # Reconstruct
-                return pre + managed_block_str.strip() + post
-            except IndexError:
-                # Fallback to header detection if delimiters malformed
-                pass
-
-        lines = original.splitlines()
-        start_idx = -1
-        end_idx = -1
-
-        # Find start
-        for i, line in enumerate(lines):
-            if line.strip() == self.MANAGED_HEADER:
-                start_idx = i
-                break
-        
-        if start_idx == -1:
-             # Check if we have delimiters even if header is missing/changed?
-             # Handled above.
-             pass
-
-        if start_idx == -1:
-            # Block not found, append to end
-            result = ""
-            if not has_header:
-                result = self.FILE_HEADER_COMMENT
-            if original and not original.endswith("\n"):
-                result += original + "\n\n" + managed_block_str.strip()
-            elif original:
-                result += original + "\n" + managed_block_str.strip()
-            else:
-                result += managed_block_str.strip() + "\n"
-            return result
-
-        # Find end: Look for next header of level 1 or 2 (siblings or parents)
-        header_level_match = re.match(r"^(#+)\s", self.MANAGED_HEADER)
-        header_level_prefix = header_level_match.group(1) if header_level_match else "##"
-
-        for i in range(start_idx + 1, len(lines)):
-            line = lines[i]
-            # Check if this line is a header of the same level or higher (fewer #s)
-            if line.startswith("#"):
-                match = re.match(r"^(#+)\s", line)
-                if match:
-                    level = match.group(1)
-                    if len(level) <= len(header_level_prefix):
-                        end_idx = i
-                        break
-
-        if end_idx == -1:
-            end_idx = len(lines)
-
-        # 3. Construct result
-        pre_block = "\n".join(lines[:start_idx])
-        post_block = "\n".join(lines[end_idx:])
-
-        result = ""
-        # Add header comment if not present
-        if not has_header and not pre_block.strip().startswith("<!--"):
-            result = self.FILE_HEADER_COMMENT
-
-        if pre_block:
-            result += pre_block + "\n\n"
-
-        result += managed_block_str
-
-        if post_block:
-            # Ensure separation if post block exists and isn't just empty lines
-            if post_block.strip():
-                result += "\n" + post_block
-            else:
-                result += post_block  # Keep trailing newlines if any, or normalize?
-
-        return result.strip() + "\n"
+        return True
 
     def remove(self) -> bool:
-        """
-        Removes the managed block from the target file.
-
-        Returns:
-            True if changes were written (block removed), False otherwise.
-        """
+        """Removes the managed section from the target file using mdp CLI."""
         if not self.target_file.exists():
             return False
 
-        current_content = self.target_file.read_text(encoding="utf-8")
-        lines = current_content.splitlines()
+        content = self.target_file.read_text(encoding="utf-8")
 
-        start_idx = -1
-        end_idx = -1
-
-        # Find start
-        for i, line in enumerate(lines):
-            if self.MANAGED_START in line:
-                start_idx = i
-                # Look for end from here
-                for j in range(i, len(lines)):
-                    if self.MANAGED_END in lines[j]:
-                        end_idx = j + 1 # Include the end line
-                        break
-                break
-        
-        if start_idx == -1:
-            # Fallback to header logic
-             for i, line in enumerate(lines):
-                if line.strip() == self.MANAGED_HEADER:
-                    start_idx = i
-                    break
-
-        if start_idx == -1:
+        heading_pattern = re.compile(
+            rf"^{re.escape(self.MANAGED_HEADER)}\s*$", re.MULTILINE
+        )
+        if not heading_pattern.search(content):
+            if self.MANAGED_START in content:
+                return self._legacy_remove()
             return False
 
-        if end_idx == -1:
-            # Find end: exact logic as in _merge_content
-            header_level_match = re.match(r"^(#+)\s", self.MANAGED_HEADER)
-            header_level_prefix = header_level_match.group(1) if header_level_match else "##"
+        root_heading = self._detect_root_heading(content)
+        heading_path = [root_heading, self.MANAGED_HEADER]
 
-            for i in range(start_idx + 1, len(lines)):
-                line = lines[i]
-                if line.startswith("#"):
-                    match = re.match(r"^(#+)\s", line)
-                    if match:
-                        level = match.group(1)
-                        if len(level) <= len(header_level_prefix):
-                            end_idx = i
-                            break
+        result = self._run_mdp(
+            [
+                "patch",
+                "-f",
+                str(self.target_file),
+                "-H",
+                " ".join(heading_path),
+                "--op",
+                "delete",
+                "--force",
+            ],
+            check=False,
+        )
 
-        if end_idx == -1:
-            end_idx = len(lines)
+        return result.returncode == 0
 
-        # Reconstruct content without the block
-        # We also need to be careful about surrounding newlines to avoid leaving gaps
+    def _legacy_remove(self) -> bool:
+        """Remove content using old marker-based logic."""
+        content = self.target_file.read_text(encoding="utf-8")
 
-        # Check lines before start_idx
-        while start_idx > 0 and not lines[start_idx - 1].strip():
-            start_idx -= 1
+        if self.MANAGED_START not in content:
+            return False
 
-        # Check lines after end_idx (optional, but good for cleanup)
-        # Usually end_idx points to the next header or EOF.
-        # If it points to next header, we keep it.
+        lines = content.splitlines()
+        result = []
+        in_block = False
 
-        pre_block = lines[:start_idx]
-        post_block = lines[end_idx:]
+        for line in lines:
+            if self.MANAGED_START in line:
+                in_block = True
+                continue
+            if self.MANAGED_END in line:
+                in_block = False
+                continue
+            if not in_block:
+                result.append(line)
 
-        # Check if pre_block contains only the file header comment
-        pre_text = "\n".join(pre_block)
-        if pre_text.strip() and "This file is partially managed by Monoco" in pre_text:
-            # Check if pre_block is just the header comment
-            is_only_header = all(
-                line.strip().startswith("<!--") or
-                line.strip().startswith("⚠️ IMPORTANT") or
-                line.strip().startswith("-") or
-                line.strip().startswith("-->") or
-                not line.strip()
-                for line in pre_block
-            )
-            if is_only_header and not post_block:
-                pre_block = []
-
-        # If we removed everything, the file might become empty or just newlines
-
-        new_lines = pre_block + post_block
-        if not new_lines:
-            new_content = ""
-        else:
-            new_content = "\n".join(new_lines).strip() + "\n"
-
-        if new_content != current_content:
+        new_content = "\n".join(result).strip() + "\n"
+        if new_content != content:
             self.target_file.write_text(new_content, encoding="utf-8")
             return True
-
         return False
+
+
+class MdpError(Exception):
+    """Base exception for mdp-related errors."""
+    pass
+
+
+class MdpHeadingNotFoundError(MdpError):
+    """Raised when the target heading is not found."""
+    pass
+
+
+class MdpFingerprintError(MdpError):
+    """Raised when fingerprint validation fails."""
+    pass
