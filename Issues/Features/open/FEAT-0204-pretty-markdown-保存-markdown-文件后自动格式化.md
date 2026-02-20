@@ -6,7 +6,7 @@ status: open
 stage: doing
 title: 'pretty-markdown: 自动格式化 Markdown 及配置同步分发'
 created_at: '2026-02-20T07:17:02'
-updated_at: '2026-02-20T09:31:20'
+updated_at: '2026-02-20T09:32:07'
 parent: EPIC-0000
 dependencies: []
 related:
