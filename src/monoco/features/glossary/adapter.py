@@ -19,7 +19,7 @@ class GlossaryFeature(FeatureModule):
         )
 
     def _on_mount(self, context: "FeatureContext") -> None:  # type: ignore
-        """Glossary does not require file initialization in the workspace."""
+        """Glossary does not require file initialization in the project."""
         pass
 
     def integrate(self, root: Path, config: Dict) -> IntegrationData:

@@ -37,7 +37,8 @@ class GitInfo:
     project_root: Path
     current_branch: Optional[str] = None
     has_uncommitted_changes: bool = False
-    default_branch: str = "main"
+    _default_branch_value: str = field(default="main", repr=False)
+    _default_branch_explicit: bool = field(default=False, repr=False)
     
     def __post_init__(self):
         if self.current_branch is None:
@@ -47,6 +48,37 @@ class GitInfo:
                 self.current_branch = git.get_current_branch(self.project_root)
             except Exception:
                 self.current_branch = None
+    
+    @property
+    def default_branch(self) -> str:
+        """Get default branch - from explicit value, config, or fallback to 'main'."""
+        if self._default_branch_explicit:
+            return self._default_branch_value
+        # Try to load from config
+        try:
+            from monoco.core.config import get_config
+            config = get_config(str(self.project_root))
+            return config.project.trunk_branch
+        except Exception:
+            return self._default_branch_value
+    
+    def set_default_branch(self, value: str):
+        """Explicitly set default branch, bypassing config lookup."""
+        self._default_branch_value = value
+        self._default_branch_explicit = True
+
+
+# Patch __init__ to accept default_branch parameter
+_original_init = GitInfo.__init__
+
+def _patched_init(self, project_root: Path, current_branch: Optional[str] = None, 
+                  has_uncommitted_changes: bool = False, default_branch: str = "main"):
+    _original_init(self, project_root=project_root, current_branch=current_branch,
+                   has_uncommitted_changes=has_uncommitted_changes, 
+                   _default_branch_value=default_branch,
+                   _default_branch_explicit=(default_branch != "main"))
+
+GitInfo.__init__ = _patched_init
 
 
 @dataclass

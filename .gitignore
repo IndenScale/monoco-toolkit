@@ -81,3 +81,4 @@ scripts/get_dingtalk_chat_id.py
 scripts/test_dingtalk_send.py
 *.zip
 .agents/hooks/.logs/
+.agents/

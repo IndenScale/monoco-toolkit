@@ -23,6 +23,7 @@ from monoco.core import git
 def git_repo_env():
     """
     Provides a temporary initialized Monoco project with git repository.
+    Uses ~/.monoco/config.yaml for configuration (backed up and restored after test).
     """
     tmp_dir = tempfile.mkdtemp()
     project_root = Path(tmp_dir)
@@ -32,11 +33,9 @@ def git_repo_env():
     git._run_git(["config", "user.email", "test@test.com"], project_root)
     git._run_git(["config", "user.name", "Test User"], project_root)
 
-    # Initialize .monoco structure
+    # Initialize .monoco structure (minimal, only for project marker)
     dot_monoco = project_root / ".monoco"
     dot_monoco.mkdir()
-    (dot_monoco / "workspace.yaml").write_text("paths:\n  issues: Issues\n")
-    (dot_monoco / "project.yaml").write_text("name: Test Project\nkey: TEST\n")
 
     # Initialize Issues structure
     issues_dir = project_root / "Issues"
@@ -46,6 +45,25 @@ def git_repo_env():
     (project_root / "README.md").write_text("# Test Project")
     git.git_add(project_root, ["README.md"])
     git.git_commit(project_root, "Initial commit")
+
+    # Setup global config (~/.monoco/config.yaml) with test settings
+    global_config_dir = Path.home() / ".monoco"
+    global_config_dir.mkdir(parents=True, exist_ok=True)
+    global_config_path = global_config_dir / "config.yaml"
+
+    # Backup original config if exists
+    backup_config = None
+    if global_config_path.exists():
+        backup_config = global_config_path.read_text()
+
+    # Write test config
+    test_config = """project:
+  name: Test Project
+  key: TEST
+paths:
+  issues: Issues
+"""
+    global_config_path.write_text(test_config)
 
     # Change CWD for CLI tests
     old_cwd = os.getcwd()
@@ -61,6 +79,15 @@ def git_repo_env():
     # Restore CWD
     os.chdir(old_cwd)
     shutil.rmtree(tmp_dir)
+
+    # Restore original config or remove test config
+    if backup_config is not None:
+        global_config_path.write_text(backup_config)
+    else:
+        global_config_path.unlink(missing_ok=True)
+
+    # Clear config cache again
+    config._settings = None
 
 
 class TestIssueGitService:

@@ -503,7 +503,7 @@ class IssueValidator:
         if all_ids:
             context = ResolutionContext(
                 current_project=self._current_project or "local",
-                workspace_root=self._workspace_root,
+                project_root=self._project_root or (str(self.issue_root) if self.issue_root else None),
                 available_ids=all_ids,
             )
             resolver = ReferenceResolver(context)

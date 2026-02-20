@@ -11,7 +11,7 @@ class MonocoProject(BaseModel):
     Representation of a single Monoco project.
     """
 
-    id: str  # Unique ID within the workspace (usually the directory name)
+    id: str  # Unique ID within the project (usually the directory name)
     name: str
     path: Path
     config: MonocoConfig
@@ -55,20 +55,20 @@ def load_project(path: Path) -> Optional[MonocoProject]:
         return None
 
 
-def find_projects(workspace_root: Path) -> List[MonocoProject]:
+def find_projects(project_root: Path) -> List[MonocoProject]:
     """
-    Scan for projects in a workspace.
+    Scan for projects in a project directory.
     Returns list of MonocoProject instances.
     """
     projects = []
 
-    # 1. Check workspace root itself
-    root_project = load_project(workspace_root)
+    # 1. Check project root itself
+    root_project = load_project(project_root)
     if root_project:
         projects.append(root_project)
 
     # 2. Recursive Scan
-    for root, dirs, files in os.walk(workspace_root):
+    for root, dirs, files in os.walk(project_root):
         # Skip hidden directories and node_modules
         dirs[:] = [
             d
@@ -79,7 +79,7 @@ def find_projects(workspace_root: Path) -> List[MonocoProject]:
         for d in dirs:
             project_path = Path(root) / d
             # Avoid re-adding root if it was somehow added (unlikely here)
-            if project_path == workspace_root:
+            if project_path == project_root:
                 continue
 
             if is_project_root(project_path):

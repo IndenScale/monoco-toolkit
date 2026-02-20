@@ -80,7 +80,7 @@ summary: |
 @app.command("list")
 def list_projects(
     json: AgentOutput = False,
-    root: Optional[str] = typer.Option(None, "--root", help="Workspace root (for local scan)"),
+    root: Optional[str] = typer.Option(None, "--root", help="Project root (for local scan)"),
     all_projects: bool = typer.Option(False, "--all", "-a", help="Show global inventory instead of local scan"),
 ):
     """List projects (locally discovered or from global inventory)."""

@@ -94,7 +94,7 @@ def main(
         require_project = True
 
     try:
-        # We pass root if provided. If require_workspace is True, get_config will throw if not found.
+        # We pass root if provided. If require_project is True, get_config will throw if not found.
         # Note: If root is None, it defaults to CWD in get_config.
 
         # Auto-discover root if not provided
@@ -126,7 +126,7 @@ def main(
                     console.print(f"[yellow]Warning: Failed to mount feature '{name}': {error}[/yellow]")
                     
     except FileNotFoundError as e:
-        # Graceful exit for workspace errors
+        # Graceful exit for project errors
         from rich.console import Console
 
         console = Console()
@@ -141,10 +141,9 @@ from monoco.core.setup import init_cli
 
 app.command(name="init")(init_cli)
 
-from monoco.core.install import install_command, sync_command, uninstall_command
+from monoco.core.install import install_command, uninstall_command
 
 app.command(name="install")(install_command)
-app.command(name="sync")(sync_command)
 app.command(name="uninstall")(uninstall_command)
 
 
@@ -200,7 +199,6 @@ from monoco.features.issue import commands as issue_cmd
 from monoco.features.spike import commands as spike_cmd
 from monoco.features.i18n import commands as i18n_cmd
 from monoco.features.config import commands as config_cmd
-from monoco.features.hooks import commands as hooks_cmd
 from monoco.cli import project as project_cmd
 from monoco.features.doc_extractor import commands as doc_extractor_cmd
 
@@ -208,7 +206,6 @@ app.add_typer(issue_cmd.app, name="issue", help="Manage development issues")
 app.add_typer(spike_cmd.app, name="spike", help="Manage research spikes")
 app.add_typer(i18n_cmd.app, name="i18n", help="Manage documentation i18n")
 app.add_typer(config_cmd.app, name="config", help="Manage configuration")
-app.add_typer(hooks_cmd.app, name="hook", help="Manage git hooks for development workflow")
 app.add_typer(project_cmd.app, name="project", help="Manage projects")
 app.add_typer(doc_extractor_cmd.app, name="doc-extractor", help="Extract and render documents to WebP pages")
 

@@ -64,16 +64,21 @@ def build_hook_context(
         except Exception:
             pass
     
-    # Try to get default branch
+    # Try to get default branch from config
     default_branch = "main"
     if project_root:
         try:
-            from monoco.core import git
-            # Simple heuristic - could be improved
-            if git.branch_exists(project_root, "master"):
-                default_branch = "master"
+            from monoco.core.config import get_config
+            config = get_config(str(project_root))
+            default_branch = config.project.trunk_branch
         except Exception:
-            pass
+            # Fallback to heuristic if config fails
+            try:
+                from monoco.core import git
+                if git.branch_exists(project_root, "master"):
+                    default_branch = "master"
+            except Exception:
+                pass
 
     # Check for uncommitted changes
     has_uncommitted_changes = False

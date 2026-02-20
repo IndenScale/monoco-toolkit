@@ -20,7 +20,7 @@ class I18nFeature(FeatureModule):
         )
 
     def _on_mount(self, context: "FeatureContext") -> None:  # type: ignore
-        """Initialize i18n feature with workspace context."""
+        """Initialize i18n feature with project context."""
         root = context.root
         core.init(root)
 

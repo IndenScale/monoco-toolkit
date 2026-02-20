@@ -19,7 +19,7 @@ class SpikeFeature(FeatureModule):
         )
 
     def _on_mount(self, context: "FeatureContext") -> None:  # type: ignore
-        """Initialize spike feature with workspace context."""
+        """Initialize spike feature with project context."""
         root = context.root
         config = context.config
         spikes_name = config.get("paths", {}).get("spikes", ".references")

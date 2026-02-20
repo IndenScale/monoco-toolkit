@@ -1,6 +1,6 @@
 # Monoco Issue 配置指南
 
-Monoco Issue System 是高度可配置的。通过在 `.monoco/workspace.yaml` 或 `.monoco/project.yaml` 中定义配置，你可以完全控制 Issue 的类型、状态、阶段以及流转规则。
+Monoco Issue System 是高度可配置的。通过在 `~/.monoco/config.yaml` 中定义配置，你可以完全控制 Issue 的类型、状态、阶段以及流转规则。
 
 ## 配置结构
 
@@ -94,4 +94,4 @@ workflows:
 
 ## 默认配置参考
 
-Monoco 内置了一套标准的研发流配置。你可以通过查看 `monoco/features/issue/engine/config.py` 获取完整的默认值，或者直接在 `workspace.yaml` 中覆盖它。
+Monoco 内置了一套标准的研发流配置。你可以通过查看 `monoco/features/issue/engine/config.py` 获取完整的默认值，或者直接在 `~/.monoco/config.yaml` 中覆盖它。

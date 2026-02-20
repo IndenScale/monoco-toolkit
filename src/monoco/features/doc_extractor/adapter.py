@@ -21,7 +21,7 @@ class DocExtractorFeature(FeatureModule):
         )
 
     def _on_mount(self, context: "FeatureContext") -> None:  # type: ignore
-        """Initialize doc-extractor feature with workspace context."""
+        """Initialize doc-extractor feature with project context."""
         # DocExtractor is self-contained, no special initialization needed
         pass
 

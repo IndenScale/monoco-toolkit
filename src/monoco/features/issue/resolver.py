@@ -106,12 +106,12 @@ class ReferenceResolver:
         if current_namespaced in self.context.available_ids:
             return current_namespaced
 
-        # Priority 2: Workspace root (if different from current)
+        # Priority 2: Project root (if different from current)
         if (
-            self.context.workspace_root
-            and self.context.workspace_root != self.context.current_project
+            self.context.project_root
+            and self.context.project_root != self.context.current_project
         ):
-            root_namespaced = f"{self.context.workspace_root}::{reference}"
+            root_namespaced = f"{self.context.project_root}::{reference}"
             if root_namespaced in self.context.available_ids:
                 return root_namespaced
 
@@ -154,7 +154,7 @@ def resolve_reference(
     reference: str,
     context_project: str,
     available_ids: Set[str],
-    workspace_root: Optional[str] = None,
+    project_root: Optional[str] = None,
 ) -> Optional[str]:
     """
     Convenience function for resolving a single reference.

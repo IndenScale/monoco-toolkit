@@ -6,7 +6,7 @@ from monoco.core.config import get_config
 
 
 def get_engine(project_root: Optional[str] = None) -> StateMachine:
-    # 1. Load Core Config (merges workspace & project yamls)
+    # 1. Load Core Config (from ~/.monoco/config.yaml)
     core_config = get_config(project_root)
 
     # 2. Start with Defaults

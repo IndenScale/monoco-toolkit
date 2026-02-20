@@ -788,7 +788,7 @@ def _search_issue_in_branches(
     parsed = IssueID(issue_id)
     
     if not parsed.is_local:
-        # For workspace issues, just use standard find
+        # For project issues, just use standard find
         path = find_issue_path(issues_root, issue_id, include_archived)
         return (path, None, None) if path else (None, None, None)
     

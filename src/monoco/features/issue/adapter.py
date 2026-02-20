@@ -19,7 +19,7 @@ class IssueFeature(FeatureModule):
         )
 
     def _on_mount(self, context: "FeatureContext") -> None:  # type: ignore
-        """Initialize issue feature with workspace context."""
+        """Initialize issue feature with project context."""
         root = context.root
         config = context.config
         issues_path = root / config.get("paths", {}).get("issues", "Issues")

@@ -261,7 +261,7 @@ class StateMachineConfig(BaseModel):
 class MonocoConfig(BaseModel):
     """
     Main Configuration Schema.
-    Hierarchy: Defaults < User Config (~/.monoco/config.yaml) < Project Config (./.monoco/config.yaml)
+    Hierarchy: Defaults < User Config (~/.monoco/config.yaml)
     """
 
     core: CoreConfig = Field(default_factory=CoreConfig)
@@ -295,29 +295,17 @@ class MonocoConfig(BaseModel):
         cls, project_root: Optional[str] = None, require_project: bool = False
     ) -> "MonocoConfig":
         """
-        Load configuration from multiple sources.
+        Load configuration from ~/.monoco/config.yaml.
 
         Args:
-            project_root: Explicit root path. If None, uses CWD.
-            require_project: If True, raises error if .monoco directory is missing.
+            project_root: Deprecated, kept for API compatibility.
+            require_project: Deprecated, kept for API compatibility.
         """
-        # 1. Start with empty dict (will use defaults via Pydantic)
+        # Start with empty dict (will use defaults via Pydantic)
         config_data = {}
 
-        # 2. Define config paths
+        # Load User Config from ~/.monoco/config.yaml
         home_path = Path.home() / ".monoco" / "config.yaml"
-
-        # Determine project path
-        cwd = Path(project_root) if project_root else Path.cwd()
-        project_config_path = cwd / ".monoco" / "project.yaml"
-
-        # Strict Project Check
-        if require_project and not (cwd / ".monoco").exists():
-            raise FileNotFoundError(
-                f"Monoco project not found in {cwd}. (No .monoco directory)"
-            )
-
-        # 3. Load User Config
         if home_path.exists():
             try:
                 with open(home_path, "r") as f:
@@ -328,26 +316,6 @@ class MonocoConfig(BaseModel):
                 # We don't want to crash on config load fail, implementing simple warning equivalent
                 pass
 
-        # 4. Load Project Config
-        if project_config_path.exists():
-            try:
-                with open(project_config_path, "r") as f:
-                    pj_config = yaml.safe_load(f)
-                    if pj_config:
-                        # project.yaml contains 'project' fields directly? or under 'project' key?
-                        # Design decision: project.yaml should be clean, e.g. "name: foo".
-                        # But to simplify merging, let's check if it has a 'project' key or is flat.
-                        if "project" in pj_config:
-                            cls._deep_merge(config_data, pj_config)
-                        else:
-                            # Assume flat structure mapping to 'project' section
-                            if "project" not in config_data:
-                                config_data["project"] = {}
-                            cls._deep_merge(config_data["project"], pj_config)
-            except Exception:
-                pass
-
-        # 5. Instantiate Model
         return cls(**config_data)
 
 
@@ -367,18 +335,42 @@ def get_config(
 
 
 class ConfigScope(str, Enum):
+    """Configuration scope - only GLOBAL is supported."""
+
     GLOBAL = "global"
-    PROJECT = "project"
 
 
-def get_config_path(scope: ConfigScope, project_root: Optional[str] = None) -> Path:
-    """Get the path to the configuration file for a given scope."""
-    if scope == ConfigScope.GLOBAL:
-        return Path.home() / ".monoco" / "config.yaml"
-    else:
-        # ConfigScope.PROJECT
-        cwd = Path(project_root) if project_root else Path.cwd()
-        return cwd / ".monoco" / "project.yaml"
+def get_config_path(scope: ConfigScope = ConfigScope.GLOBAL) -> Path:
+    """Get the path to the configuration file.
+
+    Args:
+        scope: Deprecated parameter, kept for API compatibility.
+
+    Returns:
+        Path to ~/.monoco/config.yaml
+    """
+    return Path.home() / ".monoco" / "config.yaml"
+
+
+def load_raw_config() -> Dict[str, Any]:
+    """Load raw configuration dictionary from ~/.monoco/config.yaml."""
+    path = get_config_path()
+    if not path.exists():
+        return {}
+    try:
+        with open(path, "r") as f:
+            return yaml.safe_load(f) or {}
+    except Exception as e:
+        logger.warning(f"Failed to load config from {path}: {e}")
+        return {}
+
+
+def save_raw_config(data: Dict[str, Any]) -> None:
+    """Save raw configuration dictionary to ~/.monoco/config.yaml."""
+    path = get_config_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        yaml.dump(data, f, default_flow_style=False)
 
 
 def find_monoco_root(start_path: Optional[Path] = None) -> Path:
@@ -400,29 +392,7 @@ def find_monoco_root(start_path: Optional[Path] = None) -> Path:
     return current
 
 
-def load_raw_config(
-    scope: ConfigScope, project_root: Optional[str] = None
-) -> Dict[str, Any]:
-    """Load raw configuration dictionary from a specific scope."""
-    path = get_config_path(scope, project_root)
-    if not path.exists():
-        return {}
-    try:
-        with open(path, "r") as f:
-            return yaml.safe_load(f) or {}
-    except Exception as e:
-        logger.warning(f"Failed to load config from {path}: {e}")
-        return {}
 
-
-def save_raw_config(
-    scope: ConfigScope, data: Dict[str, Any], project_root: Optional[str] = None
-) -> None:
-    """Save raw configuration dictionary to a specific scope."""
-    path = get_config_path(scope, project_root)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        yaml.dump(data, f, default_flow_style=False)
 
 
 class ConfigEventHandler(FileSystemEventHandler):

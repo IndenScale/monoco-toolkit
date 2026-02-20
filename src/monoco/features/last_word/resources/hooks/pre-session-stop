@@ -1,0 +1,64 @@
+#!/bin/bash
+# Knowledge Update Reminder Hook
+# 
+# Triggered at pre-session-stop to remind the agent to update knowledge bases
+# using mdp tool directly.
+#
+# This replaces the complex last-word YAML workflow with a simple reminder.
+# The agent decides what to update and uses `mdp` tool to edit markdown directly.
+#
+# ---
+# type: agent
+# provider: claude-code
+# event: PreSessionStop
+# priority: 10
+# description: "Remind agent to update knowledge bases using mdp tool"
+# ---
+
+# Read input (session context)
+INPUT=$(cat)
+SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // "unknown"')
+
+# Output the knowledge update guidance
+cat << 'GUIDANCE'
+
+╔══════════════════════════════════════════════════════════════╗
+║  📚 Knowledge Base Update Opportunity                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+Before this session ends, consider if any knowledge bases should be updated:
+
+  • USER.md      - User identity, preferences, background
+    Path: ~/.config/agents/USER.md
+
+  • SOUL.md      - AI personality, values, thinking framework  
+    Path: ~/.config/agents/SOUL.md
+
+  • AGENTS.md    - Global best practices across projects
+    Path: ~/.config/agents/AGENTS.md
+
+  • ./AGENTS.md  - Project-specific context
+    Path: ./AGENTS.md
+
+────────────────────────────────────────────────────────────────
+
+To update a knowledge base, use the `mdp` tool directly:
+
+  # Append content to a section
+  mdp patch -f ~/.config/agents/USER.md -H '## Research Interests' \
+      -i 0 --op append -c '- New interest here'
+
+  # Replace a section (with fingerprint verification)
+  mdp patch -f ~/.config/agents/USER.md -H '## Notes' \
+      -i 0 --op replace -c 'New content' -p 'Old content pattern'
+
+  # Delete a section
+  mdp patch -f ~/.config/agents/USER.md -H '## Temporary Section' \
+      -i 0 --op delete
+
+See: https://github.com/IndenScale/md-patch for more examples.
+
+GUIDANCE
+
+# Always exit successfully - this is just a reminder
+exit 0

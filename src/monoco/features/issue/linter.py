@@ -512,7 +512,7 @@ def run_lint(
                 )
                 # We don't exit here, we collect errors
     else:
-        # Full workspace scan mode
+        # Full project scan mode
         diagnostics = check_integrity(issues_root, recursive)
 
     # Filter only Warnings and Errors

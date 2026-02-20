@@ -16,7 +16,7 @@ class PIDFileError(Exception):
 
 
 class PIDManager:
-    """Manages PID file for workspace-scoped daemon process.
+    """Manages PID file for project-scoped daemon process.
 
     PID file format (JSON):
     {
@@ -31,13 +31,13 @@ class PIDManager:
     PID_FILENAME = "monoco.pid"
     PID_DIR = "run"
 
-    def __init__(self, workspace_root: Path):
-        self.workspace_root = Path(workspace_root)
+    def __init__(self, project_root: Path):
+        self.project_root = Path(project_root)
         self.pid_file = self._get_pid_file_path()
 
     def _get_pid_file_path(self) -> Path:
-        """Get the PID file path for the workspace."""
-        pid_dir = self.workspace_root / ".monoco" / self.PID_DIR
+        """Get the PID file path for the project."""
+        pid_dir = self.project_root / ".monoco" / self.PID_DIR
         pid_dir.mkdir(parents=True, exist_ok=True)
         return pid_dir / self.PID_FILENAME
 

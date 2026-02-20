@@ -1,6 +1,6 @@
 # Monoco Issue Configuration Guide
 
-The Monoco Issue System is highly configurable. By defining configurations in `.monoco/workspace.yaml` or `.monoco/project.yaml`, you can fully control Issue types, statuses, stages, and transition rules.
+The Monoco Issue System is highly configurable. By defining configurations in `~/.monoco/config.yaml`, you can fully control Issue types, statuses, stages, and transition rules.
 
 ## Configuration Structure
 

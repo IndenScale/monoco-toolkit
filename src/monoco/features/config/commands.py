@@ -9,7 +9,6 @@ from pydantic import ValidationError
 from monoco.core.config import (
     get_config,
     MonocoConfig,
-    ConfigScope,
     load_raw_config,
     save_raw_config,
 )
@@ -95,16 +94,11 @@ def get(
 def set_val(
     key: str = typer.Argument(..., help="Config key (e.g. telemetry.enabled)"),
     value: str = typer.Argument(..., help="Value to set"),
-    global_scope: bool = typer.Option(
-        False, "--global", "-g", help="Update global configuration"
-    ),
     json_output: AgentOutput = False,
 ):
-    """Set a configuration value in specific scope (project by default)."""
-    scope = ConfigScope.GLOBAL if global_scope else ConfigScope.PROJECT
-
-    # 1. Load Raw Config for the target scope
-    raw_data = load_raw_config(scope)
+    """Set a configuration value in ~/.monoco/config.yaml."""
+    # 1. Load Raw Config
+    raw_data = load_raw_config()
 
     # 2. Parse Key & Update Data
     parts = key.split(".")
@@ -141,22 +135,19 @@ def set_val(
         raise typer.Exit(code=1)
 
     # 4. Save
-    save_raw_config(scope, raw_data)
-
-    scope_display = "Global" if global_scope else "Project"
+    save_raw_config(raw_data)
 
     if OutputManager.is_agent_mode():
         OutputManager.print(
             {
                 "status": "updated",
-                "scope": scope_display.lower(),
                 "key": key,
                 "value": parsed_val,
             }
         )
     else:
         console.print(
-            f"[green]✓ Set {key} = {parsed_val} in {scope_display} config.[/green]"
+            f"[green]✓ Set {key} = {parsed_val} in config.[/green]"
         )
 
 

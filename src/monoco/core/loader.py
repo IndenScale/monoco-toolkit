@@ -59,7 +59,7 @@ class FeatureModule(MonocoFeature, ABC):
     Lifecycle:
         1. Discovery: Feature is discovered in monoco/features/
         2. Load: Module is imported and class instantiated
-        3. Mount: Feature is mounted (initialized) with workspace context
+        3. Mount: Feature is mounted (initialized) with project context
         4. Runtime: Feature is active and responding to commands
         5. Unmount: Feature is gracefully shut down
 
@@ -74,7 +74,7 @@ class FeatureModule(MonocoFeature, ABC):
                 )
 
             def mount(self, context: FeatureContext) -> None:
-                # Initialize feature with workspace context
+                # Initialize feature with project context
                 pass
 
             def unmount(self) -> None:
@@ -109,13 +109,13 @@ class FeatureModule(MonocoFeature, ABC):
 
     def mount(self, context: "FeatureContext") -> None:
         """
-        Lifecycle hook: Mount the feature with workspace context.
+        Lifecycle hook: Mount the feature with project context.
 
         Called when the feature is being activated. The feature should
         initialize any resources needed for operation.
 
         Args:
-            context: The feature context containing workspace and config.
+            context: The feature context containing project and config.
 
         Raises:
             FeatureMountError: If mounting fails.
