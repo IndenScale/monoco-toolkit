@@ -12,8 +12,8 @@ dependencies: []
 related: ['FEAT-0203']
 domains: []
 tags:
-- '#EPIC-0000'
-- '#FEAT-0204'
+  - '#EPIC-0000'
+  - '#FEAT-0204'
 files: []
 criticality: medium
 solution: null # implemented, cancelled, wontfix, duplicate
@@ -45,7 +45,9 @@ opened_at: '2026-02-20T07:17:02'
 ## Technical Tasks
 
 ### Part 1: 配置模板管理
+
 - [ ] 创建配置模板目录 `resources/config-templates/`
+
   ```text
   resources/config-templates/
   ├── prettier/
@@ -56,36 +58,43 @@ opened_at: '2026-02-20T07:17:02'
       ├── .markdownlint.json    # lint 规则
       └── .markdownlintignore   # 忽略模式
   ```
+
 - [ ] 定义 Monoco 标准配置
   - `.prettierrc`: 100 列宽、2 空格缩进、无分号
   - `.markdownlint.json`: 允许 HTML、适当行长度
 - [ ] 实现配置同步命令
+
   ```bash
   monoco pretty-markdown sync      # 同步 prettier 和 markdownlint 配置到项目
   ```
 
 ### Part 2: 自动格式化 Hook
+
 - [ ] 创建 `pretty-markdown` hook 目录结构
+
   ```text
   src/monoco/core/hooks/builtin/pretty-markdown/
   ├── HOOK.md
   └── scripts/
       └── run.sh
   ```
+
 - [ ] 编写 `HOOK.md` 配置
+
   ```yaml
   ---
   name: pretty-markdown
   description: Auto-format Markdown files after save
   trigger: post-tool-call
   matcher:
-    tool: "WriteFile|StrReplaceFile"
+    tool: 'WriteFile|StrReplaceFile'
     pattern: "\\.(md|mdx)$"
   timeout: 10000
   async: false
   priority: 100
   ---
   ```
+
 - [ ] 编写 `scripts/run.sh`
   - 从 stdin 解析 `tool_input.path`
   - 检查文件扩展名
@@ -93,12 +102,14 @@ opened_at: '2026-02-20T07:17:02'
   - 失败时输出警告到 stderr，但 exit 0
 
 ### Part 3: 配置一致性检查
+
 - [ ] 实现 `monoco pretty-markdown check` 命令
   - 检测项目配置与模板配置的差异
   - 输出 diff 报告
 - [ ] 可选：pre-commit hook 检查配置一致性
 
 ### Part 4: 集成与 CLI
+
 - [ ] 注册为内置 Hook，默认禁用
 - [ ] 添加 `monoco pretty-markdown` 子命令
   - `monoco pretty-markdown sync` - 同步配置
@@ -130,4 +141,5 @@ opened_at: '2026-02-20T07:17:02'
 ```
 
 ## Review Comments
+
 <!-- Required for Review/Done stage. Record review feedback here. -->
